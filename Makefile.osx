@@ -1,0 +1,36 @@
+include Makefile.srcs
+
+CC = gcc
+CXX = g++
+AR = ar
+
+CXXFLAGS = -O3 -arch i386
+LIBRARIES = -lstdc++
+PLATFORM = OSXi386
+
+PerforcePlugin_SRCS = $(COMMON_SRCS) $(P4PLUGIN_SRCS)
+
+P4PLUGIN_MODULES = $(PerforcePlugin_SRCS:.c=.o)
+P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
+P4PLUGIN_TARGET = PerforcePlugin
+
+INCLUDE = $(P4PLUGIN_INCLUDE)
+
+default: all
+
+all: build
+
+build: P4Plugin
+	mkdir -p Build/$(PLATFORM)
+	cp $(P4PLUGIN_TARGET) Build/$(PLATFORM)
+
+P4Plugin: $(P4PLUGIN_TARGET)
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
+
+$(P4PLUGIN_TARGET): $(P4PLUGIN_MODULES)
+	      $(CXX) -arch i386 -o $@ -framework Cocoa $(P4PLUGIN_MODULES) -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
+
+clean:
+	rm -f Build/*.* $(P4PLUGIN_MODULES)

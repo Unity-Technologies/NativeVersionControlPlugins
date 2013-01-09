@@ -1,0 +1,44 @@
+COMMON_SRCS = ./Common/Changes.cpp ./Common/CommandLine.cpp ./Common/FileSystem.cpp ./Common/Utility.cpp ./Common/VersionedAsset.cpp
+COMMON_INCLS = ./Common/Changes.h ./Common/CommandLine.h ./Common/FileSystem.h ./Common/UnityPipe.h ./Common/Utility.h ./Common/VersionedAsset.h
+P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_OSX.cpp \
+	       	./P4Plugin/Source/P4AddCommand.cpp \
+		./P4Plugin/Source/P4ChangeDescriptionCommand.cpp \
+		./P4Plugin/Source/P4ChangeMoveCommand.cpp \
+		./P4Plugin/Source/P4ChangesCommand.cpp \
+		./P4Plugin/Source/P4ChangeStatusCommand.cpp \
+		./P4Plugin/Source/P4CheckoutCommand.cpp \
+		./P4Plugin/Source/P4Command.cpp \
+		./P4Plugin/Source/P4ConfigCommand.cpp \
+		./P4Plugin/Source/P4DeleteChangesCommand.cpp \
+		./P4Plugin/Source/P4DeleteCommand.cpp \
+		./P4Plugin/Source/P4DownloadCommand.cpp \
+		./P4Plugin/Source/P4ExitCommand.cpp \
+		./P4Plugin/Source/P4FileSetBaseCommand.cpp \
+		./P4Plugin/Source/P4GetLatestCommand.cpp \
+		./P4Plugin/Source/P4IncomingChangeAssetsCommand.cpp \
+		./P4Plugin/Source/P4IncomingCommand.cpp \
+		./P4Plugin/Source/P4LockCommand.cpp \
+		./P4Plugin/Source/P4LoginCommand.cpp \
+		./P4Plugin/Source/P4MoveCommand.cpp \
+		./P4Plugin/Source/P4QueryConfigParametersCommand.cpp \
+		./P4Plugin/Source/P4ResolveCommand.cpp \
+		./P4Plugin/Source/P4RevertChangesCommand.cpp \
+		./P4Plugin/Source/P4RevertCommand.cpp \
+		./P4Plugin/Source/P4SpecCommand.cpp \
+		./P4Plugin/Source/P4StatusBaseCommand.cpp \
+		./P4Plugin/Source/P4StatusCommand.cpp \
+		./P4Plugin/Source/P4SubmitCommand.cpp \
+		./P4Plugin/Source/P4Task.cpp \
+		./P4Plugin/Source/P4UnlockCommand.cpp \
+		./P4Plugin/Source/P4Utility.cpp
+
+P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
+		 ./P4Plugin/Source/P4FileSetBaseCommand.h \
+		 ./P4Plugin/Source/StatusBaseCommand.h \
+		 ./P4Plugin/Source/P4StatusCommand.h \
+		 ./P4Plugin/Source/P4Task.h \
+		 ./P4Plugin/Source/P4Utility.h
+
+P4PLUGIN_LINK = -lclient -lp4sslstub -lrpc -lsupp
+P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r12.2/include/p4 -I./P4Plugin/Source
+

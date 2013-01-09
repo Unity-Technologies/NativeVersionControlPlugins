@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{0a4cc36b-b82c-434f-962c-5e88720dab65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="P4Plugin">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\Changes.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\CommandLine.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\FileSystem.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Utility.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\VersionedAsset.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4AddCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ChangeDescriptionCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ChangeMoveCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ChangesCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ChangeStatusCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4CheckoutCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4Command.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ConfigCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4DeleteChangesCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4DeleteCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4DownloadCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ExitCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4FileSetBaseCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4GetLatestCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4IncomingChangeAssetsCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4IncomingCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4LockCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4LoginCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4MoveCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4Plugin_WIN.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4QueryConfigParametersCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4ResolveCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4RevertChangesCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4RevertCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4SpecCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4StatusBaseCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4StatusCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4SubmitCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4Task.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4UnlockCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4Utility.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\Changes.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\CommandLine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\FileSystem.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UnityPipe.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Utility.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\VersionedAsset.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\P4Command.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\P4FileSetBaseCommand.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\P4StatusBaseCommand.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\P4StatusCommand.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\P4Task.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\P4Utility.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
