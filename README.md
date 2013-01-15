@@ -14,6 +14,8 @@ The Subversion plugin is calling the svn executable and parses the output. This 
 
 The Perforce plugin is using the perforce provided libraries and its callback style API. Furthermore is streams results from the perforce server directly to Unity.
 
+Note that version control other than Asset Server is not supported per default in current releases of Unity. It is available as a preview feature in 4.x with team license though. You can enable the feature by putting an empty file called 'vcs.txt' in the root of your Unity project folder and restart Unity. This will make the menu "Window -> Asset Server" show the new version control window.
+
 #### Structure
 
 * Common/ contains structures and functionallity common to all plugins
