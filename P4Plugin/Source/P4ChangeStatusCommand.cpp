@@ -10,24 +10,24 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		upipe.Log() << "ChangeStatusCommand::Run()" << endl;
+		Pipe().Log() << "ChangeStatusCommand::Run()" << endl;
 		
 		ChangelistRevision cl;
-		upipe >> cl;
+		Pipe() >> cl;
 		
 		string cmd = "fstat -T \"depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" -W -e ";
 		cmd += (cl == kDefaultListRevision ? string("default") : cl) + " //...";
 		
 		// We're sending along an asset list with an unknown size.
-		upipe.BeginList();
+		Pipe().BeginList();
 		
 		task.CommandRun(cmd, this);
 		
 		// The OutputState and other callbacks will now output to stdout.´
 		// We just wrap up the communication here.
-		upipe.EndList();
-		upipe << GetStatus();
-		upipe.EndResponse();
+		Pipe().EndList();
+		Pipe() << GetStatus();
+		Pipe().EndResponse();
 		
 		return true;
 	}

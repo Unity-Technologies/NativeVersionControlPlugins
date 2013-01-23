@@ -13,7 +13,7 @@ public:
 	{
 		if (!task.IsConnected()) // Cannot login without being connected
 		{
-			upipe.Log() << "Cannot login when not connected" << endl;
+			Pipe().Log() << "Cannot login when not connected" << endl;
 			return false;
 		}
 		
@@ -27,13 +27,13 @@ public:
 		if (!task.CommandRun(cmd, this) && !m_CheckingForLoggedIn)
 		{
 			string errorMessage = GetStatusMessage();			
-			upipe.Log() << "ERROR: " << errorMessage << endl;
+			Pipe().Log() << "ERROR: " << errorMessage << endl;
 		}
 		
 		if (m_CheckingForLoggedIn)
-			upipe.Log() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << endl;
+			Pipe().Log() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << endl;
 		else
-			upipe.Log() << "Login " << (m_LoggedIn ? "succeeded" : "failed") << endl;
+			Pipe().Log() << "Login " << (m_LoggedIn ? "succeeded" : "failed") << endl;
 		m_CheckingForLoggedIn = false;
 		return m_LoggedIn;
 	}
@@ -41,7 +41,7 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
-		upipe.Log() << "OutputInfo: " << d << endl;
+		Pipe().Log() << "OutputInfo: " << d << endl;
 		if (m_CheckingForLoggedIn)
 		{
 			m_LoggedIn = StartsWith(d, "User ") && d.find(" ticket expires in ") != string::npos;
@@ -51,7 +51,7 @@ public:
 			m_LoggedIn = StartsWith(d, "User ") && EndsWith(d, " logged in.");
 			if (m_LoggedIn) 
 				return;
-			GetStatus().insert(P4StatusItem(P4SEV_Error, d));
+			GetStatus().insert(VCSStatusItem(VCSSEV_Error, d));
 		}
 	}
 
@@ -73,15 +73,15 @@ public:
 	{
 		if (StartsWith(string(errBuf), "Perforce password (P4PASSWD) invalid or unset."))
 		{
-			upipe.ErrorLine(errBuf);
+			Pipe().ErrorLine(errBuf);
 		}
 	}
 
 	// Entering password
 	void Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 	{
-		upipe.Log() << "Prompted for password by server" << endl;
-		upipe.Log() << "Prompt: " << msg.Text() << endl;
+		Pipe().Log() << "Prompted for password by server" << endl;
+		Pipe().Log() << "Prompt: " << msg.Text() << endl;
 		buf.Set(m_Password.c_str());
 	}
 	

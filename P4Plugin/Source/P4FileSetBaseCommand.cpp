@@ -12,37 +12,37 @@ P4FileSetBaseCommand::P4FileSetBaseCommand(const char* name, const char* cmdstr)
 bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args)
 {
 	ClearStatus();
-	upipe.Log() << args[0] << "::Run()" << endl;
+	Pipe().Log() << args[0] << "::Run()" << endl;
 	
 	string cmd = SetupCommand(args);
 	
 	VersionedAssetList assetList;
-	upipe >> assetList;
+	Pipe() >> assetList;
 	string paths = ResolvePaths(assetList, GetResolvePathFlags());
 	
-	upipe.Log() << "Paths resolved are: " << paths << endl;
+	Pipe().Log() << "Paths resolved are: " << paths << endl;
 	
 	if (paths.empty())
 	{
-		upipe.ErrorLine("No paths in fileset perforce command", MARemote);
-		upipe.EndResponse();
+		Pipe().ErrorLine("No paths in fileset perforce command", MARemote);
+		Pipe().EndResponse();
 		return true;
 	}
 	
 	cmd += " " + paths;
 	
 	task.CommandRun(cmd, this);
-	upipe << GetStatus();
+	Pipe() << GetStatus();
 
 	// Stat the files to get the most recent state.
 	// This could probably be optimized by reading the output of the specific
 	// commands and figure out the new state. 
 	P4Command* statusCommand = RunAndSendStatus(task, assetList);	
-	upipe << statusCommand->GetStatus();
+	Pipe() << statusCommand->GetStatus();
 	
 	// The OutputState and other callbacks will now output to stdout.
 	// We just wrap up the communication here.
-	upipe.EndResponse();
+	Pipe().EndResponse();
 	return true;
 }
 	

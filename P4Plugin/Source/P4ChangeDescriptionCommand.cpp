@@ -12,19 +12,19 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		upipe.Log() << "ChangeDescriptionCommand::Run()"  << endl;
+		Pipe().Log() << "ChangeDescriptionCommand::Run()"  << endl;
 		
 		ChangelistRevision cl;
-		upipe >> cl;
+		Pipe() >> cl;
 		
 		const string cmd = string("change -o ") + (cl == kDefaultListRevision ? string("") : cl);
 				
 		task.CommandRun(cmd, this);
-		upipe << GetStatus();
+		Pipe() << GetStatus();
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe.EndResponse();
+		Pipe().EndResponse();
 		
 		return true;
 	}
@@ -34,7 +34,7 @@ public:
     {		
 		string result;
 		ReadDescription(data, result);
-		upipe.OkLine(result);
+		Pipe().OkLine(result);
 	}
 	
 	int ReadDescription(const char *data, string& result)

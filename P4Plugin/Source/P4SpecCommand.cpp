@@ -18,14 +18,14 @@ public:
 		if (!task.CommandRun(cmd, this))
 		{
 			string errorMessage = GetStatusMessage();			
-			upipe.Log() << "ERROR: " << errorMessage << endl;
+			Pipe().Log() << "ERROR: " << errorMessage << endl;
 			return false;
 		}
 		else
 		{
 			if (!m_Root.empty())
 				task.SetP4Root(m_Root);
-			upipe.Log() << "Root set to " << m_Root << endl;
+			Pipe().Log() << "Root set to " << m_Root << endl;
 			return true;
 		}
 	}
@@ -48,7 +48,7 @@ public:
 			if (i == string::npos)
 			{
 				
-				GetStatus().insert(P4StatusItem(P4SEV_Error, string("invalid root specification - ") + line));
+				GetStatus().insert(VCSStatusItem(VCSSEV_Error, string("invalid root specification - ") + line));
 				return;
 			}
 			m_Root = line.substr(i);

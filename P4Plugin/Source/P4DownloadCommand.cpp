@@ -105,30 +105,30 @@ public:
 	bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		
 		string baseCmd = "print -q -o ";
 		string targetDir;
-		upipe.ReadLine(targetDir);
+		Pipe().ReadLine(targetDir);
 		
 		vector<string> versions;
 		// The wanted versions to download. e.g. you can download both head, base of a file at the same time
-		upipe >> versions;
+		Pipe() >> versions;
 		
 		VersionedAssetList assetList;
-		upipe >> assetList;
+		Pipe() >> assetList;
 		vector<string> paths;
 		ResolvePaths(paths, assetList, kPathWild | kPathSkipFolders);
 		
-		upipe.Log() << "Paths resolved" << endl;
+		Pipe().Log() << "Paths resolved" << endl;
 
-		upipe.BeginList();
+		Pipe().BeginList();
 		
 		if (paths.empty())
 		{
-			upipe.EndList();
-			upipe.ErrorLine("No paths in fileset perforce command", MARemote);
-			upipe.EndResponse();
+			Pipe().EndList();
+			Pipe().ErrorLine("No paths in fileset perforce command", MARemote);
+			Pipe().EndResponse();
 			return true;
 		}
 
@@ -149,13 +149,13 @@ public:
 					tmpFile += "head";
 					string fileCmd = cmd + "\"" + tmpFile + "\" \"" + *i + "#head\"";
 
-					upipe.Log() << fileCmd << endl;
+					Pipe().Log() << fileCmd << endl;
 					if (!task.CommandRun(fileCmd, this))
 						break;
 					
 					VersionedAsset asset;
 					asset.SetPath(tmpFile);
-					upipe << asset;
+					Pipe() << asset;
 
 				}
 				else if (*j == "conflictingAndBase")
@@ -169,9 +169,9 @@ public:
 						cConflictInfo.conflicts.clear();
 						string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 						string rcmd = "resolve -o -n " + localPaths;
-						upipe.Log() << rcmd << endl;
+						Pipe().Log() << rcmd << endl;
 						task.CommandRun(rcmd, &cConflictInfo);
-						upipe << cConflictInfo.GetStatus();
+						Pipe() << cConflictInfo.GetStatus();
 						
 						if (cConflictInfo.HasErrors())
 						{
@@ -179,7 +179,7 @@ public:
 							string msg = cConflictInfo.GetStatusMessage();
 							if (!StartsWith(msg, "No file(s) to resolve"))
 							{
-								upipe << cConflictInfo.GetStatus();
+								Pipe() << cConflictInfo.GetStatus();
 								goto error;
 							}
 						}
@@ -193,24 +193,24 @@ public:
 					{
 						string conflictFile = tmpFile + "conflicting";
 						string conflictCmd = cmd + "\"" + conflictFile + "\" \"" + ci->second.conflict + "\"";
-						upipe.Log() << conflictCmd << endl;
+						Pipe().Log() << conflictCmd << endl;
 						if (!task.CommandRun(conflictCmd, this))
 							break;
 						asset.SetPath(conflictFile);
-						upipe << asset;
+						Pipe() << asset;
 						
 						string baseFile = tmpFile + "base";
 						string baseCmd = cmd + "\"" + baseFile + "\" \"" + ci->second.base + "\"";
-						upipe.Log() << baseCmd << endl;
+						Pipe().Log() << baseCmd << endl;
 						if (!task.CommandRun(baseCmd, this))
 							break;
 						asset.SetPath(baseFile);
-						upipe << asset;						
+						Pipe() << asset;						
 					}
 					else 
 					{
 						// no conflict info for this file
-						upipe << asset << asset;
+						Pipe() << asset << asset;
 					}
 				}
 			}
@@ -218,9 +218,9 @@ public:
 	error:
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe.EndList();
-		upipe << GetStatus();
-		upipe.EndResponse();
+		Pipe().EndList();
+		Pipe() << GetStatus();
+		Pipe().EndResponse();
 
 		cConflictInfo.conflicts.clear();
 		

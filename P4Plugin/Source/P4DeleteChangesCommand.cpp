@@ -11,19 +11,19 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		std::string errorMessage;
 		
 		const string cmd = "change -d";
 		
 		ChangelistRevisions changes;
-		upipe >> changes;
+		Pipe() >> changes;
 		
 		if (changes.empty())
 		{
 			
-			upipe.ErrorLine("Changes to delete is empty");
-			upipe.EndResponse();
+			Pipe().ErrorLine("Changes to delete is empty");
+			Pipe().EndResponse();
 			return true;
 		}
 		
@@ -39,13 +39,13 @@ public:
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
 
-		upipe << GetStatus();
+		Pipe() << GetStatus();
 		
 		// @TODO: send changed assets
 		VersionedAssetList dummy;
-		upipe << dummy;
+		Pipe() << dummy;
 		
-		upipe.EndResponse();
+		Pipe().EndResponse();
 		
 		return true;
 	}	

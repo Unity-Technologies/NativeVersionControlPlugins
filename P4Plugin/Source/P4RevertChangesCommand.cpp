@@ -11,7 +11,7 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		std::string errorMessage;
 		
 		const string cmd = args.size() > 1 && args[1] == "unchangedOnly" ? 
@@ -19,12 +19,12 @@ public:
 		"revert -c ";
 		
 		ChangelistRevisions changes;
-		upipe >> changes;
+		Pipe() >> changes;
 		
 		if (changes.empty())
 		{
-			upipe.WarnLine("Changes to revert is empty", MARemote);
-			upipe.EndResponse();
+			Pipe().WarnLine("Changes to revert is empty", MARemote);
+			Pipe().EndResponse();
 			return true;
 		}
 		
@@ -40,13 +40,13 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe << GetStatus();
+		Pipe() << GetStatus();
 
 		// @TODO: send changed assets
 		VersionedAssetList dummy;
-		upipe << dummy;
+		Pipe() << dummy;
 		
-		upipe.EndResponse();
+		Pipe().EndResponse();
 		
 		return true;
 	}

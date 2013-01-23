@@ -15,10 +15,10 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{				
 		ClearStatus();
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		const string cmd = string("changes -s pending -u ") + task.GetP4User() + " -c " + task.GetP4Client();
 
-		upipe.BeginList();
+		Pipe().BeginList();
 		
 		// The default list is always there
 		Changelist defaultItem;
@@ -26,15 +26,15 @@ public:
 		defaultItem.SetDescription(kDefaultList);
 		defaultItem.SetRevision(kDefaultListRevision);
 		
-		upipe << defaultItem;
+		Pipe() << defaultItem;
 		
 		task.CommandRun(cmd, this);
-		upipe.EndList();
-		upipe << GetStatus();
+		Pipe().EndList();
+		Pipe() << GetStatus();
 
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe.EndResponse();
+		Pipe().EndResponse();
 		
 		return true;
 	}
@@ -47,7 +47,7 @@ public:
 		
 		if (d.length() <= minLength)
 		{
-			upipe.ErrorLine(string("p4 changelist too short: ") + d);
+			Pipe().ErrorLine(string("p4 changelist too short: ") + d);
 			return;
 		}
 		
@@ -55,14 +55,14 @@ public:
 		string::size_type i = d.find(' ', 8);
 		if (i == string::npos)
 		{
-			upipe.ErrorLine(string("p4 couldn't locate revision: ") + d);
+			Pipe().ErrorLine(string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		
 		Changelist item;
 		item.SetDescription(d.substr(i));
 		item.SetRevision(d.substr(minLength-1, i - (minLength-1)));
-		upipe << item;
+		Pipe() << item;
 	}
 	
 } cChanges("changes");

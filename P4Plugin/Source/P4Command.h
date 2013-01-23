@@ -7,7 +7,7 @@
 #include "VersionedAsset.h"
 
 typedef std::vector<std::string> CommandArgs;
-UnityPipe& operator<<(UnityPipe& p, const P4Status& v);
+UnityPipe& operator<<(UnityPipe& p, const VCSStatus& v);
 
 /* 
  * Base class for all commands that unity can issue and is supported
@@ -19,8 +19,8 @@ class P4Command : public ClientUser
 public:
 	virtual bool Run(P4Task& task, const CommandArgs& args) = 0;
 	
-	const P4Status& GetStatus() const;
-	P4Status& GetStatus();
+	const VCSStatus& GetStatus() const;
+	VCSStatus& GetStatus();
 
 	// Error* GetError();
 	bool HasErrors() const;
@@ -42,7 +42,7 @@ public:
 	void Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e );
 	void Finished();
 
-	static UnityPipe& Pipe() { return upipe; }
+	static UnityPipe& Pipe() { return *s_UnityPipe; }
 	
 protected:
 	P4Command(const char* name);
@@ -51,11 +51,12 @@ protected:
 	// state of a list. This is a convenience method to do that.
 	P4Command* RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList);
 	bool m_AllowConnect;
-	static UnityPipe upipe;
+
+	friend class P4Task;
+	static UnityPipe* s_UnityPipe;
 private:
-	P4Status m_Status;
+	VCSStatus m_Status;
 };
 
 // Lookup command handler by name
 P4Command* LookupCommand(const std::string& name);
-

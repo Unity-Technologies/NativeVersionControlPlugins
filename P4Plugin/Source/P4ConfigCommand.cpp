@@ -14,13 +14,13 @@ public:
 	{
 		if (args.size() < 2)
 		{
-			upipe.Warn("Perforce plugin got invalid config setting :", MAConfig);
+			Pipe().Warn("Perforce plugin got invalid config setting :", MAConfig);
 			for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i) {
-				upipe.Write(" ");
-				upipe.Write(*i);
+				Pipe().Write(" ");
+				Pipe().Write(*i);
 			}
-			upipe.WriteLine("");
-			upipe.EndResponse();
+			Pipe().WriteLine("");
+			Pipe().EndResponse();
 			return true;
 		}
 		
@@ -32,7 +32,7 @@ public:
 		string logValue = value;
 		if (key == "vcPassword")
 			logValue = "*";
-		upipe.Log() << "Got config " << key << " = '" << logValue << "'" << endl;
+		Pipe().Log() << "Got config " << key << " = '" << logValue << "'" << endl;
 
 		// This command actually handles several commands all 
 		// concerning connecting to the perforce server
@@ -63,45 +63,45 @@ public:
 		else if (key == "pluginVersions")
 		{
 			int sel = SelectVersion(args);
-			upipe.OkLine(sel, MAConfig); 
-			upipe.Log() << "Selected plugin protocol version " << sel << endl;
+			Pipe().OkLine(sel, MAConfig); 
+			Pipe().Log() << "Selected plugin protocol version " << sel << endl;
 		}
 		else if (key == "pluginTraits")
 		{
-			upipe.OkLine("1");
-			upipe.OkLine("requiresNetwork", MAConfig); // requires network			
+			Pipe().OkLine("1");
+			Pipe().OkLine("requiresNetwork", MAConfig); // requires network			
 		
-			upipe.OkLine("4");
-			upipe.OkLine("vcUsername");
-			upipe.OkLine("Username", MAConfig);
-			upipe.OkLine("The perforce user name", MAConfig);
-			upipe.OkLine("");
-			upipe.OkLine("1"); // required field
+			Pipe().OkLine("4");
+			Pipe().OkLine("vcUsername");
+			Pipe().OkLine("Username", MAConfig);
+			Pipe().OkLine("The perforce user name", MAConfig);
+			Pipe().OkLine("");
+			Pipe().OkLine("1"); // required field
 
-			upipe.OkLine("vcPassword");
-			upipe.OkLine("Password", MAConfig);
-			upipe.OkLine("The perforce password", MAConfig);
-			upipe.OkLine("");
-			upipe.OkLine("3"); // required field | password field
+			Pipe().OkLine("vcPassword");
+			Pipe().OkLine("Password", MAConfig);
+			Pipe().OkLine("The perforce password", MAConfig);
+			Pipe().OkLine("");
+			Pipe().OkLine("3"); // required field | password field
 
-			upipe.OkLine("vcWorkspace");
-			upipe.OkLine("Workspace", MAConfig);
-			upipe.OkLine("The perforce workspace/client", MAConfig);
-			upipe.OkLine("");
-			upipe.OkLine("1"); // required field
+			Pipe().OkLine("vcWorkspace");
+			Pipe().OkLine("Workspace", MAConfig);
+			Pipe().OkLine("The perforce workspace/client", MAConfig);
+			Pipe().OkLine("");
+			Pipe().OkLine("1"); // required field
 
-			upipe.OkLine("vcServer");
-			upipe.OkLine("Server", MAConfig);
-			upipe.OkLine("The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666", MAConfig);
-			upipe.OkLine("perforce");
-			upipe.OkLine("1"); // required field
+			Pipe().OkLine("vcServer");
+			Pipe().OkLine("Server", MAConfig);
+			Pipe().OkLine("The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666", MAConfig);
+			Pipe().OkLine("perforce");
+			Pipe().OkLine("1"); // required field
 		} 
 		else 
 		{
-			upipe.Warn("Unknown config field set on version control plugin: ", MAConfig);
-			upipe.WriteLine(key);
+			Pipe().Warn("Unknown config field set on version control plugin: ", MAConfig);
+			Pipe().WriteLine(key);
 		}
-		upipe.EndResponse();
+		Pipe().EndResponse();
 		return true;
 	}
 	

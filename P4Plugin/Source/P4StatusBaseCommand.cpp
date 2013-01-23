@@ -35,7 +35,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		string key(var.Text());
 		string value(val.Text());
-		// upipe.Log() << key << " # " << value << endl;
+		// Pipe().Log() << key << " # " << value << endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
 		{
@@ -99,7 +99,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		current.SetState(ActionToState(action, headAction, haveRev, headRev) | baseState);
 	}
 	
-	upipe << current;
+	Pipe() << current;
 }
 
 void P4StatusBaseCommand::HandleError( Error *err )
@@ -124,7 +124,7 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		}
 		else if (AddUnknown(asset, value))
 		{
-			upipe << asset;
+			Pipe() << asset;
 			return; // just ignore errors for unknown files and return them anyway
 		} 
 	}

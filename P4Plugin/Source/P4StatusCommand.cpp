@@ -9,15 +9,15 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 {
 	ClearStatus();
 	bool recursive = args.size() > 1;
-	upipe.Log() << "StatusCommand::Run()" << endl;
+	Pipe().Log() << "StatusCommand::Run()" << endl;
 			
 	VersionedAssetList assetList;
-	upipe >> assetList;
+	Pipe() >> assetList;
 	
 	RunAndSend(task, assetList, recursive);
 
-	upipe << GetStatus();
-	upipe.EndResponse();
+	Pipe() << GetStatus();
+	Pipe().EndResponse();
 	
 	return true;
 }
@@ -26,14 +26,14 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 {
 	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
-	upipe.Log() << "Paths to stat are: " << paths << endl;
+	Pipe().Log() << "Paths to stat are: " << paths << endl;
 	
-	upipe.BeginList();
+	Pipe().BeginList();
 	
 	if (paths.empty())
 	{
-		upipe.EndList();
-		upipe.ErrorLine("No paths to stat", MASystem);
+		Pipe().EndList();
+		Pipe().ErrorLine("No paths to stat", MASystem);
 		return;
 	}
 	
@@ -46,7 +46,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 	
 	// The OutputState and other callbacks will now output to stdout.
 	// We just wrap up the communication here.
-	upipe.EndList();
+	Pipe().EndList();
 }
 
 P4StatusCommand cStatus("status");

@@ -30,6 +30,17 @@ size_t Tokenize(std::vector<std::string>& result,
 	return result.size();
 }
 
+string Join(const vector<string>& items, const string& delim)
+{
+	string result;
+	for (vector<string>::const_iterator i = items.begin(); i != items.end(); ++i)
+	{
+		if (i != items.begin())
+			result += delim;
+		result += *i;
+	}
+	return result;
+}
 
 // Replace all occurences of lookFor in str by replaceWith
 string Replace(const string& str, const string& lookFor, const string& replaceWith)

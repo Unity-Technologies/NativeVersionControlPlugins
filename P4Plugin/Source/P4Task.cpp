@@ -23,37 +23,23 @@
 
 using namespace std;
 
-const char* p4SeverityToString(P4Severity s)
+VCSStatus errorToVCSStatus(Error& e)
 {
-	switch (s)
-	{
-	case P4SEV_OK: return "OK";
-	case P4SEV_Info: return "Info";
-	case P4SEV_Warn: return "Warn";
-	case P4SEV_Error: return "Error";
-	default: break;
-	}
-	return "<UNKNOWN SEVERITY>";
-}
-
-
-P4Status errorToP4Status(Error& e)
-{
-	P4Severity sev = P4SEV_Error;
+	VCSSeverity sev = VCSSEV_Error;
 
 	switch (e.GetSeverity()) {
 		case E_EMPTY: 
-			sev = P4SEV_OK;
+			sev = VCSSEV_OK;
 			break; // no errors
 		case E_INFO: // information, not necessarily an error
-			sev = P4SEV_Info;
+			sev = VCSSEV_Info;
 			break;
 		case E_WARN: // a minor error occurred
-			sev = P4SEV_Warn;
+			sev = VCSSEV_Warn;
 			break;
 		case E_FAILED: // the command was used incorrectly
 		case E_FATAL:  // fatal error, the command can't be processed
-			sev = P4SEV_Error;
+			sev = VCSSEV_Error;
 			break;
 		default:
 			break;
@@ -61,22 +47,22 @@ P4Status errorToP4Status(Error& e)
 
 	StrBuf msg;
 	e.Fmt(&msg);
-	P4Status status;
-	status.insert(P4StatusItem(sev, msg.Text()));
+	VCSStatus status;
+	status.insert(VCSStatusItem(sev, msg.Text()));
 	return status;
 }
-
 
 // This class essentially manages the command line interface to the API and replies.  Commands are read from stdin and results
 // written to stdout and errors to stderr.  All text based communications used tags to make the parsing easier on both ends.
 P4Task::P4Task()
+	: m_Connection("./vcsplugin.log")
 {
     m_P4Connect = false;
 }
 
 P4Task::~P4Task()
 {
-	P4Status dummy;
+	VCSStatus dummy;
 	Disconnect(dummy);
 }
 
@@ -137,55 +123,57 @@ void P4Task::SetAssetsPath(const std::string& p)
 
 const std::string& P4Task::GetAssetsPath() const
 {
-	return m_AssetsPathConfig;
+  return m_AssetsPathConfig;
 }
 
 // Main run and processing loop
 int P4Task::Run()
 {
-
-#if defined(_WINDOWS)
-	LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\UnityVCS"); 
-
-	// All pipe instances are busy, so wait for 2 seconds. 
-	if ( ! WaitNamedPipe(lpszPipename, 2000)) 
-	{ 
-		P4Command::Pipe().Log() << "Could not open pipe: 2 second wait timed out.\n";
-		P4Command::Pipe().Log() << ErrorCodeToMsg(GetLastError()) << "\n";
-		return -1;
-	} 
-
-	HANDLE namedPipe = CreateFile( 
-						lpszPipename,   // pipe name 
-						GENERIC_READ |  // read and write access 
-						GENERIC_WRITE, 
-						0,              // no sharing 
-						NULL,           // default security attributes
-						OPEN_EXISTING,  // opens existing pipe
-						0,              // default attributes
-						NULL);          // no template file
-
-	// Break if the pipe handle is valid. 
-	if (namedPipe == INVALID_HANDLE_VALUE) 
-	{		
-		// Exit if an error other than ERROR_PIPE_BUSY occurs. 
-		P4Command::Pipe().Log() << "Could not open pipe. GLE=" << ErrorCodeToMsg(GetLastError()) << "\n";
-		return -1;
+	try
+	{
+		m_Connection.Connect();
+	} catch (exception& e)
+	{
+		m_Connection.Log() << e.what() << std::endl;
+		return 0;
 	}
 
-	P4Command::Pipe().Log() << "Setting channel\n";
-	P4Command::Pipe().SetChannel(namedPipe);
-	P4Command::Pipe().Log() << "Done setting channel\n";
-#endif
-	
-	// Read commands
-    while ( CommandRead() ) { }
+	// Make it convenient to get the pipe even though the commands
+	// are callback based.
+	P4Command::s_UnityPipe = &m_Connection.Pipe();
 
+	// Read commands
+	UnityCommand cmd;
+	vector<string> args;
+	for ( ;; )
+	{
+		// Read
+		try 
+		{
+			cmd = m_Connection.ReadCommand(args);
+		} 
+		catch (CommandException& ce)
+		{
+			m_Connection.Pipe().ErrorLine(string("invalid command - ") + Join(args));
+			return 1;
+		}
+
+		// Dispatch
+		P4Command* p4c = LookupCommand(UnityCommandToString(cmd));
+		if (!p4c)
+		{
+			m_Connection.Pipe().ErrorLine(string("unknown command - ") + UnityCommandToString(cmd));
+			return 1;
+		}
+		
+		if (!p4c->Run(*this, args))
+			break;
+	}
     return 0;
 }
 
 // Initialise the perforce client
-bool P4Task::Connect(P4Status& result)
+bool P4Task::Connect(VCSStatus& result)
 {   
 	// If connection is still active then return success
     if ( IsConnected() )
@@ -208,7 +196,7 @@ bool P4Task::Connect(P4Status& result)
 	m_Client.SetClient(m_ClientConfig.c_str());
 	m_Client.Init( &m_Error );
 	
-	P4Status status = errorToP4Status(m_Error);
+	VCSStatus status = errorToVCSStatus(m_Error);
 	result.insert(status.begin(), status.end());
 
 	if( m_Error.Test() )
@@ -221,7 +209,7 @@ bool P4Task::Connect(P4Status& result)
 	return Login(result);
 }
 
-bool P4Task::Login(P4Status& result)
+bool P4Task::Login(VCSStatus& result)
 {	
 	// First check if we're already logged in
 	P4Command* p4c = LookupCommand("login");
@@ -255,7 +243,7 @@ bool P4Task::Login(P4Status& result)
 }
 
 // Finalise the perforce client 
-bool P4Task::Disconnect(P4Status& result)
+bool P4Task::Disconnect(VCSStatus& result)
 {
     m_Error.Clear();
 
@@ -265,7 +253,7 @@ bool P4Task::Disconnect(P4Status& result)
 	m_Client.Final( &m_Error );
     m_P4Connect = false;
 
-	P4Status status = errorToP4Status(m_Error);
+	VCSStatus status = errorToVCSStatus(m_Error);
 	result.insert(status.begin(), status.end());
 
 	if( m_Error.Test() )
@@ -283,7 +271,7 @@ bool P4Task::IsConnected()
 // Run a perforce command
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
-	P4Command::Pipe().Log() << command << endl;
+	m_Connection.Pipe().Log() << command << endl;
 	
 	// Force connection if this hasn't been set-up already.
 	// That is unless the command explicitely disallows connect.
@@ -304,49 +292,3 @@ bool P4Task::CommandRun(const string& command, P4Command* client)
 	}
 	return !client->HasErrors();
 }
-
-
-// read a command from stdin
-bool P4Task::CommandRead()
-{
-    string read;
-	P4Command::Pipe().ReadLine(read);
-
-	if (read.empty())
-	{
-		// broken pipe -> exit. Dbg below.
-		/*
-		bool failbit = cin.fail();
-		bool badbit = cin.bad();
-		bool eofbit = cin.eof();
-		*/
-		P4Command::Pipe().Log() << "Read empty message\n";
-		return false; 
-	}
-	
-	// Skip non-command lines if present
-	while (read.substr(0, 2) != "c:")
-		P4Command::Pipe().ReadLine(read);
-	
-	string command = read.substr(2);
-	
-	std::vector<std::string> toks;
-	if (Tokenize(toks, command) == 0)
-	{
-		P4Command::Pipe().ErrorLine(string("invalid command - ") + read);
-		return false;
-	}
-	
-	if (toks[0] == "shutdown") return false;
-	
-	// string switch
-	P4Command* p4c = LookupCommand(toks[0]);
-	if (!p4c)
-	{
-		P4Command::Pipe().ErrorLine(string("unknown command - ") + read + " (" + toks[0] + ")");
-		return false;
-	}
-	
-	return p4c->Run(*this, toks);
-}
-

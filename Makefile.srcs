@@ -1,5 +1,22 @@
-COMMON_SRCS = ./Common/Changes.cpp ./Common/CommandLine.cpp ./Common/FileSystem.cpp ./Common/Utility.cpp ./Common/VersionedAsset.cpp
-COMMON_INCLS = ./Common/Changes.h ./Common/CommandLine.h ./Common/FileSystem.h ./Common/UnityPipe.h ./Common/Utility.h ./Common/VersionedAsset.h
+COMMON_SRCS = ./Common/Changes.cpp \
+	      ./Common/CommandLine.cpp \
+	      ./Common/FileSystem.cpp \
+	      ./Common/Utility.cpp \
+	      ./Common/VersionedAsset.cpp \
+	      ./Common/Status.cpp \
+	      ./Common/UnityConnection.cpp \
+	      ./Common/Command.cpp
+
+COMMON_INCLS = ./Common/Changes.h \
+	       ./Common/CommandLine.h \
+	       ./Common/FileSystem.h \
+	       ./Common/UnityPipe.h \
+	       ./Common/Utility.h \
+	       ./Common/VersionedAsset.h \
+	       ./Common/Status.h \
+		   ./Common/UnityConnection.h \
+	       ./Common/Command.h
+
 P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_OSX.cpp \
 	       	./P4Plugin/Source/P4AddCommand.cpp \
 		./P4Plugin/Source/P4ChangeDescriptionCommand.cpp \

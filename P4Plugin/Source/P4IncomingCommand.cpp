@@ -28,22 +28,22 @@ public:
 		ClearStatus();
 		m_Changelists.clear();
 
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetAssetsPath(), '/'), '\\') + "/...";
 		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" ") + rootPathWildcard;
 				
-		upipe.BeginList();
+		Pipe().BeginList();
 		
 		if (!task.CommandRun(cmd, this))
 		{
 			// The OutputStat and other callbacks will now output to stdout.
 			// We just wrap up the communication here.
 			m_Changelists.clear();
-			upipe.EndList();
-			upipe << GetStatus();
-			upipe.EndResponse();
+			Pipe().EndList();
+			Pipe() << GetStatus();
+			Pipe().EndResponse();
 			return true;
 		}
 		
@@ -55,7 +55,7 @@ public:
 		{
 			ss.str("");
 			ss << "changes -l -s submitted \"@" << *i << ",@" << *i << "\"";
-			upipe.Log() << "    " << ss.str() << endl;
+			Pipe().Log() << "    " << ss.str() << endl;
 			
 			if (!task.CommandRun(ss.str(), this))
 			{
@@ -67,9 +67,9 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe.EndList();
-		upipe << GetStatus();
-		upipe.EndResponse();
+		Pipe().EndList();
+		Pipe() << GetStatus();
+		Pipe().EndResponse();
 		
 		return true;
 	}
@@ -77,7 +77,7 @@ public:
 	// Called once per file for status commands
 	void OutputStat( StrDict *varList )
 	{
-		//upipe.Log() << "Output list stat" << endl;
+		//Pipe().Log() << "Output list stat" << endl;
 		
 		int i;
 		StrRef var, val;
@@ -101,7 +101,7 @@ public:
 			string key(var.Text());
 			string value(val.Text());
 
-			//upipe.Log() << "    " << key << " # " << value << endl;
+			//Pipe().Log() << "    " << key << " # " << value << endl;
 			
 			if (key == "depotFile")
 				depotFile = string(val.Text());
@@ -124,7 +124,7 @@ public:
 			else if (key == "haveRev")
 				haveRev = atoi(val.Text());
 			else 
-				upipe.Log() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << endl;
+				Pipe().Log() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << endl;
 		}
 
 		if (headChange == -1 && added)
@@ -136,7 +136,7 @@ public:
 		
 		if (depotFile.empty() || headChange == -1 || headRev == -1)
 		{
-			upipe.ErrorLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
+			Pipe().ErrorLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
 		} 
 		else if (haveRev != headRev && !syncedDelete)
 		{
@@ -152,7 +152,7 @@ public:
 		
 		if (d.length() <= minLength)
 		{
-			upipe.ErrorLine(string("p4 changelist too short: ") + d);
+			Pipe().ErrorLine(string("p4 changelist too short: ") + d);
 			return;
 		}
 		
@@ -160,14 +160,14 @@ public:
 		string::size_type i = d.find(' ', 8);
 		if (i == string::npos)
 		{
-			upipe.ErrorLine(string("p4 couldn't locate revision: ") + d);
+			Pipe().ErrorLine(string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		
 		Changelist item;
 		item.SetDescription(d.substr(i+1));
 		item.SetRevision(d.substr(minLength-1, i - (minLength-1)));
-		upipe << item;
+		Pipe() << item;
 	}
 	
 private:	

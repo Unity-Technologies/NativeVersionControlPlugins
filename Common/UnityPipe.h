@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <exception>
 #include "Utility.h"
 
 #if defined(_WINDOWS)
@@ -22,18 +23,57 @@ enum MessageArea
 	MAInvalid = 128      // Must alway be the last entry
 };
 
+class UnityPipeException : public std::exception
+{
+public:
+	UnityPipeException(const std::string& about) : m_What(about) {}
+	~UnityPipeException() throw() {}
+	virtual const char* what() const throw() { return m_What.c_str(); }
+private:
+	std::string m_What;
+};
+
+
 // Convenience pipe that writes to both log file and 
 // stdout pipe (ie. the unity process)
 struct UnityPipe {
 		
-	UnityPipe(const std::string& logPath) : m_Log(logPath.c_str(), std::ios_base::ate), m_LineBufferValid(false)
+	UnityPipe(std::ofstream& log) : m_Log(log), m_LineBufferValid(false)
 	{
-		m_Log << "UnityPipe set up" << std::endl;
+		m_Log << "Setting up UnityPipe" << std::endl;
+
 #if defined(_WINDOWS)
-		m_NamedPipe = INVALID_HANDLE_VALUE;
+		LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\UnityVCS"); 
+		
+		// All pipe instances are busy, so wait for 2 seconds. 
+		if ( ! WaitNamedPipe(lpszPipename, 2000)) 
+		{ 
+			string msg = "Could not open pipe: 2 second wait timed out.\n";
+			msg += ErrorCodeToMsg(GetLastError());
+			throw UnityPipeException(msg);
+		}
+		
+		m_NamedPipe = CreateFile( 
+								 lpszPipename,   // pipe name 
+								 GENERIC_READ |  // read and write access 
+								 GENERIC_WRITE, 
+								 0,              // no sharing 
+								 NULL,           // default security attributes
+								 OPEN_EXISTING,  // opens existing pipe
+								 0,              // default attributes
+								 NULL);          // no template file
+		
+		// Break if the pipe handle is valid. 
+		if (m_NamedPipe == INVALID_HANDLE_VALUE) 
+		{		
+			// Exit if an error other than ERROR_PIPE_BUSY occurs. 
+			string msg = "Could not open pipe. GLE=";
+			msg += ErrorCodeToMsg(GetLastError());
+			throw UnityPipeException(msg);
+		}
 #endif
 	}
-
+	
 	~UnityPipe()
 	{
 #if defined(_WINDOWS)
@@ -323,17 +363,9 @@ struct UnityPipe {
 			WriteLine(*i);
 		return *this;
 	}
-	
-
-#if defined(_WINDOWS)
-	void SetChannel(HANDLE c)
-	{
-		m_NamedPipe = c;
-	}
-#endif
-	
+		
 private:
-	std::ofstream m_Log;
+	std::ofstream& m_Log;
 	bool m_LineBufferValid;
 	std::string m_LineBuffer;
 

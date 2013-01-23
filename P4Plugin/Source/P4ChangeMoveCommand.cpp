@@ -13,7 +13,7 @@ public:
 	virtual string SetupCommand(const CommandArgs& args)
 	{
 		ChangelistRevision cr;
-		upipe >> cr;
+		Pipe() >> cr;
 		string cmd("reopen -c ");
 		return cmd += (cr == kDefaultListRevision ? string("default") : cr);
 	}

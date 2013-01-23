@@ -12,7 +12,7 @@ public:
 		string d(data);
 		if (d.find("already locked by") != string::npos)
 		{
-			upipe.WarnLine(data, MARemote);
+			Pipe().WarnLine(data, MARemote);
 		}
 		else
 		{

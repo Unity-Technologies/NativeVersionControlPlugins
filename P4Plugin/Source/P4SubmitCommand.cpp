@@ -83,33 +83,33 @@ public:
 		ClearStatus();
 		m_Spec.clear();
 		
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		
 		bool saveOnly = args.size() > 1 && args[1] == "saveOnly";
 		
 		Changelist changelist;
-		upipe >> changelist;
+		Pipe() >> changelist;
 		
 		VersionedAssetList assetList;
-		upipe >> assetList;
+		Pipe() >> assetList;
 		bool hasFiles = !assetList.empty();
 		
 		// Run a view mapping job to get the right depot relative paths for the spec file
 		string localPaths = ResolvePaths(assetList, kPathWild | kPathRecursive);
-		upipe.Log() << "Paths resolved are: " << localPaths << endl;
+		Pipe().Log() << "Paths resolved are: " << localPaths << endl;
 		
 		cWhere.ClearStatus();
 		cWhere.depotPaths.clear();
 		cWhere.depotPaths.reserve(assetList.size());
 		task.CommandRun("where " + localPaths, &cWhere);
-		upipe << cWhere.GetStatus();
+		Pipe() << cWhere.GetStatus();
 
 		if (cWhere.HasErrors())
 		{
 			// Abort since there was an error mapping files to depot path
 			P4Command* statusCommand = RunAndSendStatus(task, assetList);
-			upipe << statusCommand->GetStatus();
-			upipe.EndResponse();
+			Pipe() << statusCommand->GetStatus();
+			Pipe().EndResponse();
 			return true;
 		}
 		
@@ -146,19 +146,19 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe << GetStatus();
+		Pipe() << GetStatus();
 
 		if (hasFiles)
 		{
 			P4Command* statusCommand = RunAndSendStatus(task, assetList);
-			upipe << statusCommand->GetStatus();
+			Pipe() << statusCommand->GetStatus();
 		} 
 		else 
 		{
 			; // @TODO: handle this case
 		}
 
-		upipe.EndResponse();
+		Pipe().EndResponse();
 		
 		m_Spec.clear();
 		return true;
@@ -167,8 +167,8 @@ public:
 	// Default handler of P4
 	virtual void InputData( StrBuf *buf, Error *err ) 
 	{
-		upipe.Log() << "Spec is:" << endl;
-		upipe.Log() << m_Spec << endl;
+		Pipe().Log() << "Spec is:" << endl;
+		Pipe().Log() << m_Spec << endl;
 		buf->Set(m_Spec.c_str());
 	}
 	
@@ -187,7 +187,7 @@ public:
 		
 		if (StartsWith(value, pendingMerges))
 		{
-			upipe.WarnLine("Merges still pending. Resolve before submitting.", MASystem);
+			Pipe().WarnLine("Merges still pending. Resolve before submitting.", MASystem);
 			return; // ignore
 		}
 		

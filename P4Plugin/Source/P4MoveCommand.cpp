@@ -12,22 +12,22 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		upipe.Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << endl;
 		
 		VersionedAssetList assetList;
-		upipe >> assetList;
+		Pipe() >> assetList;
 		
 		if ( assetList.empty() ) 
 		{
-			upipe.EndResponse();
+			Pipe().EndResponse();
 			return true;
 		}
 		
 		// Process two assets at a time ie. src,dest
 		if ( assetList.size() % 2 ) 
 		{
-			upipe.ErrorLine("uneven number of assets during move", MASystem);
-			upipe.EndResponse();
+			Pipe().ErrorLine("uneven number of assets during move", MASystem);
+			Pipe().EndResponse();
 			return true;
 		}
 		
@@ -43,7 +43,7 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			upipe.Log() << "Ensure editable source " << paths << endl;
+			Pipe().Log() << "Ensure editable source " << paths << endl;
 			
 			string err;
 			bool editable = src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal);
@@ -51,7 +51,7 @@ public:
 			if (!editable)
 			{
 				string srcPath = ResolvePaths(b, b+1, kPathWild | kPathRecursive);
-				upipe.Log() << "edit " << srcPath << endl;
+				Pipe().Log() << "edit " << srcPath << endl;
 				if (!task.CommandRun("edit " + srcPath, this))
 				{
 					break;
@@ -73,7 +73,7 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			upipe.Log() << "move " << paths << endl;
+			Pipe().Log() << "move " << paths << endl;
 			if (!task.CommandRun("move " + paths, this))
 			{
 				break;
@@ -109,12 +109,12 @@ public:
 		}
 		
 		// We just wrap up the communication here.
-		upipe << GetStatus();
+		Pipe() << GetStatus();
 		
 		P4Command* statusCommand = RunAndSendStatus(task, targetAssetList);
-		upipe << statusCommand->GetStatus();
+		Pipe() << statusCommand->GetStatus();
 		
-		upipe.EndResponse();
+		Pipe().EndResponse();
 
 		return true;
 	}

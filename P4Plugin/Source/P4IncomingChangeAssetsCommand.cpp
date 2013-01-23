@@ -15,21 +15,21 @@ public:
 		m_ProjectPath = task.GetP4Root();
 		
 		ChangelistRevision cl;
-		upipe >> cl;
+		Pipe() >> cl;
 		
-		upipe.BeginList();
+		Pipe().BeginList();
 		
 		vector<string> toks;
 		if (Tokenize(toks, m_ProjectPath, "/") == 0)
 		{
-			upipe.ErrorLine(string("Project path invalid - ") + m_ProjectPath);
-			upipe.EndList();
-			upipe.ErrorLine("Invalid project path", MARemote);
-			upipe.EndResponse();
+			Pipe().ErrorLine(string("Project path invalid - ") + m_ProjectPath);
+			Pipe().EndList();
+			Pipe().ErrorLine("Invalid project path", MARemote);
+			Pipe().EndResponse();
 			return true;
 		}
 		
-		upipe.Log() << "Project path is " << m_ProjectPath << endl;
+		Pipe().Log() << "Project path is " << m_ProjectPath << endl;
 		
 		string rev = cl == kDefaultListRevision ? string("default") : cl;
 		const std::string cmd = string("describe -s ") + rev;
@@ -38,16 +38,16 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		upipe.EndList();
-		upipe << GetStatus();
-		upipe.EndResponse();
+		Pipe().EndList();
+		Pipe() << GetStatus();
+		Pipe().EndResponse();
 		
 		return true;
 	}
 	
 	void OutputText( const char *data, int length)
 	{
-		upipe.Log() << "OutputText()" << endl;
+		Pipe().Log() << "OutputText()" << endl;
 	}
 	
     // Called once per asset 
@@ -59,13 +59,13 @@ public:
 		// to get the filesystem path we remove the append this
 		// to the Root path.
 		
-		upipe.Log() << "OutputInfo: " << data << endl;
+		Pipe().Log() << "OutputInfo: " << data << endl;
 		
 		string d(data);
 		string::size_type i = d.rfind(" ");
 		if (i == string::npos || i < 2 || i+1 >= d.length()) // 2 == "//".length()
 		{
-			upipe.ErrorLine(string("Invalid change asset - ") + d);
+			Pipe().ErrorLine(string("Invalid change asset - ") + d);
 			return;
 		}
 		
@@ -79,7 +79,7 @@ public:
 		int state = action.empty() ? kNone : ActionToState(action,"","","");
 		a.SetState(state);
 		
-		upipe << a;
+		Pipe() << a;
 	}
 	
 private:
