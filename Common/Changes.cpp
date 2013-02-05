@@ -5,19 +5,10 @@
 using namespace std;
 
 const char * kDefaultListRevision = "-1";
+const char * kNewListRevision = "-2";
 
 Changelist::Changelist() { }
 // Changelist(std::string const& description);
-
-std::string Changelist::GetDescription() const 
-{
-	return m_Description;
-}
-
-void Changelist::SetDescription(std::string const& description) 
-{
-	m_Description = description;
-} 
 
 ChangelistRevision Changelist::GetRevision() const 
 {
@@ -28,6 +19,36 @@ void Changelist::SetRevision(const ChangelistRevision& revison)
 {
 	m_Revision = revison;
 }	
+
+std::string Changelist::GetDescription() const 
+{
+	return m_Description;
+}
+
+void Changelist::SetDescription(const std::string& description) 
+{
+	m_Description = description;
+} 
+
+std::string Changelist::GetTimestamp() const
+{
+	return m_Timestamp;
+}
+
+void Changelist::SetTimestamp(const std::string& timestamp)
+{
+	m_Timestamp = timestamp;
+}
+
+std::string Changelist::GetCommitter() const
+{
+	return m_Committer;
+}
+
+void Changelist::SetCommitter(const std::string& committer)
+{
+	m_Committer = committer;
+}
 
 UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision)
 {

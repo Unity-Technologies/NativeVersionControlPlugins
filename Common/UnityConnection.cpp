@@ -1,13 +1,16 @@
 #include "UnityConnection.h"
+#include "Utility.h"
 
 using namespace std;
+using namespace unityplugin;
 
 UnityConnection::UnityConnection(const string& logPath) 
-	: m_Log(logPath.c_str(), ios_base::ate) { }
+	: m_Log(logPath), m_UnityPipe(NULL) { }
 
 UnityConnection::~UnityConnection()
 {
 	delete m_UnityPipe;
+	m_UnityPipe = NULL;
 }
 
 UnityPipe* UnityConnection::Connect()
@@ -24,8 +27,11 @@ UnityCommand UnityConnection::ReadCommand(vector<string>& args)
 
 	if (read.empty())
 	{
-		// broken pipe -> exit.
-		throw CommandException(UCOM_Invalid, "empty command");
+		// broken pipe -> error.
+		Enforce<CommandException>(Pipe().IsEOF(), UCOM_Invalid, "empty command");
+
+		Log() << "End of pipe" << Endl;
+		return UCOM_Shutdown;
 	}
 	
 	// Skip non-command lines if present
@@ -44,12 +50,17 @@ UnityCommand UnityConnection::ReadCommand(vector<string>& args)
 		throw CommandException(UCOM_Invalid, 
 							   string("invalid formatted - ") + command);
 
-	return StringToUnityCommand(command.c_str());
+	return StringToUnityCommand(args[0].c_str());
 }
 
-ofstream& UnityConnection::Log()
+unityplugin::LogStream& UnityConnection::Log()
 {
 	return m_Log;
+}
+
+bool UnityConnection::IsConnected() const
+{
+	return m_UnityPipe;
 }
 
 UnityPipe& UnityConnection::Pipe()

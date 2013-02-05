@@ -29,6 +29,7 @@ public:
 
 	VersionedAsset();
 	VersionedAsset(const std::string& path);
+	VersionedAsset(const std::string& path, int state, const std::string& revision = "");
 
 	int GetState() const;
 	void SetState(int newState);
@@ -36,17 +37,31 @@ public:
 	void RemoveState(State state);
 	
 	const std::string& GetPath() const;
-	void               SetPath(std::string const& path);
+	void SetPath(const std::string& path);
+	const std::string& GetRevision() const;
+	void SetRevision(const std::string& r);
+
 	void Reset();
 	bool IsFolder() const;
 
 private:
 	int m_State;
 	std::string m_Path;
+	std::string m_Revision;
+};
+
+struct ByPathSorter
+{
+	bool operator()(const VersionedAsset& a1, const VersionedAsset& a2)
+	{
+		return a1.GetPath() < a2.GetPath();
+	}
 };
 
 #include <vector>
 typedef std::vector<VersionedAsset> VersionedAssetList;
+
+std::vector<std::string> Paths(const VersionedAssetList& assets);
 
 struct UnityPipe;
 UnityPipe& operator<<(UnityPipe& p, const VersionedAsset& v);

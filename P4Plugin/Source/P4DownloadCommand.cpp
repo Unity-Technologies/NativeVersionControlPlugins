@@ -7,21 +7,6 @@
 
 using namespace std;
 
-#ifdef WIN32
-#define snprintf _snprintf
-#endif
-
-static string IntToString (int i)
-{
-	char buf[255];
-	snprintf (buf, sizeof(buf), "%i", i);
-	return string (buf);		
-}
-
-#ifdef WIN32
-#undef snprintf
-#endif
-
 struct ConflictInfo
 {
 	string local;
@@ -105,7 +90,7 @@ public:
 	bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		string baseCmd = "print -q -o ";
 		string targetDir;
@@ -120,7 +105,7 @@ public:
 		vector<string> paths;
 		ResolvePaths(paths, assetList, kPathWild | kPathSkipFolders);
 		
-		Pipe().Log() << "Paths resolved" << endl;
+		Pipe().Log() << "Paths resolved" << unityplugin::Endl;
 
 		Pipe().BeginList();
 		
@@ -149,7 +134,7 @@ public:
 					tmpFile += "head";
 					string fileCmd = cmd + "\"" + tmpFile + "\" \"" + *i + "#head\"";
 
-					Pipe().Log() << fileCmd << endl;
+					Pipe().Log() << fileCmd << unityplugin::Endl;
 					if (!task.CommandRun(fileCmd, this))
 						break;
 					
@@ -158,7 +143,7 @@ public:
 					Pipe() << asset;
 
 				}
-				else if (*j == "conflictingAndBase")
+				else if (*j == "mineAndConflictingAndBase")
 				{
 					// make a dry run resolve with the -o flag to determine the first 
 					// conflicting version and its base. The download.
@@ -169,7 +154,7 @@ public:
 						cConflictInfo.conflicts.clear();
 						string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 						string rcmd = "resolve -o -n " + localPaths;
-						Pipe().Log() << rcmd << endl;
+						Pipe().Log() << rcmd << unityplugin::Endl;
 						task.CommandRun(rcmd, &cConflictInfo);
 						Pipe() << cConflictInfo.GetStatus();
 						
@@ -188,12 +173,16 @@ public:
 					
 					map<string,ConflictInfo>::const_iterator ci = cConflictInfo.conflicts.find(*i);
 					
+					// Location of "mine" version of file. In Perforce this is always
+					// the original location of the file.
+					Pipe() << assetList[idx];
+
 					VersionedAsset asset;
 					if (ci != cConflictInfo.conflicts.end())
 					{
 						string conflictFile = tmpFile + "conflicting";
 						string conflictCmd = cmd + "\"" + conflictFile + "\" \"" + ci->second.conflict + "\"";
-						Pipe().Log() << conflictCmd << endl;
+						Pipe().Log() << conflictCmd << unityplugin::Endl;
 						if (!task.CommandRun(conflictCmd, this))
 							break;
 						asset.SetPath(conflictFile);
@@ -201,7 +190,7 @@ public:
 						
 						string baseFile = tmpFile + "base";
 						string baseCmd = cmd + "\"" + baseFile + "\" \"" + ci->second.base + "\"";
-						Pipe().Log() << baseCmd << endl;
+						Pipe().Log() << baseCmd << unityplugin::Endl;
 						if (!task.CommandRun(baseCmd, this))
 							break;
 						asset.SetPath(baseFile);
@@ -212,6 +201,7 @@ public:
 						// no conflict info for this file
 						Pipe() << asset << asset;
 					}
+					
 				}
 			}
 		}

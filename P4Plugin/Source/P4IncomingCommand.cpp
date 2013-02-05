@@ -28,7 +28,7 @@ public:
 		ClearStatus();
 		m_Changelists.clear();
 
-		Pipe().Log() << args[0] << "::Run()" << endl;
+		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetAssetsPath(), '/'), '\\') + "/...";
@@ -55,7 +55,7 @@ public:
 		{
 			ss.str("");
 			ss << "changes -l -s submitted \"@" << *i << ",@" << *i << "\"";
-			Pipe().Log() << "    " << ss.str() << endl;
+			Pipe().Log() << "    " << ss.str() << unityplugin::Endl;
 			
 			if (!task.CommandRun(ss.str(), this))
 			{
@@ -124,7 +124,7 @@ public:
 			else if (key == "haveRev")
 				haveRev = atoi(val.Text());
 			else 
-				Pipe().Log() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << endl;
+				Pipe().Log() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << unityplugin::Endl;
 		}
 
 		if (headChange == -1 && added)

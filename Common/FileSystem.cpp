@@ -1,4 +1,8 @@
 #include "FileSystem.h"
+#include <stdexcept>
+#include <stdio.h>
+#include <string.h>
+
 
 using namespace std;
 
@@ -46,6 +50,7 @@ bool EnsureDirectory(const string& path)
 		return true;
 	}
 	
+	// Create the path
 	return false;
 	
 }
@@ -68,6 +73,13 @@ bool IsReadOnly(const string& path)
 	return IsReadOnlyW(widePath);
 }
 
+
+bool IsDirectory(const string& path)
+{
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
+	return PathIsDirectoryW(widePath);
+}
 
 static bool RemoveReadOnlyW(LPCWSTR path)
 {
@@ -123,10 +135,24 @@ bool IsReadOnly(const string& path)
 	return !(st.st_mode & S_IWUSR);
 }
 
+bool IsDirectory(const std::string& path)
+{
+	struct stat status;
+	if (stat(path.c_str(), &status) != 0)
+		return false;
+	return S_ISDIR(status.st_mode);
+}
+
 bool EnsureDirectory(const string& path)
 {
 	int res = mkdir(path.c_str(), 0777);
-	return res == EEXIST || res == 0;
+	if (res == -1 && errno != EEXIST)
+	{
+		char buf[1024];
+		snprintf(buf, 1024, "EnsureDirectory error %s for: %s\n", strerror(errno), path.c_str());
+		throw std::runtime_error(buf);
+	}
+	return true;
 }
 
 bool MoveAFile(const string& fromPath, const string& toPath)

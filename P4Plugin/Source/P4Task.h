@@ -1,7 +1,7 @@
 #pragma once
 #include "clientapi.h"
-#include "UnityConnection.h"
 #include "Status.h"
+#include "Task.h"
 
 #include <stdio.h>
 
@@ -29,17 +29,16 @@ public:
 	void SetAssetsPath(const std::string& p);
 	const std::string& GetAssetsPath() const;
 	
-	bool IsConnected();
-
-	// Class is a black box P4 server interface
-	// Listens to commands in stdin and writes responses to stdout
 	int Run();
+	bool IsConnected();
 
 	// Run a single command and write response to stdout
 	// Returns true on success
 	bool CommandRun( const std::string& command, P4Command* client );
 
 private:
+
+	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
 
 	// Connection
 	bool Connect(VCSStatus& result);
@@ -63,7 +62,5 @@ private:
 	// Command execution
 	std::string m_CommandOutput;
 
-	UnityConnection m_Connection;
-	
 	friend class P4Command;
 };

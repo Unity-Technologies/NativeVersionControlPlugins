@@ -1,6 +1,18 @@
 #include "Utility.h"
+#include <sstream>
 
 using namespace std;
+
+string IntToString (int i)
+{
+	char buf[255];
+#ifdef WIN32
+	_snprintf (buf, sizeof(buf), "%i", i);
+#else
+	snprintf (buf, sizeof(buf), "%i", i);
+#endif
+	return string (buf);		
+}
 
 size_t Tokenize(std::vector<std::string>& result,
 				const std::string& str, 
@@ -30,14 +42,14 @@ size_t Tokenize(std::vector<std::string>& result,
 	return result.size();
 }
 
-string Join(const vector<string>& items, const string& delim)
+string Join(const vector<string>& items, const string& delim, const string& surround)
 {
 	string result;
 	for (vector<string>::const_iterator i = items.begin(); i != items.end(); ++i)
 	{
 		if (i != items.begin())
 			result += delim;
-		result += *i;
+		result += surround + *i + surround;
 	}
 	return result;
 }
@@ -121,6 +133,7 @@ bool StartsWith(const string& str, const string& lookFor)
 		if (*i1 != *i2) return false;
 	return true;
 }
+
 /*
 bool IsReadOnly(const std::string& path)
 {
@@ -128,6 +141,92 @@ bool IsReadOnly(const std::string& path)
 	return false;
 }
 */
+
+POpen::POpen(const std::string& cmd) : m_Command(cmd)
+{
+	m_Handle = popen(cmd.c_str(), "r");
+	Enforce<PluginException>(m_Handle, string("Error starting '") + cmd + "'");
+}
+
+POpen::~POpen()
+{
+	if (m_Handle)
+		pclose(m_Handle);
+}
+
+bool POpen::ReadLine(std::string& result)
+{
+	Enforce<PluginException>(m_Handle, string("Null handle when reading from command pipe: ") + m_Command);
+
+	const size_t BUFSIZE = 8192;
+	static char buf[BUFSIZE];
+	if (feof(m_Handle)) return false;
+	
+	char* res = fgets(buf, BUFSIZE, m_Handle);
+	if (!res)
+	{
+		if (feof(m_Handle))
+			return false; // no more data
+		
+		throw PluginException(string("Error reading command pipe :") + 
+							  strerror(ferror(m_Handle)) 
+							  + " - "  + m_Command);
+	}
+	result = res;
+	string::reverse_iterator i = result.rbegin();
+	if (!result.empty() && *i == '\n')
+		result.resize(result.size()-1);
+		
+	return true;
+}
+
+void POpen::ReadIntoFile(const std::string& path)
+{
+	Enforce<PluginException>(m_Handle, string("Null handle when reading into filefrom command pipe: ") + m_Command);
+	
+	const size_t BUFSIZE = 8192;
+	static char buf[BUFSIZE];
+
+	FILE* fh = fopen(path.c_str(), "w");
+
+	if (feof(m_Handle)) 
+	{
+		fclose(fh);
+		return;
+	}
+	
+	size_t bytes = fread(buf, 1, BUFSIZE, m_Handle);
+	while (bytes == BUFSIZE)
+	{
+		if (fwrite(buf, 1, bytes, fh) != bytes)
+		{
+			// Error writing to disk
+			fclose(fh);
+			throw PluginException(string("Error writing process output into file: ") + path + " for command " + m_Command);
+		}
+		bytes = fread(buf, BUFSIZE, 1, m_Handle);
+	}
+
+	if (feof(m_Handle))
+	{
+		if (bytes && fwrite(buf, 1, bytes, fh) != bytes)
+		{
+			// Error writing to disk
+			fclose(fh);
+			throw PluginException(string("Error writing process end output into file: ") + path);
+		}
+		fclose(fh);
+	}
+	else
+	{
+		stringstream os;
+		os << "Error writing process output to file: ";
+		os << path << " code " << ferror(fh);
+		os << " for command " <<  m_Command << std::endl;
+		fclose(fh);
+		throw PluginException(os.str());
+	}
+}
 
 #if defined(_WINDOWS)
 #include <stdio.h>
@@ -150,3 +249,11 @@ string ErrorCodeToMsg( DWORD code )
 }
 
 #endif
+
+
+PluginException::PluginException(const std::string& about) : m_What(about) {}
+
+const char* PluginException::what() const throw()
+{
+	return m_What.c_str();
+}

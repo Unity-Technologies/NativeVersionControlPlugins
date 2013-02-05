@@ -1,6 +1,7 @@
 #pragma once
 #include <exception>
 #include <string>
+#include <vector>
 
 enum UnityCommand
 {
@@ -17,7 +18,6 @@ enum UnityCommand
 	UCOM_Delete,
 	UCOM_Download,
 	UCOM_Exit,
-	UCOM_FileSetBase,
 	UCOM_GetLatest,
 	UCOM_IncomingChangeAssets,
 	UCOM_Incoming,
@@ -28,8 +28,6 @@ enum UnityCommand
 	UCOM_Resolve,
 	UCOM_RevertChanges,
 	UCOM_Revert,
-	UCOM_Spec,
-	UCOM_StatusBase,
 	UCOM_Status,
 	UCOM_Submit,
 	UCOM_Unlock,
@@ -48,3 +46,5 @@ public:
 private:
 	std::string m_What;
 };
+
+typedef std::vector<std::string> CommandArgs;

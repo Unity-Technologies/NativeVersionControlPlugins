@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <fstream>
 #include "UnityPipe.h"
 #include "Command.h"
 
@@ -13,15 +12,19 @@ public:
 
 	// Connect to Unity
 	UnityPipe* Connect();
+	bool IsConnected() const;
 
 	// Read a command from unity
 	UnityCommand ReadCommand(std::vector<std::string>& args);
 
 	// Get the log stream
-	std::ofstream& Log();
+	unityplugin::LogStream& Log();
+
+	// Get the raw pipe to Unity. 
+	// Make sure IsConnected() is true before using.
 	UnityPipe& Pipe();
 
 private:
-	std::ofstream m_Log;
+	unityplugin::LogStream m_Log;
 	UnityPipe* m_UnityPipe;
 };

@@ -13,10 +13,13 @@ public:
 
 	virtual string SetupCommand(const CommandArgs& args)
 	{
+		// 'mine' in p4 is always the actual source file. Unity merges
+		// into the actual source file which makes them the same case.
+		// This is in contrast to e.g. svn which have a specific .mine 
 		return 
-		args.size() > 1 && args[1] == "mine" ? 
-		"resolve -ay " :
-		"resolve -at ";
+			args.size() > 1 && (args[1] == "mine" || args[1] == "merged") ? 
+			"resolve -ay " :
+			"resolve -at ";
 	}	
 
 } cResolve;

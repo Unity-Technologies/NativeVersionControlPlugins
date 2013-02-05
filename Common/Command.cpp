@@ -39,22 +39,23 @@ static const CmdInfo infos[] = {
 const char* UnityCommandToString(UnityCommand c)
 {
 	const CmdInfo* cur = infos;
-	while (cur->id && cur->id != c) { cur++; }
-	return cur->name;
+	while (cur->name && cur->id != c) { cur++; }
+	return cur->name ? cur->name : "invalid";
 }
 
 
 UnityCommand StringToUnityCommand(const char* name)
 {
 	const CmdInfo* cur = infos;
-	while (cur->id && strncmp(cur->name, name, 50)) { cur++; }
+	while (cur->name && strncmp(cur->name, name, 50)) { cur++; }
 	return cur->id;
 }
 
 CommandException::CommandException(UnityCommand c, const std::string& about)
 { 
 	m_What += UnityCommandToString(c);
-	m_What += ": ";
+	m_What += "Command";
+	m_What += " => ";
 	m_What += about;
 }
 

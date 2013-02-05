@@ -14,12 +14,12 @@ public:
 	{
 		if (args.size() < 2)
 		{
-			Pipe().Warn("Perforce plugin got invalid config setting :", MAConfig);
+			string msg = "Perforce plugin got invalid config setting :"; 
 			for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i) {
-				Pipe().Write(" ");
-				Pipe().Write(*i);
+				msg += " ";
+				msg += *i;
 			}
-			Pipe().WriteLine("");
+			Pipe().WarnLine(msg, MAConfig);
 			Pipe().EndResponse();
 			return true;
 		}
@@ -32,7 +32,7 @@ public:
 		string logValue = value;
 		if (key == "vcPassword")
 			logValue = "*";
-		Pipe().Log() << "Got config " << key << " = '" << logValue << "'" << endl;
+		Pipe().Log() << "Got config " << key << " = '" << logValue << "'" << unityplugin::Endl;
 
 		// This command actually handles several commands all 
 		// concerning connecting to the perforce server
@@ -64,12 +64,15 @@ public:
 		{
 			int sel = SelectVersion(args);
 			Pipe().OkLine(sel, MAConfig); 
-			Pipe().Log() << "Selected plugin protocol version " << sel << endl;
+			Pipe().Log() << "Selected plugin protocol version " << sel << unityplugin::Endl;
 		}
 		else if (key == "pluginTraits")
 		{
-			Pipe().OkLine("1");
-			Pipe().OkLine("requiresNetwork", MAConfig); // requires network			
+			Pipe().OkLine("3");
+			Pipe().OkLine("requiresNetwork", MAConfig); 			
+			Pipe().OkLine("enablesCheckout", MAConfig);
+			Pipe().OkLine("enablesLocking", MAConfig);
+			Pipe().OkLine("enablesRevertUnchanged", MAConfig);
 		
 			Pipe().OkLine("4");
 			Pipe().OkLine("vcUsername");
@@ -98,8 +101,7 @@ public:
 		} 
 		else 
 		{
-			Pipe().Warn("Unknown config field set on version control plugin: ", MAConfig);
-			Pipe().WriteLine(key);
+			Pipe().WarnLine(ToString("Unknown config field set on version control plugin: ", key), MAConfig);
 		}
 		Pipe().EndResponse();
 		return true;

@@ -18,14 +18,14 @@ public:
 		if (!task.CommandRun(cmd, this))
 		{
 			string errorMessage = GetStatusMessage();			
-			Pipe().Log() << "ERROR: " << errorMessage << endl;
+			Pipe().Log() << "ERROR: " << errorMessage << unityplugin::Endl;
 			return false;
 		}
 		else
 		{
 			if (!m_Root.empty())
 				task.SetP4Root(m_Root);
-			Pipe().Log() << "Root set to " << m_Root << endl;
+			Pipe().Log() << "Root set to " << m_Root << unityplugin::Endl;
 			return true;
 		}
 	}

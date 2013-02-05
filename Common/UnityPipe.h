@@ -1,14 +1,17 @@
 #pragma once
 #include <string>
-#include <iostream>
 #include <vector>
-#include <fstream>
 #include <exception>
 #include "Utility.h"
+#include "Log.h"
+
+
 
 #if defined(_WINDOWS)
 #include <sstream>
 #include <windows.h>
+#else
+#include <iostream>
 #endif
 
 enum MessageArea
@@ -37,10 +40,10 @@ private:
 // Convenience pipe that writes to both log file and 
 // stdout pipe (ie. the unity process)
 struct UnityPipe {
-		
-	UnityPipe(std::ofstream& log) : m_Log(log), m_LineBufferValid(false)
+public:
+	UnityPipe(unityplugin::LogStream& log) : m_Log(log), m_LineBufferValid(false)
 	{
-		m_Log << "Setting up UnityPipe" << std::endl;
+		log.Info() << "Setting up UnityPipe" << unityplugin::Endl;
 
 #if defined(_WINDOWS)
 		LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\UnityVCS"); 
@@ -81,11 +84,12 @@ struct UnityPipe {
 			CloseHandle(m_NamedPipe);
 #endif
 	}
-	
+
+private:	
 	template <typename T>
-	UnityPipe& __Write(const T& v)
+	UnityPipe& __Write(const T& v, unityplugin::LogWriter& log)
 	{
-		m_Log << v;
+	    log << v;
 #if defined(_WINDOWS)
 		std::stringstream ss;
 		ss << v;
@@ -101,7 +105,7 @@ struct UnityPipe {
 		
 		if (!success) 
 		{
-			Log() << TEXT("WriteFile to pipe failed. GLE=") << ErrorCodeToMsg(GetLastError()) << std::endl;
+			Log() << TEXT("WriteFile to pipe failed. GLE=") << ErrorCodeToMsg(GetLastError()) << unityplugin::Endl;
 			exit(-1);
 		}
 #else
@@ -111,35 +115,36 @@ struct UnityPipe {
 	}
 
 	template <typename T>
-	UnityPipe& Write(const T& v)
+	UnityPipe& Write(const T& v, unityplugin::LogWriter& log)
 	{
-		return __Write(v);
+		return __Write(v, log);
 	}
 	
-	UnityPipe& Write(const std::string& v)
+	UnityPipe& Write(const std::string& v, unityplugin::LogWriter& log)
 	{
 		std::string tmp = Replace(v, "\\", "\\\\");
 		tmp = Replace(v, "\n", "\\n");
-		__Write(tmp);
+		__Write(tmp, log);
 		return *this;
 	}
 
-	UnityPipe& Write(const char* v)
+	UnityPipe& Write(const char* v, unityplugin::LogWriter& log)
 	{
-		return Write(std::string(v));
+		return Write(std::string(v), log);
 	}
 
 	template <typename T>
-	UnityPipe& WriteLine(const T& v)
+	UnityPipe& WriteLine(const T& v, unityplugin::LogWriter& log)
 	{
-		Write(v);
-		__Write("\n");
+		Write(v, log);
+		__Write("\n", log);
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
 		return *this;
 	}
 	
+public:
 	std::string& ReadLine(std::string& target)
 	{
 		if (m_LineBufferValid)
@@ -191,7 +196,7 @@ struct UnityPipe {
 		if (!success)
 		{
 				
-			Log() << TEXT("ReadFile from pipe failed. GLE=%d\n") <<  ErrorCodeToMsg(GetLastError()) << std::endl;
+			m_Log.Error() << TEXT("ReadFile from pipe failed. GLE=%d\n") <<  ErrorCodeToMsg(GetLastError()) << unityplugin::Endl;
 			exit(-1);
 		}
 #else
@@ -218,6 +223,7 @@ struct UnityPipe {
 			n1 = n2 + 1;
 		}
 
+		m_Log.Debug() << "UNITY -> " << target << unityplugin::Endl;
 		return target;
 	}
 	
@@ -229,7 +235,17 @@ struct UnityPipe {
 		return dest;
 	}
 	
-	std::ofstream& Log()
+	bool IsEOF() const
+	{
+#if defined(_WINDOWS)
+		return false; // TODO: Implement
+#else
+		return std::cin.eof();
+#endif		
+	}
+
+	// Deprecated
+	unityplugin::LogStream& Log()
 	{
 		return m_Log;
 	}
@@ -244,7 +260,7 @@ struct UnityPipe {
 	UnityPipe& EndList()
 	{
 		// d is list delimiter
-		__Write("d1:end of list\n");
+		__Write("d1:end of list\n", m_Log.Debug());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -253,8 +269,8 @@ struct UnityPipe {
 	
 	UnityPipe& EndResponse()
 	{
-		m_Log << "\n--------------------------\n" << std::flush;
-		__Write("r1:end of response\n");
+		__Write("r1:end of response\n", m_Log.Debug());
+		m_Log.Debug() << "\n--------------------------\n" << unityplugin::Flush;
 #if !defined(_WINDOWS)
 		std::cout << std::flush;
 #else
@@ -265,27 +281,27 @@ struct UnityPipe {
 	
 	UnityPipe& Ok(const std::string& msg = "", MessageArea ma = MAGeneral)
 	{
-		Write("o");
-		Write(ma);
-		Write(":");
+		Write("o", m_Log.Debug());
+		Write(ma, m_Log.Debug());
+		Write(":", m_Log.Debug());
 		if (!msg.empty())
-			Write(msg);
+			Write(msg, m_Log.Debug());
 		return *this;
 	}
 
 	template <typename T>
 	UnityPipe& Ok(const T& msg, MessageArea ma = MAGeneral)
 	{
-		Write("o");
-		Write(ma);
-		Write(":");
-		Write(msg);
+		Write("o", m_Log.Debug());
+		Write(ma, m_Log.Debug());
+		Write(":", m_Log.Debug());
+		Write(msg, m_Log.Debug());
 		return *this;
 	}
 
 	UnityPipe& OkLine(const std::string& msg = "", MessageArea ma = MAGeneral)
 	{
-		Ok(msg, ma); __Write("\n");
+		Ok(msg, ma); __Write("\n", m_Log.Debug());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -295,7 +311,7 @@ struct UnityPipe {
 	template <typename T>
 	UnityPipe& OkLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		Ok(msg, ma); __Write("\n");
+		Ok(msg, ma); __Write("\n", m_Log.Debug());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -304,16 +320,16 @@ struct UnityPipe {
 
 	UnityPipe& Error(const std::string& message, MessageArea ma = MAGeneral)
 	{
-		Write("e"); 
-		Write(ma);
-		Write(":");
-		Write(message);
+		Write("e", m_Log.Notice()); 
+		Write(ma, m_Log.Notice());
+		Write(":", m_Log.Notice());
+		Write(message, m_Log.Notice());
 		return *this;
 	}
 
 	UnityPipe& ErrorLine(const std::string& message, MessageArea ma = MAGeneral)
 	{
-		Error(message, ma); __Write("\n");
+		Error(message, ma); __Write("\n", m_Log.Notice());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -322,16 +338,16 @@ struct UnityPipe {
 
 	UnityPipe& Warn(const std::string& message, MessageArea ma = MAGeneral)
 	{
-		Write("w"); 
-		Write(ma);
-		Write(":");
-		Write(message);
+		Write("w", m_Log.Notice()); 
+		Write(ma, m_Log.Notice());
+		Write(":", m_Log.Notice());
+		Write(message, m_Log.Notice());
 		return *this;
 	}
 
 	UnityPipe& WarnLine(const std::string& message, MessageArea ma = MAGeneral)
 	{
-		Warn(message, ma); __Write("\n");
+		Warn(message, ma); __Write("\n", m_Log.Notice());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -340,16 +356,16 @@ struct UnityPipe {
 	
 	UnityPipe& Info(const std::string& message, MessageArea ma = MAGeneral)
 	{
-		Write("i"); 
-		Write(ma);
-		Write(":");
-		Write(message);
+		Write("i", m_Log.Debug()); 
+		Write(ma, m_Log.Debug());
+		Write(":", m_Log.Debug());
+		Write(message, m_Log.Debug());
 		return *this;
 	}
 	
 	UnityPipe& InfoLine(const std::string& message, MessageArea ma = MAGeneral)
 	{
-		Info(message, ma); __Write("\n");
+		Info(message, ma); __Write("\n", m_Log.Debug());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -360,12 +376,12 @@ struct UnityPipe {
 	{
 		OkLine(v.size());
 		for (std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); ++i)
-			WriteLine(*i);
+			WriteLine(*i, m_Log.Debug());
 		return *this;
 	}
 		
 private:
-	std::ofstream& m_Log;
+	unityplugin::LogStream& m_Log;
 	bool m_LineBufferValid;
 	std::string m_LineBuffer;
 
@@ -379,8 +395,9 @@ private:
 template <typename T>
 UnityPipe& operator<<(UnityPipe& p, const T& v)
 {
-	p.Write(v);
-	return p;
+	//	cannot_specialize_generic_unitypipe_argument e;
+	//	p.Write(v);
+	//	return p;
 }
 
 template <typename T>

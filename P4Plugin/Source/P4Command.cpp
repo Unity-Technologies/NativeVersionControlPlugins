@@ -173,7 +173,7 @@ void P4Command::OutputBinary( const char *data, int length)
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
 {
-	Pipe().Log() << "level " << (int) level << ": " << data << endl;
+	Pipe().Log() << "level " << (int) level << ": " << data << unityplugin::Endl;
 }
 
 P4Command* P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList)

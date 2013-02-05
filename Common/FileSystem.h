@@ -7,6 +7,7 @@
 bool IsReadOnly(const std::string& path);
 bool EnsureDirectory(const std::string& path);
 bool MoveAFile(const std::string& fromPath, const std::string& toPath);
+bool IsDirectory(const std::string& path);
 
 #if WIN32
 #include "windows.h"

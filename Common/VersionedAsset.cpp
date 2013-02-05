@@ -1,5 +1,7 @@
 #include "VersionedAsset.h"
 #include "UnityPipe.h"
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
@@ -9,6 +11,12 @@ VersionedAsset::VersionedAsset() : m_State(kLocal | kReadOnly)
 }
 
 VersionedAsset::VersionedAsset(const std::string& path) : m_State(kReadOnly) 
+{ 
+	SetPath(path); 
+}
+
+VersionedAsset::VersionedAsset(const std::string& path, int state, const std::string& revision)
+	: m_State(state), m_Revision(revision) 
 { 
 	SetPath(path); 
 }
@@ -45,10 +53,21 @@ void VersionedAsset::SetPath(std::string const& path)
 		AddState(kMetaFile);
 }
 
+const std::string& VersionedAsset::GetRevision() const
+{
+	return m_Revision;
+}
+
+void VersionedAsset::SetRevision(const std::string& r)
+{
+	m_Revision = r;
+}
+
 void VersionedAsset::Reset() 
 { 
 	m_State = kLocal | kReadOnly; 
 	SetPath(""); 
+	m_Revision.clear();
 }
 
 bool VersionedAsset::IsFolder() const 
@@ -56,6 +75,16 @@ bool VersionedAsset::IsFolder() const
 	return m_Path[m_Path.size()-1] == '/';
 }
 
+vector<string> Paths(const VersionedAssetList& assets)
+{
+	vector<string> result;
+	result.reserve(assets.size());
+
+	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
+		result.push_back(i->GetPath());
+
+	return result;
+}
 
 UnityPipe& operator<<(UnityPipe& p, const VersionedAsset& asset)
 {

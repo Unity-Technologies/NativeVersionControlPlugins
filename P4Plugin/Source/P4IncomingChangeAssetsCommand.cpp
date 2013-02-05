@@ -29,7 +29,7 @@ public:
 			return true;
 		}
 		
-		Pipe().Log() << "Project path is " << m_ProjectPath << endl;
+		Pipe().Log() << "Project path is " << m_ProjectPath << unityplugin::Endl;
 		
 		string rev = cl == kDefaultListRevision ? string("default") : cl;
 		const std::string cmd = string("describe -s ") + rev;
@@ -47,7 +47,7 @@ public:
 	
 	void OutputText( const char *data, int length)
 	{
-		Pipe().Log() << "OutputText()" << endl;
+		Pipe().Log() << "OutputText()" << unityplugin::Endl;
 	}
 	
     // Called once per asset 
@@ -59,7 +59,7 @@ public:
 		// to get the filesystem path we remove the append this
 		// to the Root path.
 		
-		Pipe().Log() << "OutputInfo: " << data << endl;
+		Pipe().Log() << "OutputInfo: " << data << unityplugin::Endl;
 		
 		string d(data);
 		string::size_type i = d.rfind(" ");

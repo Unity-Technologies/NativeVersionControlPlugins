@@ -10,7 +10,7 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log() << "ChangeStatusCommand::Run()" << endl;
+		Pipe().Log() << "ChangeStatusCommand::Run()" << unityplugin::Endl;
 		
 		ChangelistRevision cl;
 		Pipe() >> cl;

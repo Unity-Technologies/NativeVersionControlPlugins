@@ -5,7 +5,9 @@ COMMON_SRCS = ./Common/Changes.cpp \
 	      ./Common/VersionedAsset.cpp \
 	      ./Common/Status.cpp \
 	      ./Common/UnityConnection.cpp \
-	      ./Common/Command.cpp
+	      ./Common/Command.cpp \
+	      ./Common/Task.cpp \
+		  ./Common/Log.cpp
 
 COMMON_INCLS = ./Common/Changes.h \
 	       ./Common/CommandLine.h \
@@ -15,10 +17,13 @@ COMMON_INCLS = ./Common/Changes.h \
 	       ./Common/VersionedAsset.h \
 	       ./Common/Status.h \
 		   ./Common/UnityConnection.h \
-	       ./Common/Command.h
+	       ./Common/Command.h \
+	       ./Common/Task.h \
+		   ./Common/Dispatch.h \
+		   ./Common/Log.h
 
 P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_OSX.cpp \
-	       	./P4Plugin/Source/P4AddCommand.cpp \
+		./P4Plugin/Source/P4AddCommand.cpp \
 		./P4Plugin/Source/P4ChangeDescriptionCommand.cpp \
 		./P4Plugin/Source/P4ChangeMoveCommand.cpp \
 		./P4Plugin/Source/P4ChangesCommand.cpp \
@@ -59,3 +64,9 @@ P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 P4PLUGIN_LINK = -lclient -lp4sslstub -lrpc -lsupp
 P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r12.2/include/p4 -I./P4Plugin/Source
 
+
+SVNPLUGIN_SRCS = ./SvnPlugin/Source/SvnPlugin_OSX.cpp \
+			   ./SvnPlugin/Source/SvnTask.cpp
+
+SVNPLUGIN_LINK = 
+SVNPLUGIN_INCLUDE = -I./Common -I./SvnPlugin/Source

@@ -55,7 +55,6 @@ VCSStatus errorToVCSStatus(Error& e)
 // This class essentially manages the command line interface to the API and replies.  Commands are read from stdin and results
 // written to stdout and errors to stderr.  All text based communications used tags to make the parsing easier on both ends.
 P4Task::P4Task()
-	: m_Connection("./vcsplugin.log")
 {
     m_P4Connect = false;
 }
@@ -126,53 +125,46 @@ const std::string& P4Task::GetAssetsPath() const
   return m_AssetsPathConfig;
 }
 
-// Main run and processing loop
 int P4Task::Run()
 {
-	try
-	{
-		m_Connection.Connect();
-	} catch (exception& e)
-	{
-		m_Connection.Log() << e.what() << std::endl;
-		return 0;
-	}
-
-	// Make it convenient to get the pipe even though the commands
-	// are callback based.
-	P4Command::s_UnityPipe = &m_Connection.Pipe();
-
-	// Read commands
+	Task task("./p4plugin.log");
 	UnityCommand cmd;
 	vector<string> args;
+
 	for ( ;; )
 	{
-		// Read
-		try 
-		{
-			cmd = m_Connection.ReadCommand(args);
-		} 
-		catch (CommandException& ce)
-		{
-			m_Connection.Pipe().ErrorLine(string("invalid command - ") + Join(args));
-			return 1;
-		}
+		cmd = task.ReadCommand(args);
 
-		// Dispatch
-		P4Command* p4c = LookupCommand(UnityCommandToString(cmd));
-		if (!p4c)
-		{
-			m_Connection.Pipe().ErrorLine(string("unknown command - ") + UnityCommandToString(cmd));
-			return 1;
-		}
-		
-		if (!p4c->Run(*this, args))
-			break;
+		// Make it convenient to get the pipe even though the commands
+		// are callback based.
+		P4Command::s_UnityPipe = &task.Pipe();
+
+		if (cmd == UCOM_Invalid)
+			return 1; // error
+		else if (cmd == UCOM_Shutdown)
+			return 0; // ok 
+		else if (!Dispatch(cmd, args))
+			return 0; // ok
 	}
-    return 0;
+	return 1;
 }
 
-// Initialise the perforce client
+bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
+{
+	// Dispatch
+	P4Command* p4c = LookupCommand(UnityCommandToString(cmd));
+	if (!p4c)
+	{
+		throw CommandException(cmd, string("unknown command"));
+	}
+	
+	if (!p4c->Run(*this, args))
+		return false;
+
+	return true;
+}
+
+// Initialize the perforce client
 bool P4Task::Connect(VCSStatus& result)
 {   
 	// If connection is still active then return success
@@ -271,7 +263,7 @@ bool P4Task::IsConnected()
 // Run a perforce command
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
-	m_Connection.Pipe().Log() << command << endl;
+	//	m_Connection.Pipe().Log() << command << endl;
 	
 	// Force connection if this hasn't been set-up already.
 	// That is unless the command explicitely disallows connect.

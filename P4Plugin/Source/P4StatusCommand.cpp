@@ -9,7 +9,7 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 {
 	ClearStatus();
 	bool recursive = args.size() > 1;
-	Pipe().Log() << "StatusCommand::Run()" << endl;
+	Pipe().Log() << "StatusCommand::Run()" << unityplugin::Endl;
 			
 	VersionedAssetList assetList;
 	Pipe() >> assetList;
@@ -26,7 +26,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 {
 	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
-	Pipe().Log() << "Paths to stat are: " << paths << endl;
+	Pipe().Log() << "Paths to stat are: " << paths << unityplugin::Endl;
 	
 	Pipe().BeginList();
 	
