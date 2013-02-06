@@ -11,16 +11,15 @@ public:
 	SvnTask();
 	~SvnTask();
 
-	/*
 	// Setup
-	void SetPort(const std::string& p);
+	void SetRepository(const std::string& p);
+	const std::string& GetRepository() const;
 	void SetUser(const std::string& u);
-	std::string GetUser();
+	const std::string& GetUser() const;
 	void SetPassword(const std::string& p);
 	const std::string& GetPassword() const;
-	void SetAssetsPath(const std::string& p);
-	const std::string& GetAssetsPath() const;
-	*/
+	void SetOptions(const std::string& p);
+	const std::string& GetOptions() const;
 
 	void SetAssetsPath(const std::string& p);
 	const std::string& GetAssetsPath() const;
@@ -37,6 +36,7 @@ public:
 private:
 	//	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
 
+	std::string GetCredentials() const;
 	void GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
 								  std::vector<std::string>& changelistAssoc, 
 								  const char* depth);
@@ -44,12 +44,10 @@ private:
 	std::string m_SvnPath;
 	std::string m_AssetsPath;
 
-	/*
-	std::string m_PortConfig;
+	std::string m_RepositoryConfig;
 	std::string m_UserConfig;
 	std::string m_PasswordConfig;
-	std::string m_AssetsPathConfig;
-	*/
+	std::string m_OptionsConfig;
 };
 
 class SvnException : public std::exception

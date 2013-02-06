@@ -15,7 +15,7 @@ public:
 			resp.addTrait("svnUsername", "Username", "Subversion username", "", ConfigResponse::TF_Required);
 			resp.addTrait("svnPassword", "Password", "Subversion password", "", ConfigResponse::TF_Required | ConfigResponse::TF_Password);
 			resp.addTrait("svnRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_Required);
-			resp.addTrait("svnOptions", "Options", "Subversion config options", "", ConfigResponse::TF_None);
+			resp.addTrait("svnOptions", "Options", "Subversion extra options", "", ConfigResponse::TF_None);
 		}
 		else if (req.key == "pluginVersions")
 		{
@@ -29,18 +29,22 @@ public:
 		else if (req.key == "svnRepos")
 		{
 			req.conn.Log() << "Set repos to " << req.values[0] << unityplugin::Endl;
+			task.SetRepository(Join(req.values, " "));
 		}
 		else if (req.key == "svnUsername")
 		{
 			req.conn.Log() << "Set username to " << req.values[0] << unityplugin::Endl;
+			task.SetUser(Join(req.values, " "));
 		}		
 		else if (req.key == "svnPassword")
 		{
 			req.conn.Log() << "Set password to *********" << unityplugin::Endl;
-		}		
+			task.SetPassword(Join(req.values, " "));
+		}
 		else if (req.key == "svnOptions")
 		{
 			req.conn.Log() << "Set options to " << req.values[0] << unityplugin::Endl;
+			task.SetOptions(Join(req.values, " "));
 		}
 		else
 		{

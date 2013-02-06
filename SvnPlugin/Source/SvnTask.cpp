@@ -17,6 +17,58 @@ SvnTask::~SvnTask()
 	delete m_Task;
 }
 
+void SvnTask::SetRepository(const std::string& p)
+{
+	m_RepositoryConfig = p;
+}
+
+const std::string& SvnTask::GetRepository() const
+{
+	return m_RepositoryConfig;
+}
+
+void SvnTask::SetUser(const std::string& p)
+{
+	m_UserConfig = p;
+}
+
+const std::string& SvnTask::GetUser() const
+{
+	return m_UserConfig;
+}
+
+void SvnTask::SetPassword(const std::string& p)
+{
+	m_PasswordConfig = p;
+}
+
+const std::string& SvnTask::GetPassword() const
+{
+	return m_PasswordConfig;
+}
+
+void SvnTask::SetOptions(const std::string& p)
+{
+	m_OptionsConfig = p;
+}
+
+const std::string& SvnTask::GetOptions() const
+{
+	return m_OptionsConfig;
+}
+
+std::string SvnTask::GetCredentials() const
+{
+	string c;
+	if (!m_UserConfig.empty())
+		c += ToString(" --username ", m_UserConfig);
+	if (!m_PasswordConfig.empty())
+		c += ToString(" --password ", m_PasswordConfig);
+	if (!m_OptionsConfig.empty())
+		c+= ToString(m_OptionsConfig, string(" "));
+	return c;
+}
+
 void SvnTask::SetAssetsPath(const string& p)
 {
 	m_AssetsPath = p;
@@ -64,8 +116,10 @@ int SvnTask::Run()
 
 APOpen SvnTask::RunCommand(const std::string& cmd)
 {
+	string cred = GetCredentials();
+	m_Task->GetConnection().Log().Debug() << cred << unityplugin::Endl;
 	m_Task->GetConnection().Log() << cmd << unityplugin::Endl;
-	return APOpen(new POpen((m_SvnPath + " " + cmd).c_str()));
+	return APOpen(new POpen((m_SvnPath + cred + " " + cmd).c_str()));
 }
 
 int ParseChangeState(int state, char c)
