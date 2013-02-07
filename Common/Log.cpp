@@ -68,6 +68,7 @@ LogWriter& LogStream::Fatal()
 LogStream& LogStream::Flush() 
 {
 	m_Stream << std::flush; 
+	return *this;
 }
 
 LogWriter& operator<<(LogWriter& w, LogWriter& (*pf)(LogWriter&))

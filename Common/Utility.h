@@ -61,10 +61,7 @@ public:
 	void ReadIntoFile(const std::string& path);
 private:
 	std::string m_Command;
-#if defined(_WINDOWS)
-#else
 	FILE* m_Handle;
-#endif	
 };
 
 typedef std::auto_ptr<POpen> APOpen;

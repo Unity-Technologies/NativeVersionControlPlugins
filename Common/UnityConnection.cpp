@@ -16,6 +16,7 @@ UnityConnection::~UnityConnection()
 UnityPipe* UnityConnection::Connect()
 {
 	m_UnityPipe = new UnityPipe(m_Log);
+	return m_UnityPipe;
 }
 
 // read a command from stdin

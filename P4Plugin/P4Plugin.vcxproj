@@ -12,8 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Changes.cpp" />
+    <ClCompile Include="..\Common\Command.cpp" />
     <ClCompile Include="..\Common\CommandLine.cpp" />
     <ClCompile Include="..\Common\FileSystem.cpp" />
+    <ClCompile Include="..\Common\Log.cpp" />
+    <ClCompile Include="..\Common\Status.cpp" />
+    <ClCompile Include="..\Common\Task.cpp" />
+    <ClCompile Include="..\Common\UnityConnection.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="..\Common\VersionedAsset.cpp" />
     <ClCompile Include="Source\P4AddCommand.cpp" />
@@ -50,8 +55,26 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h" />
+    <ClInclude Include="..\Common\Command.h" />
     <ClInclude Include="..\Common\CommandLine.h" />
+    <ClInclude Include="..\Common\Commands\Add.h" />
+    <ClInclude Include="..\Common\Commands\AllReqResp.h" />
+    <ClInclude Include="..\Common\Commands\Base.h" />
+    <ClInclude Include="..\Common\Commands\BaseFileSet.h" />
+    <ClInclude Include="..\Common\Commands\Config.h" />
+    <ClInclude Include="..\Common\Commands\Download.h" />
+    <ClInclude Include="..\Common\Commands\Incoming.h" />
+    <ClInclude Include="..\Common\Commands\IncomingAssets.h" />
+    <ClInclude Include="..\Common\Commands\MoveChangelist.h" />
+    <ClInclude Include="..\Common\Commands\Outgoing.h" />
+    <ClInclude Include="..\Common\Commands\OutgoingAssets.h" />
+    <ClInclude Include="..\Common\Commands\Submit.h" />
+    <ClInclude Include="..\Common\Dispatch.h" />
     <ClInclude Include="..\Common\FileSystem.h" />
+    <ClInclude Include="..\Common\Log.h" />
+    <ClInclude Include="..\Common\Status.h" />
+    <ClInclude Include="..\Common\Task.h" />
+    <ClInclude Include="..\Common\UnityConnection.h" />
     <ClInclude Include="..\Common\UnityPipe.h" />
     <ClInclude Include="..\Common\Utility.h" />
     <ClInclude Include="..\Common\VersionedAsset.h" />

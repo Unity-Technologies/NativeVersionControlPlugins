@@ -144,14 +144,22 @@ bool IsReadOnly(const std::string& path)
 
 POpen::POpen(const std::string& cmd) : m_Command(cmd)
 {
+#if defined(_WINDOWS)
+	m_Handle = _popen(cmd.c_str(), "r");
+#else
 	m_Handle = popen(cmd.c_str(), "r");
+#endif
 	Enforce<PluginException>(m_Handle, string("Error starting '") + cmd + "'");
 }
 
 POpen::~POpen()
 {
 	if (m_Handle)
+#if defined(_WINDOWS)
+		_pclose(m_Handle);
+#else
 		pclose(m_Handle);
+#endif
 }
 
 bool POpen::ReadLine(std::string& result)

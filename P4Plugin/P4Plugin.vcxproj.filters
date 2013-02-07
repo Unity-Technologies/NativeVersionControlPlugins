@@ -12,6 +12,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Common\Commands">
+      <UniqueIdentifier>{d69e40a1-7e8a-40a5-a09b-beaf73415f97}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Changes.cpp">
@@ -122,6 +125,21 @@
     <ClCompile Include="Source\P4Utility.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Command.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Log.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Status.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Task.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\UnityConnection.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">
@@ -159,6 +177,60 @@
     </ClInclude>
     <ClInclude Include="Source\P4Utility.h">
       <Filter>P4Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Command.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Dispatch.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Log.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Status.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Task.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UnityConnection.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Add.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\AllReqResp.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Base.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\BaseFileSet.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Config.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Download.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Incoming.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\IncomingAssets.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\MoveChangelist.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Outgoing.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\OutgoingAssets.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Submit.h">
+      <Filter>Common\Commands</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

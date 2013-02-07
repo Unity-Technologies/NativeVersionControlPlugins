@@ -36,7 +36,7 @@ typedef std::vector<Changelist> Changes;
 typedef std::vector<ChangelistRevision> ChangelistRevisions;
 
 struct UnityPipe;
-UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision);
+//UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision);
 UnityPipe& operator>>(UnityPipe& p, ChangelistRevision& revision);
 UnityPipe& operator<<(UnityPipe& p, const Changelist& changelist);
 UnityPipe& operator>>(UnityPipe& p, Changelist& changelist);

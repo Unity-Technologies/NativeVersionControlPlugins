@@ -51,7 +51,7 @@ public:
 		// All pipe instances are busy, so wait for 2 seconds. 
 		if ( ! WaitNamedPipe(lpszPipename, 2000)) 
 		{ 
-			string msg = "Could not open pipe: 2 second wait timed out.\n";
+			std::string msg = "Could not open pipe: 2 second wait timed out.\n";
 			msg += ErrorCodeToMsg(GetLastError());
 			throw UnityPipeException(msg);
 		}
@@ -70,7 +70,7 @@ public:
 		if (m_NamedPipe == INVALID_HANDLE_VALUE) 
 		{		
 			// Exit if an error other than ERROR_PIPE_BUSY occurs. 
-			string msg = "Could not open pipe. GLE=";
+			std::string msg = "Could not open pipe. GLE=";
 			msg += ErrorCodeToMsg(GetLastError());
 			throw UnityPipeException(msg);
 		}
@@ -196,7 +196,7 @@ public:
 		if (!success)
 		{
 				
-			m_Log.Error() << TEXT("ReadFile from pipe failed. GLE=%d\n") <<  ErrorCodeToMsg(GetLastError()) << unityplugin::Endl;
+			m_Log.Fatal() << TEXT("ReadFile from pipe failed. GLE=%d\n") <<  ErrorCodeToMsg(GetLastError()) << unityplugin::Endl;
 			exit(-1);
 		}
 #else
@@ -395,9 +395,9 @@ private:
 template <typename T>
 UnityPipe& operator<<(UnityPipe& p, const T& v)
 {
-	//	cannot_specialize_generic_unitypipe_argument e;
+	cannot_specialize_generic_unitypipe_argument e;
 	//	p.Write(v);
-	//	return p;
+	return p;
 }
 
 template <typename T>
