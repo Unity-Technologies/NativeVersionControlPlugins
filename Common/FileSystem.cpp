@@ -81,6 +81,13 @@ bool IsDirectory(const string& path)
 	return PathIsDirectoryW(widePath);
 }
 
+bool PathExists(const std::string& path)
+{
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
+	return PathFileExistsW(widePath);	
+}
+
 static bool RemoveReadOnlyW(LPCWSTR path)
 {
 	DWORD attributes = GetFileAttributesW(path);
@@ -153,6 +160,11 @@ bool EnsureDirectory(const string& path)
 		throw std::runtime_error(buf);
 	}
 	return true;
+}
+
+bool PathExists(const std::string& path)
+{
+	return access(path.c_str(), F_OK) == 0;
 }
 
 bool MoveAFile(const string& fromPath, const string& toPath)

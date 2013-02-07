@@ -1,5 +1,5 @@
 #include "Command.h"
-#include "string.h";
+#include "string.h"
 
 struct CmdInfo
 {

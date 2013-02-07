@@ -50,7 +50,7 @@ public:
 						// include this asset in the response.
 						if (!EnsurePresent(task, mine))
 						{
-							req.conn.Log() << access(mine.GetPath().c_str(), F_OK) << unityplugin::Endl;
+							//req.conn.Log() << access(mine.GetPath().c_str(), F_OK) << unityplugin::Endl;
 							req.conn.Log() << "No 'mine' file " << mine.GetPath() << unityplugin::Endl;
 							req.Pipe().ErrorLine(std::string("No 'mine' file for ") + assetPath);
 							continue;
@@ -141,7 +141,7 @@ public:
 	// no download we be attempted.
 	bool EnsurePresent(SvnTask& task, const VersionedAsset& asset, const std::string& sourceFilePath = "")
 	{
-		if (access(asset.GetPath().c_str(), F_OK))
+		if (!PathExists(asset.GetPath()))
 		{
 			if (!sourceFilePath.empty())
 			{
