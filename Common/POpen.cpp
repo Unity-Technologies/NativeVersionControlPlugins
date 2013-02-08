@@ -59,7 +59,7 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 
 	// Create the child process. 
 	bSuccess = CreateProcess(NULL, 
-		TEXT(const_cast<char *>(m_Command.c_str())),     // command line 
+		const_cast<char *>(m_Command.c_str()),     // command line 
 		NULL,          // process security attributes 
 		NULL,          // primary thread security attributes 
 		TRUE,          // handles are inherited 
