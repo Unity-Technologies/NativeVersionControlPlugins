@@ -51,6 +51,9 @@
     <ClCompile Include="Source\SvnTask.cpp">
       <Filter>SvnPlugin</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\POpen.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">
@@ -187,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="Source\SvnUnlockCommand.h">
       <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\POpen.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

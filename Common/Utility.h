@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include "POpen.h"
 
 std::string IntToString (int i);
 size_t Tokenize(std::vector<std::string>& result, const std::string& str, 
@@ -50,24 +51,7 @@ std::string ToString(const T& v1, const T& v2, const T& v3)
 	return ss.str();
 }
 
-// Run a command line read result.
-// This is done blocking which is ok since Unity will timeout
-class POpen
-{
-public:
-	POpen(const std::string& cmd);
-	~POpen();
-	bool ReadLine(std::string& result);
-	void ReadIntoFile(const std::string& path);
-private:
-	std::string m_Command;
-	FILE* m_Handle;
-};
-
-typedef std::auto_ptr<POpen> APOpen;
-
 #if defined(_WINDOWS)
-#include <Windows.h>
 std::string ErrorCodeToMsg( DWORD code );
 #endif
 

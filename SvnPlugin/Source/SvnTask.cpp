@@ -10,6 +10,7 @@ using namespace std;
 
 SvnTask::SvnTask() : m_Task(NULL) 
 {
+	SetSvnExecutable(""); // Set default svn executable
 }
 
 SvnTask::~SvnTask()
@@ -57,6 +58,32 @@ const std::string& SvnTask::GetOptions() const
 	return m_OptionsConfig;
 }
 
+void SvnTask::SetSvnExecutable(const std::string& e)
+{
+	if (!e.empty())
+	{
+		if (PathExists(e))
+			m_SvnPath = e;
+		else
+			m_SvnPath.clear();
+	}
+
+	if (e.empty())
+	{
+#if defined(_WINDOWS)
+		m_SvnPath = PluginPath();
+		m_SvnPath = m_SvnPath.substr(0, m_SvnPath.rfind('\\', m_SvnPath.rfind('\\') - 1)) + "\\svn\\svn.exe";
+#else // posix
+		m_SvnPath = "/usr/bin/svn";
+#endif
+	}
+}
+
+const std::string& SvnTask::GetSvnExecutable() const
+{
+	return m_SvnPath;
+}
+
 std::string SvnTask::GetCredentials() const
 {
 	string c;
@@ -91,7 +118,6 @@ int SvnTask::Run()
 
 	UnityCommand cmd;
 	CommandArgs args;
-	m_SvnPath = "/usr/bin/svn";
 
 	try 
 	{
@@ -311,7 +337,6 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		// status for different areas. Following at are space separated
 		// fields in order: working revision, last commited revision, last commited author
 		// The last field is the file path and can include spaces
-
 		if (StartsWith(line, "--- Changelist"))
 		{
 			const int prefixLen = 15; // "-- Changelist '" length
@@ -398,14 +423,14 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 
 	while (ppipe->ReadLine(line))
 	{
-		Enforce<SvnException>(StartsWith(line, "--------------"), "Invalid log header top");
+		Enforce<SvnException>(StartsWith(line, "--------------"), string("Invalid log header top: ") + line);
 		
 		// Skip first line of "------"
 		if (!ppipe->ReadLine(line)) 
 			break; 
-		
+
 		Enforce<SvnException>(line.length() >= MIN_HEADER_LINE_LENGTH && line[0] == 'r',
-							  "Invalid log header");
+							  string("Invalid log header: ") + line);
 		
 		toks.clear();
 		size_t size = Tokenize(toks, line, "|");

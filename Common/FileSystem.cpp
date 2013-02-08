@@ -33,6 +33,18 @@ void ConvertUnityPathName( const char* utf8, wchar_t* outBuffer, int outBufferSi
 	ConvertSeparatorsToWindows( outBuffer );
 }
 
+string PluginPath()
+{
+	HMODULE hModule = GetModuleHandleW(NULL);
+	if (hModule == NULL)
+		return "";
+
+	CHAR path[MAX_PATH];
+	if (GetModuleFileNameA(hModule, path, MAX_PATH) == 0)
+		return "";
+	return path;
+}
+
 const size_t kDefaultPathBufferSize = 1024;
 
 bool EnsureDirectory(const string& path)
@@ -78,14 +90,14 @@ bool IsDirectory(const string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
-	return PathIsDirectoryW(widePath);
+	return PathIsDirectoryW(widePath) == TRUE;
 }
 
 bool PathExists(const std::string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
-	return PathFileExistsW(widePath);	
+	return PathFileExistsW(widePath) == TRUE;	
 }
 
 static bool RemoveReadOnlyW(LPCWSTR path)

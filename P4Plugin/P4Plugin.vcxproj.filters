@@ -140,6 +140,9 @@
     <ClCompile Include="..\Common\UnityConnection.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\POpen.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">
@@ -231,6 +234,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Commands\Submit.h">
       <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\POpen.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -61,7 +61,7 @@ unityplugin::LogStream& UnityConnection::Log()
 
 bool UnityConnection::IsConnected() const
 {
-	return m_UnityPipe;
+	return m_UnityPipe != NULL;
 }
 
 UnityPipe& UnityConnection::Pipe()
