@@ -40,7 +40,7 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	//
 	// Create child process
 	//
-	STARTUPINFO siStartInfo;
+	STARTUPINFOW siStartInfo;
 	BOOL bSuccess = FALSE; 
 
 	// Set up members of the PROCESS_INFORMATION structure. 
@@ -57,9 +57,13 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	siStartInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 	siStartInfo.wShowWindow = SW_HIDE;
 
+	const size_t kCommandSize = 4096 << 1; 
+	wchar_t widePath[kCommandSize];
+	ConvertUnityPathName(m_Command.c_str(), widePath, kCommandSize);
+
 	// Create the child process. 
-	bSuccess = CreateProcess(NULL, 
-		const_cast<char *>(m_Command.c_str()),     // command line 
+	bSuccess = CreateProcessW(NULL, 
+		widePath,     // command line 
 		NULL,          // process security attributes 
 		NULL,          // primary thread security attributes 
 		TRUE,          // handles are inherited 
