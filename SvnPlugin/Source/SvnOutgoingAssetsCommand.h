@@ -28,6 +28,7 @@ public:
 				if (foundList) break; // no more assets in list
 				continue; // keep looking for the list
 			}
+			foundList = true;
 			VersionedAsset& asset = assets[idx];
 			if (asset.GetState() & 
 				(kCheckedOutLocal | kDeletedLocal | kAddedLocal | kLockedLocal | kConflicted))
