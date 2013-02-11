@@ -68,7 +68,7 @@ public:
 		}
 		else if (key == "pluginTraits")
 		{
-			Pipe().OkLine("3");
+			Pipe().OkLine("4");
 			Pipe().OkLine("requiresNetwork", MAConfig); 			
 			Pipe().OkLine("enablesCheckout", MAConfig);
 			Pipe().OkLine("enablesLocking", MAConfig);
