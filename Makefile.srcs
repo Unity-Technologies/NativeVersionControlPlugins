@@ -7,7 +7,8 @@ COMMON_SRCS = ./Common/Changes.cpp \
 	      ./Common/UnityConnection.cpp \
 	      ./Common/Command.cpp \
 	      ./Common/Task.cpp \
-		  ./Common/Log.cpp
+		  ./Common/Log.cpp \
+		  ./Common/POpen.cpp
 
 COMMON_INCLS = ./Common/Changes.h \
 	       ./Common/CommandLine.h \
@@ -20,7 +21,8 @@ COMMON_INCLS = ./Common/Changes.h \
 	       ./Common/Command.h \
 	       ./Common/Task.h \
 		   ./Common/Dispatch.h \
-		   ./Common/Log.h
+		   ./Common/Log.h \
+		   ./Common/POpen.h
 
 P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_OSX.cpp \
 		./P4Plugin/Source/P4AddCommand.cpp \
