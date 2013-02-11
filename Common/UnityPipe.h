@@ -392,13 +392,9 @@ private:
 };
 					
 
+// Declare primary template to catch wrong specializations
 template <typename T>
-UnityPipe& operator<<(UnityPipe& p, const T& v)
-{
-	cannot_specialize_generic_unitypipe_argument e;
-	//	p.Write(v);
-	return p;
-}
+UnityPipe& operator<<(UnityPipe& p, const T& v);
 
 template <typename T>
 UnityPipe& operator<<(UnityPipe& p, const std::vector<T>& v)
