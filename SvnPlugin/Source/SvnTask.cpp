@@ -382,7 +382,7 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 		// Filename is a idx 41
 		string filename = line.substr(41);
-		result.push_back(VersionedAsset(filename, state, revision));
+		result.push_back(VersionedAsset(Replace(filename, "\\", "/"), state, revision));
 
 		/*
 
