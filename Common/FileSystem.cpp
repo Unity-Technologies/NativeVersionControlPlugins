@@ -90,7 +90,7 @@ bool IsDirectory(const string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
-	return PathIsDirectoryW(widePath) == TRUE;
+	return PathIsDirectoryW(widePath) != FALSE; // Must be compared against FALSE and not TRUE!
 }
 
 bool PathExists(const std::string& path)
