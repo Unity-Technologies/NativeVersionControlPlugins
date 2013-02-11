@@ -185,18 +185,18 @@ void POpen::ReadIntoFile(const std::string& path)
 		FILE_ATTRIBUTE_NORMAL, 
 		NULL); 
 	
-	Enforce<PluginException>(fh != INVALID_HANDLE_VALUE, string("Invalid result file handle for ReadIntoFile during '") + m_Command + "' " + ErrorCodeToMsg(GetLastError())); 
+	Enforce<PluginException>(fh != INVALID_HANDLE_VALUE, string("Invalid result file handle for ReadIntoFile during '") + m_Command + "' " + path + " " + ErrorCodeToMsg(GetLastError())); 
 
 	DWORD dwRead, dwWritten; 
 
 	for (;;) 
 	{ 
-
-
 		if (!ReadFile( m_ChildStd_OUT_Rd, m_Buf, BUFSIZE, &dwRead, NULL))
 		{
-			CloseHandle(fh);
-			throw PluginException(string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(GetLastError()));
+			DWORD err = GetLastError();
+			if (err != ERROR_BROKEN_PIPE)
+				throw PluginException(string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(err));
+			break;
 		}
 
 		if( dwRead == 0 ) break; // end of pipe
