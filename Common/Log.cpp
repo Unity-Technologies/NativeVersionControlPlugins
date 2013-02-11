@@ -23,11 +23,16 @@ LogWriter& Endl(LogWriter& w)
 
 LogStream::LogStream(const std::string& path, LogLevel level) 
 	: m_Stream(path.c_str(), std::ios_base::ate), 
-	  m_OnWriter(*this, true), 
-	  m_OffWriter(*this, false)
+	  m_OnWriter(Self(), true), 
+	  m_OffWriter(Self(), false)
 {
 }
 
+LogStream& LogStream::Self(void)
+{
+	// Work around C4355
+	return *this;
+}
 
 LogStream::~LogStream()
 {
@@ -68,6 +73,7 @@ LogWriter& LogStream::Fatal()
 LogStream& LogStream::Flush() 
 {
 	m_Stream << std::flush; 
+	return *this;
 }
 
 LogWriter& operator<<(LogWriter& w, LogWriter& (*pf)(LogWriter&))

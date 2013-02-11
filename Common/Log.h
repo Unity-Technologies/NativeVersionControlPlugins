@@ -55,6 +55,8 @@ class LogStream
 public:
 	LogStream(const std::string& path, LogLevel level = LOG_NOTICE);
 	~LogStream();
+	
+	LogStream& Self(void);
 
 	void SetLogLevel(LogLevel l);
 	LogLevel GetLogLevel() const;

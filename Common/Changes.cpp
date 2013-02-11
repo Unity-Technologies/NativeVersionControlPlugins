@@ -50,11 +50,11 @@ void Changelist::SetCommitter(const std::string& committer)
 	m_Committer = committer;
 }
 
-UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision)
-{
-	p << revision.c_str();
-	return p;
-}
+//UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision)
+//{
+//	p << revision.c_str();
+//	return p;
+//}
 
 UnityPipe& operator>>(UnityPipe& p, ChangelistRevision& revision)
 {

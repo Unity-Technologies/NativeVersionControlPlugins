@@ -1,4 +1,4 @@
-#pragma one
+#pragma once
 #include "SvnCommand.h"
 #include "SvnConfigCommand.h"
 #include "SvnStatusCommand.h"

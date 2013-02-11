@@ -46,7 +46,7 @@ public:
 			Pipe().Log() << "Ensure editable source " << paths << unityplugin::Endl;
 			
 			string err;
-			bool editable = src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal);
+			bool editable = (src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal)) != 0;
 			
 			if (!editable)
 			{

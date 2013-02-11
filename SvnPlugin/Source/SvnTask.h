@@ -20,6 +20,8 @@ public:
 	const std::string& GetPassword() const;
 	void SetOptions(const std::string& p);
 	const std::string& GetOptions() const;
+	void SetSvnExecutable(const std::string& e);
+	const std::string& GetSvnExecutable() const;
 
 	void SetAssetsPath(const std::string& p);
 	const std::string& GetAssetsPath() const;

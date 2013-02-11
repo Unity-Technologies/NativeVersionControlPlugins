@@ -16,6 +16,7 @@ UnityConnection::~UnityConnection()
 UnityPipe* UnityConnection::Connect()
 {
 	m_UnityPipe = new UnityPipe(m_Log);
+	return m_UnityPipe;
 }
 
 // read a command from stdin
@@ -60,7 +61,7 @@ unityplugin::LogStream& UnityConnection::Log()
 
 bool UnityConnection::IsConnected() const
 {
-	return m_UnityPipe;
+	return m_UnityPipe != NULL;
 }
 
 UnityPipe& UnityConnection::Pipe()

@@ -54,6 +54,7 @@ sub BuildWin32
 {
   rmtree("Build");
   system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
+  system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
 }
 
 sub BuildLinux ($)

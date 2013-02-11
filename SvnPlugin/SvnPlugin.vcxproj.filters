@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{10a14043-2ec4-4535-b1d3-3bc36feaeb9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Commands">
+      <UniqueIdentifier>{e47fbdce-646c-44d1-a88e-c8d2e616173e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SvnPlugin">
+      <UniqueIdentifier>{5c64bc5f-1876-4728-9014-aa0b4f102dec}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\Changes.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Command.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\CommandLine.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\FileSystem.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Log.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Status.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Task.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\UnityConnection.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Utility.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\VersionedAsset.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SvnPlugin_OSX.cpp">
+      <Filter>SvnPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SvnPlugin_WIN.cpp">
+      <Filter>SvnPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SvnTask.cpp">
+      <Filter>SvnPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\POpen.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\Changes.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Command.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\CommandLine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Dispatch.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\FileSystem.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Log.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Status.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Task.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UnityConnection.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UnityPipe.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Utility.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\VersionedAsset.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Add.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\AllReqResp.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Base.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\BaseFileSet.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Config.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Download.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Incoming.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\IncomingAssets.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\MoveChangelist.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Outgoing.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\OutgoingAssets.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Submit.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AllSvnCommands.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnAddCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnCheckoutCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnConfigCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnDeleteCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnDownloadCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnGetLatestCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnIncomingAssetsCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnIncomingCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnLockCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnMoveChangelistCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnMoveCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnOutgoingAssetsCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnOutgoingCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnResolveCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnRevertCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnStatusCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnSubmitCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnTask.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SvnUnlockCommand.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\POpen.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
