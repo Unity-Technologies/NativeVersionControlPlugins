@@ -143,7 +143,7 @@ _SCL_SECURE_NO_DEPRECATE
       <AdditionalDependencies>libclient.lib;libp4sslstub.lib;librpc.lib;libsupp.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
+      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -64,7 +64,7 @@ _SCL_SECURE_NO_DEPRECATE
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
+      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,7 +89,7 @@ _SCL_SECURE_NO_DEPRECATE
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
+      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
