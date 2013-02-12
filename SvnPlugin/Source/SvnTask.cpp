@@ -154,7 +154,7 @@ APOpen SvnTask::RunCommand(const std::string& cmd)
 	string cred = GetCredentials();
 	m_Task->GetConnection().Log().Debug() << cred << unityplugin::Endl;
 	m_Task->GetConnection().Log() << cmd << unityplugin::Endl;
-	return APOpen(new POpen((m_SvnPath + cred + " " + cmd + " 2>&1").c_str()));
+	return APOpen(new POpen((m_SvnPath + cred + " " + cmd).c_str()));
 }
 
 int ParseChangeState(int state, char c)
@@ -361,7 +361,6 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		changelistAssoc.push_back(currentChangelist);
 
 		int state = kNone;
-
 
 		state = ParseChangeState(state, line[0]);
 		state = ParsePropertyState(state, line[1]);

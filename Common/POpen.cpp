@@ -214,7 +214,7 @@ void POpen::ReadIntoFile(const std::string& path)
 
 POpen::POpen(const string& cmd) : m_Command(cmd)
 {
-	m_Handle = popen(cmd.c_str(), "r");
+	m_Handle = popen((cmd + " 2>&1").c_str(), "r");
 	Enforce<PluginException>(m_Handle, string("Error starting '") + cmd + "'");
 }
 
