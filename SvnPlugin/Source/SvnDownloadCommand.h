@@ -103,6 +103,8 @@ public:
 		std::string line;
 		while (ppipe->ReadLine(line))
 		{
+			Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
+
 			if (StartsWith(line, "Conflict Previous Base File:"))
 			{
 				// file format is abx.txt.r20

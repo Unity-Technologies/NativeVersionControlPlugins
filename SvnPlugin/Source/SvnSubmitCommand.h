@@ -28,7 +28,8 @@ public:
 			std::string line;
 			while (cppipe->ReadLine(line))
 			{
-				req.conn.Log() << line << "\n";
+				Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
+				req.conn.Log().Info() << line << "\n";
 			}
 			
 			task.GetStatus(req.assets, resp.assets, recursive);
@@ -55,7 +56,8 @@ public:
 		std::string line;
 		while (ppipe->ReadLine(line))
 		{
-			req.conn.Log() << line << "\n";
+			Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
+			req.conn.Log().Info() << line << "\n";
 		}
 
 		task.GetStatus(req.assets, resp.assets, recursive);

@@ -125,12 +125,21 @@ int SvnTask::Run()
 		{
 			cmd = m_Task->ReadCommand(args);
 			
-			if (cmd == UCOM_Invalid)
-				return 1; // error
-			else if (cmd == UCOM_Shutdown)
-				return 0; // ok 
-			else if (!Dispatch<SvnCommand>(m_Task->GetConnection(), *this, cmd, args))
-				return 0; // ok
+			try 
+			{
+				if (cmd == UCOM_Invalid)
+					return 1; // error
+				else if (cmd == UCOM_Shutdown)
+					return 0; // ok 
+				else if (!Dispatch<SvnCommand>(m_Task->GetConnection(), *this, cmd, args))
+					return 0; // ok
+			}
+			catch (SvnException& ex)
+			{
+				m_Task->GetConnection().Pipe().ErrorLine(ex.what());
+				m_Task->GetConnection().Pipe().EndResponse();
+				throw;
+			}
 		}
 	} catch (std::exception& e)
 	{
@@ -145,7 +154,7 @@ APOpen SvnTask::RunCommand(const std::string& cmd)
 	string cred = GetCredentials();
 	m_Task->GetConnection().Log().Debug() << cred << unityplugin::Endl;
 	m_Task->GetConnection().Log() << cmd << unityplugin::Endl;
-	return APOpen(new POpen((m_SvnPath + cred + " " + cmd).c_str()));
+	return APOpen(new POpen((m_SvnPath + cred + " " + cmd + " 2>&1").c_str()));
 }
 
 int ParseChangeState(int state, char c)
@@ -333,6 +342,8 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 	while (ppipe->ReadLine(line))
 	{
+		Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
+
 		// Each line is a file status. The first 9 chars indicates
 		// status for different areas. Following at are space separated
 		// fields in order: working revision, last commited revision, last commited author
@@ -423,6 +434,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 
 	while (ppipe->ReadLine(line))
 	{
+		Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
 		Enforce<SvnException>(StartsWith(line, "--------------"), string("Invalid log header top: ") + line);
 		
 		// Skip first line of "------"

@@ -32,7 +32,8 @@ public:
 			std::string line;
 			while (cppipe->ReadLine(line))
 			{
-				req.conn.Log() << line << "\n";
+				Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
+				req.conn.Log().Info() << line << "\n";
 			}
 
 			statAssets.push_back(*curIter);
