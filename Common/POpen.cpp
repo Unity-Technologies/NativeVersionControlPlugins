@@ -57,8 +57,8 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	siStartInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 	siStartInfo.wShowWindow = SW_HIDE;
 
-	const size_t kCommandSize = 4096 << 1; 
-	wchar_t widePath[kCommandSize];
+	const size_t kCommandSize = 32768; 
+	static wchar_t widePath[kCommandSize]; 
 	ConvertUnityPathName(m_Command.c_str(), widePath, kCommandSize);
 
 	// Create the child process. 

@@ -14,9 +14,9 @@ public:
 			resp.enablesRevertUnchanged = false;
 			resp.addTrait("svnUsername", "Username", "Subversion username", "", ConfigResponse::TF_Required);
 			resp.addTrait("svnPassword", "Password", "Subversion password", "", ConfigResponse::TF_Required | ConfigResponse::TF_Password);
-			resp.addTrait("svnRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_Required);
+			//resp.addTrait("svnRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_Required);
 			resp.addTrait("svnOptions", "Options", "Subversion extra options", "", ConfigResponse::TF_None);
-			resp.addTrait("svnExecutable", "Executable", "Path to the svn.exe executable", task.GetSvnExecutable(), ConfigResponse::TF_None);
+			resp.addTrait("svnExecutable", "Executable", "Path to the svn.exe executable. Leave blank to use builtin.", task.GetSvnExecutable(), ConfigResponse::TF_None);
 		}
 		else if (req.key == "pluginVersions")
 		{

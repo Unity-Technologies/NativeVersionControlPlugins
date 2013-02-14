@@ -49,6 +49,8 @@ bool Dispatch(UnityConnection& conn, Session& session,
 		return RunCommand<CommandTmpl, ConfigRequest, ConfigResponse>(conn, session, args);
 	case UCOM_Add:
 		return RunCommand<CommandTmpl, AddRequest, AddResponse>(conn, session, args);
+	case UCOM_Move:
+		return RunCommand<CommandTmpl, MoveRequest, MoveResponse>(conn, session, args);
 	case UCOM_ChangeMove:
 		return RunCommand<CommandTmpl, MoveChangelistRequest, MoveChangelistResponse>(conn, session, args);
 	case UCOM_Checkout:

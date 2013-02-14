@@ -13,8 +13,6 @@ public:
 		for (VersionedAssetList::const_iterator i = req.assets.begin(); 
 			 i != req.assets.end(); ++i)
 		{
-			VersionedAssetList::const_iterator curIter = i;
-
 			std::string srcPath = "\"";
 			srcPath += i->GetPath() + "\"";
 
@@ -27,7 +25,7 @@ public:
 			std::string dstPath = "\"";
 			dstPath += i->GetPath() + "\"";
 			
-			APOpen cppipe = task.RunCommand(cmd);
+			APOpen cppipe = task.RunCommand(cmd + " " + srcPath + " " + dstPath);
 			
 			std::string line;
 			while (cppipe->ReadLine(line))
@@ -36,8 +34,7 @@ public:
 				req.conn.Log().Info() << line << "\n";
 			}
 
-			statAssets.push_back(*curIter);
-
+			statAssets.push_back(*i);
 		}
 
 		const bool recursive = false;

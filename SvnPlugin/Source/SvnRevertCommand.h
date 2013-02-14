@@ -18,7 +18,7 @@ public:
 		}
 
 		// Revert to base
-		std::string cmd = "revert ";
+		std::string cmd = "revert --depth infinity ";
 		cmd += Join(Paths(req.assets), " ", "\"");
 
 		APOpen ppipe = task.RunCommand(cmd);

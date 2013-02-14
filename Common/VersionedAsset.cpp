@@ -81,8 +81,12 @@ vector<string> Paths(const VersionedAssetList& assets)
 	result.reserve(assets.size());
 
 	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
-		result.push_back(i->GetPath());
-
+	{
+		string p = i->GetPath();
+		if (i->IsFolder()) 
+			p.resize(p.size() - 1 ); // strip ending /
+		result.push_back(p);
+	}
 	return result;
 }
 

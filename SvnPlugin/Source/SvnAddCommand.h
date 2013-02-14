@@ -13,7 +13,6 @@ public:
 		std::string line;
 		while (cppipe->ReadLine(line))
 		{
-			Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
 			req.conn.Log().Info() << line << "\n";
 		}
 
