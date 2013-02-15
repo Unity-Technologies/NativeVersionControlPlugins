@@ -30,17 +30,17 @@ public:
 		ClearStatus();
 		
 		string logValue = value;
-		if (key == "vcPassword")
+		if (key == "vcPerforcePassword")
 			logValue = "*";
 		Pipe().Log() << "Got config " << key << " = '" << logValue << "'" << unityplugin::Endl;
 
 		// This command actually handles several commands all 
 		// concerning connecting to the perforce server
-		if (key == "vcUsername")
+		if (key == "vcPerforceUsername")
 		{
 			task.SetP4User(value);
 		}
-		else if (key == "vcWorkspace")
+		else if (key == "vcPerforceWorkspace")
 		{
 			task.SetP4Client(value);
 		}
@@ -48,12 +48,12 @@ public:
 		{
 			task.SetAssetsPath(value);
 		}
-		else if (key == "vcPassword")
+		else if (key == "vcPerforcePassword")
 		{
 			task.SetP4Password(value);
 			value = "*";
 		}
-		else if (key == "vcServer")
+		else if (key == "vcPerforceServer")
 		{
 			string::size_type i = value.find(":");
 			if (i == string::npos)
@@ -75,25 +75,25 @@ public:
 			Pipe().OkLine("enablesRevertUnchanged", MAConfig);
 		
 			Pipe().OkLine("4");
-			Pipe().OkLine("vcUsername");
+			Pipe().OkLine("vcPerforceUsername");
 			Pipe().OkLine("Username", MAConfig);
 			Pipe().OkLine("The perforce user name", MAConfig);
 			Pipe().OkLine("");
 			Pipe().OkLine("1"); // required field
 
-			Pipe().OkLine("vcPassword");
+			Pipe().OkLine("vcPerforcePassword");
 			Pipe().OkLine("Password", MAConfig);
 			Pipe().OkLine("The perforce password", MAConfig);
 			Pipe().OkLine("");
 			Pipe().OkLine("3"); // required field | password field
 
-			Pipe().OkLine("vcWorkspace");
+			Pipe().OkLine("vcPerforceWorkspace");
 			Pipe().OkLine("Workspace", MAConfig);
 			Pipe().OkLine("The perforce workspace/client", MAConfig);
 			Pipe().OkLine("");
 			Pipe().OkLine("1"); // required field
 
-			Pipe().OkLine("vcServer");
+			Pipe().OkLine("vcPerforceServer");
 			Pipe().OkLine("Server", MAConfig);
 			Pipe().OkLine("The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666", MAConfig);
 			Pipe().OkLine("perforce");

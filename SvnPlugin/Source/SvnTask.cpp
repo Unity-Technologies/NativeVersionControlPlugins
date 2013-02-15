@@ -60,23 +60,18 @@ const std::string& SvnTask::GetOptions() const
 
 void SvnTask::SetSvnExecutable(const std::string& e)
 {
-	if (!e.empty())
+	if (!e.empty() && PathExists(e))
 	{
-		if (PathExists(e))
-			m_SvnPath = e;
-		else
-			m_SvnPath.clear();
+		m_SvnPath = e;
+		return;
 	}
 
-	if (e.empty())
-	{
 #if defined(_WINDOWS)
-		m_SvnPath = PluginPath();
-		m_SvnPath = m_SvnPath.substr(0, m_SvnPath.rfind('\\', m_SvnPath.rfind('\\') - 1)) + "\\svn\\svn.exe";
+	m_SvnPath = PluginPath();
+	m_SvnPath = m_SvnPath.substr(0, m_SvnPath.rfind('\\', m_SvnPath.rfind('\\') - 1)) + "\\svn\\svn.exe";
 #else // posix
-		m_SvnPath = "/usr/bin/svn";
+	m_SvnPath = "/usr/bin/svn";
 #endif
-	}
 }
 
 const std::string& SvnTask::GetSvnExecutable() const
@@ -88,9 +83,9 @@ std::string SvnTask::GetCredentials() const
 {
 	string c;
 	if (!m_UserConfig.empty())
-		c += ToString("--username ", m_UserConfig);
+		c += ToString("--username ", m_UserConfig) + " ";
 	if (!m_PasswordConfig.empty())
-		c += ToString("--password ", m_PasswordConfig);
+		c += ToString("--password ", m_PasswordConfig) + " ";
 	if (!m_OptionsConfig.empty())
 		c+= m_OptionsConfig + " ";
 	return c;

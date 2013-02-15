@@ -6,17 +6,19 @@ class SvnCommand<ConfigRequest>
 public:
 	bool Run(SvnTask& task, ConfigRequest& req, ConfigResponse& resp)
 	{
+		std::string val = Join(req.values, " ");
+
 		if (req.key == "pluginTraits")
 		{
 			resp.requiresNetwork = false;
 			resp.enablesCheckout = false;
 			resp.enablesLocking = true;
 			resp.enablesRevertUnchanged = false;
-			resp.addTrait("svnUsername", "Username", "Subversion username", "", ConfigResponse::TF_Required);
-			resp.addTrait("svnPassword", "Password", "Subversion password", "", ConfigResponse::TF_Required | ConfigResponse::TF_Password);
-			//resp.addTrait("svnRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_Required);
-			resp.addTrait("svnOptions", "Options", "Subversion extra options", "", ConfigResponse::TF_None);
-			resp.addTrait("svnExecutable", "Executable", "Path to the svn.exe executable. Leave blank to use builtin.", task.GetSvnExecutable(), ConfigResponse::TF_None);
+			resp.addTrait("vcSubversionUsername", "Username", "Subversion username", "", ConfigResponse::TF_Required);
+			resp.addTrait("vcSubversionPassword", "Password", "Subversion password", "", ConfigResponse::TF_Required | ConfigResponse::TF_Password);
+			//resp.addTrait("vcSubversionRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_Required);
+			resp.addTrait("vcSubversionOptions", "Options", "Subversion extra options", "", ConfigResponse::TF_None);
+			resp.addTrait("vcSubversionExecutable", "Executable", "Path to the svn.exe executable", task.GetSvnExecutable(), ConfigResponse::TF_None);
 		}
 		else if (req.key == "pluginVersions")
 		{
@@ -24,33 +26,33 @@ public:
 		}
 		else if (req.key == "assetsPath")
 		{
-			req.conn.Log() << "Set assetsPath to " << req.values[0] << unityplugin::Endl;
-			task.SetAssetsPath(Join(req.values, " "));
+			req.conn.Log() << "Set assetsPath to " << val << unityplugin::Endl;
+			task.SetAssetsPath(val);
 		}
-		else if (req.key == "svnRepos")
+		else if (req.key == "vcSubversionRepos")
 		{
-			req.conn.Log() << "Set repos to " << req.values[0] << unityplugin::Endl;
-			task.SetRepository(Join(req.values, " "));
+			req.conn.Log() << "Set repos to " << val << unityplugin::Endl;
+			task.SetRepository(val);
 		}
-		else if (req.key == "svnUsername")
+		else if (req.key == "vcSubversionUsername")
 		{
-			req.conn.Log() << "Set username to " << req.values[0] << unityplugin::Endl;
-			task.SetUser(Join(req.values, " "));
+			req.conn.Log() << "Set username to " << val << unityplugin::Endl;
+			task.SetUser(val);
 		}		
-		else if (req.key == "svnPassword")
+		else if (req.key == "vcSubversionPassword")
 		{
 			req.conn.Log() << "Set password to *********" << unityplugin::Endl;
-			task.SetPassword(Join(req.values, " "));
+			task.SetPassword(val);
 		}
-		else if (req.key == "svnOptions")
+		else if (req.key == "vcSubversionOptions")
 		{
-			req.conn.Log() << "Set options to " << req.values[0] << unityplugin::Endl;
-			task.SetOptions(Join(req.values, " "));
+			req.conn.Log() << "Set options to " << val << unityplugin::Endl;
+			task.SetOptions(val);
 		}
-		else if (req.key == "svnExcutable")
+		else if (req.key == "vcSubversionExecutable")
 		{
-			req.conn.Log() << "Set executable path to " << req.values[0] << unityplugin::Endl;
-			task.SetSvnExecutable(Join(req.values, " "));
+			req.conn.Log() << "Set executable path to \"" << val << "\"" << unityplugin::Endl;
+			task.SetSvnExecutable(val);
 		}
 		else
 		{
