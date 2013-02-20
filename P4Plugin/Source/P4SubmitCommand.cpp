@@ -120,7 +120,11 @@ public:
 		
 		// We can never submit the default changelist so essentially we create a new one with its contents
 		// in the case a default change list is passed here.
-		writer.WriteSection ("Change", changelist.GetRevision() == kNewListRevision ? string("new") : changelist.GetRevision());
+		string cn = changelist.GetRevision();
+		if (cn == kNewListRevision || cn == kDefaultListRevision)
+			cn = "new";
+
+		writer.WriteSection ("Change", cn);
 		writer.WriteSection ("Description", changelist.GetDescription());
 		
 		if (hasFiles)
