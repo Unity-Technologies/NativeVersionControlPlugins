@@ -22,18 +22,17 @@ SVNPLUGIN_TARGET = SubversionPlugin
 
 default: all
 
-all: build
+all: P4Plugin SvnPlugin
 
-build: P4Plugin SvnPlugin
+P4Plugin: $(P4PLUGIN_TARGET)
 	mkdir -p Build/$(PLATFORM)
 	cp $(P4PLUGIN_TARGET) Build/$(PLATFORM)
+
+SvnPlugin: $(SVNPLUGIN_TARGET)
+	mkdir -p Build/$(PLATFORM)
 	cp $(SVNPLUGIN_TARGET) Build/$(PLATFORM)
 
 Common: $(COMMON_MODULES)
-
-P4Plugin: $(P4PLUGIN_TARGET)
-
-SvnPlugin: $(SVNPLUGIN_TARGET)
 
 Common/%.o : Common/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
