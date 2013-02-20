@@ -8,6 +8,7 @@ public:
 	UnityCommand ReadCommand(CommandArgs& args);
 	UnityConnection& GetConnection();
 	UnityPipe& Pipe();
+	unityplugin::LogStream& Log();
 
 protected:
 	UnityConnection m_Connection;

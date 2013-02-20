@@ -47,3 +47,8 @@ UnityPipe& Task::Pipe()
 {
 	return m_Connection.Pipe();
 }
+
+unityplugin::LogStream& Task::Log()
+{
+	return m_Connection.Log();
+}
