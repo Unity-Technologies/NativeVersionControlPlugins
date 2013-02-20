@@ -62,5 +62,7 @@ private:
 	// Command execution
 	std::string m_CommandOutput;
 
+	Task* m_Task;
+
 	friend class P4Command;
 };

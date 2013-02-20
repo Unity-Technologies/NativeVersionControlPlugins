@@ -127,18 +127,19 @@ const std::string& P4Task::GetAssetsPath() const
 
 int P4Task::Run()
 {
-	Task task("./p4plugin.log");
-	task.GetConnection().Log().SetLogLevel(unityplugin::LOG_DEBUG);
+	m_Task = new Task("./p4plugin.log");
+	m_Task->Log().SetLogLevel(unityplugin::LOG_DEBUG);
+
 	UnityCommand cmd;
 	vector<string> args;
 
 	for ( ;; )
 	{
-		cmd = task.ReadCommand(args);
+		cmd = m_Task->ReadCommand(args);
 
 		// Make it convenient to get the pipe even though the commands
 		// are callback based.
-		P4Command::s_UnityPipe = &task.Pipe();
+		P4Command::s_UnityPipe = &m_Task->Pipe();
 
 		if (cmd == UCOM_Invalid)
 			return 1; // error
@@ -264,7 +265,7 @@ bool P4Task::IsConnected()
 // Run a perforce command
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
-	//	m_Connection.Pipe().Log() << command << endl;
+	m_Task->Log().Info() << command << unityplugin::Endl;
 	
 	// Force connection if this hasn't been set-up already.
 	// That is unless the command explicitely disallows connect.
