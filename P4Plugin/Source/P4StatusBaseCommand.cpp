@@ -35,7 +35,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		string key(var.Text());
 		string value(val.Text());
-		// Pipe().Log() << key << " # " << value << endl;
+		// Pipe().Log().Debug() << key << " # " << value << endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
 		{

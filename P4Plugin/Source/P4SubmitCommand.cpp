@@ -83,7 +83,7 @@ public:
 		ClearStatus();
 		m_Spec.clear();
 		
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		bool saveOnly = args.size() > 1 && args[1] == "saveOnly";
 		
@@ -96,7 +96,7 @@ public:
 		
 		// Run a view mapping job to get the right depot relative paths for the spec file
 		string localPaths = ResolvePaths(assetList, kPathWild | kPathRecursive);
-		Pipe().Log() << "Paths resolved are: " << localPaths << unityplugin::Endl;
+		Pipe().Log().Debug() << "Paths resolved are: " << localPaths << unityplugin::Endl;
 		
 		cWhere.ClearStatus();
 		cWhere.depotPaths.clear();
@@ -171,8 +171,8 @@ public:
 	// Default handler of P4
 	virtual void InputData( StrBuf *buf, Error *err ) 
 	{
-		Pipe().Log() << "Spec is:" << unityplugin::Endl;
-		Pipe().Log() << m_Spec << unityplugin::Endl;
+		Pipe().Log().Debug() << "Spec is:" << unityplugin::Endl;
+		Pipe().Log().Debug() << m_Spec << unityplugin::Endl;
 		buf->Set(m_Spec.c_str());
 	}
 	

@@ -13,7 +13,7 @@ public:
 	{
 		if (!task.IsConnected()) // Cannot login without being connected
 		{
-			Pipe().Log() << "Cannot login when not connected" << unityplugin::Endl;
+			Pipe().Log().Info() << "Cannot login when not connected" << unityplugin::Endl;
 			return false;
 		}
 		
@@ -27,13 +27,13 @@ public:
 		if (!task.CommandRun(cmd, this) && !m_CheckingForLoggedIn)
 		{
 			string errorMessage = GetStatusMessage();			
-			Pipe().Log() << "ERROR: " << errorMessage << unityplugin::Endl;
+			Pipe().Log().Notice() << "ERROR: " << errorMessage << unityplugin::Endl;
 		}
 		
 		if (m_CheckingForLoggedIn)
-			Pipe().Log() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << unityplugin::Endl;
+			Pipe().Log().Debug() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << unityplugin::Endl;
 		else
-			Pipe().Log() << "Login " << (m_LoggedIn ? "succeeded" : "failed") << unityplugin::Endl;
+			Pipe().Log().Info() << "Login " << (m_LoggedIn ? "succeeded" : "failed") << unityplugin::Endl;
 		m_CheckingForLoggedIn = false;
 		return m_LoggedIn;
 	}
@@ -41,7 +41,7 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
-		Pipe().Log() << "OutputInfo: " << d << unityplugin::Endl;
+		Pipe().Log().Debug() << "OutputInfo: " << d << unityplugin::Endl;
 		if (m_CheckingForLoggedIn)
 		{
 			m_LoggedIn = StartsWith(d, "User ") && d.find(" ticket expires in ") != string::npos;
@@ -80,8 +80,8 @@ public:
 	// Entering password
 	void Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 	{
-		Pipe().Log() << "Prompted for password by server" << unityplugin::Endl;
-		Pipe().Log() << "Prompt: " << msg.Text() << unityplugin::Endl;
+		Pipe().Log().Info() << "Prompted for password by server" << unityplugin::Endl;
+		Pipe().Log().Debug() << "Prompt: " << msg.Text() << unityplugin::Endl;
 		buf.Set(m_Password.c_str());
 	}
 	

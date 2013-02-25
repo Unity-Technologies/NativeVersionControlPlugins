@@ -127,8 +127,7 @@ const std::string& P4Task::GetAssetsPath() const
 
 int P4Task::Run()
 {
-	m_Task = new Task("./p4plugin.log");
-	m_Task->Log().SetLogLevel(unityplugin::LOG_DEBUG);
+	m_Task = new Task("./Library/p4plugin.log");
 
 	UnityCommand cmd;
 	vector<string> args;

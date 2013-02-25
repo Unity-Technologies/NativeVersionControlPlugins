@@ -9,7 +9,7 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 {
 	ClearStatus();
 	bool recursive = args.size() > 1;
-	Pipe().Log() << "StatusCommand::Run()" << unityplugin::Endl;
+	Pipe().Log().Info() << "StatusCommand::Run()" << unityplugin::Endl;
 			
 	VersionedAssetList assetList;
 	Pipe() >> assetList;
@@ -26,7 +26,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 {
 	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
-	Pipe().Log() << "Paths to stat are: " << paths << unityplugin::Endl;
+	Pipe().Log().Debug() << "Paths to stat are: " << paths << unityplugin::Endl;
 	
 	Pipe().BeginList();
 	
@@ -41,7 +41,6 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 	cmd += " " + paths;
 
 	// We're sending along an asset list with an unknown size.
-	
 	task.CommandRun(cmd, this);
 	
 	// The OutputState and other callbacks will now output to stdout.

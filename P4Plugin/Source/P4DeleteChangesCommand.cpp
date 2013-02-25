@@ -11,7 +11,7 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		std::string errorMessage;
 		
 		const string cmd = "change -d";

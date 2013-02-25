@@ -90,7 +90,7 @@ public:
 	bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		string baseCmd = "print -q -o ";
 		string targetDir;
@@ -105,7 +105,7 @@ public:
 		vector<string> paths;
 		ResolvePaths(paths, assetList, kPathWild | kPathSkipFolders);
 		
-		Pipe().Log() << "Paths resolved" << unityplugin::Endl;
+		Pipe().Log().Debug() << "Paths resolved" << unityplugin::Endl;
 
 		Pipe().BeginList();
 		
@@ -134,7 +134,7 @@ public:
 					tmpFile += "head";
 					string fileCmd = cmd + "\"" + tmpFile + "\" \"" + *i + "#head\"";
 
-					Pipe().Log() << fileCmd << unityplugin::Endl;
+					Pipe().Log().Info() << fileCmd << unityplugin::Endl;
 					if (!task.CommandRun(fileCmd, this))
 						break;
 					
@@ -154,7 +154,7 @@ public:
 						cConflictInfo.conflicts.clear();
 						string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 						string rcmd = "resolve -o -n " + localPaths;
-						Pipe().Log() << rcmd << unityplugin::Endl;
+						Pipe().Log().Info() << rcmd << unityplugin::Endl;
 						task.CommandRun(rcmd, &cConflictInfo);
 						Pipe() << cConflictInfo.GetStatus();
 						
@@ -182,7 +182,7 @@ public:
 					{
 						string conflictFile = tmpFile + "conflicting";
 						string conflictCmd = cmd + "\"" + conflictFile + "\" \"" + ci->second.conflict + "\"";
-						Pipe().Log() << conflictCmd << unityplugin::Endl;
+						Pipe().Log().Info() << conflictCmd << unityplugin::Endl;
 						if (!task.CommandRun(conflictCmd, this))
 							break;
 						asset.SetPath(conflictFile);
@@ -190,7 +190,7 @@ public:
 						
 						string baseFile = tmpFile + "base";
 						string baseCmd = cmd + "\"" + baseFile + "\" \"" + ci->second.base + "\"";
-						Pipe().Log() << baseCmd << unityplugin::Endl;
+						Pipe().Log().Info() << baseCmd << unityplugin::Endl;
 						if (!task.CommandRun(baseCmd, this))
 							break;
 						asset.SetPath(baseFile);

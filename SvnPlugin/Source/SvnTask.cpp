@@ -108,8 +108,7 @@ string SvnTask::GetProjectPath() const
 
 int SvnTask::Run()
 {
-	m_Task = new Task("./svnplugin.log");
-	m_Task->GetConnection().Log().SetLogLevel(unityplugin::LOG_DEBUG);
+	m_Task = new Task("./Library/svnplugin.log");
 
 	UnityCommand cmd;
 	CommandArgs args;
@@ -138,7 +137,7 @@ int SvnTask::Run()
 		}
 	} catch (std::exception& e)
 	{
-		m_Task->GetConnection().Log() << "Fatal: " << e.what() << unityplugin::Endl;
+		m_Task->GetConnection().Log().Fatal() << "Fatal: " << e.what() << unityplugin::Endl;
 	}
 	
 	return 1;
@@ -147,10 +146,9 @@ int SvnTask::Run()
 APOpen SvnTask::RunCommand(const std::string& cmd)
 {
 	string cred = GetCredentials();
-	m_Task->GetConnection().Log().Debug() << cred << unityplugin::Endl;
 	string cmdline = "\"";
 	cmdline += m_SvnPath + "\" " + cred + cmd;
-	m_Task->GetConnection().Log() << cmdline << unityplugin::Endl;
+	m_Task->GetConnection().Log().Info() << cmdline << unityplugin::Endl;
 	return APOpen(new POpen(cmdline));
 }
 

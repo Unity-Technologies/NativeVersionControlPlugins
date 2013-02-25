@@ -31,7 +31,7 @@ UnityCommand Task::ReadCommand(CommandArgs& args)
 	}
 	catch (exception& e)
 	{
-		m_Connection.Log() << "While reading command: " << e.what() << Endl;
+		m_Connection.Log().Notice() << "While reading command: " << e.what() << Endl;
 		return UCOM_Invalid;
 	}
 

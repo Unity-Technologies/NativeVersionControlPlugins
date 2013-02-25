@@ -13,7 +13,7 @@ public:
 	{
 		incomingAssetList.clear();
 		ClearStatus();
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		string cmd = "sync";
 		
@@ -21,7 +21,7 @@ public:
 		Pipe() >> assetList;
 		string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
 		
-		Pipe().Log() << "Paths resolved are: " << paths << unityplugin::Endl;
+		Pipe().Log().Debug() << "Paths resolved are: " << paths << unityplugin::Endl;
 		
 		if (paths.empty())
 		{

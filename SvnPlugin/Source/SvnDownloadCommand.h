@@ -50,22 +50,22 @@ public:
 						// include this asset in the response.
 						if (!EnsurePresent(task, mine))
 						{
-							//req.conn.Log() << access(mine.GetPath().c_str(), F_OK) << unityplugin::Endl;
-							req.conn.Log() << "No 'mine' file " << mine.GetPath() << unityplugin::Endl;
+							//req.conn.Log().Debug() << access(mine.GetPath().c_str(), F_OK) << unityplugin::Endl;
+							req.conn.Log().Notice() << "No 'mine' file " << mine.GetPath() << unityplugin::Endl;
 							req.Pipe().ErrorLine(std::string("No 'mine' file for ") + assetPath);
 							continue;
 						}
 						
 						if (!EnsurePresent(task, conflict, assetPath))
 						{
-							req.conn.Log() << "No 'conflict' file " << conflict.GetPath() << unityplugin::Endl;
+							req.conn.Log().Notice() << "No 'conflict' file " << conflict.GetPath() << unityplugin::Endl;
 							req.Pipe().ErrorLine(std::string("No 'conflict' file for ") + assetPath);
 							continue;
 						}
 
 						if (!EnsurePresent(task, base, assetPath))
 						{
-							req.conn.Log() << "No 'base' file " << base.GetPath() << unityplugin::Endl;
+							req.conn.Log().Notice() << "No 'base' file " << base.GetPath() << unityplugin::Endl;
 							req.Pipe().ErrorLine(std::string("No 'base' file for ") + assetPath);
 							continue;
 						}
@@ -77,7 +77,7 @@ public:
 				}
 				catch (std::exception& e)
 				{
-					req.conn.Log() << e.what() << unityplugin::Endl;
+					req.conn.Log().Notice() << e.what() << unityplugin::Endl;
 					req.conn.Pipe().ErrorLine("Error downloading file through svn");
 					resp.assets.clear();
 					resp.Write();

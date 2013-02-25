@@ -37,14 +37,8 @@ public:
 		{
 			
 			VersionedAssetList statAssets;
-			req.conn.Log().Debug() << "D rev: " << i->revision << unityplugin::Endl;
-			task.GetStatus(i->assets, statAssets, false);
-			for (VersionedAssetList::const_iterator j = statAssets.begin();
-				 j != statAssets.end(); ++j)
-			{
-				req.conn.Log().Debug() << "DBG: " << j->GetPath() << " " << j->GetState() << unityplugin::Endl;
-			}
 
+			task.GetStatus(i->assets, statAssets, false);
 			RemoveUpToDateAssets(statAssets, i->revision);
 
 			if (statAssets.empty())

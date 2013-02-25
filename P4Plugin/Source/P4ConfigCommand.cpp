@@ -32,7 +32,8 @@ public:
 		string logValue = value;
 		if (key == "vcPerforcePassword")
 			logValue = "*";
-		Pipe().Log() << "Got config " << key << " = '" << logValue << "'" << unityplugin::Endl;
+
+		Pipe().Log().Info() << "Got config " << key << " = '" << logValue << "'" << unityplugin::Endl;
 
 		// This command actually handles several commands all 
 		// concerning connecting to the perforce server
@@ -47,6 +48,18 @@ public:
 		else if (key == "assetsPath")
 		{
 			task.SetAssetsPath(value);
+		}
+		else if (key == "vcSharedLogLevel")
+		{
+			Pipe().Log().Info() << "Set log level to " << value << unityplugin::Endl;
+			unityplugin::LogLevel level = unityplugin::LOG_DEBUG;
+			if (value == "info")
+				level = unityplugin::LOG_INFO;
+			else if (value == "notice")
+				level = unityplugin::LOG_NOTICE;
+			else if (value == "fatal")
+				level = unityplugin::LOG_FATAL;
+		    Pipe().Log().SetLogLevel(level);
 		}
 		else if (key == "vcPerforcePassword")
 		{
@@ -64,7 +77,7 @@ public:
 		{
 			int sel = SelectVersion(args);
 			Pipe().OkLine(sel, MAConfig); 
-			Pipe().Log() << "Selected plugin protocol version " << sel << unityplugin::Endl;
+			Pipe().Log().Info() << "Selected plugin protocol version " << sel << unityplugin::Endl;
 		}
 		else if (key == "pluginTraits")
 		{

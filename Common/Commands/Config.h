@@ -77,7 +77,7 @@ public:
 		{
 			int v = SelectVersion(request.values);
 			upipe.OkLine(v, MAConfig);
-			upipe.Log() << "Selected plugin protocol version " << v << unityplugin::Endl;
+			upipe.Log().Info() << "Selected plugin protocol version " << v << unityplugin::Endl;
 		} 
 		else if (request.key == "pluginTraits")
 		{

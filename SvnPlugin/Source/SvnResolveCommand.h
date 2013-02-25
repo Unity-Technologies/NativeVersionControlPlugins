@@ -24,7 +24,7 @@ public:
 		std::string line;
 		while (cppipe->ReadLine(line))
 		{
-			req.conn.Log() << line << "\n";
+			req.conn.Log().Info() << line << "\n";
 		}
 
 		const bool recursive = false;

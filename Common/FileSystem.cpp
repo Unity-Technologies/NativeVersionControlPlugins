@@ -73,7 +73,7 @@ static bool IsReadOnlyW(LPCWSTR path)
 	// @TODO: Error handling
 	/*
 	if (INVALID_FILE_ATTRIBUTES == attributes)
-		upipe.Log() << "Error stat on " << path << endl;
+		upipe.Log().Notice() << "Error stat on " << path << endl;
 	 */
 	return FILE_ATTRIBUTE_READONLY & attributes;
 }
@@ -148,7 +148,7 @@ bool IsReadOnly(const string& path)
 	/*int res = */ stat(path.c_str(), &st);
 	/*
 	if (res)
-		upipe.Log() << "Error stat on " << path << ": " << strerror(errno) << endl;
+		upipe.Log().Notice() << "Error stat on " << path << ": " << strerror(errno) << endl;
 	 */
 	
 	return !(st.st_mode & S_IWUSR);

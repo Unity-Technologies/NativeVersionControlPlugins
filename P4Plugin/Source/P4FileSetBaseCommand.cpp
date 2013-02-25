@@ -12,7 +12,7 @@ P4FileSetBaseCommand::P4FileSetBaseCommand(const char* name, const char* cmdstr)
 bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args)
 {
 	ClearStatus();
-	Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+	Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 	
 	string cmd = SetupCommand(args);
 	
@@ -20,7 +20,7 @@ bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args)
 	Pipe() >> assetList;
 	string paths = ResolvePaths(assetList, GetResolvePathFlags());
 	
-	Pipe().Log() << "Paths resolved are: " << paths << unityplugin::Endl;
+	Pipe().Log().Debug() << "Paths resolved are: " << paths << unityplugin::Endl;
 	
 	if (paths.empty())
 	{

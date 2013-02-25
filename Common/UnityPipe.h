@@ -43,8 +43,6 @@ struct UnityPipe {
 public:
 	UnityPipe(unityplugin::LogStream& log) : m_Log(log), m_LineBufferValid(false)
 	{
-		log.Info() << "Setting up UnityPipe" << unityplugin::Endl;
-
 #if defined(_WINDOWS)
 		LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\UnityVCS"); 
 		
@@ -81,7 +79,11 @@ public:
 	{
 #if defined(_WINDOWS)
 		if (m_NamedPipe != INVALID_HANDLE_VALUE)
+		{
+			FlushFileBuffers(m_NamedPipe);
+			
 			CloseHandle(m_NamedPipe);
+		}
 #endif
 	}
 
@@ -105,7 +107,7 @@ private:
 		
 		if (!success) 
 		{
-			Log() << TEXT("WriteFile to pipe failed. GLE=") << ErrorCodeToMsg(GetLastError()) << unityplugin::Endl;
+			Log().Fatal() << TEXT("WriteFile to pipe failed. GLE=") << ErrorCodeToMsg(GetLastError()) << unityplugin::Endl;
 			exit(-1);
 		}
 #else

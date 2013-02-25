@@ -37,7 +37,7 @@ template <template<class> class CommandTmpl, class Session>
 bool Dispatch(UnityConnection& conn, Session& session, 
 			  UnityCommand cmd, const CommandArgs& args)
 {
-	conn.Log() << Join(args, " ") << unityplugin::Endl;
+	conn.Log().Info() << Join(args, " ") << unityplugin::Endl;
 
 	switch (cmd)
 	{

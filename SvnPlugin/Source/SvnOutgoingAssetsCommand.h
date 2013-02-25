@@ -7,7 +7,7 @@ public:
 	bool Run(SvnTask& task, OutgoingAssetsRequest& req, OutgoingAssetsResponse& resp)
 	{
 		// Subversion does 
-		req.conn.Log() << "Outgoing assets for list " << req.revision << unityplugin::Endl;
+		req.conn.Log().Info() << "Outgoing assets for list " << req.revision << unityplugin::Endl;
 
 		std::vector<std::string> changelistAssoc;
 		VersionedAssetList assets;

@@ -31,7 +31,7 @@ UnityCommand UnityConnection::ReadCommand(vector<string>& args)
 		// broken pipe -> error.
 		Enforce<CommandException>(Pipe().IsEOF(), UCOM_Invalid, "empty command");
 
-		Log() << "End of pipe" << Endl;
+		Log().Info() << "End of pipe" << Endl;
 		return UCOM_Shutdown;
 	}
 	

@@ -15,7 +15,7 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{				
 		ClearStatus();
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		const string cmd = string("changes -s pending -u ") + task.GetP4User() + " -c " + task.GetP4Client();
 
 		Pipe().BeginList();

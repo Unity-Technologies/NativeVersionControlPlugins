@@ -26,32 +26,44 @@ public:
 		}
 		else if (req.key == "assetsPath")
 		{
-			req.conn.Log() << "Set assetsPath to " << val << unityplugin::Endl;
+			req.conn.Log().Info() << "Set assetsPath to " << val << unityplugin::Endl;
 			task.SetAssetsPath(val);
+		}
+		else if (req.key == "vcSharedLogLevel")
+		{
+			req.conn.Log().Info() << "Set log level to " << val << unityplugin::Endl;
+			unityplugin::LogLevel level = unityplugin::LOG_DEBUG;
+			if (val == "info")
+				level = unityplugin::LOG_INFO;
+			else if (val == "notice")
+				level = unityplugin::LOG_NOTICE;
+			else if (val == "fatal")
+				level = unityplugin::LOG_FATAL;
+		    req.conn.Log().SetLogLevel(level);
 		}
 		else if (req.key == "vcSubversionRepos")
 		{
-			req.conn.Log() << "Set repos to " << val << unityplugin::Endl;
+			req.conn.Log().Info() << "Set repos to " << val << unityplugin::Endl;
 			task.SetRepository(val);
 		}
 		else if (req.key == "vcSubversionUsername")
 		{
-			req.conn.Log() << "Set username to " << val << unityplugin::Endl;
+			req.conn.Log().Info() << "Set username to " << val << unityplugin::Endl;
 			task.SetUser(val);
 		}		
 		else if (req.key == "vcSubversionPassword")
 		{
-			req.conn.Log() << "Set password to *********" << unityplugin::Endl;
+			req.conn.Log().Info() << "Set password to *********" << unityplugin::Endl;
 			task.SetPassword(val);
 		}
 		else if (req.key == "vcSubversionOptions")
 		{
-			req.conn.Log() << "Set options to " << val << unityplugin::Endl;
+			req.conn.Log().Info() << "Set options to " << val << unityplugin::Endl;
 			task.SetOptions(val);
 		}
 		else if (req.key == "vcSubversionExecutable")
 		{
-			req.conn.Log() << "Set executable path to \"" << val << "\"" << unityplugin::Endl;
+			req.conn.Log().Info() << "Set executable path to \"" << val << "\"" << unityplugin::Endl;
 			task.SetSvnExecutable(val);
 		}
 		else

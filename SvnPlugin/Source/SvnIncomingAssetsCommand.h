@@ -8,7 +8,7 @@ public:
 	{
 		// Subversion does 
 		SvnLogResult result;
-		req.conn.Log() << "Incoming assets for revision " << req.revision << unityplugin::Endl;
+		req.conn.Log().Info() << "Incoming assets for revision " << req.revision << unityplugin::Endl;
 		task.GetLog(result, req.revision, req.revision, true);
 
 		if (result.entries.empty())

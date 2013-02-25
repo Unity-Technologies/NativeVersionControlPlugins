@@ -9,7 +9,7 @@ UnityPipe& operator<<(UnityPipe& p, const VCSStatus& st)
 {
 	// Convertion of p4 errors to unity vcs errors
 	/*
-	p.Log() << "HandleError: " 
+	p.Log().Debug() << "HandleError: " 
 		<< e.SubCode() << " " 
 		<< e.Subsystem() << " " 
 		<< e.Generic() << " " 
@@ -110,26 +110,26 @@ bool P4Command::ConnectAllowed()
 // Default handler of P4
 void P4Command::OutputStat( StrDict *varList ) 
 { 
-	Pipe().Log() << "Default ClientUser OutputState()\n";
+	Pipe().Log().Info() << "Default ClientUser OutputState()\n";
 }
 
 
 // Default handler of P4
 void P4Command::InputData( StrBuf *buf, Error *err ) 
 { 
-	Pipe().Log() << "Default ClientUser InputData()\n";
+	Pipe().Log().Info() << "Default ClientUser InputData()\n";
 }
 
 void P4Command::Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 {
-	Pipe().Log() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
+	Pipe().Log().Info() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
 }
 
 
 // Default handler of P4
 void P4Command::Finished() 
 { 
-//	Pipe().Log() << "Default ClientUser Finished()\n";
+//	Pipe().Log().Info() << "Default ClientUser Finished()\n";
 }
 
 
@@ -149,31 +149,31 @@ void P4Command::HandleError( Error *err )
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	Pipe().Log() << errBuf << "\n";
+	Pipe().Log().Notice() << errBuf << "\n";
 }
 
 void P4Command::ErrorPause( char* errBuf, Error* e)
 {
-	Pipe().Log() << "Error: Default ClientUser ErrorPause()\n";
+	Pipe().Log().Notice() << "Error: Default ClientUser ErrorPause()\n";
 }
 
 
 void P4Command::OutputText( const char *data, int length)
 {
-	Pipe().Log() << "Error: Default ClientUser OutputText\n";
+	Pipe().Log().Info() << "Error: Default ClientUser OutputText\n";
 }
 
 
 void P4Command::OutputBinary( const char *data, int length)
 {
-	Pipe().Log() << "Error: Default ClientUser OutputBinary\n";
+	Pipe().Log().Info() << "Error: Default ClientUser OutputBinary\n";
 }
 
 
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
 {
-	Pipe().Log() << "level " << (int) level << ": " << data << unityplugin::Endl;
+	Pipe().Log().Info() << "level " << (int) level << ": " << data << unityplugin::Endl;
 }
 
 P4Command* P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList)

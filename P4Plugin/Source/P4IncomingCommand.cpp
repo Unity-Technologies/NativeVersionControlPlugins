@@ -28,7 +28,7 @@ public:
 		ClearStatus();
 		m_Changelists.clear();
 
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetAssetsPath(), '/'), '\\') + "/...";
@@ -55,7 +55,7 @@ public:
 		{
 			ss.str("");
 			ss << "changes -l -s submitted \"@" << *i << ",@" << *i << "\"";
-			Pipe().Log() << "    " << ss.str() << unityplugin::Endl;
+			Pipe().Log().Info() << "    " << ss.str() << unityplugin::Endl;
 			
 			if (!task.CommandRun(ss.str(), this))
 			{
@@ -77,7 +77,7 @@ public:
 	// Called once per file for status commands
 	void OutputStat( StrDict *varList )
 	{
-		//Pipe().Log() << "Output list stat" << endl;
+		//Pipe().Log().Info() << "Output list stat" << endl;
 		
 		int i;
 		StrRef var, val;
@@ -101,7 +101,7 @@ public:
 			string key(var.Text());
 			string value(val.Text());
 
-			//Pipe().Log() << "    " << key << " # " << value << endl;
+			//Pipe().Log().Debug() << "    " << key << " # " << value << endl;
 			
 			if (key == "depotFile")
 				depotFile = string(val.Text());
@@ -124,7 +124,7 @@ public:
 			else if (key == "haveRev")
 				haveRev = atoi(val.Text());
 			else 
-				Pipe().Log() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << unityplugin::Endl;
+				Pipe().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << unityplugin::Endl;
 		}
 
 		if (headChange == -1 && added)

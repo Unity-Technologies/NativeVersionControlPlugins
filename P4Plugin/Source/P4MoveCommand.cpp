@@ -12,7 +12,7 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log() << args[0] << "::Run()" << unityplugin::Endl;
+		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		
 		VersionedAssetList assetList;
 		Pipe() >> assetList;
@@ -43,7 +43,7 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			Pipe().Log() << "Ensure editable source " << paths << unityplugin::Endl;
+			Pipe().Log().Debug() << "Ensure editable source " << paths << unityplugin::Endl;
 			
 			string err;
 			bool editable = (src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal)) != 0;
@@ -51,7 +51,7 @@ public:
 			if (!editable)
 			{
 				string srcPath = ResolvePaths(b, b+1, kPathWild | kPathRecursive);
-				Pipe().Log() << "edit " << srcPath << unityplugin::Endl;
+				Pipe().Log().Info() << "edit " << srcPath << unityplugin::Endl;
 				if (!task.CommandRun("edit " + srcPath, this))
 				{
 					break;
@@ -73,7 +73,7 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			Pipe().Log() << "move " << paths << unityplugin::Endl;
+			Pipe().Log().Info() << "move " << paths << unityplugin::Endl;
 			if (!task.CommandRun("move " + paths, this))
 			{
 				break;
