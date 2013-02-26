@@ -22,7 +22,7 @@ LogWriter& Endl(LogWriter& w)
 
 
 LogStream::LogStream(const std::string& path, LogLevel level) 
-	: m_Stream(path.c_str(), std::ios_base::ate), 
+	: m_Stream(path.c_str(), std::ios_base::app), 
 	  m_OnWriter(Self(), true), 
 	  m_OffWriter(Self(), false)
 {
