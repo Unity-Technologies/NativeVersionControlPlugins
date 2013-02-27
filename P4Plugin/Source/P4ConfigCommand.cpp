@@ -69,6 +69,8 @@ public:
 		else if (key == "vcPerforceServer")
 		{
 			string::size_type i = value.find(":");
+			if (value.empty())
+				value = "perforce";
 			if (i == string::npos)
 				value += ":1666"; // default port
 			task.SetP4Port(value);
