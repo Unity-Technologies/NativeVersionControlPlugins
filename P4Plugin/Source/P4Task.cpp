@@ -201,6 +201,8 @@ bool P4Task::Connect(VCSStatus& result)
 			result.insert(VCSStatusItem(VCSSEV_Error, string("Could not connect to Perforce server '") + GetP4Port() + "'"));
 		else if (StartsWith(status.begin()->message, "TCP connect to"))
 			result.insert(VCSStatusItem(VCSSEV_Error, string("Could not connect to Perforce server: '") + GetP4Port() + "'"));
+		else if (StartsWith(status.begin()->message, string("Client '") + m_ClientConfig + "' unknown"))
+			result.insert(VCSStatusItem(VCSSEV_Error, string("Perforce workspace '") + m_ClientConfig + "' does not exist on server: '" + GetP4Port() + "'"));
 		else
 			result.insert(status.begin(), status.end());
 	} 
