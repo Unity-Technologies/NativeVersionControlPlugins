@@ -118,9 +118,12 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	
 	if (EndsWith(value, notFound))
 	{
-		if (StartsWith(value, invalidPath))
+		if (StartsWith(value, invalidPath) || EndsWith(value.substr(0, value.length() - notFound.length()), "..."))
 		{
-			return; // tried to get status with no files matching wildcard //... which is ok
+			// tried to get status with no files matching wildcard //... which is ok
+			// or
+			// tried to get status of empty dir ie. not matching /path/to/empty/dir/... which is ok
+			return;
 		}
 		else if (AddUnknown(asset, value))
 		{
