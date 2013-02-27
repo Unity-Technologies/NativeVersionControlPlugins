@@ -112,7 +112,7 @@ public:
 			Pipe().OkLine("Server", MAConfig);
 			Pipe().OkLine("The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666", MAConfig);
 			Pipe().OkLine("perforce");
-			Pipe().OkLine("1"); // required field
+			Pipe().OkLine("0"); // 
 		} 
 		else 
 		{

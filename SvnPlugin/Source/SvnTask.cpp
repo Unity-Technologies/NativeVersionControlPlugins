@@ -134,6 +134,12 @@ int SvnTask::Run()
 				m_Task->GetConnection().Pipe().EndResponse();
 				throw;
 			}
+			catch (PluginException& ex)
+			{
+				m_Task->GetConnection().Pipe().ErrorLine(ex.what());
+				m_Task->GetConnection().Pipe().EndResponse();
+				throw;
+			}
 		}
 	} catch (std::exception& e)
 	{
@@ -149,7 +155,16 @@ APOpen SvnTask::RunCommand(const std::string& cmd)
 	string cmdline = "\"";
 	cmdline += m_SvnPath + "\" " + cred + cmd;
 	m_Task->GetConnection().Log().Info() << cmdline << unityplugin::Endl;
-	return APOpen(new POpen(cmdline));
+	try
+	{
+		return APOpen(new POpen(cmdline));
+	}
+	catch (PluginException e)
+	{
+		if (PathExists(m_SvnPath))
+			throw;
+		throw PluginException(string("No svn executable at path '") + m_SvnPath + "'");
+	}
 }
 
 int ParseChangeState(int state, char c)

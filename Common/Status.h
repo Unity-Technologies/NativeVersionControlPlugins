@@ -26,6 +26,8 @@ struct VCSStatusItemCmp
 	{
 		if (a.severity > b.severity)
 			return true;
+		else if (a.severity < b.severity)
+			return false;
 		return a.message < b.message;
 	}
 };

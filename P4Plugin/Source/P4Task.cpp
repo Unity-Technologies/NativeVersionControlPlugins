@@ -71,6 +71,11 @@ void P4Task::SetP4Port(const string& p)
 	m_PortConfig = p;
 }
 
+string P4Task::GetP4Port() const
+{
+	return m_PortConfig.empty() ? string("perforce:1666") : m_PortConfig;
+}
+
 void P4Task::SetP4User(const string& u)
 { 
 	m_Client.SetUser(u.c_str()); 
@@ -183,14 +188,26 @@ bool P4Task::Connect(VCSStatus& result)
 	// Set the config because in case of reconnect the 
 	// config has been reset
 	SetP4Root("");
-	m_Client.SetPort(m_PortConfig.c_str());
+	m_Client.SetPort(GetP4Port().c_str());
 	m_Client.SetUser(m_UserConfig.c_str());
 	m_Client.SetPassword(m_PasswordConfig.c_str());
 	m_Client.SetClient(m_ClientConfig.c_str());
 	m_Client.Init( &m_Error );
 	
 	VCSStatus status = errorToVCSStatus(m_Error);
-	result.insert(status.begin(), status.end());
+	if (status.begin()->severity == VCSSEV_Error)
+	{ 
+		if (StartsWith(status.begin()->message, "Connect to server failed; check $P4PORT."))
+			result.insert(VCSStatusItem(VCSSEV_Error, string("Could not connect to Perforce server '") + GetP4Port() + "'"));
+		else if (StartsWith(status.begin()->message, "TCP connect to"))
+			result.insert(VCSStatusItem(VCSSEV_Error, string("Could not connect to Perforce server: '") + GetP4Port() + "'"));
+		else
+			result.insert(status.begin(), status.end());
+	} 
+	else
+	{
+		result.insert(status.begin(), status.end());
+	}
 
 	if( m_Error.Test() )
 	    return false;

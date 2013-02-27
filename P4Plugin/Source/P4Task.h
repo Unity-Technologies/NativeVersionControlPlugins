@@ -18,6 +18,7 @@ public:
 
 	// Setup
 	void SetP4Port(const std::string& p);
+	std::string GetP4Port() const;
 	void SetP4User(const std::string& u);
 	std::string GetP4User();
 	void SetP4Client(const std::string& c);
