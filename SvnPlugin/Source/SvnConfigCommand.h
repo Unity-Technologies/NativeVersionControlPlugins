@@ -7,16 +7,15 @@ public:
 	bool Run(SvnTask& task, ConfigRequest& req, ConfigResponse& resp)
 	{
 		std::string val = Join(req.values, " ");
-
 		if (req.key == "pluginTraits")
 		{
 			resp.requiresNetwork = false;
 			resp.enablesCheckout = false;
 			resp.enablesLocking = true;
 			resp.enablesRevertUnchanged = false;
-			resp.addTrait("vcSubversionUsername", "Username", "Subversion username", "", ConfigResponse::TF_Required);
-			resp.addTrait("vcSubversionPassword", "Password", "Subversion password", "", ConfigResponse::TF_Required | ConfigResponse::TF_Password);
-			//resp.addTrait("vcSubversionRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_Required);
+			resp.addTrait("vcSubversionUsername", "Username", "Subversion username", "", ConfigResponse::TF_None);
+			resp.addTrait("vcSubversionPassword", "Password", "Subversion password", "", ConfigResponse::TF_None | ConfigResponse::TF_Password);
+			//resp.addTrait("vcSubversionRepos", "Repository", "Subversion Repository", "", ConfigResponse::TF_None);
 			resp.addTrait("vcSubversionOptions", "Options", "Subversion extra options", "", ConfigResponse::TF_None);
 			resp.addTrait("vcSubversionExecutable", "Executable", "Path to the svn.exe executable", task.GetSvnExecutable(), ConfigResponse::TF_None);
 		}
