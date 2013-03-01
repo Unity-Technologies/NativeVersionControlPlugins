@@ -36,16 +36,18 @@ public:
 	// Run a single command and write response to stdout
 	// Returns true on success
 	bool CommandRun( const std::string& command, P4Command* client );
+	bool Disconnect();
 
 private:
 
 	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
 
 	// Connection
-	bool Connect(VCSStatus& result);
-	bool Login(VCSStatus& result);
-	bool Disconnect(VCSStatus& result);
+	bool Connect();
+	bool Login();
 
+	void NotifyOffline(const std::string& reason);
+	void NotifyOnline();
 
 	// Perforce connection
 	bool            m_P4Connect;

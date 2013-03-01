@@ -8,7 +8,7 @@
 
 using namespace std;
 
-SvnTask::SvnTask() : m_Task(NULL) 
+SvnTask::SvnTask() : m_Task(NULL), m_IsOnline(false)
 {
 	SetSvnExecutable(""); // Set default svn executable
 }
@@ -312,7 +312,9 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 	// directories.
 	if (recursive)
 	{
-		GetStatusWithChangelists(assets, result, changelistAssoc, "infinity");
+		bool ok = GetStatusWithChangelists(assets, result, changelistAssoc, "infinity", true);
+		if (!ok)
+			GetStatusWithChangelists(assets, result, changelistAssoc, "infinity", false);
 		return;
 	}
 	
@@ -327,20 +329,35 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 			files.push_back(*i);
 	}
 	
+	bool bothOk = true;
 	if (!dirs.empty())
-		GetStatusWithChangelists(dirs, result, changelistAssoc, "empty");
-	if (!files.empty())
-		GetStatusWithChangelists(files, result, changelistAssoc, "files");
+		bothOk = GetStatusWithChangelists(dirs, result, changelistAssoc, "empty", true);
+	if (!files.empty() && bothOk)
+		bothOk = GetStatusWithChangelists(files, result, changelistAssoc, "files", true);
+
+	if (!bothOk)
+	{
+		// try offline status
+		result.clear();
+		changelistAssoc.clear();
+		
+		if (!dirs.empty())
+			GetStatusWithChangelists(dirs, result, changelistAssoc, "empty", false);
+		if (!files.empty())
+			GetStatusWithChangelists(files, result, changelistAssoc, "files", false);
+	}
 }
 
-void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
+bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
 									   VersionedAssetList& result, 
 									   vector<string>& changelistAssoc,
-									   const char* depth)
+									   const char* depth, bool queryRemote)
 {
 	const int MIN_STATUS_LINE_LENGTH = 32;
-	string cmd = "status --show-updates --verbose --depth ";
-	
+	string cmd = "status --verbose ";
+	if (queryRemote)
+		cmd += "--show-updates ";
+	cmd += "--depth ";
 	cmd += depth;
 	cmd += " ";
 	cmd += Join(Paths(assets), " ", "\"");
@@ -348,16 +365,43 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 	string line;
 	string currentChangelist;
+	bool reposVerified = false;
 
 	while (ppipe->ReadLine(line))
 	{
+		m_Task->Log().Debug() << line << unityplugin::Endl;
 		if (EndsWith(line, "is not a working copy"))
 		{
+			// Special case: If "Assets.meta" is local if means that the repository is not valid and we mark it as such
+			if (EndsWith(line, "\\Assets.meta' is not a working copy") || EndsWith(line, "/Assets.meta' is not a working copy"))
+			{
+				m_Task->Pipe().WarnLine("Assets.meta file not part of a subversion working copy\nRemember to add at least the 'Assets' folder and meta file to subversion");
+				NotifyOffline("Project is not in a subversion working folder", true);
+				return true;
+			}
+
 			string::size_type i1 = line.find("'");
 			string::size_type i2 = line.find("'", i1+1); 
 			result.push_back(VersionedAsset(Replace(line.substr(i1+1, i2-i1-1), "\\", "/"), kLocal, ""));	
+			
 			continue;
 		}
+		
+		if (!reposVerified && StartsWith(line, "svn:") && line.find("Unable to connect to a repository") != string::npos)
+		{
+			string msg = "Could not connect subversion to repository ";
+			string::size_type si = line.find('\'');
+			if (si != string::npos)
+				msg += line.substr(si);
+			m_Task->Pipe().WarnLine(msg);
+			NotifyOffline(msg);
+			return false;
+		}
+		
+		if (!reposVerified && queryRemote)
+			NotifyOnline();
+
+		reposVerified = true;
 
 		// Each line is a file status. The first 9 chars indicates
 		// status for different areas. Following at are space separated
@@ -433,6 +477,7 @@ A                0       ?   ?           hello.txt
 
 		*/
 	}
+	return true;
 }
 
 bool isDigit(char c)
@@ -458,16 +503,37 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 	
 	vector<string> toks;
 	VersionedAsset asset;
-
+	bool reposVerified = false;
 	while (ppipe->ReadLine(line))
 	{
-		Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
+		m_Task->Log().Debug() << line << unityplugin::Endl;
+		if (EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.")
+		{
+			NotifyOffline("Project is not in a subversion working folder", true);
+			return;
+		}
+		
+		if (!reposVerified && line.find("Unable to connect to a repository") != string::npos)
+		{
+			string msg = "Could not connect subversion to repository ";
+			string::size_type si = line.find('\'');
+			if (si != string::npos)
+				msg += line.substr(si); 
+			m_Task->Log().Debug() << line << unityplugin::Endl;
+			m_Task->Pipe().WarnLine(msg);
+			NotifyOffline(msg);
+			return;
+		}
+		reposVerified = true;
 		Enforce<SvnException>(StartsWith(line, "--------------"), string("Invalid log header top: ") + line);
 		
+		NotifyOnline();
+
 		// Skip first line of "------"
 		if (!ppipe->ReadLine(line)) 
 			break; 
-
+		
+		m_Task->Log().Debug() << line << unityplugin::Endl;
 		Enforce<SvnException>(line.length() >= MIN_HEADER_LINE_LENGTH && line[0] == 'r',
 							  string("Invalid log header: ") + line);
 		
@@ -489,12 +555,16 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			// Skip first line which is "Changed paths:"
 			if (!ppipe->ReadLine(line)) 
 				break;
-
+			
+			m_Task->Log().Debug() << line << unityplugin::Endl;
+			
 			// Read until blank line which delimits asset files
 			while (ppipe->ReadLine(line))
 			{
 				if (line.empty())
 					break;
+				
+				m_Task->Log().Debug() << line << unityplugin::Endl;
 
 				asset.Reset();
 				string::size_type i1 = line.find_first_not_of(' ');
@@ -555,15 +625,94 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			// Skip first line of message which is blank
 			if (!ppipe->ReadLine(line)) 
 				break;
+			m_Task->Log().Debug() << line << unityplugin::Endl;
 		}
 		
 		for (long i = 0; i < messageLineCount; i++)
 		{
 			if (!ppipe->ReadLine(line)) 
 				break;
+			m_Task->Log().Debug() << line << unityplugin::Endl;
 			entry.message += line + "\n";
 		}
 	}
+}
+
+void SvnTask::NotifyOffline(const std::string& reason, bool invalidWorkingCopy)
+{
+	const char* disableCmdsWorkingCopy[]  = { 
+		/*"add",  
+		"changeDescription", "changeMove",
+		"changes", "changeStatus", "checkout",
+		"deleteChanges", 
+		"delete", */ "download",
+		"getLatest", "incomingChangeAssets", "incoming",
+		"lock", /* "move", "resolve",
+		"revertChanges", "revert", "status", */
+		"submit", "unlock", 
+		0
+	};
+	const char* disableCmdsNonWorkingCopy[]  = { 
+		"add",  
+		"changeDescription", "changeMove",
+		"changes", "changeStatus", "checkout",
+		"deleteChanges", 
+		"delete", "download",
+		"getLatest", "incomingChangeAssets", "incoming",
+		"lock", "move", "resolve",
+		"revertChanges", "revert", "status",
+		"submit", "unlock", 
+		0
+	};
+
+	const char** disableCmds = invalidWorkingCopy ? disableCmdsNonWorkingCopy : disableCmdsWorkingCopy;
+
+	m_IsOnline = false;
+
+	int i = 0;
+	while (disableCmds[i])
+	{
+		m_Task->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		++i;
+	}
+
+	m_Task->Pipe().Command(string("offline ") + reason, MAProtocol);
+}
+
+void SvnTask::NotifyOnline()
+{
+	const char* enableCmds[]  = { 
+		"add",  
+		"changeDescription", "changeMove",
+		"changes", "changeStatus", /* "checkout", */
+		/* "deleteChanges", */ 
+		"delete", "download",
+		"getLatest", "incomingChangeAssets", "incoming",
+		"lock", "move", "resolve",
+		"revertChanges", "revert", "status", 
+		"submit", "unlock", 
+		0
+	};
+	int i = 0;
+	while (enableCmds[i])
+	{
+		m_Task->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		++i;
+	}
+
+	const char* disableCmds[]  = { 
+		"checkout",
+		"deleteChanges", 
+		0
+	};
+	i = 0;
+	while (disableCmds[i])
+	{
+		m_Task->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		++i;
+	}
+	m_IsOnline = true;
+	m_Task->Pipe().Command("online");
 }
 
 SvnException::SvnException(const std::string& about) : m_What(about) {}

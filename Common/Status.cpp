@@ -10,6 +10,7 @@ const char* VCSSeverityToString(VCSSeverity s)
 	case VCSSEV_Info: return "Info";
 	case VCSSEV_Warn: return "Warn";
 	case VCSSEV_Error: return "Error";
+	case VCSSEV_Command: return "Command";
 	default: break;
 	}
 	return "<UNKNOWN SEVERITY>";

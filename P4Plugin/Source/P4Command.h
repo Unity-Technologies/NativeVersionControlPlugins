@@ -8,6 +8,7 @@
 
 typedef std::vector<std::string> CommandArgs;
 UnityPipe& operator<<(UnityPipe& p, const VCSStatus& v);
+UnityPipe& SendToPipe(UnityPipe& p, const VCSStatus& st, MessageArea ma, bool safeSend = true);
 
 /* 
  * Base class for all commands that unity can issue and is supported

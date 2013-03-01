@@ -36,7 +36,7 @@ LogStream& LogStream::Self(void)
 
 LogStream::~LogStream()
 {
-	Flush();
+	m_Stream.flush();
 	m_Stream.close();
 }
 

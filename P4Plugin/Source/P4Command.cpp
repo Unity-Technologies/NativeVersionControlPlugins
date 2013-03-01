@@ -5,43 +5,45 @@
 
 using namespace std;
 
-UnityPipe& operator<<(UnityPipe& p, const VCSStatus& st)
+UnityPipe& SendToPipe(UnityPipe& p, const VCSStatus& st, MessageArea ma, bool safeSend)
 {
 	// Convertion of p4 errors to unity vcs errors
-	/*
-	p.Log().Debug() << "HandleError: " 
-		<< e.SubCode() << " " 
-		<< e.Subsystem() << " " 
-		<< e.Generic() << " " 
-		<< e.ArgCount() << " " 
-		<< e.Severity() << " " 
-		<< e.UniqueCode() << " " 
-		<< e.fmt << endl;
-	 */
-	
 	for (VCSStatus::const_iterator i = st.begin(); i != st.end(); ++i)
 	{
 		switch (i->severity)
 		{
 		case VCSSEV_OK: 
-			p.OkLine(i->message);
+			if (safeSend)
+				p.InfoLine(i->message, ma);
+			else
+				p.OkLine(i->message, ma);
 			break;
 		case VCSSEV_Info:
-			p.InfoLine(i->message);
+			p.InfoLine(i->message, ma);
 			break;
 		case VCSSEV_Warn:
-			p.WarnLine(i->message);
+			p.WarnLine(i->message, ma);
 			break;
 		case VCSSEV_Error:
-			p.ErrorLine(i->message);
+			if (safeSend)
+				p.WarnLine(i->message, ma);
+			else
+				p.ErrorLine(i->message, ma);
+			break;
+		case VCSSEV_Command: 
+			p.Command(i->message, ma);
 			break;
 		default:
-			p.ErrorLine(string("<Unknown errortype>: ") + i->message);
+			p.ErrorLine(string("<Unknown errortype>: ") + i->message, ma);
 		}
 	}
 	return p;
 }
 
+UnityPipe& operator<<(UnityPipe& p, const VCSStatus& st)
+{
+	return SendToPipe(p, st, MAGeneral, false);
+}
 
 // Global map of all commands registered at initialization time
 typedef std::map<string, P4Command*> CommandMap;

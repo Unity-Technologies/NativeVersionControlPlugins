@@ -280,7 +280,21 @@ public:
 #endif
 		return *this;
 	}
-	
+
+	UnityPipe& Command(const std::string& cmd, MessageArea ma = MAGeneral)
+	{
+		Write("c", m_Log.Debug());
+		Write(ma, m_Log.Debug());
+		Write(":", m_Log.Debug());
+		if (!cmd.empty())
+			Write(cmd, m_Log.Debug());
+		__Write("\n", m_Log.Debug());
+#if defined(_WINDOWS)
+		FlushFileBuffers(m_NamedPipe);
+#endif
+		return *this;
+	}
+
 	UnityPipe& Ok(const std::string& msg = "", MessageArea ma = MAGeneral)
 	{
 		Write("o", m_Log.Debug());

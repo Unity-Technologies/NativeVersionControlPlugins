@@ -48,7 +48,9 @@ VCSStatus errorToVCSStatus(Error& e)
 	StrBuf msg;
 	e.Fmt(&msg);
 	VCSStatus status;
-	status.insert(VCSStatusItem(sev, msg.Text()));
+	string msgStr = msg.Text();
+	if (!msgStr.empty() || sev != VCSSEV_OK)
+		status.insert(VCSStatusItem(sev, msgStr));
 	return status;
 }
 
@@ -61,8 +63,7 @@ P4Task::P4Task()
 
 P4Task::~P4Task()
 {
-	VCSStatus dummy;
-	Disconnect(dummy);
+	Disconnect();
 }
 
 void P4Task::SetP4Port(const string& p)
@@ -171,15 +172,15 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
 }
 
 // Initialize the perforce client
-bool P4Task::Connect(VCSStatus& result)
+bool P4Task::Connect()
 {   
 	// If connection is still active then return success
     if ( IsConnected() )
-		return Login(result);
+		return Login();
 
 	// Disconnect client if marked as connected and return error
 	// if not possible
-    if ( m_P4Connect && !Disconnect(result)) return false;
+    if ( m_P4Connect && !Disconnect()) return false;
 
     m_Error.Clear();
 	m_Client.SetProg( "Unity" );
@@ -188,7 +189,7 @@ bool P4Task::Connect(VCSStatus& result)
 	// Set the config because in case of reconnect the 
 	// config has been reset
 	SetP4Root("");
-	m_Client.SetPort(GetP4Port().c_str());
+	m_Client.SetPort(GetP4Port().c_str()); 
 	m_Client.SetUser(m_UserConfig.c_str());
 	m_Client.SetPassword(m_PasswordConfig.c_str());
 	m_Client.SetClient(m_ClientConfig.c_str());
@@ -198,17 +199,17 @@ bool P4Task::Connect(VCSStatus& result)
 	if (status.begin()->severity == VCSSEV_Error)
 	{ 
 		if (StartsWith(status.begin()->message, "Connect to server failed; check $P4PORT."))
-			result.insert(VCSStatusItem(VCSSEV_Error, string("Could not connect to Perforce server '") + GetP4Port() + "'"));
+			NotifyOffline(string("Could not connect to Perforce server '") + GetP4Port() + "'");
 		else if (StartsWith(status.begin()->message, "TCP connect to"))
-			result.insert(VCSStatusItem(VCSSEV_Error, string("Could not connect to Perforce server: '") + GetP4Port() + "'"));
+			NotifyOffline(string("Could not connect to Perforce server: '") + GetP4Port() + "'");
 		else if (StartsWith(status.begin()->message, string("Client '") + m_ClientConfig + "' unknown"))
-			result.insert(VCSStatusItem(VCSSEV_Error, string("Perforce workspace '") + m_ClientConfig + "' does not exist on server: '" + GetP4Port() + "'"));
+			NotifyOffline(string("Perforce workspace '") + m_ClientConfig + "' does not exist on server: '" + GetP4Port() + "'");
 		else
-			result.insert(status.begin(), status.end());
+			SendToPipe(m_Task->Pipe(), status, MAProtocol);
 	} 
 	else
 	{
-		result.insert(status.begin(), status.end());
+		SendToPipe(m_Task->Pipe(), status, MAProtocol);
 	}
 
 	if( m_Error.Test() )
@@ -218,10 +219,52 @@ bool P4Task::Connect(VCSStatus& result)
 
 	// We enforce ticket based authentication since that
 	// is supported on every security level.
-	return Login(result);
+	return Login();
 }
 
-bool P4Task::Login(VCSStatus& result)
+void P4Task::NotifyOffline(const string& reason)
+{
+	const char* disableCmds[]  = { 
+		"add", "changeDescription", "changeMove",
+		"changes", "changeStatus", "checkout",
+		"deleteChanges", "delete", "download",
+		"getLatest", "incomingChangeAssets", "incoming",
+		"lock", "move", "resolve",
+		"revertChanges", "revert", "status",
+		"submit", "unlock", 
+		0
+	};
+	int i = 0;
+	while (disableCmds[i])
+	{
+		m_Task->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		++i;
+	}
+	m_Task->Pipe().Command(string("offline ") + reason, MAProtocol);
+}
+
+void P4Task::NotifyOnline()
+{
+	const char* enableCmds[]  = { 
+		"add", "changeDescription", "changeMove",
+		"changes", "changeStatus", "checkout",
+		"deleteChanges", "delete", "download",
+		"getLatest", "incomingChangeAssets", "incoming",
+		"lock", "move", "resolve",
+		"revertChanges", "revert", "status",
+		"submit", "unlock", 
+		0
+	};
+	m_Task->Pipe().Command("online", MAProtocol);
+	int i = 0;
+	while (enableCmds[i])
+	{
+		m_Task->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		++i;
+	}
+}
+
+bool P4Task::Login()
 {	
 	// First check if we're already logged in
 	P4Command* p4c = LookupCommand("login");
@@ -229,18 +272,26 @@ bool P4Task::Login(VCSStatus& result)
 	args.push_back("login");
 	args.push_back("-s");
 	bool loggedIn = p4c->Run(*this, args); 
-	result.insert(p4c->GetStatus().begin(), p4c->GetStatus().end());
+	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
+	
 	if (loggedIn) 
+	{
+		NotifyOnline(); // TODO: fix so that we do not send this for all requests.
 		return true; // All is fine. We're already logged in
+	}
 
 	// Do the actual login
 	args.clear();
 	args.push_back("login");
 	loggedIn = p4c->Run(*this, args); 
-	result.insert(p4c->GetStatus().begin(), p4c->GetStatus().end());
+	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
+
 	if (!loggedIn)
+	{
+		NotifyOffline("Login failed");
 		return false; // error login
-	
+	}
+
 	if (GetP4Root().empty())
 	{
 		// Need to get Root path as the first thing on connect
@@ -248,14 +299,19 @@ bool P4Task::Login(VCSStatus& result)
 		vector<string> args;
 		args.push_back("spec");
 		bool res = p4c->Run(*this, args); // fetched root info
-		result.insert(p4c->GetStatus().begin(), p4c->GetStatus().end());
+		if (res)
+			NotifyOnline();
+		SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
+		if (!res)
+			NotifyOffline("Couldn't fetch client spec file from perforce server");
 		return res;
 	}
+	NotifyOnline();
 	return true; // root reused
 }
 
 // Finalise the perforce client 
-bool P4Task::Disconnect(VCSStatus& result)
+bool P4Task::Disconnect()
 {
     m_Error.Clear();
 
@@ -266,7 +322,7 @@ bool P4Task::Disconnect(VCSStatus& result)
     m_P4Connect = false;
 
 	VCSStatus status = errorToVCSStatus(m_Error);
-	result.insert(status.begin(), status.end());
+	SendToPipe(m_Task->Pipe(), status, MAProtocol);
 
 	if( m_Error.Test() )
 	    return false;
@@ -287,7 +343,7 @@ bool P4Task::CommandRun(const string& command, P4Command* client)
 	
 	// Force connection if this hasn't been set-up already.
 	// That is unless the command explicitely disallows connect.
-	if (!client->ConnectAllowed() || Connect(client->GetStatus()))
+	if (!client->ConnectAllowed() || Connect())
 	{
 		// Split out the arguments
 		int argc = 0;

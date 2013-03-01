@@ -7,7 +7,8 @@ enum VCSSeverity
 	VCSSEV_OK,
 	VCSSEV_Info,
 	VCSSEV_Warn,
-	VCSSEV_Error
+	VCSSEV_Error,
+	VCSSEV_Command
 };
 
 const char* VCSSeverityToString(VCSSeverity s);

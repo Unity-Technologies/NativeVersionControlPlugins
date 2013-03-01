@@ -35,13 +35,17 @@ public:
 								  std::vector<std::string>& changelistAssoc, bool recursive);
 	void GetLog(SvnLogResult& result, const std::string& from, const std::string& to, bool includeAssets = false);
 
+	void NotifyOffline(const std::string& reason, bool invalidWorkingCopy = false);
+	void NotifyOnline();
+	bool IsOnline() { return m_IsOnline; }
+
 private:
 	//	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
 
 	std::string GetCredentials() const;
-	void GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
+	bool GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
 								  std::vector<std::string>& changelistAssoc, 
-								  const char* depth);
+								  const char* depth, bool queryRemote);
 	Task* m_Task;
 	std::string m_SvnPath;
 	std::string m_AssetsPath;
@@ -50,6 +54,8 @@ private:
 	std::string m_UserConfig;
 	std::string m_PasswordConfig;
 	std::string m_OptionsConfig;
+	
+	bool m_IsOnline;
 };
 
 class SvnException : public std::exception
