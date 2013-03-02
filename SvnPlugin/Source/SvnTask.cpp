@@ -393,7 +393,7 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 			string::size_type si = line.find('\'');
 			if (si != string::npos)
 				msg += line.substr(si);
-			m_Task->Pipe().WarnLine(msg);
+			m_Task->Pipe().WarnLine(msg, MAProtocol);
 			NotifyOffline(msg);
 			return false;
 		}
@@ -520,7 +520,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			if (si != string::npos)
 				msg += line.substr(si); 
 			m_Task->Log().Debug() << line << unityplugin::Endl;
-			m_Task->Pipe().WarnLine(msg);
+			m_Task->Pipe().WarnLine(msg, MAProtocol);
 			NotifyOffline(msg);
 			return;
 		}
