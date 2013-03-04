@@ -6,7 +6,7 @@ class SvnCommand<DeleteRequest>
 public:
 	bool Run(SvnTask& task, DeleteRequest& req, DeleteResponse& resp)
 	{
-		std::string cmd = "delete ";
+		std::string cmd = "delete --force ";
 		cmd += Join(Paths(req.assets), " ", "\"");
 		APOpen cppipe = task.RunCommand(cmd);
 
