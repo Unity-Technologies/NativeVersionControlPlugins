@@ -80,6 +80,8 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	// client has terminated. This is turn would block reads/writes and we would get EOL.
 	CloseHandle(m_ChildStd_OUT_Wr);
 	CloseHandle(m_ChildStd_IN_Rd);
+	m_ChildStd_OUT_Wr = NULL;
+	m_ChildStd_IN_Rd = NULL;
 }
 
 POpen::~POpen()
