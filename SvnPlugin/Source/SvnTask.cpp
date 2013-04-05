@@ -507,7 +507,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 	while (ppipe->ReadLine(line))
 	{
 		m_Task->Log().Debug() << line << unityplugin::Endl;
-		if (EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.")
+		if (EndsWith(line, "is not a working copy"))
 		{
 			NotifyOffline("Project is not in a subversion working folder", true);
 			return;
