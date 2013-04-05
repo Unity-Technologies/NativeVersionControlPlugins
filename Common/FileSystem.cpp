@@ -6,6 +6,24 @@
 
 using namespace std;
 
+static string ParentDirectory(const string& path)
+{
+	if (path.empty()) return path;
+
+	size_t i = string::npos;
+
+	if (*path.rbegin() == '/')
+		i = path.length() - 2;
+
+	i = path.rfind('/', i);
+
+	if (i == string::npos)
+		return "";
+
+	// include the ending / in the result
+	return path.substr(0, i+1);
+}
+
 #if WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
@@ -49,6 +67,10 @@ const size_t kDefaultPathBufferSize = 1024;
 
 bool EnsureDirectory(const string& path)
 {
+	string parent = ParentDirectory(path);
+	if (!IsDirectory(parent) && !EnsureDirectory(parent))
+		return false;
+
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	
@@ -113,6 +135,30 @@ static bool RemoveReadOnlyW(LPCWSTR path)
 	return false;
 }
 
+bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
+{
+	if (createMissingFolders && !EnsureDirectory(ParentDirectory(toPath)))
+		return false;
+
+	wchar_t wideFrom[kDefaultPathBufferSize], wideTo[kDefaultPathBufferSize];
+	ConvertUnityPathName( fromPath.c_str(), wideFrom, kDefaultPathBufferSize );
+	ConvertUnityPathName( toPath.c_str(), wideTo, kDefaultPathBufferSize );
+
+	BOOL b = FALSE;
+	if( CopyFileExW( wideFrom, wideTo, NULL, NULL, &b, 0) )
+		return true;
+	
+	if (ERROR_ACCESS_DENIED == GetLastError())
+	{
+		if (RemoveReadOnlyW(wideTo))
+		{
+			b = FALSE;
+			if ( CopyFileExW( wideFrom, wideTo, NULL, NULL, &b, 0) )
+				return true;
+		}
+	}
+	return false;
+}
 
 bool MoveAFile(const string& fromPath, const string& toPath)
 {
@@ -164,6 +210,10 @@ bool IsDirectory(const std::string& path)
 
 bool EnsureDirectory(const string& path)
 {
+	string parent = ParentDirectory(path);
+	if (!IsDirectory(parent) && !EnsureDirectory(parent))
+		return false;
+
 	int res = mkdir(path.c_str(), 0777);
 	if (res == -1 && errno != EEXIST)
 	{
@@ -177,6 +227,46 @@ bool EnsureDirectory(const string& path)
 bool PathExists(const std::string& path)
 {
 	return access(path.c_str(), F_OK) == 0;
+}
+
+static bool fcopy(FILE *f1, FILE *f2)
+{
+    char            buffer[BUFSIZ];
+    size_t          n;
+
+    while ((n = fread(buffer, sizeof(char), sizeof(buffer), f1)) > 0)
+    {
+        if (fwrite(buffer, sizeof(char), n, f2) != n)
+			return false;
+    }
+}
+
+bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
+{
+	if (createMissingFolders && !EnsureDirectory(ParentDirectory(toPath)))
+		return false;
+
+    FILE *fp1;
+    FILE *fp2;
+
+    if ((fp1 = fopen(fromPath.c_str(), "rb")) == 0)
+		return false;
+
+	// Make sure the file does not exist already
+	int l = unlink(toPath.c_str());
+	if (l != 0 && errno != ENOENT && errno != ENOTDIR)
+		return false; 
+
+    if ((fp2 = fopen(toPath.c_str(), "wb")) == 0)
+	{
+		fclose(fp1);
+		return false;
+	}
+
+	bool res = fcopy(fp1, fp2);
+	fclose(fp1);
+	fclose(fp2);
+	return res;
 }
 
 bool MoveAFile(const string& fromPath, const string& toPath)

@@ -9,10 +9,13 @@ public:
 	
 	virtual string SetupCommand(const CommandArgs& args)
 	{
-		return 
-		args.size() > 1 && args[1] == "unchangedOnly" ? 
-		"revert -a " :
-		"revert ";
+		string mode = args[1];
+		if (mode == "unchangedOnly")
+			return "revert -a ";
+		else if (mode == "keepLocalModifications")
+			return "revert -k ";
+		else
+			return "revert ";
 	}	
 } cRevert;
 
