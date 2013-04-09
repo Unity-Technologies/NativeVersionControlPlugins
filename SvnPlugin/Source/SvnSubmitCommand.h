@@ -19,8 +19,10 @@ public:
 			std::string createChangelistCmd = "changelist ";
 			std::string firstLineOfDescription = req.changelist.GetDescription();
 			firstLineOfDescription = firstLineOfDescription.substr(0, firstLineOfDescription.find('\n'));
+			createChangelistCmd += "\"";
 			createChangelistCmd += req.changelist.GetRevision() == kNewListRevision ? 
 				firstLineOfDescription : req.changelist.GetRevision();
+			createChangelistCmd += "\"";
 			createChangelistCmd += " ";
 			createChangelistCmd += Join(Paths(req.assets), " ", "\"");
 			APOpen cppipe = task.RunCommand(createChangelistCmd);
