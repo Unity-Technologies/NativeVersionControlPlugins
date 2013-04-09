@@ -4,9 +4,14 @@
  
 #include "stdio.h" // popen
 #include "ctype.h" // isdigit
+#include "time.h"
 #include <algorithm>
+#include <map>
 
 using namespace std;
+
+static map<int, SvnLogResult::Entry> g_LogCache;
+static size_t g_LogCacheAssetsCount = 0;
 
 SvnTask::SvnTask() : m_Task(NULL), m_IsOnline(false)
 {
@@ -20,7 +25,12 @@ SvnTask::~SvnTask()
 
 void SvnTask::SetRepository(const std::string& p)
 {
-	m_RepositoryConfig = p;
+	if (m_RepositoryConfig != p)
+	{
+		m_RepositoryConfig = p;
+		g_LogCacheAssetsCount = 0;
+		g_LogCache.clear();
+	}
 }
 
 const std::string& SvnTask::GetRepository() const
@@ -30,7 +40,13 @@ const std::string& SvnTask::GetRepository() const
 
 void SvnTask::SetUser(const std::string& p)
 {
-	m_UserConfig = p;
+	if (m_UserConfig != p)
+	{
+		m_UserConfig = p;
+		g_LogCacheAssetsCount = 0;
+		g_LogCache.clear();
+	}
+	
 }
 
 const std::string& SvnTask::GetUser() const
@@ -40,7 +56,12 @@ const std::string& SvnTask::GetUser() const
 
 void SvnTask::SetPassword(const std::string& p)
 {
-	m_PasswordConfig = p;
+	if (m_PasswordConfig != p)
+	{
+		m_PasswordConfig = p;		
+		g_LogCacheAssetsCount = 0;
+		g_LogCache.clear();
+	}
 }
 
 const std::string& SvnTask::GetPassword() const
@@ -50,7 +71,12 @@ const std::string& SvnTask::GetPassword() const
 
 void SvnTask::SetOptions(const std::string& p)
 {
-	m_OptionsConfig = p;
+	if (m_OptionsConfig != p)
+	{
+		m_OptionsConfig = p;
+		g_LogCacheAssetsCount = 0;
+		g_LogCache.clear();
+	}
 }
 
 const std::string& SvnTask::GetOptions() const
@@ -130,20 +156,23 @@ int SvnTask::Run()
 			}
 			catch (SvnException& ex)
 			{
+				m_Task->Log().Fatal() << "Fatal 1: " << ex.what() << unityplugin::Endl;
 				m_Task->GetConnection().Pipe().ErrorLine(ex.what());
 				m_Task->GetConnection().Pipe().EndResponse();
-				throw;
+				return 1;
 			}
 			catch (PluginException& ex)
 			{
+				m_Task->Log().Fatal() << "Fatal 2: " << ex.what() << unityplugin::Endl;
 				m_Task->GetConnection().Pipe().ErrorLine(ex.what());
 				m_Task->GetConnection().Pipe().EndResponse();
-				throw;
+				return 1;
 			}
 		}
-	} catch (std::exception& e)
+	} 
+	catch (std::exception& e)
 	{
-		m_Task->GetConnection().Log().Fatal() << "Fatal: " << e.what() << unityplugin::Endl;
+		m_Task->Log().Fatal() << "Fatal: " << e.what() << unityplugin::Endl;
 	}
 	
 	return 1;
@@ -295,16 +324,16 @@ int ParseSyncedState(int state, char c)
 }
 
 void SvnTask::GetStatus(const VersionedAssetList& assets, VersionedAssetList& result, 
-						bool recursive)
+						bool recursive, bool queryRemote)
 {
 	vector<string> dummy;
-	return GetStatusWithChangelists(assets, result, dummy, recursive);
+	return GetStatusWithChangelists(assets, result, dummy, recursive, queryRemote);
 }
 
 void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
 									   VersionedAssetList& result, 
 									   vector<string>& changelistAssoc,
-									   bool recursive)
+									   bool recursive, bool queryRemote)
 {
 	// Svn version 1.7.6 fixed that --depth=empty could be used with files
 	// but until that is a common version we need to run partition the
@@ -312,7 +341,7 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 	// directories.
 	if (recursive)
 	{
-		bool ok = GetStatusWithChangelists(assets, result, changelistAssoc, "infinity", true);
+		bool ok = queryRemote && GetStatusWithChangelists(assets, result, changelistAssoc, "infinity", true);
 		if (!ok)
 			GetStatusWithChangelists(assets, result, changelistAssoc, "infinity", false);
 		return;
@@ -331,9 +360,9 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 	
 	bool bothOk = true;
 	if (!dirs.empty())
-		bothOk = GetStatusWithChangelists(dirs, result, changelistAssoc, "empty", true);
+		bothOk = queryRemote && GetStatusWithChangelists(dirs, result, changelistAssoc, "empty", true);
 	if (!files.empty() && bothOk)
-		bothOk = GetStatusWithChangelists(files, result, changelistAssoc, "files", true);
+		bothOk = queryRemote && GetStatusWithChangelists(files, result, changelistAssoc, "files", true);
 
 	if (!bothOk)
 	{
@@ -346,6 +375,35 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		if (!files.empty())
 			GetStatusWithChangelists(files, result, changelistAssoc, "files", false);
 	}
+}
+
+bool SvnTask::HandleConnectErrorLine(const std::string& line)
+{
+	bool connectError = line.find("Unable to connect to a repository") != string::npos;
+	bool svnVersionError = 
+		line.find("appears to be part of a Subversion") != string::npos &&
+		EndsWith(line, " or greater");
+
+	if (connectError)
+	{
+		string msg = "Could not connect subversion to repository ";
+		string::size_type si = line.find('\'');
+		if (si != string::npos)
+			msg += line.substr(si);
+		m_Task->Pipe().WarnLine(msg, MAProtocol);
+		NotifyOffline(msg);
+	} 
+	else if (svnVersionError)
+	{
+		string::size_type i = line.find("appears to be part of a Subversion");
+		string msg = "Project ";
+		msg += line.substr(i);
+		msg += ". The unity builtin svn is a lower version. You can specify a custom svn path in Editor Settings.";
+		m_Task->Pipe().WarnLine(msg, MAProtocol);
+		NotifyOffline(msg);
+	}
+	
+	return connectError || svnVersionError;
 }
 
 bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
@@ -361,14 +419,31 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 	cmd += depth;
 	cmd += " ";
 	cmd += Join(Paths(assets), " ", "\"");
+
+	m_Task->Pipe().Progress(-1, 0, "secs. while reading status...");
+
 	APOpen ppipe = RunCommand(cmd);
 
 	string line;
 	string currentChangelist;
 	bool reposVerified = false;
 
+	time_t lastTick = time(NULL);
+	time_t startTick = lastTick;
+
+	set<string> assetsResolved;
+
+	// TODO: parse XML instead of this not so stable output
+
 	while (ppipe->ReadLine(line))
 	{
+		time_t thisTick = time(NULL);
+		if (lastTick != thisTick)
+		{
+			m_Task->Pipe().Progress(-1, thisTick - startTick, "secs. while reading status...");
+			lastTick = thisTick;
+		}
+
 		m_Task->Log().Debug() << line << unityplugin::Endl;
 		if (EndsWith(line, "is not a working copy"))
 		{
@@ -383,25 +458,20 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 			string::size_type i1 = line.find("'");
 			string::size_type i2 = line.find("'", i1+1); 
 			result.push_back(VersionedAsset(Replace(line.substr(i1+1, i2-i1-1), "\\", "/"), kLocal, ""));	
-			
+			assetsResolved.insert(result.back().GetPath());
 			continue;
 		}
 		
-		if (!reposVerified && StartsWith(line, "svn:") && line.find("Unable to connect to a repository") != string::npos)
-		{
-			string msg = "Could not connect subversion to repository ";
-			string::size_type si = line.find('\'');
-			if (si != string::npos)
-				msg += line.substr(si);
-			m_Task->Pipe().WarnLine(msg, MAProtocol);
-			NotifyOffline(msg);
-			return false;
-		}
+		if (!reposVerified)
+		{ 
+			if (HandleConnectErrorLine(line))
+				return false; // connect error
 		
-		if (!reposVerified && queryRemote)
-			NotifyOnline();
+			if (queryRemote)
+				NotifyOnline();
 
-		reposVerified = true;
+			reposVerified = true;
+		}
 
 		// Each line is a file status. The first 9 chars indicates
 		// status for different areas. Following at are space separated
@@ -459,16 +529,22 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		// Revision is idx 11-19
 		string revision = TrimStart(line.substr(10, 8), ' ');
 
-		// Filename is a idx 41
-		string filename = line.substr(41);
+		// Filename is after usename which starts at idx 28 or 29
+		string::size_type i1 = line.find(' ', line[28] == ' ' ? 29 : 28);
+		i1 = line.find_first_not_of(' ', i1);
+		string filename = line.substr(i1);
 		char endchar = filename[filename.length()-1];
 		if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
 			filename += "/";
 		result.push_back(VersionedAsset(Replace(filename, "\\", "/"), state, revision));
+		assetsResolved.insert(result.back().GetPath());
 
 		/*
 
+?                                        Library
+A                -       ?   ?           Assets/Red.mat.meta
 ?                    p4plugin.log		
+M                4        4 nevin@unity3d.com Assets/test.unity
                  1        1 jonasd       Assets/NewBehaviourScript.cs		
 A                0       ?   ?           hello.txt		
         *        1        1 jonasd       Assets
@@ -477,6 +553,16 @@ A                0       ?   ?           hello.txt
 
 		*/
 	}
+
+	// Make sure that we have status for local only assets as well
+	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
+	{
+		const string& p = i->GetPath();
+		if (assetsResolved.find(p) == assetsResolved.end() &&
+			assetsResolved.find(p + "/") == assetsResolved.end())
+			result.push_back(VersionedAsset(i->GetPath(), 0, "0"));
+	}
+
 	return true;
 }
 
@@ -488,6 +574,37 @@ bool isDigit(char c)
 
 void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::string& to, bool includeAssets)
 {
+	// Check cache first
+	int cacheRev = 0;
+	if (from == to)
+	{
+		cacheRev = atoi(from.c_str());
+		if (cacheRev)
+		{
+			m_Task->Log().Debug() << "Checking cache for single log revision " << cacheRev << unityplugin::Endl;
+			std::map<int, SvnLogResult::Entry>::iterator i = g_LogCache.find(cacheRev);
+			if (i != g_LogCache.end())
+			{
+				m_Task->Log().Debug() << "  Found in cache" << unityplugin::Endl;
+				result.entries.push_back(i->second);
+				return;
+			}
+			else 
+			{
+				m_Task->Log().Debug() << "  Not in cache" << unityplugin::Endl;
+			}
+		}
+	}
+
+	// Make sure log cache is not too big
+	const size_t MAX_LOG_CACHE_ASSETS = 3000;
+	while (g_LogCacheAssetsCount > MAX_LOG_CACHE_ASSETS && !g_LogCache.empty()) 
+	{
+		std::map<int, SvnLogResult::Entry>::reverse_iterator i = g_LogCache.rbegin();
+		g_LogCacheAssetsCount -= i->second.assets.size();
+		g_LogCache.erase(i->first);
+	}
+	
 	const int MIN_HEADER_LINE_LENGTH = 30;
 	string cmd = "log -r ";
 	cmd += from;
@@ -497,6 +614,8 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 	if (includeAssets)
 		cmd += " -v ";
 
+	m_Task->Pipe().Progress(-1, 0, "secs. while reading log...");
+
 	APOpen ppipe = RunCommand(cmd);
 
 	string line;
@@ -504,8 +623,19 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 	vector<string> toks;
 	VersionedAsset asset;
 	bool reposVerified = false;
+
+	time_t lastTick = time(NULL);
+	time_t startTick = lastTick;
+
 	while (ppipe->ReadLine(line))
 	{
+		time_t thisTick = time(NULL);
+		if (lastTick != thisTick)
+		{
+			m_Task->Pipe().Progress(-1, thisTick - startTick, "secs. while reading log...");
+			lastTick = thisTick;
+		}
+
 		m_Task->Log().Debug() << line << unityplugin::Endl;
 		if (EndsWith(line, "is not a working copy"))
 		{
@@ -513,18 +643,14 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			return;
 		}
 		
-		if (!reposVerified && line.find("Unable to connect to a repository") != string::npos)
-		{
-			string msg = "Could not connect subversion to repository ";
-			string::size_type si = line.find('\'');
-			if (si != string::npos)
-				msg += line.substr(si); 
-			m_Task->Log().Debug() << line << unityplugin::Endl;
-			m_Task->Pipe().WarnLine(msg, MAProtocol);
-			NotifyOffline(msg);
-			return;
+		if (!reposVerified)
+		{ 
+			if (HandleConnectErrorLine(line))
+				return; // connect error
+		
+			reposVerified = true;
 		}
-		reposVerified = true;
+
 		Enforce<SvnException>(StartsWith(line, "--------------"), string("Invalid log header top: ") + line);
 		
 		NotifyOnline();
@@ -619,6 +745,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 				asset.SetRevision(entry.revision);
 				entry.assets.push_back(asset);
 			}
+
 		}
 		else
 		{
@@ -634,6 +761,13 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 				break;
 			m_Task->Log().Debug() << line << unityplugin::Endl;
 			entry.message += line + "\n";
+		}
+
+		int rev = atoi(entry.revision.c_str());
+		if (rev && includeAssets)
+		{
+			g_LogCache[rev] = entry;
+			g_LogCacheAssetsCount += entry.assets.size();
 		}
 	}
 }
@@ -677,6 +811,9 @@ void SvnTask::NotifyOffline(const std::string& reason, bool invalidWorkingCopy)
 	}
 
 	m_Task->Pipe().Command(string("offline ") + reason, MAProtocol);
+
+	g_LogCacheAssetsCount = 0;
+	g_LogCache.clear();
 }
 
 void SvnTask::NotifyOnline()
@@ -693,6 +830,10 @@ void SvnTask::NotifyOnline()
 		"submit", "unlock", 
 		0
 	};
+
+	if (m_IsOnline) 
+		return; // nothing to notify
+
 	int i = 0;
 	while (enableCmds[i])
 	{
@@ -713,6 +854,8 @@ void SvnTask::NotifyOnline()
 	}
 	m_IsOnline = true;
 	m_Task->Pipe().Command("online");
+	g_LogCacheAssetsCount = 0;
+	g_LogCache.clear();
 }
 
 SvnException::SvnException(const std::string& about) : m_What(about) {}

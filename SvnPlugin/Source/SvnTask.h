@@ -30,9 +30,9 @@ public:
 	int Run();
 
 	APOpen RunCommand(const std::string& cmd);
-	void GetStatus(const VersionedAssetList& assets, VersionedAssetList& result, bool recursive);
+	void GetStatus(const VersionedAssetList& assets, VersionedAssetList& result, bool recursive, bool queryRemote = true);
 	void GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
-								  std::vector<std::string>& changelistAssoc, bool recursive);
+								  std::vector<std::string>& changelistAssoc, bool recursive, bool queryRemote = true);
 	void GetLog(SvnLogResult& result, const std::string& from, const std::string& to, bool includeAssets = false);
 
 	void NotifyOffline(const std::string& reason, bool invalidWorkingCopy = false);
@@ -46,7 +46,8 @@ private:
 	bool GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
 								  std::vector<std::string>& changelistAssoc, 
 								  const char* depth, bool queryRemote);
-	Task* m_Task;
+	bool HandleConnectErrorLine(const std::string& line);
+
 	std::string m_SvnPath;
 	std::string m_AssetsPath;
 
@@ -56,6 +57,8 @@ private:
 	std::string m_OptionsConfig;
 	
 	bool m_IsOnline;
+
+	Task* m_Task;
 };
 
 class SvnException : public std::exception
