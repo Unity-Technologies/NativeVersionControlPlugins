@@ -388,6 +388,20 @@ public:
 		return *this;
 	}
 
+	// Params: -1 means not specified
+	UnityPipe& Progress(int pct = -1, time_t timeSoFar = -1, const std::string& message = "", MessageArea ma = MAGeneral)
+	{
+		Write("p", m_Log.Notice()); 
+		Write(ma, m_Log.Notice());
+		Write(":", m_Log.Notice());
+		Write(IntToString(pct) + " " + IntToString(timeSoFar) + " " + message, m_Log.Notice());
+		__Write("\n", m_Log.Notice());
+#if defined(_WINDOWS)
+		FlushFileBuffers(m_NamedPipe);
+#endif
+		return *this;
+	}
+
 	UnityPipe& operator<<(const std::vector<std::string>& v)
 	{
 		OkLine(v.size());
