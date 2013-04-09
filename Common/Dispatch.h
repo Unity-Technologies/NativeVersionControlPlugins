@@ -81,6 +81,8 @@ bool Dispatch(UnityConnection& conn, Session& session,
 		return RunCommand<CommandTmpl, StatusRequest, StatusResponse>(conn, session, args);
 	case UCOM_Download:
 		return RunCommand<CommandTmpl, DownloadRequest, DownloadResponse>(conn, session, args);
+	case UCOM_ChangeDescription:
+		return RunCommand<CommandTmpl, ChangeDescriptionRequest, ChangeDescriptionResponse>(conn, session, args);
 	default:
 		break;
 	}

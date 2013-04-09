@@ -8,3 +8,4 @@
 #include "Submit.h"
 #include "MoveChangelist.h"
 #include "Download.h"
+#include "ChangeDescription.h"
