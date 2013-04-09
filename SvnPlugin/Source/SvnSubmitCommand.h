@@ -58,8 +58,8 @@ public:
 			Enforce<SvnException>(!EndsWith(line, "is not a working copy"), "Project is not a subversion working copy.");
 			req.conn.Log().Info() << line << "\n";
 			
-			if (line.find("is not under version control and is not part of the commit, yet its child") != std:string::npos)
-				req.conn.Pipe.WarnLine(line.substr(5)); // strip "svn: "
+			if (line.find("is not under version control and is not part of the commit, yet its child") != std::string::npos)
+				req.conn.Pipe().WarnLine(line.substr(5)); // strip "svn: "
 		}
 		
 		task.GetStatus(req.assets, resp.assets, recursive);
