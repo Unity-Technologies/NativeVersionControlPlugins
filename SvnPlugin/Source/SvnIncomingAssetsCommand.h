@@ -18,7 +18,9 @@ public:
 		else
 		{
 			VersionedAssetList statAssets;
-			task.GetStatus(result.entries[0].assets, statAssets, false);
+			const bool recursive = false;
+			const bool queryRemote = false;
+			task.GetStatus(result.entries[0].assets, statAssets, recursive, queryRemote);
 			SvnCommand<IncomingRequest>::RemoveUpToDateAssets(statAssets, req.revision);
 			resp.assets.swap(statAssets);
 		}

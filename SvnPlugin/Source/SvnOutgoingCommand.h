@@ -21,7 +21,9 @@ public:
 		std::vector<std::string> changelistAssoc;
 		VersionedAssetList dummy;
 
-		task.GetStatusWithChangelists(dummy, dummy, changelistAssoc, true);
+		const bool recursive = true;
+		const bool queryRemote = false;
+		task.GetStatusWithChangelists(dummy, dummy, changelistAssoc, recursive, queryRemote);
 
 		std::set<std::string> names(changelistAssoc.begin(), changelistAssoc.end());
 		

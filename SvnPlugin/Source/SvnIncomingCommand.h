@@ -36,9 +36,12 @@ public:
 			 i != result.entries.end(); ++i)
 		{
 			
+			// The user might have updated a single file of a changeset
+			// already and code below will remove those from the assetList.
 			VersionedAssetList statAssets;
-
-			task.GetStatus(i->assets, statAssets, false);
+			const bool recursive = false;
+			const bool queryRemote = false;
+			task.GetStatus(i->assets, statAssets, recursive, queryRemote);
 			RemoveUpToDateAssets(statAssets, i->revision);
 
 			if (statAssets.empty())
@@ -68,7 +71,8 @@ public:
 		for (VersionedAssetList::const_iterator i = assets.begin();
 			 i != assets.end(); ++i)
 		{
-			if ((i->GetState() & kOutOfSync) && rev > atoi(i->GetRevision().c_str()) )
+			// if ((i->GetState() & kOutOfSync) && rev > atoi(i->GetRevision().c_str()) )
+			if (rev > atoi(i->GetRevision().c_str()) )
 			{
 				res.push_back(*i);
 			}

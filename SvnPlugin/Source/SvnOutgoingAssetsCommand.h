@@ -13,7 +13,9 @@ public:
 		VersionedAssetList assets;
 
 		// TODO: Optimise by limiting status to specified changelist only using -c
-		task.GetStatusWithChangelists(assets, assets, changelistAssoc, true);
+		const bool recursive = true;
+		const bool queryRemote = false;
+		task.GetStatusWithChangelists(assets, assets, changelistAssoc, recursive, queryRemote);
 		
 		bool foundList = false;
 		ChangelistRevision rev = req.revision == kDefaultListRevision ? "" : req.revision;
