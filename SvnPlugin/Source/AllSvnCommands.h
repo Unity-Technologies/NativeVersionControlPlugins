@@ -18,3 +18,4 @@
 #include "SvnDeleteCommand.h"
 #include "SvnCheckoutCommand.h"
 #include "SvnMoveCommand.h"
+#include "SvnChangeDescription.h"
