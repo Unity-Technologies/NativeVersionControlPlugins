@@ -30,6 +30,7 @@ void SvnTask::SetRepository(const std::string& p)
 		m_RepositoryConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		m_IsOnline = false;		
 	}
 }
 
@@ -45,8 +46,8 @@ void SvnTask::SetUser(const std::string& p)
 		m_UserConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
-	}
-	
+		m_IsOnline = false;		
+	}	
 }
 
 const std::string& SvnTask::GetUser() const
@@ -61,6 +62,7 @@ void SvnTask::SetPassword(const std::string& p)
 		m_PasswordConfig = p;		
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		m_IsOnline = false;		
 	}
 }
 
@@ -76,6 +78,7 @@ void SvnTask::SetOptions(const std::string& p)
 		m_OptionsConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		m_IsOnline = false;		
 	}
 }
 
@@ -86,10 +89,15 @@ const std::string& SvnTask::GetOptions() const
 
 void SvnTask::SetSvnExecutable(const std::string& e)
 {
-	if (!e.empty() && PathExists(e))
+	m_IsOnline = false;		
+	if (!e.empty())
 	{
-		m_SvnPath = e;
-		return;
+		if (PathExists(e))
+		{
+			m_SvnPath = e;
+			return;
+		}
+		m_Task->Pipe().WarnLine(string("No svn executable at path '") + e + "'");
 	}
 
 #if defined(_WINDOWS)
@@ -119,7 +127,13 @@ std::string SvnTask::GetCredentials() const
 
 void SvnTask::SetAssetsPath(const string& p)
 {
-	m_AssetsPath = p;
+	if (m_AssetsPath != p)
+	{
+		m_AssetsPath = p;
+		g_LogCacheAssetsCount = 0;
+		g_LogCache.clear();
+		m_IsOnline = false;
+	}
 }
 
 const string& SvnTask::GetAssetsPath() const
