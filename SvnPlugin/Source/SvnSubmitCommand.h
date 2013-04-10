@@ -47,7 +47,7 @@ public:
 			os.flush();
 		}
 		
-		std::string cmd = "commit -F --depth=empty ";
+		std::string cmd = "commit --depth=empty -F ";
 		cmd += tmpfilepath;
 		cmd += " ";
 		cmd += Join(Paths(req.assets), " ", "\"");
