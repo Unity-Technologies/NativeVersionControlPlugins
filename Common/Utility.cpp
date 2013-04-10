@@ -162,6 +162,11 @@ string ErrorCodeToMsg( DWORD code )
 	}
 }
 
+string LastErrorToMsg()
+{
+	return ErrorCodeToMsg(GetLastError());
+}
+
 #endif
 
 

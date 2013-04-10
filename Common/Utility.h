@@ -53,6 +53,7 @@ std::string ToString(const T& v1, const T& v2, const T& v3)
 
 #if defined(_WINDOWS)
 std::string ErrorCodeToMsg( DWORD code );
+std::string LastErrorToMsg();
 #endif
 
 class PluginException : public std::exception
