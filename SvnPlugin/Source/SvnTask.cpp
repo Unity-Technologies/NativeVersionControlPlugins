@@ -30,8 +30,8 @@ void SvnTask::SetRepository(const std::string& p)
 		m_RepositoryConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
-		m_IsOnline = false;		
 	}
+	m_IsOnline = false;		
 }
 
 const std::string& SvnTask::GetRepository() const
@@ -46,8 +46,8 @@ void SvnTask::SetUser(const std::string& p)
 		m_UserConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
-		m_IsOnline = false;		
 	}	
+	m_IsOnline = false;		
 }
 
 const std::string& SvnTask::GetUser() const
@@ -62,8 +62,8 @@ void SvnTask::SetPassword(const std::string& p)
 		m_PasswordConfig = p;		
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
-		m_IsOnline = false;		
 	}
+	m_IsOnline = false;		
 }
 
 const std::string& SvnTask::GetPassword() const
@@ -78,8 +78,8 @@ void SvnTask::SetOptions(const std::string& p)
 		m_OptionsConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
-		m_IsOnline = false;		
 	}
+	m_IsOnline = false;		
 }
 
 const std::string& SvnTask::GetOptions() const
@@ -132,8 +132,8 @@ void SvnTask::SetAssetsPath(const string& p)
 		m_AssetsPath = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
-		m_IsOnline = false;
 	}
+	m_IsOnline = false;		
 }
 
 const string& SvnTask::GetAssetsPath() const
@@ -567,6 +567,9 @@ A                0       ?   ?           hello.txt
 
 		*/
 	}
+	
+	if (queryRemote)
+		NotifyOnline();
 
 	// Make sure that we have status for local only assets as well
 	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
