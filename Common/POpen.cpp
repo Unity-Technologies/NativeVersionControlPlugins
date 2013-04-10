@@ -75,13 +75,37 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 
 	// If an error occurs, exit the application. 
 	Enforce<PluginException>(bSuccess == TRUE, string("Could not start '") + cmd + "'" + ErrorCodeToMsg(GetLastError()));
-
+	
 	// Close the client pipe ends here or we will keep the handles open even though the
 	// client has terminated. This is turn would block reads/writes and we would get EOL.
 	CloseHandle(m_ChildStd_OUT_Wr);
 	CloseHandle(m_ChildStd_IN_Rd);
 	m_ChildStd_OUT_Wr = NULL;
 	m_ChildStd_IN_Rd = NULL;
+
+	// We need to wait for proper initialization of the process (e.g. dll loading)
+	// before we can be confident that the process is running ok.
+	DWORD msWait = 10000; // Wait at most 10 seconds 
+	DWORD exitCode;
+	switch (WaitForInputIdle(m_ProcInfo.hProcess, msWait))
+	{
+	case WAIT_TIMEOUT:
+		throw PluginException(string("Timed out starting '" + cmd + "'"));
+	case WAIT_FAILED:
+		{
+			if (!GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode))
+				throw PluginException(string("Could not get exit code for failed process '") + cmd + "': " + LastErrorToMsg());
+			throw PluginException(string("Process failed '") + cmd + "' exit code " + IntToString(exitCode));
+		}
+	default:
+		break;
+	}
+
+	if (!GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode))
+		throw PluginException(string("Could not get exit code for process '") + cmd + "': " + LastErrorToMsg());
+
+	if (exitCode != STILL_ACTIVE && exitCode != 0)
+		throw PluginException(string("Failed to start process '") + cmd + "' exit code " + IntToString(exitCode));
 }
 
 POpen::~POpen()
