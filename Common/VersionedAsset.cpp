@@ -5,12 +5,12 @@
 
 using namespace std;
 
-VersionedAsset::VersionedAsset() : m_State(kLocal | kReadOnly)
+VersionedAsset::VersionedAsset() : m_State(kNone)
 { 
 	SetPath(""); 
 }
 
-VersionedAsset::VersionedAsset(const std::string& path) : m_State(kReadOnly) 
+VersionedAsset::VersionedAsset(const std::string& path) : m_State(kNone) 
 { 
 	SetPath(path); 
 }
@@ -65,7 +65,7 @@ void VersionedAsset::SetRevision(const std::string& r)
 
 void VersionedAsset::Reset() 
 { 
-	m_State = kLocal | kReadOnly; 
+	m_State = kNone; 
 	SetPath(""); 
 	m_Revision.clear();
 }

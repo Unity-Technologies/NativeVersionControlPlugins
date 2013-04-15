@@ -577,7 +577,7 @@ A                0       ?   ?           hello.txt
 		const string& p = i->GetPath();
 		if (assetsResolved.find(p) == assetsResolved.end() &&
 			assetsResolved.find(p + "/") == assetsResolved.end())
-			result.push_back(VersionedAsset(i->GetPath(), 0, "0"));
+			result.push_back(VersionedAsset(i->GetPath(), kLocal, "0"));
 	}
 
 	return true;
