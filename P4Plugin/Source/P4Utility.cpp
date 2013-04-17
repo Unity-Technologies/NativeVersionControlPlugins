@@ -36,7 +36,7 @@ int ActionToState(const string& action, const string& headAction,
 	} 
 	else if (headRev.empty())
 	{
-		state |= kLocal;
+		// state |= kLocal;
 	} 
 	else 
 	{

@@ -33,7 +33,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 	if (paths.empty())
 	{
 		Pipe().EndList();
-		Pipe().ErrorLine("No paths to stat", MASystem);
+		// Pipe().ErrorLine("No paths to stat", MASystem);
 		return;
 	}
 	

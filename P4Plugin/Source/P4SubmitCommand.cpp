@@ -95,7 +95,7 @@ public:
 		bool hasFiles = !assetList.empty();
 		
 		// Run a view mapping job to get the right depot relative paths for the spec file
-		string localPaths = ResolvePaths(assetList, kPathWild | kPathRecursive);
+		string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 		Pipe().Log().Debug() << "Paths resolved are: " << localPaths << unityplugin::Endl;
 		
 		cWhere.ClearStatus();
