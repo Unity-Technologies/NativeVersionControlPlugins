@@ -12,10 +12,12 @@ public:
 		bool saveOnly = req.args.size() > 1 && req.args[1] == "saveOnly";
 		const bool recursive = false;
 
+
 		// saveOnly option really only makes sense for perforce but is 
 		// also used to move assets to a newly constructed changelist
 		if (saveOnly) 
 		{
+			req.Pipe().Progress(-1, 0, "Saving changelist");
 			std::string createChangelistCmd = "changelist ";
 			std::string firstLineOfDescription = req.changelist.GetDescription();
 			firstLineOfDescription = firstLineOfDescription.substr(0, firstLineOfDescription.find('\n'));
@@ -50,8 +52,16 @@ public:
 		std::string cmd = "commit --depth=empty -F ";
 		cmd += tmpfilepath;
 		cmd += " ";
+		if (req.changelist.GetRevision() != kNewListRevision &&
+			req.changelist.GetRevision() != kDefaultListRevision)
+		{
+			cmd += "\"";
+			cmd += req.changelist.GetRevision();
+			cmd += "\" ";
+		}
 		cmd += Join(Paths(req.assets), " ", "\"");
 		
+		req.Pipe().Progress(-1, 0, "submitting");
 		APOpen ppipe = task.RunCommand(cmd);
 		
 		std::string line;

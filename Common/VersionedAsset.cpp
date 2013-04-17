@@ -65,7 +65,7 @@ void VersionedAsset::SetRevision(const std::string& r)
 
 void VersionedAsset::Reset() 
 { 
-	m_State = kLocal | kReadOnly; 
+	m_State = kNone; 
 	SetPath(""); 
 	m_Revision.clear();
 }

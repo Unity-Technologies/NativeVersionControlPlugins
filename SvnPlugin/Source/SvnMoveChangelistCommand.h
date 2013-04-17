@@ -9,11 +9,19 @@ public:
 	bool Run(SvnTask& task, MoveChangelistRequest& req, MoveChangelistResponse& resp)
 	{
 		// Revert to base
+		req.Pipe().Progress(-1, 0, "Moving changelist");
+
 		std::string cmd = "changelist ";
 		if (req.changelist == kDefaultListRevision)
+		{
 			cmd += " --remove";
+		}
 		else
+		{
+			cmd += "\"";
 			cmd += req.changelist;
+			cmd += "\"";
+		}
 		cmd += " ";
 		cmd += Join(Paths(req.assets), " ", "\"");
 
