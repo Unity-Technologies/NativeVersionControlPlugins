@@ -95,7 +95,16 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 		{
 			if (!GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode))
 				throw PluginException(string("Could not get exit code for failed process '") + cmd + "': " + LastErrorToMsg());
-			throw PluginException(string("Process failed '") + cmd + "' exit code " + IntToString(exitCode));
+
+			if (exitCode == STILL_ACTIVE)
+			{
+				WaitForSingleObject(m_ProcInfo.hProcess, msWait);
+				GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode);
+			}
+			else
+			{
+				throw PluginException(string("Process failed '") + cmd + "' exit code " + IntToString(exitCode));
+			}
 		}
 	default:
 		break;
