@@ -2,6 +2,7 @@
 
 #include <map>
 #include <cassert>
+#include <sstream>
 
 using namespace std;
 
@@ -152,6 +153,7 @@ void P4Command::HandleError( Error *err )
 void P4Command::OutputError( const char *errBuf )
 {
 	Pipe().Log().Notice() << errBuf << "\n";
+	Pipe().InfoLine(errBuf);
 }
 
 void P4Command::ErrorPause( char* errBuf, Error* e)
@@ -176,6 +178,9 @@ void P4Command::OutputBinary( const char *data, int length)
 void P4Command::OutputInfo( char level, const char *data )
 {
 	Pipe().Log().Info() << "level " << (int) level << ": " << data << unityplugin::Endl;
+	std::stringstream ss;
+	ss << data << " (level " << (int) level << ")";	
+	Pipe().InfoLine(ss.str());
 }
 
 P4Command* P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList)

@@ -9,7 +9,7 @@ public:
 	
 	virtual string SetupCommand(const CommandArgs& args)
 	{
-		string mode = args[1];
+		string mode = args.size() > 1 ? args[1] : string();
 		if (mode == "unchangedOnly")
 			return "revert -a ";
 		else if (mode == "keepLocalModifications")

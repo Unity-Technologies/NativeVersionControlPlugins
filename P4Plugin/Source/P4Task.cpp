@@ -59,6 +59,7 @@ VCSStatus errorToVCSStatus(Error& e)
 P4Task::P4Task()
 {
     m_P4Connect = false;
+	m_IsOnline = false;
 }
 
 P4Task::~P4Task()
@@ -70,6 +71,7 @@ void P4Task::SetP4Port(const string& p)
 { 
 	m_Client.SetPort(p.c_str()); 
 	m_PortConfig = p;
+	m_IsOnline = false;
 }
 
 string P4Task::GetP4Port() const
@@ -81,6 +83,7 @@ void P4Task::SetP4User(const string& u)
 { 
 	m_Client.SetUser(u.c_str()); 
 	m_UserConfig = u;
+	m_IsOnline = false;
 }
 
 string P4Task::GetP4User()
@@ -92,6 +95,7 @@ void P4Task::SetP4Client(const string& c)
 { 
 	m_Client.SetClient(c.c_str()); 
 	m_ClientConfig = c;
+	m_IsOnline = false;
 }
 
 string P4Task::GetP4Client()
@@ -103,6 +107,7 @@ void P4Task::SetP4Password(const string& p)
 { 
 	m_Client.SetPassword(p.c_str()); 
 	m_PasswordConfig = p;
+	m_IsOnline = false;
 }
 
 const string& P4Task::GetP4Password() const
@@ -124,6 +129,7 @@ void P4Task::SetP4Root(const string& r)
 void P4Task::SetAssetsPath(const std::string& p)
 {
 	m_AssetsPathConfig = p;
+	m_IsOnline = false;
 }
 
 const std::string& P4Task::GetAssetsPath() const
@@ -234,6 +240,9 @@ void P4Task::NotifyOffline(const string& reason)
 		"submit", "unlock", 
 		0
 	};
+
+	m_IsOnline = false;
+
 	int i = 0;
 	while (disableCmds[i])
 	{
@@ -255,6 +264,9 @@ void P4Task::NotifyOnline()
 		"submit", "unlock", 
 		0
 	};
+	if (m_IsOnline)
+		return;
+
 	m_Task->Pipe().Command("online", MAProtocol);
 	int i = 0;
 	while (enableCmds[i])
@@ -262,6 +274,7 @@ void P4Task::NotifyOnline()
 		m_Task->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
+	m_IsOnline = true;
 }
 
 bool P4Task::Login()

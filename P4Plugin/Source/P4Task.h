@@ -49,6 +49,8 @@ private:
 	void NotifyOffline(const std::string& reason);
 	void NotifyOnline();
 
+	bool m_IsOnline;
+
 	// Perforce connection
 	bool            m_P4Connect;
 	ClientApi       m_Client;
