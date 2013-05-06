@@ -2,6 +2,7 @@
 #include "P4Command.h"
 #include "error.h"
 #include "msgclient.h"
+#include "msgserver.h"
 #include "CommandLine.h"
 #include "Utility.h"
 #include "FileSystem.h"
@@ -45,6 +46,11 @@ VCSStatus errorToVCSStatus(Error& e)
 			break;
 	}
 
+	if (e.CheckId(MsgClient::ClobberFile))
+		sev = VCSSEV_Warn;
+	else if (e.CheckId(MsgServer::ResolveOrRevert))
+		sev = VCSSEV_Warn;
+		
 	StrBuf msg;
 	e.Fmt(&msg);
 	VCSStatus status;

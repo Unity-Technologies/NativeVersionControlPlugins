@@ -152,8 +152,8 @@ void P4Command::HandleError( Error *err )
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	Pipe().Log().Notice() << errBuf << "\n";
-	Pipe().InfoLine(errBuf);
+	Pipe().Log().Debug() << errBuf << "\n";
+	//	Pipe().InfoLine(errBuf);
 }
 
 void P4Command::ErrorPause( char* errBuf, Error* e)
