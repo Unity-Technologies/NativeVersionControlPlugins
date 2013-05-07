@@ -30,9 +30,9 @@ public:
 	int Run();
 
 	APOpen RunCommand(const std::string& cmd);
+	
 	void GetStatus(const VersionedAssetList& assets, VersionedAssetList& result, bool recursive, bool queryRemote = true);
-	void GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
-								  std::vector<std::string>& changelistAssoc, bool recursive, bool queryRemote = true);
+	void GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, bool recursive, bool queryRemote = true);
 	void GetLog(SvnLogResult& result, const std::string& from, const std::string& to, bool includeAssets = false);
 
 	void NotifyOffline(const std::string& reason, bool invalidWorkingCopy = false);
@@ -44,7 +44,7 @@ private:
 
 	std::string GetCredentials() const;
 	bool GetStatusWithChangelists(const VersionedAssetList& assets, VersionedAssetList& result, 
-								  std::vector<std::string>& changelistAssoc, 
+								  std::set<std::string>& resultPaths, 
 								  const char* depth, bool queryRemote);
 	bool HandleConnectErrorLine(const std::string& line);
 

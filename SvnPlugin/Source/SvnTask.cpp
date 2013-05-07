@@ -13,6 +13,10 @@ using namespace std;
 static map<int, SvnLogResult::Entry> g_LogCache;
 static size_t g_LogCacheAssetsCount = 0;
 
+static time_t g_StatusNextCacheUpdateTime = 0;
+static VersionedAssetList g_StatusResultAssetsCache;
+static std::set<string> g_StatusResultPathsCache;
+
 SvnTask::SvnTask() : m_Task(NULL), m_IsOnline(false)
 {
 	SetSvnExecutable(""); // Set default svn executable
@@ -30,6 +34,7 @@ void SvnTask::SetRepository(const std::string& p)
 		m_RepositoryConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		g_StatusNextCacheUpdateTime = time(NULL);
 	}
 	m_IsOnline = false;		
 }
@@ -46,6 +51,7 @@ void SvnTask::SetUser(const std::string& p)
 		m_UserConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		g_StatusNextCacheUpdateTime = time(NULL);
 	}	
 	m_IsOnline = false;		
 }
@@ -62,6 +68,7 @@ void SvnTask::SetPassword(const std::string& p)
 		m_PasswordConfig = p;		
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		g_StatusNextCacheUpdateTime = time(NULL);
 	}
 	m_IsOnline = false;		
 }
@@ -78,6 +85,7 @@ void SvnTask::SetOptions(const std::string& p)
 		m_OptionsConfig = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		g_StatusNextCacheUpdateTime = time(NULL);
 	}
 	m_IsOnline = false;		
 }
@@ -132,6 +140,7 @@ void SvnTask::SetAssetsPath(const string& p)
 		m_AssetsPath = p;
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
+		g_StatusNextCacheUpdateTime = time(NULL);
 	}
 	m_IsOnline = false;		
 }
@@ -340,10 +349,95 @@ int ParseSyncedState(int state, char c)
 void SvnTask::GetStatus(const VersionedAssetList& assets, VersionedAssetList& result, 
 						bool recursive, bool queryRemote)
 {
-	vector<string> dummy;
-	return GetStatusWithChangelists(assets, result, dummy, recursive, queryRemote);
+	GetStatusWithChangelists(assets, result, recursive, queryRemote);
 }
 
+bool IsDescendant(const VersionedAsset& parent, const VersionedAsset& desc)
+{
+	size_t len = parent.GetPath().length();
+	return parent.GetPath() == desc.GetPath().substr(0, len) && !EndsWith(desc.GetPath(), ".meta");
+}
+
+void SvnTask::GetStatusWithChangelists(const VersionedAssetList& inAssets, 
+									   VersionedAssetList& result, 
+									   bool recursive, bool queryRemote)
+{
+	// Fetch status for entire workspace since getting status of a range of files will make
+	// a request per file to the server. 
+	VersionedAssetList tmp;
+	std::set<string> resultPaths;
+	VersionedAssetList assets(inAssets.begin(), inAssets.end());
+	
+	// String project path from asset to ease matching
+	string projPath = GetProjectPath() + "/";
+	size_t prefixLen = projPath.length();
+	for (VersionedAssetList::iterator i = assets.begin(); i != assets.end(); ++i)
+	{
+		if (i->GetPath().substr(0, prefixLen) == projPath)
+			i->SetPath(i->GetPath().substr(prefixLen));
+	}
+
+	// Reuse results for approx one sec
+	time_t timeNow = time(NULL);
+	if (timeNow >= g_StatusNextCacheUpdateTime)
+	{
+		g_StatusResultAssetsCache.clear();
+		g_StatusResultPathsCache.clear();
+		VersionedAssetList empty;
+		bool ok = queryRemote && GetStatusWithChangelists(empty, tmp, resultPaths, "infinity", true);
+		if (!ok)
+			GetStatusWithChangelists(empty, tmp, resultPaths, "infinity", false);
+		g_StatusResultAssetsCache = tmp;
+		g_StatusResultPathsCache = resultPaths;
+		g_StatusNextCacheUpdateTime = time(NULL) + 1;
+	}
+	else
+	{
+		tmp = g_StatusResultAssetsCache;
+		resultPaths = g_StatusResultPathsCache;
+	}
+
+	// We have all stuff that are in version control in result. Filter away the assets that we are not interested in.
+	if (recursive)
+	{
+		if (assets.empty())
+		{
+			// Empty means all in recursive mode
+			result = tmp;
+			return;
+		}
+
+		VersionedAssetSet res;
+		for (VersionedAssetList::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
+		{
+			for (VersionedAssetList::const_iterator j = assets.begin(); j != assets.end(); ++j)
+			{
+				if (IsDescendant(*j,*i))
+					res.insert(*i);
+			}
+		}
+		result.insert(result.end(), res.begin(), res.end());
+	}
+	else
+	{
+		VersionedAssetSet aset(assets.begin(), assets.end());
+		for (VersionedAssetList::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
+		{
+			if (aset.find(*i) != aset.end())
+				result.push_back(*i);
+		}
+	}
+
+	// Make sure that we have status for local only assets as well
+	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
+	{
+		const string& p = i->GetPath();
+		if (resultPaths.find(p) == resultPaths.end())
+			result.push_back(VersionedAsset(p, kLocal, "0"));
+	}
+}
+
+#ifdef DEPRECATED
 void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
 									   VersionedAssetList& result, 
 									   vector<string>& changelistAssoc,
@@ -390,6 +484,7 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 			GetStatusWithChangelists(files, result, changelistAssoc, "files", false);
 	}
 }
+#endif // DEPRECATED
 
 bool SvnTask::HandleConnectErrorLine(const std::string& line)
 {
@@ -422,7 +517,7 @@ bool SvnTask::HandleConnectErrorLine(const std::string& line)
 
 bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
 									   VersionedAssetList& result, 
-									   vector<string>& changelistAssoc,
+									   set<string>& resultPaths,
 									   const char* depth, bool queryRemote)
 {
 	const int MIN_STATUS_LINE_LENGTH = 32;
@@ -445,8 +540,6 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 	time_t lastTick = time(NULL);
 	time_t startTick = lastTick;
 
-	set<string> assetsResolved;
-
 	// TODO: parse XML instead of this not so stable output
 
 	while (ppipe->ReadLine(line))
@@ -464,18 +557,23 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 		if (EndsWith(line, "is not a working copy"))
 		{
-			// Special case: If "Assets.meta" is local if means that the repository is not valid and we mark it as such
-			if (EndsWith(line, "\\Assets.meta' is not a working copy") || EndsWith(line, "/Assets.meta' is not a working copy"))
+			// Special case: If "EditorSettings.asset" is local if means that the repository is not valid and we mark it as such
+			if (EndsWith(line, "\\ProjectSettings\\EditorSettings.asset' is not a working copy") || EndsWith(line, "/ProjectSettings/EditorSettings.asset' is not a working copy"))
 			{
-				m_Task->Pipe().WarnLine("Assets.meta file not part of a subversion working copy\nRemember to add at least the 'Assets' folder and meta file to subversion");
+				m_Task->Pipe().WarnLine("EditorSettings.asset file not part of a subversion working copy\nRemember to add at least the 'Assets' folder and meta file to subversion");
 				NotifyOffline("Project is not in a subversion working folder", true);
 				return true;
 			}
 
 			string::size_type i1 = line.find("'");
 			string::size_type i2 = line.find("'", i1+1); 
-			result.push_back(VersionedAsset(Replace(line.substr(i1+1, i2-i1-1), "\\", "/"), kLocal, ""));	
-			assetsResolved.insert(result.back().GetPath());
+			string filename = line.substr(i1+1, i2-i1-1);
+			char endchar = filename[filename.length()-1];
+			if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
+				filename += "/";
+			VersionedAsset newAsset(Replace(filename, "\\", "/"), kLocal, "");
+			result.push_back(newAsset);
+			resultPaths.insert(newAsset.GetPath());
 			continue;
 		}
 		
@@ -503,8 +601,6 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 		if (line.length() < MIN_STATUS_LINE_LENGTH || StartsWith(line, "Status against"))
 			continue; // 
-
-		changelistAssoc.push_back(currentChangelist);
 
 		int state = kNone;
 
@@ -553,9 +649,10 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		char endchar = filename[filename.length()-1];
 		if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
 			filename += "/";
-		result.push_back(VersionedAsset(Replace(filename, "\\", "/"), state, revision));
-		assetsResolved.insert(result.back().GetPath());
-
+		VersionedAsset theAsset(Replace(filename, "\\", "/"), state, revision);
+		theAsset.SetChangeListID(currentChangelist);
+		result.push_back(theAsset);
+		resultPaths.insert(theAsset.GetPath());
 		/*
 
 ?                                        Library
@@ -573,15 +670,6 @@ A                0       ?   ?           hello.txt
 	
 	if (queryRemote)
 		NotifyOnline();
-
-	// Make sure that we have status for local only assets as well
-	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
-	{
-		const string& p = i->GetPath();
-		if (assetsResolved.find(p) == assetsResolved.end() &&
-			assetsResolved.find(p + "/") == assetsResolved.end())
-			result.push_back(VersionedAsset(i->GetPath(), kLocal, "0"));
-	}
 
 	return true;
 }
@@ -762,7 +850,12 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 					}
 				}
 
-				asset.SetPath(line.substr(1));
+				string filename = line.substr(1);
+				char endchar = filename[filename.length()-1];
+				if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
+					filename += "/";
+
+				asset.SetPath(TrimStart(Replace(filename, "\\", "/"), '/'));
 				asset.SetRevision(entry.revision);
 				entry.assets.push_back(asset);
 			}

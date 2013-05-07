@@ -18,15 +18,17 @@ public:
 	static void GetChanges(SvnTask& task, Changes& changes)
 	{
 		changes.clear();
-		std::vector<std::string> changelistAssoc;
-		VersionedAssetList dummy;
+		VersionedAssetList empty;
+		VersionedAssetList result;
 
 		const bool recursive = true;
 		const bool queryRemote = false;
-		task.GetStatusWithChangelists(dummy, dummy, changelistAssoc, recursive, queryRemote);
+		task.GetStatusWithChangelists(empty, result, recursive, queryRemote);
 
-		std::set<std::string> names(changelistAssoc.begin(), changelistAssoc.end());
-		
+		std::set<std::string> names;
+		for (VersionedAssetList::const_iterator i = result.begin(); i != result.end(); ++i)
+			names.insert(i->GetChangeListID());
+
 		for (std::set<std::string>::const_iterator i = names.begin(); i != names.end(); ++i)
 		{
 			Changelist cl;
