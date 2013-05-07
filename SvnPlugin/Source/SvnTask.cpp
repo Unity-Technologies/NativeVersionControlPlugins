@@ -459,6 +459,9 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		}
 
 		m_Task->Log().Debug() << line << unityplugin::Endl;
+		if (EndsWith(line, " was not found."))
+			continue;
+
 		if (EndsWith(line, "is not a working copy"))
 		{
 			// Special case: If "Assets.meta" is local if means that the repository is not valid and we mark it as such
@@ -747,9 +750,10 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 				if (i1 != string::npos)
 				{
 					// make sure the part from i1 to the end is only digits
-					string copyRev = line.substr(i1);
+					string copyRev = line.substr(i1+1, line.length() - i1 - 2); // eat first : and last )
 					
-					i1 = line.rfind(" from ", i1);
+					i2 = line.rfind(" from ", i1);
+					i1 = i2 == string::npos ? line.rfind("(from ", i1) : i2;
 					if (i1 != string::npos && 
 						partition(copyRev.begin(), copyRev.end(), isDigit) == copyRev.end())
 					{
