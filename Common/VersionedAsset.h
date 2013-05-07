@@ -40,26 +40,27 @@ public:
 	void SetPath(const std::string& path);
 	const std::string& GetRevision() const;
 	void SetRevision(const std::string& r);
+	const std::string& GetChangeListID() const;
+	void SetChangeListID(const std::string& r);
 
 	void Reset();
 	bool IsFolder() const;
+
+	bool operator<(const VersionedAsset& other) const;
 
 private:
 	int m_State;
 	std::string m_Path;
 	std::string m_Revision;
+	std::string m_ChangeListID; // Some VCS doesn't support this so it is optional
 };
 
-struct ByPathSorter
-{
-	bool operator()(const VersionedAsset& a1, const VersionedAsset& a2)
-	{
-		return a1.GetPath() < a2.GetPath();
-	}
-};
+
 
 #include <vector>
+#include <set>
 typedef std::vector<VersionedAsset> VersionedAssetList;
+typedef std::set<VersionedAsset> VersionedAssetSet;
 
 std::vector<std::string> Paths(const VersionedAssetList& assets);
 

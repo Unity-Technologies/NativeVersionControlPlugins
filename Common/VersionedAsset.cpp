@@ -63,6 +63,16 @@ void VersionedAsset::SetRevision(const std::string& r)
 	m_Revision = r;
 }
 
+const std::string& VersionedAsset::GetChangeListID() const
+{
+	return m_ChangeListID;
+}
+
+void VersionedAsset::SetChangeListID(const std::string& c)
+{
+	m_ChangeListID = c;
+}
+
 void VersionedAsset::Reset() 
 { 
 	m_State = kNone; 
@@ -73,6 +83,11 @@ void VersionedAsset::Reset()
 bool VersionedAsset::IsFolder() const 
 {
 	return m_Path[m_Path.size()-1] == '/';
+}
+
+bool VersionedAsset::operator<(const VersionedAsset& other) const
+{
+	return GetPath() < other.GetPath();
 }
 
 vector<string> Paths(const VersionedAssetList& assets)
