@@ -87,7 +87,8 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	// before we can be confident that the process is running ok.
 	DWORD msWait = 10000; // Wait at most 10 seconds 
 	DWORD exitCode;
-	switch (WaitForInputIdle(m_ProcInfo.hProcess, msWait))
+	DWORD waitRes = WaitForInputIdle(m_ProcInfo.hProcess, msWait);
+	switch (waitRes)
 	{
 	case WAIT_TIMEOUT:
 		throw PluginException(string("Timed out starting '" + cmd + "'"));
@@ -98,8 +99,8 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 
 			if (exitCode == STILL_ACTIVE)
 			{
-				WaitForSingleObject(m_ProcInfo.hProcess, msWait);
-				GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode);
+				//WaitForSingleObject(m_ProcInfo.hProcess, msWait);
+				//GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode);
 			}
 			else
 			{
