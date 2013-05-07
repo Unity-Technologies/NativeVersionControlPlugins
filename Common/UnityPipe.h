@@ -394,7 +394,7 @@ public:
 		Write("p", m_Log.Notice()); 
 		Write(ma, m_Log.Notice());
 		Write(":", m_Log.Notice());
-		Write(IntToString(pct) + " " + IntToString(timeSoFar) + " " + message, m_Log.Notice());
+		Write(IntToString(pct) + " " + IntToString((int)timeSoFar) + " " + message, m_Log.Notice());
 		__Write("\n", m_Log.Notice());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
