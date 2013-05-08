@@ -118,6 +118,7 @@ _SCL_SECURE_NO_DEPRECATE
     <ClInclude Include="..\Common\Commands\AllReqResp.h" />
     <ClInclude Include="..\Common\Commands\Base.h" />
     <ClInclude Include="..\Common\Commands\BaseFileSet.h" />
+    <ClInclude Include="..\Common\Commands\ChangeDescription.h" />
     <ClInclude Include="..\Common\Commands\Config.h" />
     <ClInclude Include="..\Common\Commands\Download.h" />
     <ClInclude Include="..\Common\Commands\Incoming.h" />
@@ -138,6 +139,7 @@ _SCL_SECURE_NO_DEPRECATE
     <ClInclude Include="..\Common\VersionedAsset.h" />
     <ClInclude Include="Source\AllSvnCommands.h" />
     <ClInclude Include="Source\SvnAddCommand.h" />
+    <ClInclude Include="Source\SvnChangeDescription.h" />
     <ClInclude Include="Source\SvnCheckoutCommand.h" />
     <ClInclude Include="Source\SvnCommand.h" />
     <ClInclude Include="Source\SvnConfigCommand.h" />

@@ -194,5 +194,11 @@
     <ClInclude Include="..\Common\POpen.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="Source\SvnChangeDescription.h">
+      <Filter>SvnPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\ChangeDescription.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
