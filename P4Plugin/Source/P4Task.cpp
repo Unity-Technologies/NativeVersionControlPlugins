@@ -36,9 +36,9 @@ VCSStatus errorToVCSStatus(Error& e)
 			sev = VCSSEV_Info;
 			break;
 		case E_WARN: // a minor error occurred
+		case E_FAILED: // the command was used incorrectly
 			sev = VCSSEV_Warn;
 			break;
-		case E_FAILED: // the command was used incorrectly
 		case E_FATAL:  // fatal error, the command can't be processed
 			sev = VCSSEV_Error;
 			break;
@@ -46,9 +46,7 @@ VCSStatus errorToVCSStatus(Error& e)
 			break;
 	}
 
-	if (e.CheckId(MsgClient::ClobberFile))
-		sev = VCSSEV_Warn;
-	else if (e.CheckId(MsgServer::ResolveOrRevert))
+	if (e.CheckId(MsgClient::ClobberFile)) // TODO: Check if clobberfile is severity failed and remove if so
 		sev = VCSSEV_Warn;
 		
 	StrBuf msg;
