@@ -22,8 +22,9 @@ public:
 			std::string firstLineOfDescription = req.changelist.GetDescription();
 			firstLineOfDescription = firstLineOfDescription.substr(0, firstLineOfDescription.find('\n'));
 			createChangelistCmd += "\"";
-			createChangelistCmd += req.changelist.GetRevision() == kNewListRevision ? 
-				firstLineOfDescription : req.changelist.GetRevision();
+			createChangelistCmd += firstLineOfDescription;
+			//createChangelistCmd += req.changelist.GetRevision() == kNewListRevision ? 
+			//	firstLineOfDescription : req.changelist.GetRevision();
 			createChangelistCmd += "\"";
 			createChangelistCmd += " ";
 			createChangelistCmd += Join(Paths(req.assets), " ", "\"");
@@ -55,7 +56,7 @@ public:
 		if (req.changelist.GetRevision() != kNewListRevision &&
 			req.changelist.GetRevision() != kDefaultListRevision)
 		{
-			cmd += "\"";
+			cmd += "--cl \"";
 			cmd += req.changelist.GetRevision();
 			cmd += "\" ";
 		}

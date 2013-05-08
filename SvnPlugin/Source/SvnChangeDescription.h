@@ -6,7 +6,7 @@ class SvnCommand<ChangeDescriptionRequest>
 public:
 	bool Run(SvnTask& task, ChangeDescriptionRequest& req, ChangeDescriptionResponse& resp)
 	{
-		resp.description = "";
+		resp.description = req.revision;
 		resp.Write();
 		return true;
 	}
