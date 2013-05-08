@@ -111,7 +111,10 @@ string P4Task::GetP4Client()
 
 void P4Task::SetP4Password(const string& p)
 { 
-	m_Client.SetPassword(p.c_str()); 
+	if (m_PasswordConfig.empty())
+		m_Client.SetIgnorePassword();
+	else
+		m_Client.SetPassword(p.c_str());
 	m_PasswordConfig = p;
 	m_IsOnline = false;
 }
@@ -203,7 +206,10 @@ bool P4Task::Connect()
 	SetP4Root("");
 	m_Client.SetPort(GetP4Port().c_str()); 
 	m_Client.SetUser(m_UserConfig.c_str());
-	m_Client.SetPassword(m_PasswordConfig.c_str());
+	if (m_PasswordConfig.empty())
+		m_Client.SetIgnorePassword();
+	else
+		m_Client.SetPassword(m_PasswordConfig.c_str());
 	m_Client.SetClient(m_ClientConfig.c_str());
 	m_Client.Init( &m_Error );
 	

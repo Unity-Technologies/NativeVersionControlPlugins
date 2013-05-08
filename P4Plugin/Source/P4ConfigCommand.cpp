@@ -104,7 +104,7 @@ public:
 			Pipe().OkLine("Password", MAConfig);
 			Pipe().OkLine("The perforce password", MAConfig);
 			Pipe().OkLine("");
-			Pipe().OkLine("3"); // required field | password field
+			Pipe().OkLine("2"); // password field
 
 			Pipe().OkLine("vcPerforceWorkspace");
 			Pipe().OkLine("Workspace", MAConfig);
