@@ -22,7 +22,7 @@ public:
 		if (changes.empty())
 		{
 			
-			Pipe().ErrorLine("Changes to delete is empty");
+			Pipe().WarnLine("Changes to delete is empty");
 			Pipe().EndResponse();
 			return true;
 		}

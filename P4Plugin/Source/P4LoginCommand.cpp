@@ -73,7 +73,7 @@ public:
 	{
 		if (StartsWith(string(errBuf), "Perforce password (P4PASSWD) invalid or unset."))
 		{
-			Pipe().ErrorLine(errBuf);
+			Pipe().WarnLine(errBuf);
 		}
 	}
 

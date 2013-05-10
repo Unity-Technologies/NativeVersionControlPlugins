@@ -24,7 +24,7 @@ bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args)
 	
 	if (paths.empty())
 	{
-		Pipe().ErrorLine("No paths in fileset perforce command", MARemote);
+		Pipe().WarnLine("No paths in fileset perforce command", MARemote);
 		Pipe().EndResponse();
 		return true;
 	}

@@ -25,7 +25,7 @@ public:
 		
 		if (paths.empty())
 		{
-			Pipe().ErrorLine("No paths in getlatest perforce command", MARemote);
+			Pipe().WarnLine("No paths in getlatest perforce command", MARemote);
 			Pipe().EndResponse();
 			return true;
 		}

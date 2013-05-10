@@ -47,7 +47,7 @@ public:
 		
 		if (d.length() <= minLength)
 		{
-			Pipe().ErrorLine(string("p4 changelist too short: ") + d);
+			Pipe().WarnLine(string("p4 changelist too short: ") + d);
 			return;
 		}
 		
@@ -55,7 +55,7 @@ public:
 		string::size_type i = d.find(' ', 8);
 		if (i == string::npos)
 		{
-			Pipe().ErrorLine(string("p4 couldn't locate revision: ") + d);
+			Pipe().WarnLine(string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		

@@ -27,7 +27,7 @@ public:
 		if (paths.empty())
 		{
 			Pipe().BeginList();
-			Pipe().ErrorLine("No paths for revert command", MARemote);
+			Pipe().WarnLine("No paths for revert command", MARemote);
 			Pipe().EndList();
 			Pipe().EndResponse();
 			return true;

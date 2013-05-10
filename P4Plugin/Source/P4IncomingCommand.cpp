@@ -136,7 +136,7 @@ public:
 		
 		if (depotFile.empty() || headChange == -1 || headRev == -1)
 		{
-			Pipe().ErrorLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
+			Pipe().WarnLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
 		} 
 		else if (haveRev != headRev && !syncedDelete)
 		{
@@ -152,7 +152,7 @@ public:
 		
 		if (d.length() <= minLength)
 		{
-			Pipe().ErrorLine(string("p4 changelist too short: ") + d);
+			Pipe().WarnLine(string("p4 changelist too short: ") + d);
 			return;
 		}
 		
@@ -160,7 +160,7 @@ public:
 		string::size_type i = d.find(' ', 8);
 		if (i == string::npos)
 		{
-			Pipe().ErrorLine(string("p4 couldn't locate revision: ") + d);
+			Pipe().WarnLine(string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		

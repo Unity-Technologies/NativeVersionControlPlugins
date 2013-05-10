@@ -26,7 +26,7 @@ public:
 		// Process two assets at a time ie. src,dest
 		if ( assetList.size() % 2 ) 
 		{
-			Pipe().ErrorLine("uneven number of assets during move", MASystem);
+			Pipe().WarnLine("uneven number of assets during move", MASystem);
 			Pipe().EndResponse();
 			return true;
 		}

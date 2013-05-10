@@ -112,7 +112,7 @@ public:
 		if (paths.empty())
 		{
 			Pipe().EndList();
-			Pipe().ErrorLine("No paths in fileset perforce command", MARemote);
+			Pipe().WarnLine("No paths in fileset perforce command", MARemote);
 			Pipe().EndResponse();
 			return true;
 		}
