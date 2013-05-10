@@ -22,12 +22,13 @@ std::string WildcardsRemove (const std::string& path);
 std::string ResolvedPath(const VersionedAsset& asset, int flags);
 std::string ResolvePaths(VersionedAssetList::const_iterator b,
 						 VersionedAssetList::const_iterator e,
-						 int flags, const std::string& delim = "");
+						 int flags, const std::string& delim = "", const std::string& postfix = "");
 void ResolvePaths(std::vector<std::string>& result, VersionedAssetList::const_iterator b,
 						 VersionedAssetList::const_iterator e,
 						 int flags, const std::string& delim = "");
 
-std::string ResolvePaths(const VersionedAssetList& list, int flags, const std::string& delim = "");
+std::string ResolvePaths(const VersionedAssetList& list, int flags, const std::string& delim = "",
+						 const std::string& postfix = "");
 void ResolvePaths(std::vector<std::string>& result, 
 				  const VersionedAssetList& list, int flags, const std::string& delim = "");
 
