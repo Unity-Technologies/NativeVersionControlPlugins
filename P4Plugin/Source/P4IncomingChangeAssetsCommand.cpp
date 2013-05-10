@@ -13,18 +13,17 @@ public:
 	{
 		ClearStatus();
 		m_ProjectPath = task.GetP4Root();
-		
+		m_Result.clear();
+
 		ChangelistRevision cl;
 		Pipe() >> cl;
-		
-		Pipe().BeginList();
 		
 		vector<string> toks;
 		if (Tokenize(toks, m_ProjectPath, "/") == 0)
 		{
-			Pipe().ErrorLine(string("Project path invalid - ") + m_ProjectPath);
+			Pipe().BeginList();
+			Pipe().WarnLine(string("Project path invalid - ") + m_ProjectPath);
 			Pipe().EndList();
-			Pipe().ErrorLine("Invalid project path", MARemote);
 			Pipe().EndResponse();
 			return true;
 		}
@@ -36,10 +35,20 @@ public:
 		
 		task.CommandRun(cmd, this);
 		
-		// The OutputState and other callbacks will now output to stdout.
-		// We just wrap up the communication here.
-		Pipe().EndList();
+		if (!MapToLocal(task, m_Result))
+		{
+			// Abort since there was an error mapping files to depot path
+			Pipe().BeginList();
+			Pipe().WarnLine("Files couldn't be mapped in perforce view");
+			Pipe().EndList();
+			Pipe().EndResponse();
+			return true;
+		}
+
+		Pipe() << m_Result;
+		m_Result.clear();
 		Pipe() << GetStatus();
+
 		Pipe().EndResponse();
 		
 		return true;
@@ -65,7 +74,7 @@ public:
 		string::size_type i = d.rfind(" ");
 		if (i == string::npos || i < 2 || i+1 >= d.length()) // 2 == "//".length()
 		{
-			Pipe().ErrorLine(string("Invalid change asset - ") + d);
+			Pipe().WarnLine(string("Invalid change asset - ") + d);
 			return;
 		}
 		
@@ -74,15 +83,16 @@ public:
 		if (iPathEnd == string::npos)
 			iPathEnd = i;
 		
-		VersionedAsset a(m_ProjectPath + d.substr(1, iPathEnd-1));
+		VersionedAsset a(d.substr(0, iPathEnd));
 		string action = d.substr(i+1);
 		int state = action.empty() ? kNone : ActionToState(action,"","","");
 		a.SetState(state);
 		
-		Pipe() << a;
+		m_Result.push_back(a);
 	}
 	
 private:
 	string m_ProjectPath;
+	VersionedAssetList m_Result;
 	
 } cIncomingChangeAssets("incomingChangeAssets");

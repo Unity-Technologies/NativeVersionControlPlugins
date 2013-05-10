@@ -31,47 +31,6 @@ public:
 };
 
 
-static class P4WhereCommand : public P4Command
-{
-public:
-	
-	P4WhereCommand() : P4Command("where") {}
-
-	bool Run(P4Task& task, const CommandArgs& args) 
-	{ 
-		ClearStatus();
-		return true; 
-	}
-			
-	// Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
-	virtual void OutputInfo( char level, const char *data )
-	{	
-		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
-		string msg(data);
-		bool propergate = true;
-		if (level == 48 && msg.length() > 1)
-		{
-			// format of the string should be 
-			// depotPath workspacePath absFilePath
-			// e.g.
-			// //depot/Project/foo.txt //myworkspace/Project/foo.txt //Users/obama/MyProjects/P4/myworkspace/Project/foo.txt
-			string::size_type i = msg.find("//", 1);
-			if (i != -1 && i > 2)
-			{
-				propergate = false;
-				depotPaths.push_back(msg.substr(0, i-1));
-			}
-		}	
-
-		if (propergate)
-			P4Command::OutputInfo(level, data);
-	}
-	
-	vector<string> depotPaths;
-	
-} cWhere;
-
-
 class P4SubmitCommand : public P4Command
 {
 private:
@@ -98,23 +57,16 @@ public:
 		string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 		Pipe().Log().Debug() << "Paths resolved are: " << localPaths << unityplugin::Endl;
 		
-		cWhere.ClearStatus();
-		cWhere.depotPaths.clear();
-		cWhere.depotPaths.reserve(assetList.size());
-		task.CommandRun("where " + localPaths, &cWhere);
-		Pipe() << cWhere.GetStatus();
+		const vector<Mapping>& mappings = GetMappings(task, assetList);
 
-		if (cWhere.HasErrors())
+		if (mappings.empty())
 		{
 			// Abort since there was an error mapping files to depot path
-			P4Command* statusCommand = RunAndSendStatus(task, assetList);
-			Pipe() << statusCommand->GetStatus();
+			RunAndSendStatus(task, assetList);
 			Pipe().EndResponse();
 			return true;
 		}
-		
-		vector<string>& depotPaths = cWhere.depotPaths;
-		
+				
 		// Submit the changelist
 		P4SpecWriter writer;
 		
@@ -130,16 +82,14 @@ public:
 		if (hasFiles)
 		{
 			string paths;			
-			for (vector<string>::const_iterator i = depotPaths.begin(); i != depotPaths.end(); ++i) 
+			for (vector<Mapping>::const_iterator i = mappings.begin(); i != mappings.end(); ++i) 
 			{
-				if (i != depotPaths.begin())
+				if (i != mappings.begin())
 					paths += "\n";
-				paths += *i;
+				paths += i->depotPath;
 			}
 			writer.WriteSection ("Files", paths);
 		}
-
-		depotPaths.clear();
 		
 		m_Spec = writer.GetText();
 		
@@ -154,8 +104,7 @@ public:
 
 		if (hasFiles)
 		{
-			P4Command* statusCommand = RunAndSendStatus(task, assetList);
-			Pipe() << statusCommand->GetStatus();
+			RunAndSendStatus(task, assetList);
 		} 
 		else 
 		{

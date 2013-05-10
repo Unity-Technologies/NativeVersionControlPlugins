@@ -37,8 +37,7 @@ public:
 		
 		// Stat the files to get the most recent state.
 		// This could probably be optimized by reading the output of the command better
-		P4Command* statusCommand = RunAndSendStatus(task, incomingAssetList);
-		Pipe() << statusCommand->GetStatus();
+		RunAndSendStatus(task, incomingAssetList);
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.

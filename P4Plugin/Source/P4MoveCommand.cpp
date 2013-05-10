@@ -111,8 +111,7 @@ public:
 		// We just wrap up the communication here.
 		Pipe() << GetStatus();
 		
-		P4Command* statusCommand = RunAndSendStatus(task, targetAssetList);
-		Pipe() << statusCommand->GetStatus();
+		RunAndSendStatus(task, targetAssetList);
 		
 		Pipe().EndResponse();
 

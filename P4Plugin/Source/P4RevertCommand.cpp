@@ -12,6 +12,7 @@ public:
 	{
 		ClearStatus();
 		m_ProjectPath = task.GetP4Root();
+		m_Result.clear();
 
 		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 	
@@ -25,18 +26,30 @@ public:
 	
 		if (paths.empty())
 		{
-			Pipe().ErrorLine("No paths in fileset perforce command", MARemote);
+			Pipe().BeginList();
+			Pipe().ErrorLine("No paths for revert command", MARemote);
+			Pipe().EndList();
 			Pipe().EndResponse();
 			return true;
 		}
 	
 		cmd += " " + paths;
 	
-		Pipe().BeginList();
 		task.CommandRun(cmd, this);
-		Pipe().EndList();
+
+		if (!MapToLocal(task, m_Result))
+		{
+			// Abort since there was an error mapping files to depot path
+			Pipe().BeginList();
+			Pipe().WarnLine("Files couldn't be mapped in perforce view");
+			Pipe().EndList();
+			Pipe().EndResponse();
+			return true;
+		}
+		Pipe() << m_Result;
+		m_Result.clear();
 		Pipe() << GetStatus();
-	
+		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
 		Pipe().EndResponse();
@@ -71,11 +84,11 @@ public:
 		string::size_type iPathEnd = d.rfind("#");
 		if (iPathEnd == string::npos)
 		{
-			Pipe().ErrorLine(string("Invalid revert asset - ") + d);
+			Pipe().WarnLine(string("Invalid revert asset - ") + d);
 			return;
 		}
 		
-		VersionedAsset a(m_ProjectPath + d.substr(1, iPathEnd-1));
+		VersionedAsset a(d.substr(0, iPathEnd));
 
 		if (EndsWith(d, ", not reverted"))
 			return;
@@ -85,10 +98,11 @@ public:
 		else
 			a.AddState(kSynced);
 
-		Pipe() << a;
+		m_Result.push_back(a);
 	}
 
 private:
 	string m_ProjectPath;
+	VersionedAssetList m_Result;
 
 } cReverPt;

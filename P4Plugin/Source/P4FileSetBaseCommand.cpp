@@ -37,8 +37,7 @@ bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args)
 	// Stat the files to get the most recent state.
 	// This could probably be optimized by reading the output of the specific
 	// commands and figure out the new state. 
-	P4Command* statusCommand = RunAndSendStatus(task, assetList);	
-	Pipe() << statusCommand->GetStatus();
+	RunAndSendStatus(task, assetList);	
 	
 	// The OutputState and other callbacks will now output to stdout.
 	// We just wrap up the communication here.

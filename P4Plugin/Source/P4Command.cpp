@@ -1,4 +1,5 @@
 #include "P4StatusCommand.h"
+#include "P4Utility.h"
 
 #include <map>
 #include <cassert>
@@ -183,17 +184,101 @@ void P4Command::OutputInfo( char level, const char *data )
 	Pipe().InfoLine(ss.str());
 }
 
-P4Command* P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList)
+void P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList)
 {
 	P4StatusCommand* c = dynamic_cast<P4StatusCommand*>(LookupCommand("status"));
 	if (!c)
 	{
 		Pipe().ErrorLine("Cannot locate status command");
-		return this; // Returning this is just to keep things running.
+		return; // Returning this is just to keep things running.
 	}
 	
 	bool recursive = false;
 	c->RunAndSend(task, assetList, recursive);
-	return c;
+	Pipe() << c->GetStatus();
 }
 
+const char * kDelim = "_XUDELIMX_"; // magic delimiter
+
+static class P4WhereCommand : public P4Command
+{
+public:
+	
+
+	P4WhereCommand() : P4Command("where") {}
+
+	bool Run(P4Task& task, const CommandArgs& args) 
+	{ 
+		mappings.clear();
+		ClearStatus();
+		return true;
+	}
+			
+	// Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
+	virtual void OutputInfo( char level, const char *data )
+	{	
+		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
+		string msg(data);
+		bool propergate = true;
+		if (level == 48 && msg.length() > 1)
+		{
+			// format of the string should be
+			// depotPath workspacePath absFilePath
+			// e.g.
+			// //depot/Project/foo.txt //myworkspace/Project/foo.txt /Users/obama/MyProjects/P4/myworkspace/Project/foo.txt
+			// Each path has a postfix of kDelim that we have added in order to tokenize the 
+			// result into the three paths. Perforce doesn't check if files exists it just
+			// shows the mappings and therefore this will work.
+
+			string::size_type i = msg.find(kDelim); // depotPath end
+			string::size_type j = msg.find(kDelim, i+1); // workspacePath end
+			j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
+			string::size_type k = msg.find(kDelim, j); // clientPath end
+			if (i != string::npos && i > 2 && k != string::npos)
+			{
+				propergate = false;
+				P4Command::Mapping m = { msg.substr(0, i), msg.substr(j, k-j) };
+				mappings.push_back(m);
+			}
+		}	
+
+		if (propergate)
+			P4Command::OutputInfo(level, data);
+	}
+	
+	vector<Mapping> mappings;
+	
+} cWhere;
+
+const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, const VersionedAssetList& assets)
+{
+	cWhere.mappings.reserve(assets.size());
+	cWhere.mappings.clear();
+	cWhere.ClearStatus();
+	
+	string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
+	
+	task.CommandRun("where " + localPaths, &cWhere);
+	Pipe() << cWhere.GetStatus();
+	
+	if (cWhere.HasErrors())
+	{
+		// Abort since there was an error mapping files to depot path
+		cWhere.mappings.clear();
+	}
+	return cWhere.mappings;
+}
+
+bool P4Command::MapToLocal(P4Task& task, VersionedAssetList& assets)
+{
+	const vector<Mapping>& mappings = GetMappings(task, assets);
+	if (mappings.size() != assets.size())
+		return false; // error
+
+	vector<Mapping>::const_iterator m = mappings.begin();
+	for (VersionedAssetList::iterator i = assets.begin(); i != assets.end(); ++i, ++m)
+	{
+		i->SetPath(m->clientPath);
+	}
+	return true;
+}
