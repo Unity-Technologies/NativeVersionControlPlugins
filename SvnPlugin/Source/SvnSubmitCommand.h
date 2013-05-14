@@ -50,9 +50,9 @@ public:
 			os.flush();
 		}
 		
-		std::string cmd = "commit --depth=empty -F ";
+		std::string cmd = "commit --depth=empty -F \"";
 		cmd += tmpfilepath;
-		cmd += " ";
+		cmd += "\" ";
 		if (req.changelist.GetRevision() != kNewListRevision &&
 			req.changelist.GetRevision() != kDefaultListRevision)
 		{

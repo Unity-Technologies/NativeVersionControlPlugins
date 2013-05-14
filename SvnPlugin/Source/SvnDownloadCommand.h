@@ -92,14 +92,14 @@ public:
 
 	void Download(SvnTask& task, const std::string& path, const std::string& toPath, const std::string& revision = "HEAD")
 	{
-		APOpen ppipe = task.RunCommand(std::string("cat ") + path + "@" + revision);
+		APOpen ppipe = task.RunCommand(std::string("cat \"") + path + "@" + revision + "\"");
 		ppipe->ReadIntoFile(toPath);
 	}
 
 	void GetConflictInfo(SvnTask& task, const std::string& path, 
 						 VersionedAsset& mine, VersionedAsset& conflict, VersionedAsset& base)
 	{
-	    APOpen ppipe = task.RunCommand(std::string("info ") + path);
+	    APOpen ppipe = task.RunCommand(std::string("info \"") + path + "\"");
 		std::string line;
 		while (ppipe->ReadLine(line))
 		{
