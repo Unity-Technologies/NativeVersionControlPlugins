@@ -302,8 +302,15 @@ void POpen::ReadIntoFile(const std::string& path)
 	}
 
 	size_t bytes = fread(buf, 1, BUFSIZE, m_Handle);
-	while (bytes == BUFSIZE)
+	while (!ferror(m_Handle))
 	{
+		if (bytes == 0 && feof(m_Handle))
+		{
+			// done ok
+			fclose(fh);
+			return;
+		}
+
 		if (fwrite(buf, 1, bytes, fh) != bytes)
 		{
 			// Error writing to disk
@@ -313,25 +320,12 @@ void POpen::ReadIntoFile(const std::string& path)
 		bytes = fread(buf, BUFSIZE, 1, m_Handle);
 	}
 
-	if (feof(m_Handle))
-	{
-		if (bytes && fwrite(buf, 1, bytes, fh) != bytes)
-		{
-			// Error writing to disk
-			fclose(fh);
-			throw PluginException(string("Error writing process end output into file: ") + path);
-		}
-		fclose(fh);
-	}
-	else
-	{
-		stringstream os;
-		os << "Error writing process output to file: ";
-		os << path << " code " << ferror(fh);
-		os << " for command " <<  m_Command << std::endl;
-		fclose(fh);
-		throw PluginException(os.str());
-	}
+	stringstream os;
+	os << "Error writing process output to file: ";
+	os << path << " code " << ferror(fh);
+	os << " for command " <<  m_Command << std::endl;
+	fclose(fh);
+	throw PluginException(os.str());
 }
 
 #endif // end defined(_WINDOWS) or posix
