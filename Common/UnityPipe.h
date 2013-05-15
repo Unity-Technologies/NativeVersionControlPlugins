@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <cstdlib>
 #include "Utility.h"
 #include "Log.h"
 

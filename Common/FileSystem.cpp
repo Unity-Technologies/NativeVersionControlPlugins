@@ -186,6 +186,7 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 #include <sys/stat.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 bool IsReadOnly(const string& path)
 {

@@ -248,6 +248,8 @@ void POpen::ReadIntoFile(const std::string& path)
 
 #else // posix
 
+#include <string.h>
+
 POpen::POpen(const string& cmd) : m_Command(cmd)
 {
 	m_Handle = popen((cmd + " 2>&1").c_str(), "r");
