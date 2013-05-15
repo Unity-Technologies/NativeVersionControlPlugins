@@ -6,7 +6,7 @@ AR = ar
 
 # CXXFLAGS = -O3 -arch i386 -g
 CXXFLAGS += -g -fpermissive $(P4PLUGIN_INCLUDE)
-LIBRARIES = -lstdc++
+LIBRARIES = -lstdc++ -lrt
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
 COMMON_MODULES := $(COMMON_MODULES:.cpp=.o)
