@@ -58,7 +58,7 @@ P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_OSX.cpp \
 
 P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 		 ./P4Plugin/Source/P4FileSetBaseCommand.h \
-		 ./P4Plugin/Source/StatusBaseCommand.h \
+		 ./P4Plugin/Source/P4StatusBaseCommand.h \
 		 ./P4Plugin/Source/P4StatusCommand.h \
 		 ./P4Plugin/Source/P4Task.h \
 		 ./P4Plugin/Source/P4Utility.h
@@ -67,7 +67,7 @@ P4PLUGIN_LINK = -lclient -lrpc -lsupp
 P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r12.2/include/p4 -I./P4Plugin/Source
 
 SVNPLUGIN_SRCS = ./SvnPlugin/Source/SvnPlugin_OSX.cpp \
-			   ./SvnPlugin/Source/SvnTask.cpp
+		./SvnPlugin/Source/SvnTask.cpp
 
 SVNPLUGIN_INCLS = ./SvnPlugin/Source/AllSvnCommands.h \
 		./SvnPlugin/Source/SvnAddCommand.h \
@@ -90,7 +90,7 @@ SVNPLUGIN_INCLS = ./SvnPlugin/Source/AllSvnCommands.h \
 		./SvnPlugin/Source/SvnStatusCommand.h \
 		./SvnPlugin/Source/SvnSubmitCommand.h \
 		./SvnPlugin/Source/SvnTask.h \
-		./SvnPlugin/Source/SvnUnlockCommand.h 
+		./SvnPlugin/Source/SvnUnlockCommand.h
 
 SVNPLUGIN_LINK = 
 SVNPLUGIN_INCLUDE = -I./Common -I./SvnPlugin/Source

@@ -44,7 +44,7 @@ SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	      $(CXX) -arch i386 -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
+	$(CXX) -arch i386 -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
 
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
 	$(CXX) -arch i386 -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
