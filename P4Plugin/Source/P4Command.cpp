@@ -237,7 +237,7 @@ public:
 			if (i != string::npos && i > 2 && k != string::npos)
 			{
 				propergate = false;
-				P4Command::Mapping m = { msg.substr(0, i), msg.substr(j, k-j) };
+				P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
 				mappings.push_back(m);
 			}
 		}	
