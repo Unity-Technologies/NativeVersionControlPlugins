@@ -296,7 +296,6 @@ bool P4Task::Login()
 	
 	if (loggedIn) 
 	{
-		NotifyOnline(); // TODO: fix so that we do not send this for all requests.
 		return true; // All is fine. We're already logged in
 	}
 
@@ -319,14 +318,11 @@ bool P4Task::Login()
 		vector<string> args;
 		args.push_back("spec");
 		bool res = p4c->Run(*this, args); // fetched root info
-		if (res)
-			NotifyOnline();
 		SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
 		if (!res)
 			NotifyOffline("Couldn't fetch client spec file from perforce server");
 		return res;
 	}
-	NotifyOnline();
 	return true; // root reused
 }
 

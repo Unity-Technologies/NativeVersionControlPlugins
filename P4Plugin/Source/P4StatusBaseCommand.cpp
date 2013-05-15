@@ -5,12 +5,15 @@
 
 using namespace std;
 
-P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name) 
+P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name), clientValid(true) 
 {
 }
 
 void P4StatusBaseCommand::OutputStat( StrDict *varList )
 {
+	if (!clientValid)
+		return;
+
 	const string invalidPath = "//...";
 	const string notFound = " - no such file(s).";
 	
@@ -104,7 +107,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 
 void P4StatusBaseCommand::HandleError( Error *err )
 {
-	if ( err == 0 )
+	if ( err == 0  || !clientValid)
 		return;
 	
 	StrBuf buf;
@@ -112,6 +115,7 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	
 	const string invalidPath = "//...";
 	const string notFound = " - no such file(s).";
+	const string mustCreateClient = " - must create client '";
 	string value(buf.Text());
 	value = TrimEnd(value, '\n');
 	VersionedAsset asset;	
@@ -130,6 +134,11 @@ void P4StatusBaseCommand::HandleError( Error *err )
 			Pipe() << asset;
 			return; // just ignore errors for unknown files and return them anyway
 		} 
+	} 
+	else if (value.find(mustCreateClient) != string::npos)
+	{
+		clientValid = false;
+		return;
 	}
 	
 	P4Command::HandleError(err);

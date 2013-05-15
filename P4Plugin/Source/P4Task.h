@@ -37,6 +37,9 @@ public:
 	// Returns true on success
 	bool CommandRun( const std::string& command, P4Command* client );
 	bool Disconnect();
+	
+	void NotifyOffline(const std::string& reason);
+	void NotifyOnline();
 
 private:
 
@@ -45,9 +48,6 @@ private:
 	// Connection
 	bool Connect();
 	bool Login();
-
-	void NotifyOffline(const std::string& reason);
-	void NotifyOnline();
 
 	bool m_IsOnline;
 

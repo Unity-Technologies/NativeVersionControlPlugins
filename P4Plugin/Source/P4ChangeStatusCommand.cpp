@@ -9,6 +9,7 @@ public:
 	P4ChangeStatusCommand(const char* name) : P4StatusBaseCommand(name) {}
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
+		clientValid = true;
 		ClearStatus();
 		Pipe().Log().Info() << "ChangeStatusCommand::Run()" << unityplugin::Endl;
 		
@@ -27,6 +28,12 @@ public:
 		// We just wrap up the communication here.
 		Pipe().EndList();
 		Pipe() << GetStatus();
+		
+		if (clientValid)
+			task.NotifyOnline();
+		else
+			task.NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");
+
 		Pipe().EndResponse();
 		
 		return true;
