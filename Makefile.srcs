@@ -24,7 +24,7 @@ COMMON_INCLS = ./Common/Changes.h \
 		   ./Common/Log.h \
 		   ./Common/POpen.h
 
-P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_OSX.cpp \
+P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4AddCommand.cpp \
 		./P4Plugin/Source/P4ChangeDescriptionCommand.cpp \
 		./P4Plugin/Source/P4ChangeMoveCommand.cpp \
