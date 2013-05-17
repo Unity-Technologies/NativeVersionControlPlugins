@@ -38,9 +38,9 @@ public:
 	bool CommandRun( const std::string& command, P4Command* client );
 	bool Disconnect();
 	
-	void NotifyOffline(const std::string& reason);
-	void NotifyOnline();
-
+	static void NotifyOffline(const std::string& reason);
+	static void NotifyOnline();
+	static bool IsOnline() { return s_Singleton->m_IsOnline; }
 private:
 
 	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
@@ -70,4 +70,6 @@ private:
 	Task* m_Task;
 
 	friend class P4Command;
+	static P4Task* s_Singleton;
 };
+

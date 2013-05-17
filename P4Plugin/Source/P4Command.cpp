@@ -142,7 +142,7 @@ void P4Command::HandleError( Error *err )
 {
 	if ( err == 0 )
 		return;
-	
+
 	VCSStatus s = errorToVCSStatus(*err);
 	m_Status.insert(s.begin(), s.end());
 
@@ -153,8 +153,25 @@ void P4Command::HandleError( Error *err )
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	Pipe().Log().Debug() << errBuf << "\n";
-	//	Pipe().InfoLine(errBuf);
+	HandleOnlineStatusOnError(string(errBuf));
+}
+
+bool P4Command::HandleOnlineStatusOnError(const string& err)
+{
+	const string mustCreateClient = " - must create client '";
+	const string invalidPassword = "Perforce password (P4PASSWD) invalid or unset.";
+
+	if (StartsWith(err, invalidPassword))
+	{
+		P4Task::NotifyOffline("Perforce password invalid or unset");
+		return false;
+	}
+	else if (StartsWith(err, mustCreateClient))
+	{
+		P4Task::NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");	
+		return false;
+	}
+	return true;
 }
 
 void P4Command::ErrorPause( char* errBuf, Error* e)

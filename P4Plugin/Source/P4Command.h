@@ -47,6 +47,7 @@ public:
 	
 protected:
 	P4Command(const char* name);
+	bool HandleOnlineStatusOnError(const std::string& err);
 
 	// Many of the derived classes need to send updated
 	// state of a list. This is a convenience method to do that.

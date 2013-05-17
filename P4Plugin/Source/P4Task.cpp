@@ -58,12 +58,15 @@ VCSStatus errorToVCSStatus(Error& e)
 	return status;
 }
 
+P4Task* P4Task::s_Singleton = NULL;
+
 // This class essentially manages the command line interface to the API and replies.  Commands are read from stdin and results
 // written to stdout and errors to stderr.  All text based communications used tags to make the parsing easier on both ends.
 P4Task::P4Task()
 {
     m_P4Connect = false;
 	m_IsOnline = false;
+	s_Singleton = this;
 }
 
 P4Task::~P4Task()
@@ -109,10 +112,22 @@ string P4Task::GetP4Client()
 
 void P4Task::SetP4Password(const string& p)
 { 
-	if (m_PasswordConfig.empty())
+	if (p.empty())
+	{
 		m_Client.SetIgnorePassword();
+
+		// Logout
+		if (IsConnected())
+		{
+			P4Command* p4c = LookupCommand("logout");
+			vector<string> args;
+			p4c->Run(*this, args); 
+		}
+	}
 	else
+	{
 		m_Client.SetPassword(p.c_str());
+	}
 	m_PasswordConfig = p;
 	m_IsOnline = false;
 }
@@ -248,15 +263,15 @@ void P4Task::NotifyOffline(const string& reason)
 		0
 	};
 
-	m_IsOnline = false;
+	s_Singleton->m_IsOnline = false;
 
 	int i = 0;
 	while (disableCmds[i])
 	{
-		m_Task->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		s_Singleton->m_Task->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
-	m_Task->Pipe().Command(string("offline ") + reason, MAProtocol);
+	s_Singleton->m_Task->Pipe().Command(string("offline ") + reason, MAProtocol);
 }
 
 void P4Task::NotifyOnline()
@@ -271,17 +286,17 @@ void P4Task::NotifyOnline()
 		"submit", "unlock", 
 		0
 	};
-	if (m_IsOnline)
+	if (s_Singleton->m_IsOnline)
 		return;
 
-	m_Task->Pipe().Command("online", MAProtocol);
+	s_Singleton->m_Task->Pipe().Command("online", MAProtocol);
 	int i = 0;
 	while (enableCmds[i])
 	{
-		m_Task->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		s_Singleton->m_Task->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
-	m_IsOnline = true;
+	s_Singleton->m_IsOnline = true;
 }
 
 bool P4Task::Login()
@@ -294,9 +309,15 @@ bool P4Task::Login()
 	bool loggedIn = p4c->Run(*this, args); 
 	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
 	
-	if (loggedIn) 
+	if (loggedIn)
 	{
 		return true; // All is fine. We're already logged in
+	}
+
+	if (GetP4Password().empty())
+	{
+		m_Task->Log().Debug() << "Empty password -> skipping login" << unityplugin::Endl;
+		return true;
 	}
 
 	// Do the actual login
@@ -332,12 +353,16 @@ bool P4Task::Disconnect()
     m_Error.Clear();
 
     if ( !m_P4Connect ) // Nothing to do?
+	{
+		m_IsOnline = false;
         return true;
+	}
 
 	m_Client.Final( &m_Error );
     m_P4Connect = false;
 
-	NotifyOffline("Disconnected");
+	// NotifyOffline("Disconnected");
+
 	VCSStatus status = errorToVCSStatus(m_Error);
 	SendToPipe(m_Task->Pipe(), status, MAProtocol);
 

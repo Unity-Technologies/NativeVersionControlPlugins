@@ -12,5 +12,5 @@ public:
 	virtual void OutputStat( StrDict *varList );
 	virtual void HandleError( Error *err );
 	bool AddUnknown(VersionedAsset& current, const std::string& value);	
-	bool clientValid;
+	bool connectionOK;
 };

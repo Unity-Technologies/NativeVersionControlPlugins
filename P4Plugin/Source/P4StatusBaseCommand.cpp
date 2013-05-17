@@ -5,13 +5,13 @@
 
 using namespace std;
 
-P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name), clientValid(true) 
+P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name), connectionOK(true)
 {
 }
 
 void P4StatusBaseCommand::OutputStat( StrDict *varList )
 {
-	if (!clientValid)
+	if (!connectionOK)
 		return;
 
 	const string invalidPath = "//...";
@@ -104,10 +104,9 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	
 	Pipe() << current;
 }
-
 void P4StatusBaseCommand::HandleError( Error *err )
 {
-	if ( err == 0  || !clientValid)
+	if ( err == 0  || !connectionOK)
 		return;
 	
 	StrBuf buf;
@@ -115,7 +114,6 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	
 	const string invalidPath = "//...";
 	const string notFound = " - no such file(s).";
-	const string mustCreateClient = " - must create client '";
 	string value(buf.Text());
 	value = TrimEnd(value, '\n');
 	VersionedAsset asset;	
@@ -134,20 +132,22 @@ void P4StatusBaseCommand::HandleError( Error *err )
 			Pipe() << asset;
 			return; // just ignore errors for unknown files and return them anyway
 		} 
-	} 
-	else if (value.find(mustCreateClient) != string::npos)
-	{
-		clientValid = false;
-		return;
 	}
-	
-	P4Command::HandleError(err);
+
+	if (!HandleOnlineStatusOnError(value))
+	{
+		connectionOK = false;
+	}
+	else
+	{
+		P4Command::HandleError(err);
+	}
 }
 
 bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& value)
 {
 	const string notFound = " - no such file(s).";
-	
+
 	current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
 	int baseState = current.GetState() & ( kConflicted | kReadOnly | kMetaFile );
 	current.SetState(kLocal | baseState);
@@ -155,9 +155,9 @@ bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& valu
 	current.RemoveState(kLockedRemote);
 	if (IsReadOnly(current.GetPath()))
 		current.AddState(kReadOnly);
-	else 
+	else
 		current.RemoveState(kReadOnly);
-	
+
 	if (EndsWith(current.GetPath(), "*")) 
 		return false; // skip invalid files
 	return true; 

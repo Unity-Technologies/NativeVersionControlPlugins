@@ -43,6 +43,7 @@ P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4IncomingCommand.cpp \
 		./P4Plugin/Source/P4LockCommand.cpp \
 		./P4Plugin/Source/P4LoginCommand.cpp \
+		./P4Plugin/Source/P4LogoutCommand.cpp \
 		./P4Plugin/Source/P4MoveCommand.cpp \
 		./P4Plugin/Source/P4QueryConfigParametersCommand.cpp \
 		./P4Plugin/Source/P4ResolveCommand.cpp \

@@ -7,8 +7,9 @@ P4StatusCommand::P4StatusCommand(const char* name) : P4StatusBaseCommand(name) {
 
 bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 {
+	connectionOK = true;
 	ClearStatus();
-	clientValid = true;
+
 	bool recursive = args.size() > 1;
 	Pipe().Log().Info() << "StatusCommand::Run()" << unityplugin::Endl;
 			
@@ -18,13 +19,11 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 	RunAndSend(task, assetList, recursive);
 	Pipe() << GetStatus();
 
-	if (clientValid)
-		task.NotifyOnline();
-	else
-		task.NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");
+	if (!P4Task::IsOnline() && connectionOK)
+		P4Task::NotifyOnline();
 
 	Pipe().EndResponse();
-	
+
 	return true;
 }
 
