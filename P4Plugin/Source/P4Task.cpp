@@ -230,14 +230,8 @@ bool P4Task::Connect()
 
 	if (status.size())
 	{
-		if (StartsWith(status.begin()->message, "Connect to server failed; check $P4PORT."))
-			NotifyOffline(string("Could not connect to Perforce server '") + GetP4Port() + "'");
-		else if (StartsWith(status.begin()->message, "TCP connect to"))
-			NotifyOffline(string("Could not connect to Perforce server: '") + GetP4Port() + "'");
-		else if (StartsWith(status.begin()->message, string("Client '") + m_ClientConfig + "' unknown"))
-			NotifyOffline(string("Perforce workspace '") + m_ClientConfig + "' does not exist on server: '" + GetP4Port() + "'");
-		else
-			SendToPipe(m_Task->Pipe(), status, MAProtocol);
+		if (P4Command::HandleOnlineStatusOnError(&m_Error))
+			SendToPipe(m_Task->Pipe(), status, MAProtocol);			
 	}
 
 	if( m_Error.Test() )

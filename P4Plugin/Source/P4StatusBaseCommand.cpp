@@ -134,7 +134,7 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		} 
 	}
 
-	if (!HandleOnlineStatusOnError(value))
+	if (!HandleOnlineStatusOnError(err))
 	{
 		connectionOK = false;
 	}

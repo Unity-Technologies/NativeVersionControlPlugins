@@ -1,5 +1,7 @@
 #include "P4StatusCommand.h"
 #include "P4Utility.h"
+#include "msgclient.h"
+#include "msgserver.h"
 
 #include <map>
 #include <cassert>
@@ -146,6 +148,8 @@ void P4Command::HandleError( Error *err )
 	VCSStatus s = errorToVCSStatus(*err);
 	m_Status.insert(s.begin(), s.end());
 
+	HandleOnlineStatusOnError(err);
+
 	// Base implementation. Will callback to P4Command::OutputError 
 	ClientUser::HandleError( err );
 }
@@ -153,22 +157,51 @@ void P4Command::HandleError( Error *err )
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	HandleOnlineStatusOnError(string(errBuf));
+	Pipe().Log().Debug() << "error: " << errBuf << unityplugin::Endl;
 }
 
-bool P4Command::HandleOnlineStatusOnError(const string& err)
+static bool ErrorStringMatch(Error *err, const char* msg)
 {
-	const string mustCreateClient = " - must create client '";
-	const string invalidPassword = "Perforce password (P4PASSWD) invalid or unset.";
+	StrBuf buf;
+	err->Fmt(&buf);
+	string value(buf.Text());
+	return value.find(msg) != string::npos;
+}
 
-	if (StartsWith(err, invalidPassword))
+bool P4Command::HandleOnlineStatusOnError(Error *err)
+{
+	if (err->IsError())
 	{
-		P4Task::NotifyOffline("Perforce password invalid or unset");
-		return false;
-	}
-	else if (StartsWith(err, mustCreateClient))
-	{
-		P4Task::NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");	
+		StrBuf buf;
+		err->Fmt(&buf);
+		string value(buf.Text());
+
+		if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
+			P4Task::NotifyOffline("Couldn't connect to the perforce server");
+
+		else if (ErrorStringMatch(err, "TCP connect to"))
+			P4Task::NotifyOffline(string("Could not connect to Perforce server"));
+
+		else if (ErrorStringMatch(err, "Perforce password (P4PASSWD) invalid or unset."))
+			P4Task::NotifyOffline("Perforce password invalid or unset");
+
+		else if (ErrorStringMatch(err, " - must create client '"))
+			P4Task::NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");	
+
+		else if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
+			P4Task::NotifyOffline("Could not connect to Perforce server");
+
+		else if (value.find("Client '") != string::npos && value.find("' unknown") != string::npos)
+			P4Task::NotifyOffline("Perforce workspace does not exist on server. Check your Editor Settings.");
+
+		else
+		{
+			Pipe().Log().Notice() << "Unhandled status error -> " << value << unityplugin::Endl;
+			return true;
+		}
+
+		Pipe().Log().Notice() << value << unityplugin::Endl;
+ 
 		return false;
 	}
 	return true;
