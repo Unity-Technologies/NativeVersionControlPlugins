@@ -59,7 +59,7 @@ public:
 		
 		const vector<Mapping>& mappings = GetMappings(task, assetList);
 
-		if (mappings.empty())
+		if (mappings.empty() && !assetList.empty())
 		{
 			// Abort since there was an error mapping files to depot path
 			RunAndSendStatus(task, assetList);
