@@ -94,35 +94,27 @@ void P4Task::SetP4User(const string& u)
 }
 
 string P4Task::GetP4User()
-{ 
+{
 	return m_Client.GetUser().Text();
 }
 
 void P4Task::SetP4Client(const string& c)
-{ 
+{
 	m_Client.SetClient(c.c_str()); 
 	m_ClientConfig = c;
 	m_IsOnline = false;
 }
 
 string P4Task::GetP4Client()
-{ 
+{
 	return m_Client.GetClient().Text(); 
 }
 
 void P4Task::SetP4Password(const string& p)
-{ 
+{
 	if (p.empty())
 	{
 		m_Client.SetIgnorePassword();
-
-		// Logout
-		if (IsConnected())
-		{
-			P4Command* p4c = LookupCommand("logout");
-			vector<string> args;
-			p4c->Run(*this, args); 
-		}
 	}
 	else
 	{
@@ -133,7 +125,7 @@ void P4Task::SetP4Password(const string& p)
 }
 
 const string& P4Task::GetP4Password() const
-{ 
+{
 	return m_PasswordConfig;
 }
 
@@ -341,15 +333,30 @@ bool P4Task::Login()
 	return true; // root reused
 }
 
+void P4Task::Logout()
+{
+	m_IsOnline = false;
+
+	// First make sure that we're actually logged in
+	bool isLoggedIn = Connect();
+	if (!isLoggedIn)
+		return;
+
+	P4Command* p4c = LookupCommand("logout");
+	CommandArgs args;
+	p4c->Run(*this, args); 
+}
+
 // Finalise the perforce client 
 bool P4Task::Disconnect()
 {
     m_Error.Clear();
 
+	m_IsOnline = false;
+
     if ( !m_P4Connect ) // Nothing to do?
 	{
-		m_IsOnline = false;
-        return true;
+		return true;
 	}
 
 	m_Client.Final( &m_Error );

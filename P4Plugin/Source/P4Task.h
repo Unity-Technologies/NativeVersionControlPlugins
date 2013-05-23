@@ -41,6 +41,8 @@ public:
 	static void NotifyOffline(const std::string& reason);
 	static void NotifyOnline();
 	static bool IsOnline() { return s_Singleton->m_IsOnline; }
+	void Logout();
+
 private:
 
 	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);

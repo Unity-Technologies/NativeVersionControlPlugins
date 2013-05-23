@@ -119,6 +119,10 @@ public:
 			Pipe().OkLine("perforce");
 			Pipe().OkLine("0"); // 
 		} 
+		else if (key == "end")
+		{
+			task.Logout();
+		}
 		else 
 		{
 			Pipe().WarnLine(ToString("Unknown config field set on version control plugin: ", key), MAConfig);
