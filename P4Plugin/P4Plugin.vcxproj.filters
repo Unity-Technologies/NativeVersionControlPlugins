@@ -143,6 +143,9 @@
     <ClCompile Include="..\Common\POpen.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="Source\P4LogoutCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">
