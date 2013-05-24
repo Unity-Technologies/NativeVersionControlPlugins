@@ -155,23 +155,31 @@ int P4Task::Run()
 {
 	m_Task = new Task("./Library/p4plugin.log");
 
-	UnityCommand cmd;
-	vector<string> args;
 
-	for ( ;; )
+	try 
 	{
-		cmd = m_Task->ReadCommand(args);
-
-		// Make it convenient to get the pipe even though the commands
-		// are callback based.
-		P4Command::s_UnityPipe = &m_Task->Pipe();
-
-		if (cmd == UCOM_Invalid)
-			return 1; // error
-		else if (cmd == UCOM_Shutdown)
-			return 0; // ok 
-		else if (!Dispatch(cmd, args))
-			return 0; // ok
+		UnityCommand cmd;
+		vector<string> args;
+		
+		for ( ;; )
+		{
+			cmd = m_Task->ReadCommand(args);
+			
+			// Make it convenient to get the pipe even though the commands
+			// are callback based.
+			P4Command::s_UnityPipe = &m_Task->Pipe();
+			
+			if (cmd == UCOM_Invalid)
+				return 1; // error
+			else if (cmd == UCOM_Shutdown)
+				return 0; // ok 
+			else if (!Dispatch(cmd, args))
+				return 0; // ok
+		}
+	} 
+	catch (exception& e)
+	{
+		m_Task->Log().Fatal() << "Unhandled exception: " << e.what() << unityplugin::Endl;
 	}
 	return 1;
 }
