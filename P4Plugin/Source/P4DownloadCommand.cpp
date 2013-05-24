@@ -14,7 +14,11 @@ struct ConflictInfo
 	string conflict;
 };
 
-// Command to get the lowest base and highest mergetarget of all conflicts available 
+const size_t kDelim1Len = 11; // length of " - merging "
+const size_t kDelim2Len = 12; // length of " using base "
+const size_t kDelim3Len = 6; // length of " - vs "
+
+// Command to get the lowest base and highest merge target of all conflicts available 
 // for the given files
 static class P4ConflictInfoCommand : public P4Command
 {
@@ -33,48 +37,81 @@ public:
 		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
 		string msg(data);
 		bool propagate = true;
-		size_t delim1Len = 11; // length of " - merging "
-		size_t delim2Len = 12; // length of " using base "
 		size_t msgLen = msg.length();
 		
-		if (msg.find(" - merging ") == string::npos)
-		{
-			if (EndsWith(msg, " - no file(s) to resolve."))
-				return; // ok
-			goto out;
-		}
-		
-		if (level == 48 && msgLen > (delim1Len + delim2Len + 12) ) // 12 being the smallest possible path repr.
-		{
-			// format of the string should be 
-			// <localPath> - merging <conflictDepotPath> using base <baseDepotPath>
-			// e.g.
-			// /Users/foo/Project/foo.txt - merging //depot/Project/foo.txt#6,#7 using base //depot/foo.txt#5
-			string::size_type i = msg.find("//", 2);
-
-			if (i == string::npos && i < (delim1Len + 2) ) // 2 being smallest possible path repr of "/x"
-				goto out;
-		
-			string localPath = Replace(msg.substr(0, i - delim1Len), "\\", "/");
-			
-			string::size_type j = msg.find("//", i+2);
-			if (j == string::npos && j < (delim1Len + delim2Len + 2 + 3)) // 2 + 5 + 2 being smallest possible path repr of "/x - merging //y#1 using base "
-				goto out;
-			
-			string conflictPath = msg.substr(i,  j - i - delim2Len);
-
-			if (j + 5 > msgLen) // the basePath must be a least 5 chars "//x#1"
-				goto out;
-			
-			string basePath = msg.substr(j);
-				
-			ConflictInfo ci = { localPath, basePath, conflictPath };
-			conflicts[localPath] = ci;
-			propagate = false;
-		}	
-	out:
-		if (propagate)
+		if (level != 48)
 			P4Command::OutputInfo(level, data);
+
+		if (msgLen > (kDelim1Len + kDelim2Len + 12) && msg.find(" - merging ") != string::npos) // 12 being the smallest possible path repr.
+			HandleMergableAsset(msg);
+		else if (msgLen > (kDelim3Len + 12) && msg.find(" - vs //") != string::npos)
+			HandleNonMergableAsset(msg);
+		else if (EndsWith(msg, " - no file(s) to resolve."))
+			; // ignore
+		else
+			P4Command::OutputInfo(level, data);
+	}
+
+	void HandleMergableAsset(const string& data)
+	{
+		// format of the string should be 
+		// <localPath> - merging <conflictDepotPath> using base <baseDepotPath>
+		// e.g.
+		// /Users/foo/Project/foo.txt - merging //depot/Project/foo.txt#6,#7 using base //depot/foo.txt#5
+		bool ok = false;
+		{
+		string::size_type i = data.find("//", 2);
+
+		if (i == string::npos || i < (kDelim1Len + 2) ) // 2 being smallest possible path repr of "/x"
+			goto out1;
+		
+		string localPath = Replace(data.substr(0, i - kDelim1Len), "\\", "/");
+		
+		string::size_type j = data.find("//", i+2);
+		if (j == string::npos || j < (kDelim1Len + kDelim2Len + 2 + 3)) // 2 + 5 + 2 being smallest possible path repr of "/x - merging //y#1 using base "
+			goto out1;
+		
+		string conflictPath = data.substr(i,  j - i - kDelim2Len);
+		
+		if (j + 5 > data.length()) // the basePath must be a least 5 chars "//x#1"
+			goto out1;
+		
+		string basePath = data.substr(j);
+		
+		ConflictInfo ci = { localPath, basePath, conflictPath };
+		conflicts[localPath] = ci;
+		ok = true;
+		}
+	out1:
+		if (!ok)
+			P4Command::OutputInfo(48, data.c_str());
+	}
+
+	void HandleNonMergableAsset(const string& data)
+	{
+		// format of the string should be 
+		// <localPath> - vs <conflictDepotPath>
+		// e.g.
+		// /Users/foo/Project/foo.txt - vs //depot/Project/foo.txt#6,#7
+		bool ok = false;
+		{
+		string::size_type i = data.find("//", 2);
+		if (i == string::npos || i < (kDelim3Len + 2) ) // 2 being smallest possible path repr of "/x"
+			goto out2;
+		
+		string localPath = Replace(data.substr(0, i - kDelim3Len), "\\", "/");
+		string conflictPath = data.substr(i);
+		
+		if (i + 5 > data.length()) // the basePath must be a least 5 chars "//x#1"
+			goto out2;
+		
+		ConflictInfo ci = { localPath, string(), conflictPath };
+		conflicts[localPath] = ci;
+		ok = true;
+		}
+	out2:
+		if (!ok)
+			P4Command::OutputInfo(48, data.c_str());
 	}
 
 	map<string,ConflictInfo> conflicts;
@@ -185,23 +222,34 @@ public:
 						Pipe().Log().Info() << conflictCmd << unityplugin::Endl;
 						if (!task.CommandRun(conflictCmd, this))
 							break;
+						
 						asset.SetPath(conflictFile);
 						Pipe() << asset;
 						
-						string baseFile = tmpFile + "base";
-						string baseCmd = cmd + "\"" + baseFile + "\" \"" + ci->second.base + "\"";
-						Pipe().Log().Info() << baseCmd << unityplugin::Endl;
-						if (!task.CommandRun(baseCmd, this))
-							break;
+						string baseFile = "";
+
+						// base can be empty when files are not mergeable
+						if (!ci->second.base.empty())
+						{
+							baseFile = tmpFile + "base";
+							string baseCmd = cmd + "\"" + baseFile + "\" \"" + ci->second.base + "\"";
+							Pipe().Log().Info() << baseCmd << unityplugin::Endl;
+							if (!task.CommandRun(baseCmd, this))
+								break;
+						}
+						else
+						{
+							asset.SetState(kMissing);
+						}
 						asset.SetPath(baseFile);
 						Pipe() << asset;						
 					}
 					else 
 					{
 						// no conflict info for this file
+						asset.SetState(kMissing);
 						Pipe() << asset << asset;
-					}
-					
+					}	
 				}
 			}
 		}
