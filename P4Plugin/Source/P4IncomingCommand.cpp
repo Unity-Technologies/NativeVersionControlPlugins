@@ -32,7 +32,7 @@ public:
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetAssetsPath(), '/'), '\\') + "/...";
-		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" ") + rootPathWildcard;
+		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" \"") + rootPathWildcard + "\"";
 				
 		Pipe().BeginList();
 		

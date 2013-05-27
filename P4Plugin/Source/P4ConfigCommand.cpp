@@ -49,7 +49,15 @@ public:
 		}
 		else if (key == "assetsPath")
 		{
-			task.SetAssetsPath(value);
+			// The asset path is just the rest of the config commands joined
+			string assetPath;
+			for (int i = 2; i < args.size(); ++i)
+			{
+				assetPath += args[i];
+				assetPath += " ";
+			}
+			task.SetAssetsPath(TrimEnd(assetPath));
+			Pipe().Log().Info() << "Set assetPath to" << assetPath << unityplugin::Endl;
 		}
 		else if (key == "vcSharedLogLevel")
 		{
