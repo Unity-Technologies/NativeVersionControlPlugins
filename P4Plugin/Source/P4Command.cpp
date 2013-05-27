@@ -306,6 +306,9 @@ const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, cons
 	cWhere.mappings.clear();
 	cWhere.ClearStatus();
 	
+	if (assets.empty())
+		return cWhere.mappings;
+
 	string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
 	
 	task.CommandRun("where " + localPaths, &cWhere);
