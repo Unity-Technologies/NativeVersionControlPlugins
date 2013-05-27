@@ -34,6 +34,8 @@ public:
     {		
 		string result;
 		ReadDescription(data, result);
+		if (result == "<enter description here>\n\n")
+			result.clear();
 		Pipe().OkLine(result);
 	}
 	
