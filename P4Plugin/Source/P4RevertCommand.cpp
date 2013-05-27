@@ -67,6 +67,31 @@ public:
 			return "revert ";
 	}
 
+	void HandleError( Error *err )
+	{
+		if ( err == 0 )
+			return;
+		
+		// The error we are looking for is severity 'error' according
+		// to command line with -s options but here the error is set
+		// as severity 'warning' for some reason. We play it safe and
+		// check both.
+		if (err->IsWarning() || err->IsError())
+		{
+			StrBuf buf;
+			err->Fmt(&buf);
+			string value(buf.Text());
+			
+
+			if (EndsWith(value, TrimEnd(" - file(s) not opened on this client.\n")))
+			{
+				Pipe().Log().Debug() << value << unityplugin::Endl;
+				return; // ignore
+			}
+		}
+		P4Command::HandleError(err);
+	}
+
     // Called once per asset 
 	void OutputInfo( char level, const char *data )
     {
