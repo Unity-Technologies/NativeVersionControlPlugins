@@ -99,7 +99,14 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	if (!isStateSet)
 	{
 		int baseState = current.GetState() & ( kCheckedOutRemote | kLockedLocal | kLockedRemote | kConflicted | kReadOnly | kMetaFile );
-		current.SetState(ActionToState(action, headAction, haveRev, headRev) | baseState);
+		int newState = ActionToState(action, headAction, haveRev, headRev) | baseState;
+		
+		current.SetState(newState);
+
+		// Make sure it is actually present locally
+		if ( (newState & kLocal) && 
+			 !PathExists(current.GetPath()) )
+			current.RemoveState(kLocal);
 	}
 	
 	Pipe() << current;

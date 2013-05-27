@@ -5,7 +5,7 @@
 enum State
 {
 	kNone = 0,
-	kLocal = 1 << 0, // Local only assets - not registered in version control
+	kLocal = 1 << 0, // Local only assets - not registered in version control (May have been deleted previosly though and therefore known by version control)
 	kSynced = 1 << 1,
 	kOutOfSync = 1 << 2,
 	kMissing = 1 << 3,

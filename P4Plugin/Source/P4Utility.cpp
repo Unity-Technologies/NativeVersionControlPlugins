@@ -30,19 +30,25 @@ int ActionToState(const string& action, const string& headAction,
 		if (headAction == "add") state |= kAddedRemote;
 		else if (headAction == "move/add") state |= kAddedRemote;
 		else if (headAction == "edit") state |= kCheckedOutRemote;
-		else if (headAction == "delete") state |= kDeletedRemote;
+		else if (headAction == "delete") 
+		{
+			if (haveRev.empty())
+				state |= kLocal; // We have no revision locally and it has been deleted on server
+			else
+				state |= kDeletedRemote;
+		}
 		else if (headAction == "move/delete") state |= kDeletedRemote;
 		else state |= kOutOfSync;
-	} 
+	}
 	else if (headRev.empty())
 	{
 		// state |= kLocal;
-	} 
-	else 
+	}
+	else
 	{
 		state |= kSynced;
 	}
-	
+
 	return state;
 }
 
