@@ -44,7 +44,9 @@ public:
 	{
 		string d(data);
 		const size_t minLength = 8; // "Change x".length()
-		
+
+		Pipe().VerboseLine(d);
+
 		if (d.length() <= minLength)
 		{
 			Pipe().WarnLine(string("p4 changelist too short: ") + d);

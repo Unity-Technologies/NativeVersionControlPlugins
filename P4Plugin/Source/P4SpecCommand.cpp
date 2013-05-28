@@ -34,6 +34,7 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		stringstream ss(data);
+		Pipe().VerboseLine(data);
 		size_t minlen = 5; // "Root:" 
 		
 		string line;

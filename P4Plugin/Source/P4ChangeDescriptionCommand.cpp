@@ -33,10 +33,11 @@ public:
 	void OutputInfo( char level, const char *data )
     {		
 		string result;
+		Pipe().VerboseLine(data);
 		ReadDescription(data, result);
 		if (result == "<enter description here>\n\n")
 			result.clear();
-		Pipe().OkLine(result);
+		Pipe().DataLine(result);
 	}
 	
 	int ReadDescription(const char *data, string& result)

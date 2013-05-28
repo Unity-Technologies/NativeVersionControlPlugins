@@ -10,6 +10,7 @@ public:
 	virtual void OutputInfo( char level, const char *data )
 	{
 		string d(data);
+
 		if (d.find("already locked by") != string::npos)
 		{
 			Pipe().WarnLine(data, MARemote);

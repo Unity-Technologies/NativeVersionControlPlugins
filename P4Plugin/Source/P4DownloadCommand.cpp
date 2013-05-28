@@ -42,6 +42,8 @@ public:
 		if (level != 48)
 			P4Command::OutputInfo(level, data);
 
+		Pipe().VerboseLine(msg);
+
 		if (msgLen > (kDelim1Len + kDelim2Len + 12) && msg.find(" - merging ") != string::npos) // 12 being the smallest possible path repr.
 			HandleMergableAsset(msg);
 		else if (msgLen > (kDelim3Len + 12) && msg.find(" - vs //") != string::npos)

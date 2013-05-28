@@ -86,6 +86,7 @@ public:
 			if (EndsWith(value, TrimEnd(" - file(s) not opened on this client.\n")))
 			{
 				Pipe().Log().Debug() << value << unityplugin::Endl;
+				Pipe().VerboseLine(value);
 				return; // ignore
 			}
 		}
@@ -100,7 +101,7 @@ public:
 		// where ... is an arbitrary deep path
 		// to get the filesystem path we remove the append this
 		// to the Root path.
-		
+
 		P4Command::OutputInfo(level, data);
 		
 		string d(data);

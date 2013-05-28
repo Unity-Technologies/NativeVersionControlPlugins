@@ -76,7 +76,7 @@ public:
 		if (request.key == "pluginVersions")
 		{
 			int v = SelectVersion(request.values);
-			upipe.OkLine(v, MAConfig);
+			upipe.DataLine(v, MAConfig);
 			upipe.Log().Info() << "Selected plugin protocol version " << v << unityplugin::Endl;
 		} 
 		else if (request.key == "pluginTraits")
@@ -88,28 +88,28 @@ public:
 				(enablesLocking  ? 1 : 0) +
 				(enablesRevertUnchanged  ? 1 : 0);
 
-			upipe.OkLine(count);
+			upipe.DataLine(count);
 
 			if (requiresNetwork)
-				upipe.OkLine("requiresNetwork", MAConfig); 
+				upipe.DataLine("requiresNetwork", MAConfig); 
 			if (enablesCheckout)
-				upipe.OkLine("enablesCheckout", MAConfig); 
+				upipe.DataLine("enablesCheckout", MAConfig); 
 			if (enablesLocking)
-				upipe.OkLine("enablesLocking", MAConfig); 
+				upipe.DataLine("enablesLocking", MAConfig); 
 			if (enablesRevertUnchanged)
-				upipe.OkLine("enablesRevertUnchanged", MAConfig); 
+				upipe.DataLine("enablesRevertUnchanged", MAConfig); 
 
 			// The per plugin defined traits
-			upipe.OkLine(traits.size());
+			upipe.DataLine(traits.size());
 
 			for (std::vector<PluginTrait>::const_iterator i = traits.begin();
 				 i != traits.end(); ++i)
 			{
-				upipe.OkLine(i->id);
-				upipe.OkLine(i->label, MAConfig);
-				upipe.OkLine(i->description, MAConfig);
-				upipe.OkLine(i->defaultValue);
-				upipe.OkLine(i->flags);
+				upipe.DataLine(i->id);
+				upipe.DataLine(i->label, MAConfig);
+				upipe.DataLine(i->description, MAConfig);
+				upipe.DataLine(i->defaultValue);
+				upipe.DataLine(i->flags);
 			}
 		}
 		upipe.EndResponse();

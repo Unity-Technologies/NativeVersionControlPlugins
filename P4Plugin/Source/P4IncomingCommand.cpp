@@ -91,6 +91,8 @@ public:
 		bool headDeleted = false;
 		bool added = false;
 		
+		string verboseLine;
+
 		// Dump out the variables, using the GetVar( x ) interface.
 		// Don't display the function, which is only relevant to rpc.
 		for( i = 0; varList->GetVar( i, var, val ); i++ )
@@ -100,6 +102,7 @@ public:
 			
 			string key(var.Text());
 			string value(val.Text());
+			verboseLine += key + ":" + value + ", ";
 
 			//Pipe().Log().Debug() << "    " << key << " # " << value << endl;
 			
@@ -127,6 +130,8 @@ public:
 				Pipe().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << unityplugin::Endl;
 		}
 
+		Pipe().VerboseLine(verboseLine);
+
 		if (headChange == -1 && added)
 			return; // don't think about files added locally
 		
@@ -148,6 +153,8 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
+		Pipe().VerboseLine(d);
+
 		const size_t minLength = 8; // "Change x".length()
 		
 		if (d.length() <= minLength)
@@ -164,6 +171,7 @@ public:
 			return;
 		}
 		
+
 		Changelist item;
 		item.SetDescription(d.substr(i+1));
 		item.SetRevision(d.substr(minLength-1, i - (minLength-1)));

@@ -43,6 +43,7 @@ public:
     {
 		string d(data);
 		Pipe().Log().Debug() << "OutputInfo: " << d << unityplugin::Endl;
+		Pipe().VerboseLine(d);
 
 		m_LoggedIn = d == "'login' not necessary, no password set for this user.";
 		if (m_LoggedIn)
@@ -81,6 +82,7 @@ public:
 		Pipe().Log().Info() << "Prompted for password by server" << unityplugin::Endl;
 		Pipe().Log().Debug() << "Prompt: " << msg.Text() << unityplugin::Endl;
 		buf.Set(m_Password.c_str());
+		Pipe().VerboseLine("Prompted for password");
 	}
 	
 private:

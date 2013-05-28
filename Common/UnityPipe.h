@@ -256,7 +256,7 @@ public:
 	UnityPipe& BeginList()
 	{
 		// Start sending list of unknown size
-		OkLine("-1");
+		DataLine("-1");
 		return *this;
 	}
 	
@@ -296,7 +296,7 @@ public:
 		return *this;
 	}
 
-	UnityPipe& Ok(const std::string& msg = "", MessageArea ma = MAGeneral)
+	UnityPipe& Data(const std::string& msg = "", MessageArea ma = MAGeneral)
 	{
 		Write("o", m_Log.Debug());
 		Write(ma, m_Log.Debug());
@@ -307,7 +307,7 @@ public:
 	}
 
 	template <typename T>
-	UnityPipe& Ok(const T& msg, MessageArea ma = MAGeneral)
+	UnityPipe& Data(const T& msg, MessageArea ma = MAGeneral)
 	{
 		Write("o", m_Log.Debug());
 		Write(ma, m_Log.Debug());
@@ -316,9 +316,9 @@ public:
 		return *this;
 	}
 
-	UnityPipe& OkLine(const std::string& msg = "", MessageArea ma = MAGeneral)
+	UnityPipe& DataLine(const std::string& msg = "", MessageArea ma = MAGeneral)
 	{
-		Ok(msg, ma); __Write("\n", m_Log.Debug());
+		Data(msg, ma); __Write("\n", m_Log.Debug());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -326,9 +326,49 @@ public:
 	}
 	
 	template <typename T>
-	UnityPipe& OkLine(const T& msg, MessageArea ma = MAGeneral)
+	UnityPipe& DataLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		Ok(msg, ma); __Write("\n", m_Log.Debug());
+		Data(msg, ma); __Write("\n", m_Log.Debug());
+#if defined(_WINDOWS)
+		FlushFileBuffers(m_NamedPipe);
+#endif
+		return *this;
+	}
+
+
+	UnityPipe& Verbose(const std::string& msg = "", MessageArea ma = MAGeneral)
+	{
+		Write("v", m_Log.Debug());
+		Write(ma, m_Log.Debug());
+		Write(":", m_Log.Debug());
+		if (!msg.empty())
+			Write(msg, m_Log.Debug());
+		return *this;
+	}
+
+	template <typename T>
+	UnityPipe& Verbose(const T& msg, MessageArea ma = MAGeneral)
+	{
+		Write("v", m_Log.Debug());
+		Write(ma, m_Log.Debug());
+		Write(":", m_Log.Debug());
+		Write(msg, m_Log.Debug());
+		return *this;
+	}
+
+	UnityPipe& VerboseLine(const std::string& msg = "", MessageArea ma = MAGeneral)
+	{
+		Verbose(msg, ma); __Write("\n", m_Log.Debug());
+#if defined(_WINDOWS)
+		FlushFileBuffers(m_NamedPipe);
+#endif
+		return *this;
+	}
+	
+	template <typename T>
+	UnityPipe& VerboseLine(const T& msg, MessageArea ma = MAGeneral)
+	{
+		Verbose(msg, ma); __Write("\n", m_Log.Debug());
 #if defined(_WINDOWS)
 		FlushFileBuffers(m_NamedPipe);
 #endif
@@ -405,7 +445,7 @@ public:
 
 	UnityPipe& operator<<(const std::vector<std::string>& v)
 	{
-		OkLine(v.size());
+		DataLine(v.size());
 		for (std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); ++i)
 			WriteLine(*i, m_Log.Debug());
 		return *this;
@@ -430,7 +470,7 @@ UnityPipe& operator<<(UnityPipe& p, const T& v);
 template <typename T>
 UnityPipe& operator<<(UnityPipe& p, const std::vector<T>& v)
 {
-	p.OkLine(v.size());
+	p.DataLine(v.size());
 	for (typename std::vector<T>::const_iterator i = v.begin(); i != v.end(); ++i)
 		p << *i;
 	return p;

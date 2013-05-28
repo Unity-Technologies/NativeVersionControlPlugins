@@ -107,8 +107,8 @@ vector<string> Paths(const VersionedAssetList& assets)
 
 UnityPipe& operator<<(UnityPipe& p, const VersionedAsset& asset)
 {
-	p.OkLine(asset.GetPath());
-	p.OkLine(asset.GetState());
+	p.DataLine(asset.GetPath());
+	p.DataLine(asset.GetState());
 	return p;
 }
 

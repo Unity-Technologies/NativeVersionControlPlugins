@@ -71,6 +71,7 @@ public:
 		Pipe().Log().Info() << "OutputInfo: " << data << unityplugin::Endl;
 		
 		string d(data);
+		Pipe().VerboseLine(d);
 		string::size_type i = d.rfind(" ");
 		if (i == string::npos || i < 2 || i+1 >= d.length()) // 2 == "//".length()
 		{

@@ -7,11 +7,11 @@ public:
 	P4QueryConfigParametersCommand(const char* name) : P4Command(name) {}
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
-		Pipe().OkLine("text username");
-		Pipe().OkLine("text password");
-		Pipe().OkLine("hostAndPort server localhost 1666");
-		Pipe().OkLine("text workspace");
-		Pipe().OkLine("");
+		Pipe().DataLine("text username");
+		Pipe().DataLine("text password");
+		Pipe().DataLine("hostAndPort server localhost 1666");
+		Pipe().DataLine("text workspace");
+		Pipe().DataLine("");
 		
 		return true;
 	}

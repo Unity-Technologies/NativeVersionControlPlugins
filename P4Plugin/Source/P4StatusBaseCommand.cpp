@@ -108,9 +108,12 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 			 !PathExists(current.GetPath()) )
 			current.RemoveState(kLocal);
 	}
+
+	Pipe().VerboseLine(current.GetPath());
 	
 	Pipe() << current;
 }
+
 void P4StatusBaseCommand::HandleError( Error *err )
 {
 	if ( err == 0  || !connectionOK)
@@ -132,11 +135,13 @@ void P4StatusBaseCommand::HandleError( Error *err )
 			// tried to get status with no files matching wildcard //... which is ok
 			// or
 			// tried to get status of empty dir ie. not matching /path/to/empty/dir/... which is ok
+			Pipe().VerboseLine(value);
 			return;
 		}
 		else if (AddUnknown(asset, value))
 		{
 			Pipe() << asset;
+			Pipe().VerboseLine(value);
 			return; // just ignore errors for unknown files and return them anyway
 		} 
 	}

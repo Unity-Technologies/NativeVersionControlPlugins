@@ -66,8 +66,8 @@ UnityPipe& operator>>(UnityPipe& p, ChangelistRevision& revision)
 
 UnityPipe& operator<<(UnityPipe& p, const Changelist& changelist)
 {
-	p.OkLine(changelist.GetRevision().c_str());
-	p.OkLine(changelist.GetDescription());
+	p.DataLine(changelist.GetRevision().c_str());
+	p.DataLine(changelist.GetDescription());
 	return p;
 }
 

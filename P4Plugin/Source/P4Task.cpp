@@ -390,8 +390,10 @@ bool P4Task::IsConnected()
 // Run a perforce command
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
-	m_Task->Log().Info() << command << unityplugin::Endl;
 	
+	m_Task->Log().Info() << command << unityplugin::Endl;
+	m_Task->Pipe().VerboseLine(command);
+
 	// Force connection if this hasn't been set-up already.
 	// That is unless the command explicitely disallows connect.
 	if (!client->ConnectAllowed() || Connect())

@@ -20,7 +20,7 @@ UnityPipe& SendToPipe(UnityPipe& p, const VCSStatus& st, MessageArea ma, bool sa
 			if (safeSend)
 				p.InfoLine(i->message, ma);
 			else
-				p.OkLine(i->message, ma);
+				p.VerboseLine(i->message, ma);
 			break;
 		case VCSSEV_Info:
 			p.InfoLine(i->message, ma);
@@ -128,6 +128,7 @@ void P4Command::InputData( StrBuf *buf, Error *err )
 
 void P4Command::Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 {
+	Pipe().VerboseLine("Prompting...");
 	Pipe().Log().Info() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
 }
 
@@ -157,6 +158,7 @@ void P4Command::HandleError( Error *err )
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
+	Pipe().VerboseLine(errBuf);
 	Pipe().Log().Debug() << "error: " << errBuf << unityplugin::Endl;
 }
 
@@ -200,6 +202,7 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 			return true;
 		}
 
+		Pipe().VerboseLine(value);
 		Pipe().Log().Notice() << value << unityplugin::Endl;
  
 		return false;

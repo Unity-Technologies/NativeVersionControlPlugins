@@ -72,6 +72,8 @@ public:
 			return;
 		}
 
+		Pipe().VerboseLine(data);
+
 		// format e.g.:
 		// //depot/P4Test/Assets/Lars.meta#2 - updating /Users/foobar/UnityProjects/PerforceTest/P4Test/Assets/Lars.meta
 		// //depot/P4Test/Assets/killme.txt#1 - added as /Users/foo....
