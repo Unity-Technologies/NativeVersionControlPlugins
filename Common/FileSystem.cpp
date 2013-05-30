@@ -135,6 +135,114 @@ static bool RemoveReadOnlyW(LPCWSTR path)
 	return false;
 }
 
+static bool RemoveDirectoryRecursiveWide( const std::wstring& path )
+{
+	if( path.empty() )
+		return false;
+
+	// base path
+	std::wstring basePath = path;
+	if( basePath[basePath.size()-1] != L'\\' )
+		basePath += L'\\';
+
+	// search pattern: anything inside the directory
+	std::wstring searchPat = basePath + L'*';
+
+	// find the first file
+	WIN32_FIND_DATAW findData;
+	HANDLE hFind = ::FindFirstFileW( searchPat.c_str(), &findData );
+	if( hFind == INVALID_HANDLE_VALUE )
+		return false;
+
+	bool hadFailures = false;
+
+	bool bSearch = true;
+	while( bSearch )
+	{
+		if( ::FindNextFileW( hFind, &findData ) )
+		{
+			if( wcscmp(findData.cFileName,L".")==0 || wcscmp(findData.cFileName,L"..")==0 )
+				continue;
+
+			std::wstring filePath = basePath + findData.cFileName;
+			if( (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
+			{
+				// we have found a directory, recurse
+				if( !RemoveDirectoryRecursiveWide( filePath ) ) {
+					hadFailures = true;
+				} else {
+					::RemoveDirectoryW( filePath.c_str() ); // remove the empty directory
+				}
+			}
+			else
+			{
+				if( findData.dwFileAttributes & FILE_ATTRIBUTE_READONLY )
+					::SetFileAttributesW( filePath.c_str(), FILE_ATTRIBUTE_NORMAL );
+				if( !::DeleteFileW( filePath.c_str() ) ) {
+					hadFailures = true;
+				}
+			}
+		}
+		else
+		{
+			if( ::GetLastError() == ERROR_NO_MORE_FILES )
+			{
+				bSearch = false; // no more files there
+			}
+			else
+			{
+				// some error occurred
+				::FindClose( hFind );
+				return false;
+			}
+		}
+	}
+	::FindClose( hFind );
+
+	if( !RemoveDirectoryW( path.c_str() ) ) { // remove the empty directory
+		hadFailures = true;
+	}
+
+	return !hadFailures;
+}
+
+static bool RemoveDirectoryRecursive( const std::string& pathUtf8 )
+{
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName( pathUtf8.c_str(), widePath, kDefaultPathBufferSize );
+	return RemoveDirectoryRecursiveWide( widePath );
+}
+
+bool DeleteRecursive(const string& path)
+{
+	if( IsDirectory(path) )
+		return RemoveDirectoryRecursive( path );
+	else
+	{
+		wchar_t widePath[kDefaultPathBufferSize];
+		ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
+
+		if (DeleteFileW(widePath))
+		{
+			return true;
+		}
+
+		#if UNITY_EDITOR
+
+		if (ERROR_ACCESS_DENIED == GetLastError())
+		{
+			if (RemoveReadOnlyW(widePath))
+			{
+				return (FALSE != DeleteFileW(widePath));
+			}
+		}
+
+		#endif
+
+		return false;
+	}
+}
+
 bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
 {
 	if (createMissingFolders && !EnsureDirectory(ParentDirectory(toPath)))
@@ -187,6 +295,7 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include <dirent.h>
 
 bool IsReadOnly(const string& path)
 {
@@ -223,6 +332,52 @@ bool EnsureDirectory(const string& path)
 		throw std::runtime_error(buf);
 	}
 	return true;
+}
+
+static int DeleteRecursiveHelper(const string& path)
+{
+	int res;
+
+	struct stat status;
+	res = lstat(path.c_str(), &status);
+	if (res != 0)
+		return res;
+
+	if (S_ISDIR(status.st_mode) && !S_ISLNK(status.st_mode))
+	{
+		DIR *dirp = opendir (path.c_str());
+		if (dirp == NULL)
+			return -1;
+
+		struct dirent *dp;
+		while ( (dp = readdir(dirp)) )
+		{
+			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+			{
+				string name = dp->d_name;
+				res = DeleteRecursiveHelper(path + "/" + name);
+				if (res != 0)
+				{
+					closedir(dirp);
+					return res;
+				}
+			}
+		}
+		closedir(dirp);
+
+		res = rmdir(path.c_str());
+	}
+	else
+	{
+		res = unlink(path.c_str());
+	}
+
+	return res;
+}
+
+bool DeleteRecursive(const string& path)
+{
+	return DeleteRecursiveHelper(path) == 0;
 }
 
 bool PathExists(const std::string& path)

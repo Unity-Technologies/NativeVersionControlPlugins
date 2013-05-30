@@ -6,6 +6,7 @@
 
 bool IsReadOnly(const std::string& path);
 bool EnsureDirectory(const std::string& path);
+bool DeleteRecursive(const std::string& path);
 bool CopyAFile(const std::string& fromPath, const std::string& toPath, bool createMissingFolders);
 bool MoveAFile(const std::string& fromPath, const std::string& toPath);
 bool IsDirectory(const std::string& path);
