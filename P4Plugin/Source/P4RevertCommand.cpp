@@ -1,5 +1,6 @@
 #include "P4Command.h"
 #include "P4Utility.h"
+#include "FileSystem.h"
 
 using namespace std;
 
@@ -46,6 +47,9 @@ public:
 			Pipe().EndResponse();
 			return true;
 		}
+
+		IncludeFolders(assetList);
+
 		Pipe() << m_Result;
 		m_Result.clear();
 		Pipe() << GetStatus();
@@ -54,6 +58,42 @@ public:
 		// We just wrap up the communication here.
 		Pipe().EndResponse();
 		return true;
+	}
+
+	void IncludeFolders(const VersionedAssetList& assetList)
+	{
+		VersionedAssetSet assetsToRevert;
+		assetsToRevert.insert(assetList.begin(), assetList.end());
+
+		// Perforce doesn't support versioning of folders
+		// but we need to tell Unity about reverted folders anyway.
+		// This is simply done when the folders associated meta file is reverted.
+		// It is especially needed in case of reverting renaming of folders.
+		VersionedAssetList result;
+		result.reserve(m_Result.size());
+
+		for (VersionedAssetList::const_iterator i = m_Result.begin(); i != m_Result.end(); ++i)
+		{
+			string path = i->GetPath();
+			if (EndsWith(path, ".meta"))
+			{
+				string folderPath = path.substr(0, path.length() - 5) + "/";
+				VersionedAsset folderAsset(folderPath);
+				if (assetsToRevert.find(folderAsset) != assetsToRevert.end())
+				{
+					folderAsset.SetState(i->GetState());
+					result.push_back(folderAsset);
+					if (i->GetState() & kDeletedLocal)
+					{
+						// Delete the folder from disk
+						DeleteRecursive(folderAsset.GetPath());
+					}
+				}
+			}
+			result.push_back(*i);
+		}
+
+		m_Result.swap(result);
 	}
 
 	virtual string SetupCommand(const CommandArgs& args)
@@ -114,12 +154,15 @@ public:
 			return;
 		}
 		
-		VersionedAsset a(d.substr(0, iPathEnd));
+		string path = d.substr(0, iPathEnd);
+		VersionedAsset a(path);
 
 		if (EndsWith(d, ", not reverted"))
 			return;
 
-		if (EndsWith(d, ", deleted"))
+		bool revertAsDeleted = EndsWith(d, ", deleted");
+
+		if (revertAsDeleted)
 			a.AddState(kDeletedLocal);
 		else
 			a.AddState(kSynced);
@@ -130,5 +173,4 @@ public:
 private:
 	string m_ProjectPath;
 	VersionedAssetList m_Result;
-
 } cReverPt;
