@@ -21,7 +21,7 @@ public:
 	
 		VersionedAssetList assetList;
 		Pipe() >> assetList;
-		string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
+		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 	
 		Pipe().Log().Debug() << "Paths resolved are: " << paths << unityplugin::Endl;
 	
