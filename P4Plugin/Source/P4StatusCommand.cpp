@@ -7,7 +7,12 @@ P4StatusCommand::P4StatusCommand(const char* name) : P4StatusBaseCommand(name) {
 
 bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 {
-	connectionOK = true;
+	// Since the status command is use to check for online state we start out by
+	// forcing online state to true and check if it has been set to false in the
+	// end to determine if we should send online notifications.
+	bool wasOnline = P4Task::IsOnline();
+	P4Task::SetOnline(true);
+	
 	ClearStatus();
 
 	bool recursive = args.size() > 1;
@@ -19,8 +24,12 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 	RunAndSend(task, assetList, recursive);
 	Pipe() << GetStatus();
 
-	if (!P4Task::IsOnline() && connectionOK)
+	if (P4Task::IsOnline() && !wasOnline)
+	{
+		// If set to online already we cannot notify as online so we fake an offline state.
+		P4Task::SetOnline(false);
 		P4Task::NotifyOnline();
+	}
 
 	Pipe().EndResponse();
 

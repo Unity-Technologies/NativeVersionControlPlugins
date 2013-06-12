@@ -40,12 +40,10 @@ public:
 		if (key == "vcPerforceUsername")
 		{
 			task.SetP4User(value);
-			task.Disconnect();
 		}
 		else if (key == "vcPerforceWorkspace")
 		{
 			task.SetP4Client(value);
-			task.Disconnect();
 		}
 		else if (key == "assetsPath")
 		{
@@ -75,7 +73,6 @@ public:
 		{
 			task.SetP4Password(value);
 			value = "*";
-			task.Disconnect();
 		}
 		else if (key == "vcPerforceServer")
 		{
@@ -86,7 +83,6 @@ public:
 			if (i == string::npos)
 				value += ":1666"; // default port
 			task.SetP4Port(value);
-			task.Disconnect();
 		}
 		else if (key == "pluginVersions")
 		{
@@ -130,6 +126,7 @@ public:
 		else if (key == "end")
 		{
 			task.Logout();
+			task.Disconnect();
 		}
 		else 
 		{

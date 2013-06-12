@@ -231,7 +231,7 @@ bool P4Task::Connect()
 	if (status.size())
 	{
 		if (P4Command::HandleOnlineStatusOnError(&m_Error))
-			SendToPipe(m_Task->Pipe(), status, MAProtocol);			
+			SendToPipe(m_Task->Pipe(), status, MAProtocol);
 	}
 
 	if( m_Error.Test() )
@@ -291,6 +291,16 @@ void P4Task::NotifyOnline()
 		++i;
 	}
 	s_Singleton->m_IsOnline = true;
+}
+
+void P4Task::SetOnline(bool isOnline)
+{
+	s_Singleton->m_IsOnline = isOnline;
+}
+
+bool P4Task::IsOnline()
+{
+	return s_Singleton->m_IsOnline;
 }
 
 bool P4Task::Login()
@@ -413,3 +423,4 @@ bool P4Task::CommandRun(const string& command, P4Command* client)
 	}
 	return !client->HasErrors();
 }
+

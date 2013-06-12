@@ -149,16 +149,16 @@ void P4Command::HandleError( Error *err )
 	VCSStatus s = errorToVCSStatus(*err);
 	m_Status.insert(s.begin(), s.end());
 
-	HandleOnlineStatusOnError(err);
-
 	// Base implementation. Will callback to P4Command::OutputError 
-	ClientUser::HandleError( err );
+	// But only do so if the online state handler hasn't dealt with the issue
+	if (HandleOnlineStatusOnError(err))
+		ClientUser::HandleError( err );
 }
 
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	Pipe().VerboseLine(errBuf);
+	Pipe().WarnLine(errBuf);
 	Pipe().Log().Debug() << "error: " << errBuf << unityplugin::Endl;
 }
 
@@ -202,7 +202,7 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 			return true;
 		}
 
-		Pipe().VerboseLine(value);
+		Pipe().InfoLine(value);
 		Pipe().Log().Notice() << value << unityplugin::Endl;
  
 		return false;

@@ -5,13 +5,13 @@
 
 using namespace std;
 
-P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name), connectionOK(true)
+P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name)
 {
 }
 
 void P4StatusBaseCommand::OutputStat( StrDict *varList )
 {
-	if (!connectionOK)
+	if (!P4Task::IsOnline())
 		return;
 
 	const string invalidPath = "//...";
@@ -116,7 +116,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 
 void P4StatusBaseCommand::HandleError( Error *err )
 {
-	if ( err == 0  || !connectionOK)
+	if ( err == 0  || !P4Task::IsOnline())
 		return;
 	
 	StrBuf buf;
@@ -146,14 +146,8 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		} 
 	}
 
-	if (!HandleOnlineStatusOnError(err))
-	{
-		connectionOK = false;
-	}
-	else
-	{
+	if (HandleOnlineStatusOnError(err))
 		P4Command::HandleError(err);
-	}
 }
 
 bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& value)

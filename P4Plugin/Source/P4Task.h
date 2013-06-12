@@ -40,7 +40,10 @@ public:
 	
 	static void NotifyOffline(const std::string& reason);
 	static void NotifyOnline();
-	static bool IsOnline() { return s_Singleton->m_IsOnline; }
+	
+	// Set but do not notify unity about it
+	static void SetOnline(bool isOnline);
+	static bool IsOnline();
 	void Logout();
 
 private:
