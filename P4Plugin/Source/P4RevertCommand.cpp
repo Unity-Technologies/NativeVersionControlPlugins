@@ -81,7 +81,7 @@ public:
 				VersionedAsset folderAsset(folderPath);
 				if (assetsToRevert.find(folderAsset) != assetsToRevert.end())
 				{
-					folderAsset.SetState(i->GetState());
+					folderAsset.SetState(i->GetState() & ~kMetaFile);
 					result.push_back(folderAsset);
 					if (i->GetState() & kDeletedLocal)
 					{
@@ -160,10 +160,14 @@ public:
 		if (EndsWith(d, ", not reverted"))
 			return;
 
+			
 		bool revertAsDeleted = EndsWith(d, ", deleted");
+		bool abandoned = EndsWith(d, " was add, abandoned");
 
 		if (revertAsDeleted)
 			a.AddState(kDeletedLocal);
+		else if (abandoned)
+			a.SetState(kLocal);
 		else
 			a.AddState(kSynced);
 
