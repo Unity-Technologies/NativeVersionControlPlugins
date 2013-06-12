@@ -30,7 +30,7 @@ public:
 			Pipe().EndResponse();
 			return true;
 		}
-		
+
 		VersionedAssetList::const_iterator b = assetList.begin();
 		VersionedAssetList::const_iterator e = b;
 		
@@ -69,7 +69,9 @@ public:
 		{
 			e += 2;
 			
-			targetAssetList.push_back(*(b+1));
+			const VersionedAsset& dest = *(b+1);
+
+			targetAssetList.push_back(dest);
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
@@ -79,32 +81,20 @@ public:
 				break;
 			}
 			
-/*
-			// Make the actual file system move
-			if (dest.IsFolder())
-			{
-				// Make sure the target folder exists and that is all since
-				// sub content will be moved separately
-				if (EnsureDirectory(dest.GetPath()))
-				{
-					errorMessage += "Error creating "; 
-					errorMessage += dest.GetPath();
-					break;
-				}
-			}
-			else 
+			// Make the actual file system move if perforce didn't do it ie. in
+			// the case of an empty folder rename or a non versioned asset/folder move/rename
+			if (!PathExists(dest.GetPath()))
 			{
 				// Move the file
 				if (!MoveAFile(src.GetPath(), dest.GetPath()))
 				{
-					errorMessage += "Error moving file ";
+					string errorMessage = "Error moving file ";
 					errorMessage += src.GetPath();
 					errorMessage += " to ";
 					errorMessage += dest.GetPath();
-					break;
+					Pipe().WarnLine(errorMessage);
 				}
 			}
-*/			
 			b = e;
 		}
 		
@@ -117,6 +107,6 @@ public:
 
 		return true;
 	}
-	
+
 } cMove("move");
 
