@@ -69,6 +69,7 @@ public:
 		{
 			e += 2;
 			
+			const VersionedAsset& src = *b;
 			const VersionedAsset& dest = *(b+1);
 
 			targetAssetList.push_back(dest);
