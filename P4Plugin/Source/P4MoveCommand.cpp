@@ -96,6 +96,14 @@ public:
 					Pipe().WarnLine(errorMessage);
 				}
 			}
+
+			// Delete move folder src since perforce leaves around empty folders.
+			// This only works because unity will not send embedded moves.
+			if (src.IsFolder() && IsDirectory(src.GetPath()))
+			{
+				DeleteRecursive(src.GetPath());
+			}
+
 			b = e;
 		}
 		
