@@ -36,6 +36,7 @@ typedef BaseFileSetRequest<6> UnlockRequest;
 typedef BaseFileSetRequest<7> ResolveRequest;
 typedef BaseFileSetRequest<8> RevertRequest;
 typedef BaseFileSetRequest<9> MoveRequest;
+typedef BaseFileSetRequest<10> FileModeRequest;
 
 
 template <class Req>
@@ -71,3 +72,4 @@ typedef BaseFileSetResponse<UnlockRequest> UnlockResponse;
 typedef BaseFileSetResponse<ResolveRequest> ResolveResponse;
 typedef BaseFileSetResponse<RevertRequest> RevertResponse;
 typedef BaseFileSetResponse<MoveRequest> MoveResponse;
+typedef BaseFileSetResponse<FileModeRequest> FileModeResponse;

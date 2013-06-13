@@ -31,6 +31,7 @@ enum UnityCommand
 	UCOM_Status,
 	UCOM_Submit,
 	UCOM_Unlock,
+	UCOM_FileMode,
 };
 
 // Command string as received from unity pipe

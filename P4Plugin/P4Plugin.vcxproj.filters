@@ -146,6 +146,9 @@
     <ClCompile Include="Source\P4LogoutCommand.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="Source\P4FileModeCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">

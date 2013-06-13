@@ -33,6 +33,7 @@ static const CmdInfo infos[] = {
 	{ UCOM_Status, "status" }, //
 	{ UCOM_Submit, "submit" }, //
 	{ UCOM_Unlock, "unlock" }, //
+	{ UCOM_FileMode, "filemode" }, //
 	{ UCOM_Invalid, 0 } // delimiter
 };
 

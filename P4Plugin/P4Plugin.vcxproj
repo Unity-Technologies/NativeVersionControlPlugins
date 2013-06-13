@@ -34,6 +34,7 @@
     <ClCompile Include="Source\P4DeleteCommand.cpp" />
     <ClCompile Include="Source\P4DownloadCommand.cpp" />
     <ClCompile Include="Source\P4ExitCommand.cpp" />
+    <ClCompile Include="Source\P4FileModeCommand.cpp" />
     <ClCompile Include="Source\P4FileSetBaseCommand.cpp" />
     <ClCompile Include="Source\P4GetLatestCommand.cpp" />
     <ClCompile Include="Source\P4IncomingChangeAssetsCommand.cpp" />
