@@ -53,7 +53,7 @@ P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4StatusBaseCommand.cpp \
 		./P4Plugin/Source/P4StatusCommand.cpp \
 		./P4Plugin/Source/P4SubmitCommand.cpp \
-		./P4Plugin/Source/P4FileModeCommand.cpp \		
+		./P4Plugin/Source/P4FileModeCommand.cpp \
 		./P4Plugin/Source/P4Task.cpp \
 		./P4Plugin/Source/P4UnlockCommand.cpp \
 		./P4Plugin/Source/P4Utility.cpp
