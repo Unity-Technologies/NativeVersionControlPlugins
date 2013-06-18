@@ -1,6 +1,7 @@
 #include "P4Task.h"
 #include "P4Command.h"
 #include "error.h"
+#include "i18napi.h"
 #include "msgclient.h"
 #include "msgserver.h"
 #include "CommandLine.h"
@@ -224,9 +225,20 @@ bool P4Task::Connect()
 	else
 		m_Client.SetPassword(m_PasswordConfig.c_str());
 	m_Client.SetClient(m_ClientConfig.c_str());
+	
 	m_Client.Init( &m_Error );
 	
 	VCSStatus status = errorToVCSStatus(m_Error);
+
+	// Retry in case of unicode needs to be enabled on client	
+	if (HasUnicodeNeededError(status))
+	{
+		m_Error.Clear();
+		EnableUTF8Mode();
+
+		m_Client.Init( &m_Error );
+		VCSStatus status = errorToVCSStatus(m_Error);
+	}
 
 	if (status.size())
 	{
@@ -311,6 +323,7 @@ bool P4Task::Login()
 	args.push_back("login");
 	args.push_back("-s");
 	bool loggedIn = p4c->Run(*this, args); 
+
 	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
 	
 	if (loggedIn)
@@ -328,6 +341,13 @@ bool P4Task::Login()
 	args.clear();
 	args.push_back("login");
 	loggedIn = p4c->Run(*this, args); 
+	
+	if (HasUnicodeNeededError(p4c->GetStatus()))
+	{
+		EnableUTF8Mode();
+		loggedIn = p4c->Run(*this, args);
+	}
+
 	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
 
 	if (!loggedIn)
@@ -423,4 +443,18 @@ bool P4Task::CommandRun(const string& command, P4Command* client)
 	}
 	return !client->HasErrors();
 }
+
+bool P4Task::HasUnicodeNeededError( VCSStatus status )
+{
+	return StatusContains(status, "Unicode server permits only unicode enabled clients");
+}
+
+void P4Task::EnableUTF8Mode()
+{
+	CharSetApi::CharSet cs = CharSetApi::UTF_8;
+	m_Client.SetTrans( cs, cs, cs, cs );
+	m_Client.SetCharset("utf8");
+}
+
+
 

@@ -52,7 +52,11 @@ private:
 
 	// Connection
 	bool Connect();
+
+	void EnableUTF8Mode();
+
 	bool Login();
+	bool HasUnicodeNeededError(VCSStatus status);
 
 	bool m_IsOnline;
 
