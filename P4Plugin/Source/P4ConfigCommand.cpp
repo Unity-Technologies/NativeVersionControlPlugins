@@ -127,6 +127,7 @@ public:
 		{
 			task.Logout();
 			task.Disconnect();
+			task.DisableUTF8Mode();
 		}
 		else 
 		{

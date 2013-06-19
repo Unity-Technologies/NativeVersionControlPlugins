@@ -324,6 +324,13 @@ bool P4Task::Login()
 	args.push_back("-s");
 	bool loggedIn = p4c->Run(*this, args); 
 
+	if (HasUnicodeNeededError(p4c->GetStatus()))
+	{
+		m_Task->Pipe().InfoLine("Enabling unicode mode");
+		EnableUTF8Mode();
+		loggedIn = p4c->Run(*this, args);
+	}
+
 	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
 	
 	if (loggedIn)
@@ -374,11 +381,6 @@ bool P4Task::Login()
 void P4Task::Logout()
 {
 	m_IsOnline = false;
-
-	// First make sure that we're actually logged in
-	bool isLoggedIn = Connect();
-	if (!isLoggedIn)
-		return;
 
 	P4Command* p4c = LookupCommand("logout");
 	CommandArgs args;
@@ -454,6 +456,13 @@ void P4Task::EnableUTF8Mode()
 	CharSetApi::CharSet cs = CharSetApi::UTF_8;
 	m_Client.SetTrans( cs, cs, cs, cs );
 	m_Client.SetCharset("utf8");
+}
+
+void P4Task::DisableUTF8Mode()
+{
+	m_Client.SetCharset("");
+	CharSetApi::CharSet cs = CharSetApi::NOCONV;
+	m_Client.SetTrans( cs, -2, -2, -2 );
 }
 
 

@@ -67,10 +67,6 @@ public:
 	{
 		if ( err == 0 )
 			return;
-		
-		// Suppress errors when just checking for logged in state
-		if (m_CheckingForLoggedIn)
-			return;
 
 		StrBuf buf;
 		err->Fmt(&buf);
@@ -82,6 +78,10 @@ public:
 			GetStatus().insert(s.begin(), s.end());
 			return; // Do not propegate. It will be handled by P4Task 
 		}
+
+		// Suppress errors when just checking for logged in state
+		if (m_CheckingForLoggedIn)
+			return;
 
 		// Base implementation. Will callback to P4Command::OutputError 
 		P4Command::HandleError( err );
