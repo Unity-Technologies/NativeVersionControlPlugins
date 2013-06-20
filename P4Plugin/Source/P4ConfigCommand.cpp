@@ -49,7 +49,7 @@ public:
 		{
 			// The asset path is just the rest of the config commands joined
 			string assetPath;
-			for (int i = 2; i < args.size(); ++i)
+			for (size_t i = 2; i < args.size(); ++i)
 			{
 				assetPath += args[i];
 				assetPath += " ";
