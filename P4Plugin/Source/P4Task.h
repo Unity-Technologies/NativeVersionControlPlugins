@@ -45,6 +45,7 @@ public:
 	static void SetOnline(bool isOnline);
 	static bool IsOnline();
 	void Logout();
+	void DisableUTF8Mode();
 
 private:
 
@@ -57,6 +58,7 @@ private:
 
 	bool Login();
 	bool HasUnicodeNeededError(VCSStatus status);
+	
 
 	bool m_IsOnline;
 
