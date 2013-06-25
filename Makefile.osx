@@ -12,6 +12,9 @@ PLATFORM = OSXi386
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
 COMMON_MODULES := $(COMMON_MODULES:.cpp=.o)
 
+TESTSERVER_MODULES = $(TESTSERVER_SRCS:.c=.o)
+TESTSERVER_TARGET= Build/$(PLATFORM)/TestServer
+
 P4PLUGIN_MODULES = $(P4PLUGIN_SRCS:.c=.o)
 P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
 P4PLUGIN_TARGET = PerforcePlugin
@@ -22,14 +25,27 @@ SVNPLUGIN_TARGET = SubversionPlugin
 
 default: all
 
-all: P4Plugin SvnPlugin
+all: P4Plugin SvnPlugin 
+
+test: all testserver testp4 testsvn
+	@echo "done testing"
+
+testp4: $(TESTSCRIPTS_GENERAL) ${P4TESTSCRIPTS}
+	@echo "Running perforce tests"
+	@./Test/run_tests.sh ${TESTSERVER_TARGET} ./${P4PLUGIN_TARGET} nonverbose ${^}
+
+testsvn:
+	
+
+testserver: $(TESTSERVER_TARGET)
+	@mkdir -p Build/$(PLATFORM)
 
 P4Plugin: $(P4PLUGIN_TARGET)
-	mkdir -p Build/$(PLATFORM)
+	@mkdir -p Build/$(PLATFORM)
 	cp $(P4PLUGIN_TARGET) Build/$(PLATFORM)
 
 SvnPlugin: $(SVNPLUGIN_TARGET)
-	mkdir -p Build/$(PLATFORM)
+	@mkdir -p Build/$(PLATFORM)
 	cp $(SVNPLUGIN_TARGET) Build/$(PLATFORM)
 
 Common: $(COMMON_MODULES)
@@ -37,11 +53,17 @@ Common: $(COMMON_MODULES)
 Common/%.o : Common/%.cpp $(COMMON_INCLS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
 
+Test/Source/%.o : Test/Source/%.cpp $(TESTSERVER_INCLS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@
 
 SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
+
+$(TESTSERVER_TARGET): $(TESTSERVER_MODULES)
+	$(CXX) -arch i386 -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
 	$(CXX) -arch i386 -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 

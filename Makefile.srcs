@@ -24,6 +24,11 @@ COMMON_INCLS = ./Common/Changes.h \
 		   ./Common/Log.h \
 		   ./Common/POpen.h
 
+TESTSERVER_SRCS = ./Test/Source/ExternalProcess_Posix.cpp \
+				./Test/Source/TestServer.cpp 
+TESTSERVER_INCLS = ./Test/Source/ExternalProcess.h
+TESTSCRIPTS_GENERAL = ./Test/ProtocolNegotiation.txt
+
 P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4AddCommand.cpp \
 		./P4Plugin/Source/P4ChangeDescriptionCommand.cpp \
@@ -67,6 +72,7 @@ P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 
 P4PLUGIN_LINK = -lclient -lrpc -lsupp 
 P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r12.2/include/p4 -I./P4Plugin/Source
+P4TESTSCRIPTS = ./Test/Perforce/Traits.txt
 
 SVNPLUGIN_SRCS = ./SvnPlugin/Source/SvnPlugin_OSX.cpp \
 		./SvnPlugin/Source/SvnTask.cpp
@@ -96,3 +102,5 @@ SVNPLUGIN_INCLS = ./SvnPlugin/Source/AllSvnCommands.h \
 
 SVNPLUGIN_LINK = 
 SVNPLUGIN_INCLUDE = -I./Common -I./SvnPlugin/Source
+SVNTESTSCRIPTS = 
+

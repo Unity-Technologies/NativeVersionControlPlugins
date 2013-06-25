@@ -1,0 +1,30 @@
+c:pluginConfig pluginTraits
+--
+o1:4
+o8:requiresNetwork
+o8:enablesCheckout
+o8:enablesLocking
+o8:enablesRevertUnchanged
+o1:4
+o1:vcPerforceUsername
+o8:Username
+o8:The perforce user name
+o1:
+o1:1
+o1:vcPerforcePassword
+o8:Password
+o8:The perforce password
+o1:
+o1:2
+o1:vcPerforceWorkspace
+o8:Workspace
+o8:The perforce workspace/client
+o1:
+o1:1
+o1:vcPerforceServer
+o8:Server
+o8:The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666
+o1:perforce
+o1:0
+r1:end of response
+--
