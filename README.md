@@ -10,7 +10,7 @@ A plugin is an executable located in a designated directory that Unity can start
 
 The Perforce and Subversion plugins work in very different ways with Subversion being the simplest.
 
-The Subversion plugin is calling the svn executable and parses the output. This result is in turn sent to Unity. 
+The Subversion plugin is calling the svn executable and parses the output. This result is in turn sent to Unity.
 
 The Perforce plugin is using the perforce provided libraries and its callback style API. Furthermore is streams results from the perforce server directly to Unity.
 
