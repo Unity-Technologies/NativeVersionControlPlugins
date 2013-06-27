@@ -14,6 +14,8 @@ public:
 		ClearStatus();
 		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
 		
+		bool noLocalFileMove = args.size() > 1 && args[1] == "noLocalFileMove";
+
 		VersionedAssetList assetList;
 		Pipe() >> assetList;
 		
@@ -64,7 +66,7 @@ public:
 		e = b;
 
 		VersionedAssetList targetAssetList;
-
+		string noLocalFileMoveFlag = noLocalFileMove ? " -k " : "";
 		while (!HasErrors() && b != assetList.end())
 		{
 			e += 2;
@@ -76,8 +78,8 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			Pipe().Log().Info() << "move " << paths << unityplugin::Endl;
-			if (!task.CommandRun("move " + paths, this))
+			Pipe().Log().Info() << "move " << noLocalFileMoveFlag << paths << unityplugin::Endl;
+			if (!task.CommandRun("move " + noLocalFileMoveFlag + paths, this))
 			{
 				break;
 			}
