@@ -4,10 +4,10 @@
 
 using namespace std;
 
-class P4fileModeCommand : public P4Command
+class P4FileModeCommand : public P4Command
 {
 public:
-	P4fileModeCommand() : P4Command("filemode") { }
+	P4FileModeCommand() : P4Command("filemode") { }
 	
 	bool Run(P4Task& task, const CommandArgs& args)
 	{
