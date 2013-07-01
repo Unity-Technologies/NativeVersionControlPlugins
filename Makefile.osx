@@ -18,23 +18,32 @@ TESTSERVER_TARGET= Build/$(PLATFORM)/TestServer
 P4PLUGIN_MODULES = $(P4PLUGIN_SRCS:.c=.o)
 P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
 P4PLUGIN_TARGET = PerforcePlugin
+P4TEST_TOOL = "$$HOME/bin/p4"
+P4TEST_SERVER = "perforce:1666"
+P4TEST_CLIENT = "testclient"
 
 SVNPLUGIN_MODULES = $(SVNPLUGIN_SRCS:.c=.o)
 SVNPLUGIN_MODULES := $(SVNPLUGIN_MODULES:.cpp=.o)
 SVNPLUGIN_TARGET = SubversionPlugin
+SVNTEST_SERVER = "svn:1666"
 
 default: all
 
 all: P4Plugin SvnPlugin 
 
 test: all testserver testp4 testsvn
-	@echo "done testing"
-
+	
 testp4: $(TESTSCRIPTS_GENERAL) ${P4TESTSCRIPTS}
-	@echo "Running perforce tests"
+	@echo "------------------------"
+	@echo "Running Perforce tests"
+	@./Test/Perforce/client.sh ${P4TEST_TOOL} ${P4TEST_SERVER} ${P4TEST_CLIENT} setup 
 	@./Test/run_tests.sh ${TESTSERVER_TARGET} ./${P4PLUGIN_TARGET} nonverbose ${^}
+	@./Test/Perforce/client.sh ${P4TEST_TOOL} ${P4TEST_SERVER} ${P4TEST_CLIENT} teardown
 
-testsvn:
+testsvn: $(TESTSCRIPTS_GENERAL) ${SVNTESTSCRIPTS} 
+	@echo "------------------------"
+	@echo "Running Subversion tests"
+	@./Test/run_tests.sh ${TESTSERVER_TARGET} ./${SVNPLUGIN_TARGET} nonverbose ${^}
 	
 
 testserver: $(TESTSERVER_TARGET)

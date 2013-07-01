@@ -18,7 +18,7 @@ m_ExitCode(-1),
 m_Exited(false),
 m_ApplicationPath(app),
 m_Arguments(arguments),
-m_ReadTimeout (120.0)
+m_ReadTimeout (5.0)
 {
 }
 
@@ -157,7 +157,7 @@ std::string ExternalProcess::ReadLine (FILE *file, std::string &buffer, bool rem
 				}
 				throw ExternalProcessException(EPSTATE_BrokenPipe, "Error polling external process");
 			} else if (readyFDs == 0 || !FD_ISSET (fd, &fdReadSet)) {
-				throw ExternalProcessException(EPSTATE_BrokenPipe, "Got unknown write ready file description while write from external process");
+				throw ExternalProcessException(EPSTATE_BrokenPipe, "Got unknown read ready file description while write from external process");
 			}
 
 			char charBuffer[BUFSIZ];

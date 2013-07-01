@@ -1,12 +1,37 @@
 #include "ExternalProcess.h"
 #include <iostream>
 #include <fstream>
+#include <exception>
 
 using namespace std;
 
 void printStatus(bool ok);
+int run(int argc, char* argv[]);
  
 int main(int argc, char* argv[])
+{
+	try
+	{
+		return run(argc, argv);
+	}
+	catch (ExternalProcessException e)
+	{
+		std::cerr << e.what() << endl;
+		return 1;
+	}
+	catch (exception e)
+	{
+		std::cerr << e.what() << endl;
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << "Caught unhandled exception"  << endl;
+		return 1;
+	}
+}
+
+int run(int argc, char* argv[])
 {
 	bool verbose = argc > 3 ? string(argv[3]) == "verbose" : false;
 
