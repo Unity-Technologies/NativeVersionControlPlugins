@@ -42,6 +42,7 @@ public:
 	double GetReadTimeout();
 	void SetWriteTimeout(double secs);
 	double GetWriteTimeout();
+	const std::string& GetApplicationPath() const { return m_ApplicationPath; }
 private:
 	void Cleanup();
 

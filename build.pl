@@ -4,12 +4,18 @@ use strict;
 use Getopt::Long;
 use Cwd;
 use File::Path qw (rmtree mkpath);
+use lib 'Test';
+use VCSTest;
 
-my ($target, @configs);
-GetOptions("target=s"=>\$target, "configs=s"=>\@configs);
+my ($testoption,$test, $target, @configs);
+GetOptions("test"=>\$test, "testoption=s"=>\$testoption,
+		   "target=s"=>\$target, "configs=s"=>\@configs);
 @configs = split(/,/,join(',',@configs));
 
 sub BuildLinux ($);
+sub TestLinux ($);
+
+$testoption = "nonverbose" unless ($testoption);
 
 if (not $target)
 {
@@ -23,21 +29,51 @@ if (not $target)
 	}
 }
 
+$ENV{'TARGET'} = $target;
+
 if ($target eq "mac")
 {
-	BuildMac();	
+	unless ($test)
+	{
+		BuildMac();	
+	}
+	else
+	{
+		TestMac();
+	}
 }
 elsif ($target eq "win32")
 {
-	BuildWin32();	
+	unless ($test)
+	{
+		BuildWin32();	
+	}
+	else
+	{
+		TestWin32();
+	}
 }
 elsif ($target eq "linux32")
 {
-	BuildLinux ($target);
+	unless ($test)
+	{
+		BuildLinux ($target);
+	}
+	else
+	{
+		TestLinux ($target);
+	}
 }
 elsif ($target eq "linux64")
 {
-	BuildLinux ($target);
+	unless ($test)
+	{
+		BuildLinux ($target);
+	}
+	else
+	{
+		TestLinux ($target);
+	}
 }
 else 
 {
@@ -50,11 +86,29 @@ sub BuildMac
 	system("make" , "-f", "Makefile.osx", "all") && die ("Failed to build version control plugins");
 }
 
+sub TestMac
+{
+	$ENV{'P4DEXEC'} = "PerforceBinaries/OSX/p4d";
+	$ENV{'P4EXEC'} = "PerforceBinaries/OSX/p4";
+	$ENV{'P4PLUGIN'} = "Build/OSXi386/PerforcePlugin";
+	$ENV{'TESTSERVER'} = "Build/OSXi386/TestServer";
+	IntegrationTest($testoption);
+}
+
 sub BuildWin32
 {
   rmtree("Build");
   system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
   system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
+}
+
+sub TestWin32
+{
+	$ENV{'P4DEXEC'} = "PerforceBinaries/Win_x64/p4d.exe";
+	$ENV{'P4EXEC'} = "PerforceBinaries/Win_x64/p4.exe";
+	$ENV{'P4PLUGIN'} = "Build/Win32/PerforcePlugin.exe";
+	$ENV{'TESTSERVER'} = "Build/Win32/TestServer";
+	IntegrationTest($testoption);
 }
 
 sub BuildLinux ($)
@@ -78,4 +132,9 @@ sub BuildLinux ($)
 
 	system ('make', '-f', 'Makefile.gnu', 'clean');
 	system ('make', '-f', 'Makefile.gnu') && die ("Failed to build $platform");
+}
+
+sub TestLinux ($)
+{
+	my $platform = shift;
 }

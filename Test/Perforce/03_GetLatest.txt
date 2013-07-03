@@ -1,0 +1,8 @@
+<include ./Test/Perforce/02_Configure.txt>
+c:getLatest
+1
+./Test/tmp/testclient/
+0
+--
+v1:sync "./<root>/..." 
+--

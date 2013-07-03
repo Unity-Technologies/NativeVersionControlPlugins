@@ -18,7 +18,7 @@ m_ExitCode(-1),
 m_Exited(false),
 m_ApplicationPath(app),
 m_Arguments(arguments),
-m_ReadTimeout (5.0)
+m_ReadTimeout (120.0)
 {
 }
 
