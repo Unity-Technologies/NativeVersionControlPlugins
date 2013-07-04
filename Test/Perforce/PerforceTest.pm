@@ -3,8 +3,8 @@ use File::Path;
 if ($ENV{'TARGET'} eq "win32")
 {
 BEGIN {
-	require Win32::Process;
-	require Win32;
+	eval("use Win32::Process;");
+	eval("use Win32;");
 }
 }
 
