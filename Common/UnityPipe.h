@@ -126,7 +126,7 @@ private:
 	UnityPipe& Write(const std::string& v, unityplugin::LogWriter& log)
 	{
 		std::string tmp = Replace(v, "\\", "\\\\");
-		tmp = Replace(v, "\n", "\\n");
+		tmp = Replace(tmp, "\n", "\\n");
 		__Write(tmp, log);
 		return *this;
 	}
