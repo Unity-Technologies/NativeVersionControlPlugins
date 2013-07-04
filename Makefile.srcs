@@ -27,6 +27,7 @@ COMMON_INCLS = ./Common/Changes.h \
 TESTSERVER_SRCS = ./Test/Source/ExternalProcess_Posix.cpp \
 				./Test/Source/TestServer.cpp 
 TESTSERVER_INCLS = ./Test/Source/ExternalProcess.h
+TESTSERVER_INCLUDE = -I./Common
 
 P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4AddCommand.cpp \

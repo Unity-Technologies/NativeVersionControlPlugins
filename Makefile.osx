@@ -45,7 +45,7 @@ Common/%.o : Common/%.cpp $(COMMON_INCLS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
 
 Test/Source/%.o : Test/Source/%.cpp $(TESTSERVER_INCLS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(TESTSERVER_INCLUDE) -c $< -o $@
 
 P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@

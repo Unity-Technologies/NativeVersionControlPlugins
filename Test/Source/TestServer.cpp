@@ -157,7 +157,7 @@ int run(int argc, char* argv[])
 #ifdef _WIN32
 	absroot = string(getenv("PWD")) + "\\" + root;
 #else
-	absroot = string(getenv("PWD")) + "/ + root;
+	absroot = string(getenv("PWD")) + "/" + root;
 #endif
 
 	if (verbose)
