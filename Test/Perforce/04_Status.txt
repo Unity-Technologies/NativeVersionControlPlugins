@@ -10,9 +10,9 @@ v1:login -s
 <ignore> v1:User jonasd ticket expires in 8 hours 0 minutes.
 v1:login -s
 v1:'login' not necessary, no password set for this user.
-w1:Path '/Users/jonasd/Projects/VersionControlPlugins/<root>/testfile.txt' is not under client's root 'Test/tmp/testclient'.\n
+w1:Path '<absroot>/testfile.txt' is not under client's root '<root>'.\n
 d1:end of list
-w1:Path '/Users/jonasd/Projects/VersionControlPlugins/<root>/testfile.txt' is not under client's root 'Test/tmp/testclient'.\n
+w1:Path '<absroot>/testfile.txt' is not under client's root '<root>'.\n
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription

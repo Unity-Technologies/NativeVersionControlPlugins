@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "P4Plugin", "P4Plugin\P4Plug
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SvnPlugin", "SvnPlugin\SvnPlugin.vcxproj", "{52497AD9-17FB-453E-9626-ECAFBE92D419}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestServer", "Test\TestServer\TestServer.vcxproj", "{64C0D8D3-68C7-46C6-B341-0ED1C78B225B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{52497AD9-17FB-453E-9626-ECAFBE92D419}.Debug|Win32.Build.0 = Debug|Win32
 		{52497AD9-17FB-453E-9626-ECAFBE92D419}.Release|Win32.ActiveCfg = Release|Win32
 		{52497AD9-17FB-453E-9626-ECAFBE92D419}.Release|Win32.Build.0 = Release|Win32
+		{64C0D8D3-68C7-46C6-B341-0ED1C78B225B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{64C0D8D3-68C7-46C6-B341-0ED1C78B225B}.Debug|Win32.Build.0 = Debug|Win32
+		{64C0D8D3-68C7-46C6-B341-0ED1C78B225B}.Release|Win32.ActiveCfg = Release|Win32
+		{64C0D8D3-68C7-46C6-B341-0ED1C78B225B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

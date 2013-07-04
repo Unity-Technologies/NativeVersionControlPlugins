@@ -1,4 +1,5 @@
 #include "ExternalProcess.h"
+#include "Utility.h"
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -41,15 +42,110 @@ bool noresults;
 string root;
 string absroot;
 
-static void replaceRoot(string& str)
+static void ConvertSeparatorsFromWindows( string& pathName )
 {
-	string::size_type i = str.find(root);
-	if (i != string::npos)
-		str.replace(i, root.length(), "<root>");
+	for (string::iterator i = pathName.begin(); i != pathName.end(); ++i)
+		if (*i == '\\')
+			*i = '/';
+}
 
-	i = str.find(absroot);
-	if (i != string::npos)
+static void UnescapeString(string& target)
+{
+	string::size_type len = target.length();
+	std::string::size_type n1 = 0;
+	std::string::size_type n2 = 0;
+
+	while ( n1 < len && (n2 = target.find('\\', n1)) != std::string::npos &&
+		n2+1 < len )
+	{
+		char c = target[n2+1];
+		if ( c == '\\' )
+		{
+			target.replace(n2, 2, "\\");
+			len--;
+		}
+		else if ( c == 'n')
+		{
+			target.replace(n2, 2, "\n");
+			len--;
+		}
+		n1 = n2 + 1;
+	}
+}
+
+static void EscapeNewline(string& str)
+{
+	string::size_type i = str.find('\n');
+	while (i != string::npos)
+	{
+		str.replace(i, 1, "\\n");
+		i = str.find('\n');
+	}
+}
+
+static void replaceRoot(string& instr)
+{
+	string str = instr;
+	ConvertSeparatorsFromWindows(str);
+	string::size_type i = str.find(absroot);
+	bool replacedSomething = false;
+
+	while (i != string::npos)
+	{
 		str.replace(i, absroot.length(), "<absroot>");
+		i = str.find(absroot);
+		replacedSomething = true;
+	}
+
+#ifdef WIN32
+	// Need this hack because p4 on windows create result paths like
+	// c:/foo/bar\tmp/client/path
+	// ie. backslash and slash as path separator mixed in some cases
+	string wabsroot = absroot;
+	ConvertSeparatorsFromWindows(wabsroot);
+	i = str.find(wabsroot);
+	while (i != string::npos)
+	{
+		str.replace(i, wabsroot.length(), "<absroot>");
+		i = str.find(wabsroot);
+		replacedSomething = true;
+	}
+	
+	string wroot = root;
+	ConvertSeparatorsFromWindows(wroot);
+	i = str.find(wroot);
+	while (i != string::npos)
+	{
+		str.replace(i, wroot.length(), "<root>");
+		i = str.find(wroot);
+		replacedSomething = true;
+	}
+#endif
+
+	i = str.find(root);
+	while (i != string::npos)
+	{
+		str.replace(i, root.length(), "<root>");
+		i = str.find(root);
+		replacedSomething = true;
+	}
+	if (replacedSomething)
+		instr.swap(str);
+
+#ifdef _WIN32_NOTDEFINED
+	string wroot = root;
+	ConvertSeparatorsFromWindows(wroot);
+	i = str.find(wroot);
+	if (i != string::npos)
+		str.replace(i, wroot.length(), "<root>");
+
+	string wabsroot = absroot;
+	ConvertSeparatorsFromWindows(wabsroot);
+	i = str.find(wabsroot);
+	if (i != string::npos)
+		str.replace(i, wabsroot.length(), "<root>");
+#endif
+	
 }
 
 int run(int argc, char* argv[])
@@ -57,8 +153,12 @@ int run(int argc, char* argv[])
 	newbaseline = argc > 3 ? string(argv[3]) == "newbaseline" : false;
 	noresults = newbaseline;
 	verbose = argc > 3 ? string(argv[3]) == "verbose" && !newbaseline : false;
-	root = argc > 4 ? argv[4] : "";
-	absroot = string(getenv("PWD")) + "/" + root;
+	root = Trim(argc > 4 ? argv[4] : "", '\'');
+#ifdef _WIN32
+	absroot = string(getenv("PWD")) + "\\" + root;
+#else
+	absroot = string(getenv("PWD")) + "/ + root;
+#endif
 
 	if (verbose)
 		cout << "Plugin : " << argv[1] << endl;
@@ -166,7 +266,10 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			}
 
 			string msg = p.ReadLine();
+			string origmsg = msg;
+			UnescapeString(msg);
 			replaceRoot(msg);
+			EscapeNewline(msg);
 			if (expect.find(regextoken) == 0)
 			{
 				// TODO: implement regex match
@@ -195,7 +298,9 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 						cerr << "             reading as much as possible from plugin:" << endl;
 						do {
 							string l = p.ReadLine();
+							UnescapeString(msg);
 							replaceRoot(l);
+							EscapeNewline(msg);
 							cerr << l << endl;
 						} while (true);
 
@@ -213,6 +318,31 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 	return 0;
 }
 
+#if defined(_WIN32)
+
+enum Color { DBLUE=1,GREEN,GREY,DRED,DPURP,BROWN,LGREY,DGREY,BLUE,LIMEG,TEAL,
+	RED,PURPLE,YELLOW,WHITE,B_B };
+
+void printStatus(bool ok)
+{
+	if (noresults)
+		return;
+
+	HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO conBufInfo;
+	GetConsoleScreenBufferInfo(hcon, &conBufInfo);
+
+	SetConsoleTextAttribute(hcon, ok ? GREEN : RED);
+
+	if (ok)
+		cout << "OK" << endl;
+	else
+		cout << "Failed" << endl;
+
+	SetConsoleTextAttribute(hcon, conBufInfo.wAttributes);
+}
+
+#else
 void printStatus(bool ok)
 {
 	const char * redColor = "\033[;1;31m";
@@ -227,3 +357,4 @@ void printStatus(bool ok)
 	else
 		cout << redColor << "Failed" << endColor << endl;
 }
+#endif

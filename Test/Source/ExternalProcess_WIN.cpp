@@ -1,13 +1,12 @@
-#include "UnityPrefix.h"
-#include "Editor/Platform/Interface/ExternalProcess.h"
-#include "Runtime/Utilities/File.h"
-#include "PlatformDependent/Win/PathUnicodeConversion.h"
+#include "ExternalProcess.h"
+#include "FileSystem.h"
+#include "Utility.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
 
 using namespace std;
-
 
 ExternalProcess::ExternalProcess(const std::string& app, const std::vector<std::string>& arguments)
 : m_LineBufferValid(false), m_ApplicationPath(app), m_Arguments(arguments),
@@ -22,6 +21,20 @@ ExternalProcess::ExternalProcess(const std::string& app, const std::vector<std::
 ExternalProcess::~ExternalProcess()
 {
 	Shutdown();
+}
+
+static bool IsAbsoluteFilePath( const std::string& path )
+{
+	// this function can be called with both Unity style and Windows style path names
+	if( path.empty() )
+		return false;
+
+	if( path[0] == '/' || path[0] == '\\' )
+		return true; // network paths are absolute
+	if( path.size() >= 2 && path[1] == ':' )
+		return true; // drive letter followed by colon is absolute
+
+	return false;
 }
 
 bool ExternalProcess::Launch()
@@ -64,12 +77,14 @@ bool ExternalProcess::Launch()
 	// generate an argument list
 	std::wstring argumentString = std::wstring(L"\"") + appWide + L'"';
 	std::wstring argWide;
-	for( int i = 0; i < m_Arguments.size(); ++i ) {
+	wchar_t widePath[kDefaultPathBufferSize];
+	for( unsigned int i = 0; i < m_Arguments.size(); ++i ) {
 		argumentString += L' ';
 
-		std::string arg = m_Arguments[ i ];
-		arg = QuoteString( arg );
-		ConvertUTF8ToWideString( arg, argWide );
+		std::string arg = "\"";
+		arg += m_Arguments[ i ] + "\"";
+		ConvertUnityPathName(arg.c_str(), widePath, kDefaultPathBufferSize);
+		argWide = wstring(widePath);
 		argumentString += argWide;
 	}
 
@@ -77,9 +92,6 @@ bool ExternalProcess::Launch()
 	memcpy( argumentBuffer, argumentString.c_str(), (argumentString.size()+1)*sizeof(wchar_t) );
 
 	// launch process
-	wchar_t directoryWide[kDefaultPathBufferSize];
-	ConvertUnityPathName( File::GetCurrentDirectory().c_str(), directoryWide, kDefaultPathBufferSize );
-
 	BOOL processResult = CreateProcessW(
 		appWide,		// application
 		argumentBuffer, // command line
@@ -88,7 +100,7 @@ bool ExternalProcess::Launch()
 		TRUE,          // handles are inherited
 		0,             // creation flags
 		NULL,          // use parent's environment
-		File::GetCurrentDirectory().empty() ? NULL : directoryWide, // directory
+		NULL, // directory
 		&siStartInfo,  // STARTUPINFO pointer
 		&m_Task ); // receives PROCESS_INFORMATION
 
@@ -96,12 +108,12 @@ bool ExternalProcess::Launch()
 
 	if( processResult == FALSE )
 	{
-		LogString("Error creating external process: " + winutils::ErrorCodeToMsg(GetLastError()));
-		return false;
+		string t = string("Error creating external process: ") + LastErrorToMsg();
+		throw std::exception(t.c_str());
 	}
 
 	if (!CloseHandle(m_Task.hThread))
-		LogString("Error closing external process thread: " + winutils::ErrorCodeToMsg(GetLastError()));
+		throw std::exception((string("Error closing external process thread: ") + LastErrorToMsg()).c_str());
 
 	//
 	// Setup named pipe to external process
@@ -118,8 +130,8 @@ bool ExternalProcess::Launch()
 								  PIPE_UNLIMITED_INSTANCES, 16384, 16384, 0, NULL);
 	if (m_NamedPipe == INVALID_HANDLE_VALUE)
 	{
-		LogString("Error creating named pipe: " + winutils::ErrorCodeToMsg(GetLastError()));
 		Cleanup();
+		throw std::exception((string("Error creating named pipe: ") + LastErrorToMsg()).c_str());
 		return false;
 	}
 	
@@ -127,8 +139,8 @@ bool ExternalProcess::Launch()
 	
 	if (ret != 0)
 	{
-		LogString("Error connecting named pipe: " + winutils::ErrorCodeToMsg(GetLastError()));
 		Cleanup();
+		throw std::exception((string("Error connecting named pipe: ") + LastErrorToMsg()).c_str());
 		return false;
 	}
 
@@ -149,26 +161,26 @@ bool ExternalProcess::Launch()
 					ret = GetOverlappedResult(m_NamedPipe, &m_Overlapped, &dwIgnore, FALSE);
 					if (!ret)
 					{
-						LogString("Error waiting for named pipe connect: " + winutils::ErrorCodeToMsg(GetLastError()));
+						throw std::exception((string("Error waiting for named pipe connect: ") + LastErrorToMsg()).c_str());
 						Cleanup();
 						return false;
 					}
 					return true; // connected to external process
 				}
 				case WAIT_TIMEOUT:
-					LogStringMsg("Timed out connecting pipe to external process: %s", m_ApplicationPath.c_str());
+					throw std::exception((string("Timed out connecting pipe to external process: ") + m_ApplicationPath).c_str());
 					break;
 				case WAIT_FAILED:
-					LogString("Wait timout while connecting to named pipe:" + winutils::ErrorCodeToMsg(GetLastError()));
+					throw std::exception((string("Wait timout while connecting to named pipe:") + LastErrorToMsg()).c_str());
 					break;
 				default:
-					LogString("Unknown error while connecting pipe to external process");
+					throw std::exception("Unknown error while connecting pipe to external process");
 					break;
 			}
 			break;
 		}
 		default:
-			LogString("Unknown state while connecting pipe to external process");
+			throw std::exception("Unknown state while connecting pipe to external process");
 			break;
 	}	
 	Cleanup();
@@ -183,7 +195,7 @@ bool ExternalProcess::IsRunning()
 	DWORD result = WaitForSingleObject(m_Task.hProcess, 0);
 	
 	if (result == WAIT_FAILED)
-		LogString("Error checking run state of external process: " + winutils::ErrorCodeToMsg(GetLastError()));
+		throw std::exception((string("Error checking run state of external process: ") + LastErrorToMsg()).c_str());
 	
 	return result == WAIT_TIMEOUT;
 }
@@ -241,7 +253,7 @@ string ExternalProcess::ReadLine()
 		}
 
 		DWORD bytesRead = 0;
-		bool success = ReadFile( m_NamedPipe, buffer, kBufferSize, &bytesRead, &m_Overlapped );			
+		BOOL success = ReadFile( m_NamedPipe, buffer, kBufferSize, &bytesRead, &m_Overlapped );			
 		if ( success )
 		{
 			if (bytesRead == 0)
@@ -257,13 +269,12 @@ string ExternalProcess::ReadLine()
 				{
 					case WAIT_OBJECT_0:
 					{
-						bool success = GetOverlappedResult( m_NamedPipe, // handle to pipe
+						BOOL success = GetOverlappedResult( m_NamedPipe, // handle to pipe
 															&m_Overlapped, // OVERLAPPED structure 
 															&bytesRead,            // bytes transferred 
 															FALSE);            // do not wait 					
 						if (!success)
 						{
-							LogString("Error waiting for read external process: " + winutils::ErrorCodeToMsg(GetLastError()));
 							throw ExternalProcessException(EPSTATE_BrokenPipe, "Error waiting for read in external process");
 						}
 
@@ -275,14 +286,12 @@ string ExternalProcess::ReadLine()
 					case WAIT_TIMEOUT:
 						throw ExternalProcessException(EPSTATE_TimeoutReading, "Timeout reading from external process");
 					case WAIT_FAILED:
-						LogString("Timout waiting for read external process: " + winutils::ErrorCodeToMsg(GetLastError()));
 						throw ExternalProcessException(EPSTATE_BrokenPipe, "Failed waiting for read from external process");
 					default:
 						throw ExternalProcessException(EPSTATE_BrokenPipe, "Unknown error during read of external process");
 				}
 				break;
 			default:
-				LogString("Error reading externalprocess: " + winutils::ErrorCodeToMsg(GetLastError()));
 				throw ExternalProcessException(EPSTATE_BrokenPipe, "Error read polling external process");
 			} 
 		}
@@ -320,7 +329,7 @@ bool ExternalProcess::Write(const std::string& data)
 			throw ExternalProcessException(EPSTATE_NotRunning, "Trying to write non running external process");
 		}
 		
-		bool success = WriteFile(m_NamedPipe, buf, toWrite, &written, &m_Overlapped);
+		BOOL success = WriteFile(m_NamedPipe, buf, toWrite, &written, &m_Overlapped);
 
 		if ( success )
 		{
@@ -337,13 +346,12 @@ bool ExternalProcess::Write(const std::string& data)
 				{
 					case WAIT_OBJECT_0:
 					{
-						bool success = GetOverlappedResult( m_NamedPipe, // handle to pipe
+						BOOL success = GetOverlappedResult( m_NamedPipe, // handle to pipe
 													   &m_Overlapped, // OVERLAPPED structure 
 													   &written,            // bytes transferred 
 													   FALSE);            // do not wait 					
 						if (!success)
 						{
-							LogString("Error waiting to write external process: " + winutils::ErrorCodeToMsg(GetLastError()));
 							throw ExternalProcessException(EPSTATE_BrokenPipe, "Error waiting for write in external process");
 						}
 
@@ -355,7 +363,6 @@ bool ExternalProcess::Write(const std::string& data)
 					case WAIT_TIMEOUT:
 						throw ExternalProcessException(EPSTATE_TimeoutReading, "Timeout writing to external process");
 					case WAIT_FAILED:
-						LogString("Failed waiting to write external process: " + winutils::ErrorCodeToMsg(GetLastError()));
 						throw ExternalProcessException(EPSTATE_BrokenPipe, "Failed waiting for write to external process");
 					default:
 						throw ExternalProcessException(EPSTATE_BrokenPipe, "Unknown error during write to external process");
@@ -363,7 +370,6 @@ bool ExternalProcess::Write(const std::string& data)
 			}
 			else
 			{
-				LogString("Error writing external process: " + winutils::ErrorCodeToMsg(GetLastError()));
 				throw ExternalProcessException(EPSTATE_BrokenPipe, "Error write polling external process");
 			} 
 		}
@@ -407,14 +413,14 @@ double ExternalProcess::GetWriteTimeout()
 void ExternalProcess::Cleanup()
 {	
 	if (m_Event != INVALID_HANDLE_VALUE && !CloseHandle(m_Event))
-		LogString("Error cleaning up external process event: " + winutils::ErrorCodeToMsg(GetLastError()));
+		throw std::exception((string("Error cleaning up external process event: ") + LastErrorToMsg()).c_str());
 	m_Event = INVALID_HANDLE_VALUE;
 
 	if (m_NamedPipe != INVALID_HANDLE_VALUE && !CloseHandle(m_NamedPipe))
-		LogString("Error cleaning up external process named pipe: " + winutils::ErrorCodeToMsg(GetLastError()));
+		throw std::exception((string("Error cleaning up external process named pipe: ") + LastErrorToMsg()).c_str());
 	m_NamedPipe = INVALID_HANDLE_VALUE;
 
 	if (m_Task.hProcess != INVALID_HANDLE_VALUE  && !TerminateProcess(m_Task.hProcess, 1) && !CloseHandle(m_Task.hProcess))
-		LogString("Error cleaning up external process: " + winutils::ErrorCodeToMsg(GetLastError()));
+		throw std::exception((string("Error cleaning up external process: ") + LastErrorToMsg()).c_str());
 	m_Task.hProcess = INVALID_HANDLE_VALUE;
 }

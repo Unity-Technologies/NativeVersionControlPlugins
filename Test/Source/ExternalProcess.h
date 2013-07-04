@@ -1,7 +1,24 @@
 #pragma once
+#if defined(_WIN32)
+#include <Windows.h>
 
-#if _WIN32
-#include "PlatformDependent/Win/WinUtils.h"
+struct AutoHandle
+{
+	explicit AutoHandle() : handle(INVALID_HANDLE_VALUE) { }
+	AutoHandle( HANDLE h ) : handle(h) { }
+	~AutoHandle() { Close(); }
+
+	void Close()
+	{
+		if(handle != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(handle);
+			handle = INVALID_HANDLE_VALUE;
+		}
+	}
+	HANDLE	handle;
+};
+
 #endif
 
 #include <string>
@@ -53,7 +70,8 @@ private:
 	double m_ReadTimeout;
 	double m_WriteTimeout;
 
-#if UNITY_WIN
+#if defined(_WIN32)
+	
 	PROCESS_INFORMATION m_Task;
 
 	OVERLAPPED m_Overlapped;
@@ -61,12 +79,12 @@ private:
 	HANDLE m_Event; // Read or Write event
 	
 	// Main task writes to m_Task_stdin_wr and child task reads from m_Task_stdin_rd
-	winutils::AutoHandle m_Task_stdin_rd;
-	winutils::AutoHandle m_Task_stdin_wr;
+	AutoHandle m_Task_stdin_rd;
+	AutoHandle m_Task_stdin_wr;
 
 	// Main task reads m_Task_stdout_rd and child task writes to m_Task_stdout_wr
-	winutils::AutoHandle m_Task_stdout_rd;
-	winutils::AutoHandle m_Task_stdout_wr;
+	AutoHandle m_Task_stdout_rd;
+	AutoHandle m_Task_stdout_wr;
 
 	std::string m_Buffer;
 
