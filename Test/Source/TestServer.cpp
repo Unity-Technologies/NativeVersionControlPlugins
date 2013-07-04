@@ -320,26 +320,25 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 #if defined(_WIN32)
 
-enum Color { DBLUE=1,GREEN,GREY,DRED,DPURP,BROWN,LGREY,DGREY,BLUE,LIMEG,TEAL,
-	RED,PURPLE,YELLOW,WHITE,B_B };
-
 void printStatus(bool ok)
 {
 	if (noresults)
 		return;
+	cout.flush();
 
 	HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO conBufInfo;
 	GetConsoleScreenBufferInfo(hcon, &conBufInfo);
 
-	SetConsoleTextAttribute(hcon, ok ? GREEN : RED);
-
+	SetConsoleTextAttribute(hcon, ok ? FOREGROUND_GREEN : FOREGROUND_RED);
+	
 	if (ok)
 		cout << "OK" << endl;
 	else
 		cout << "Failed" << endl;
-
+	;
 	SetConsoleTextAttribute(hcon, conBufInfo.wAttributes);
+	cout.flush();
 }
 
 #else
