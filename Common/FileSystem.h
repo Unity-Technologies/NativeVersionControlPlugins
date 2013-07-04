@@ -14,6 +14,7 @@ bool PathExists(const std::string& path);
 
 #if WIN32
 #include "windows.h"
+const size_t kDefaultPathBufferSize = 1024;
 void ConvertUnityPathName( const char* utf8, wchar_t* outBuffer, int outBufferSize );
 std::string PluginPath();
 #endif

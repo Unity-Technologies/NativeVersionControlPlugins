@@ -206,8 +206,6 @@ bool POpen::ReadLine(string& result)
 	}
 }
 
-const size_t kDefaultPathBufferSize = 1024;
-
 void POpen::ReadIntoFile(const std::string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];

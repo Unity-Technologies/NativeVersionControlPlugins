@@ -63,8 +63,6 @@ string PluginPath()
 	return path;
 }
 
-const size_t kDefaultPathBufferSize = 1024;
-
 bool EnsureDirectory(const string& path)
 {
 	string parent = ParentDirectory(path);
