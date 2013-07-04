@@ -2,8 +2,10 @@ use File::Path;
 
 if ($ENV{'TARGET'} eq "win32")
 {
-	eval "use Win32::Process";
-    eval "use Win32";
+BEGIN {
+	require Win32::Process;
+	require Win32;
+}
 }
 
 sub PerforceIntegrationTests
@@ -20,6 +22,13 @@ sub PerforceIntegrationTests
 	$ENV{'P4CLIENT'} = "testclient";
 	$ENV{'P4CHARSET'} = 'utf8';
 	$ENV{'P4PASSWD'} = 'secret';
+	
+	if ($ENV{'TARGET'} eq "win32")
+	{
+		$ENV{'P4ROOT'} =~ s/\//\\/g;
+		$ENV{'P4CLIENTROOT'} =~ s/\//\\/g;
+	}
+
 	$pid = SetupServer();
 	sleep(1);
 	SetupClient();
@@ -69,7 +78,7 @@ sub SetupServer
 	rmtree($root);
 	mkdir $root;
 	system("$ENV{'P4DEXEC'} -xi -r \"$root\"");
-	return SpawnSubProcess("$ENV{'P4DEXEC'} -r \"$root\" -p 1667");
+	return SpawnSubProcess($ENV{'P4DEXEC'}, " -r \"$root\" -p 1667");
 }
 
 sub TeardownServer
@@ -141,6 +150,7 @@ sub SpawnSubProcess
 
 	if ($ENV{'TARGET'} eq "win32")
 	{
+		$ProcessObj = 1;
 		Win32::Process::Create($ProcessObj,
 							   $exec_,
 							   $args_,
