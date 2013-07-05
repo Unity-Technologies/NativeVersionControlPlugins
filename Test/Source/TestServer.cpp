@@ -173,7 +173,7 @@ int run(int argc, char* argv[])
 static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent)
 {
 	if (!noresults)
-		cout << indent << "Testing " << scriptPath << " ";
+		cout << indent << "Testing " << scriptPath << " " << flush;
 
 	if (verbose)
 		cout << endl;
@@ -191,6 +191,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 	const string regextoken = "==:";
 	const string exittoken = "<exit>";
 	const string ignoretoken = "<ignore>";
+	const string genfiletoken = "<genfile ";
 
 	bool ok = true;
 	while (testscript.good())
@@ -240,8 +241,26 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				continue;
 			}
 
-			p.Write(buf);
-			p.Write("\n");
+			if (command.find(genfiletoken) == 0)
+			{
+				// Generate and posssibly overwrite a file
+				string genfile = command.substr(9, command.length() - 1 - 9);
+				{
+					fstream f(genfile.c_str(), ios_base::trunc | ios_base::out);
+					f << "Random: " << rand() 
+					  << "\nTime: " << time(0) 
+					  << "\nRandom: " << rand() << endl;
+					f.flush();
+				}
+
+				continue;
+			}
+
+			if (!command.empty())
+			{
+				p.Write(buf);
+				p.Write("\n");
+			}
 		}
 
 		while (testscript.getline(buf, BUFSIZE))
