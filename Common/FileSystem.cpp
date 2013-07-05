@@ -102,9 +102,8 @@ bool IsReadOnly(const string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
-	return IsReadOnlyW(widePath);
+	return PathExists(path) && IsReadOnlyW(widePath);
 }
-
 
 bool IsDirectory(const string& path)
 {
@@ -299,12 +298,20 @@ bool IsReadOnly(const string& path)
 {
 	struct stat st;
 	// @TODO: Error handling
-	/*int res = */ stat(path.c_str(), &st);
-	/*
-	if (res)
-		upipe.Log().Notice() << "Error stat on " << path << ": " << strerror(errno) << endl;
-	 */
-	
+	int res = stat(path.c_str(), &st);
+
+	if (res == -1)
+	{
+		// Notice if file actually exists by we could not stat
+		if (errno != ENOENT && errno != ENOTDIR)
+		{
+			char buf[1024];
+			snprintf(buf, 1024, "Could not stat %s error : %s (%i)\n", path.c_str(), strerror(errno), errno);
+			throw std::runtime_error(buf);
+		}
+		return false;
+	}
+
 	return !(st.st_mode & S_IWUSR);
 }
 
