@@ -1,18 +1,35 @@
 <include ./Test/Perforce/02_Configure.txt>
+c:delete
+1
+./Test/tmp/testclient/testfile2.txt
+0
+--
+v1:delete -v "./<root>/testfile2.txt" 
+v1:login -s
+i1:Enabling unicode mode
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+i1://depot/testfile2.txt#1 - opened for delete (level 48)
+o1:-1
+v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+d1:end of list
+r1:end of response
+--
 c:status recurse
 1
-./Test/tmp/testclient/testfile.txt
+./Test/tmp/testclient/testfile2.txt
 0
 --
 o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
-v1:login -s
-<ignore> v1:User jonasd ticket expires in 8 hours 0 minutes.
+v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
 v1:login -s
 v1:'login' not necessary, no password set for this user.
-w1:Path '<absroot>/testfile.txt' is not under client's root '<root>'.\n
+v1:<absroot>/testfile2.txt
+o1:<absroot>/testfile2.txt
+o1:66
 d1:end of list
-w1:Path '<absroot>/testfile.txt' is not under client's root '<root>'.\n
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription

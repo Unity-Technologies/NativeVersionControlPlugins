@@ -1,32 +1,35 @@
 <include ./Test/Perforce/02_Configure.txt>
-c:getLatest
+<genfile ./Test/tmp/testclient/testfile2.txt>
+c:add 
 1
-./Test/tmp/testclient/
+./Test/tmp/testclient/testfile2.txt
 0
 --
-v1:sync "./<root>/..." 
---
-c:status recurse
-1
-./Test/tmp/testclient/testfile.txt
-0
---
+v1:add -f "./<root>/testfile2.txt" 
 v1:login -s
 i1:Enabling unicode mode
 v1:login -s
 v1:'login' not necessary, no password set for this user.
-w1:./<root>/... - no such file(s).\n
-w1:./<root>/... - no such file(s).\n
+i1://depot/testfile2.txt#1 - opened for add (level 48)
 o1:-1
-d1:end of list
-r1:end of response
-o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
+v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
 v1:login -s
 v1:'login' not necessary, no password set for this user.
-o1:./<root>/testfile.txt
-o1:1
-v1:./<root>/testfile.txt - no such file(s).
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Test/tmp/testclient/testfile2.txt
+0
+--
+o1:-1
+v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/testfile2.txt
+o1:<absroot>/testfile2.txt
+o1:256
 d1:end of list
 c32:online
 c32:enableCommand add
@@ -51,4 +54,3 @@ c32:enableCommand submit
 c32:enableCommand unlock
 r1:end of response
 --
-
