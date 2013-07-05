@@ -1,0 +1,38 @@
+<include ./Test/Perforce/02_Configure.txt>
+c:status recurse
+1
+./Test/tmp/testclient/testfile.txt
+0
+--
+o1:-1
+v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
+v1:login -s
+<ignore> v1:User jonasd ticket expires in 8 hours 0 minutes.
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+w1:Path '<absroot>/testfile.txt' is not under client's root '<root>'.\n
+d1:end of list
+w1:Path '<absroot>/testfile.txt' is not under client's root '<root>'.\n
+c32:online
+c32:enableCommand add
+c32:enableCommand changeDescription
+c32:enableCommand changeMove
+c32:enableCommand changes
+c32:enableCommand changeStatus
+c32:enableCommand checkout
+c32:enableCommand deleteChanges
+c32:enableCommand delete
+c32:enableCommand download
+c32:enableCommand getLatest
+c32:enableCommand incomingChangeAssets
+c32:enableCommand incoming
+c32:enableCommand lock
+c32:enableCommand move
+c32:enableCommand resolve
+c32:enableCommand revertChanges
+c32:enableCommand revert
+c32:enableCommand status
+c32:enableCommand submit
+c32:enableCommand unlock
+r1:end of response
+--
