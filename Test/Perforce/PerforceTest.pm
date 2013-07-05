@@ -19,6 +19,7 @@ sub PerforceIntegrationTests
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "localhost:1667";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
+	$ENV{'P4CLIENTROOTABS'} = $ENV{'PWD'} . "/" . $ENV{'P4CLIENTROOT'};
 	$ENV{'P4CLIENT'} = "testclient";
 	$ENV{'P4CHARSET'} = 'utf8';
 	$ENV{'P4PASSWD'} = 'secret';
@@ -27,6 +28,7 @@ sub PerforceIntegrationTests
 	{
 		$ENV{'P4ROOT'} =~ s/\//\\/g;
 		$ENV{'P4CLIENTROOT'} =~ s/\//\\/g;
+		$ENV{'P4CLIENTROOTABS'} =~ s/\//\\/g;
 	}
 
 	$pid = SetupServer();
@@ -58,13 +60,19 @@ sub RunTests()
 		$output = `$testserver $pluginexec $i $option '$clientroot'`;
 		$res = $? >> 8;
 		print $output;
-		if ($? == 0)
+		if ($res == 0)
 		{
 			$success++;
 		}
 		elsif ($? == -1)
 		{
 			print "Error running test : $!\n";
+			return;
+		}
+		else
+		{
+			print "Test failed -> stopping all tests\n";
+			return;
 		}
 		$total++;
 	}
@@ -91,7 +99,7 @@ sub TeardownServer
 
 sub SetupClient
 {
-	$root = $ENV{'P4CLIENTROOT'};
+	$root = $ENV{'P4CLIENTROOTABS'};
 	#print "Login in to server\n";
 	#system("$ENV{'P4EXEC'} -p $ENV{'P4PORT'} login");
 	print "Setting up workspace $ENV{'P4CLIENT'} in $root\n";
