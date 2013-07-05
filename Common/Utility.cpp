@@ -134,14 +134,6 @@ bool StartsWith(const string& str, const string& lookFor)
 	return true;
 }
 
-/*
-bool IsReadOnly(const std::string& path)
-{
-	// TODO implement
-	return false;
-}
-*/
-
 #if defined(_WINDOWS)
 #include <stdio.h>
 string ErrorCodeToMsg( DWORD code )
