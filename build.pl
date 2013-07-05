@@ -92,6 +92,10 @@ sub TestMac
 	$ENV{'P4EXEC'} = "PerforceBinaries/OSX/p4";
 	$ENV{'P4PLUGIN'} = "Build/OSXi386/PerforcePlugin";
 	$ENV{'TESTSERVER'} = "Build/OSXi386/TestServer";
+
+	# Teamcity artifacts looses their file attributes on transfer
+	chmod 0755, glob("Build/OSXi386/*");
+
 	IntegrationTest($testoption);
 }
 
@@ -138,4 +142,7 @@ sub BuildLinux ($)
 sub TestLinux ($)
 {
 	my $platform = shift;
+
+	# Teamcity artifacts looses their file attributes on transfer
+	chmod 0755, glob("Build/OSXi386/$platform/*");
 }
