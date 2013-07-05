@@ -84,7 +84,25 @@ static void EscapeNewline(string& str)
 	}
 }
 
-static void replaceRoot(string& instr)
+static void replaceRootTagWithPath(string& str)
+{
+	string::size_type i = str.find("<absroot>");
+
+	while (i != string::npos)
+	{
+		str.replace(i, 9, absroot);
+		i = str.find("<absroot>");
+	}
+
+	i = str.find("<root>");
+	while (i != string::npos)
+	{
+		str.replace(i, 6, root);
+		i = str.find("<root>");
+	}
+}
+
+static void replaceRootPathWithTag(string& instr)
 {
 	string str = instr;
 	ConvertSeparatorsFromWindows(str);
@@ -183,6 +201,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 	const int BUFSIZE = 4096;
 	char buf[BUFSIZE];
+	buf[0] = 0x00;
 
 	const string restartline = "<restartplugin>";
 	const string includeline = "<include ";
@@ -202,6 +221,8 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 		while (testscript.getline(buf, BUFSIZE))
 		{
 			string command(buf);
+			
+			replaceRootTagWithPath(command);
 
 			if (verbose || newbaseline)
 				cout << command << endl;
@@ -259,7 +280,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 			if (!command.empty())
 			{
-				p.Write(buf);
+				p.Write(command);
 				p.Write("\n");
 			}
 		}
@@ -286,9 +307,8 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			}
 
 			string msg = p.ReadLine();
-			string origmsg = msg;
 			UnescapeString(msg);
-			replaceRoot(msg);
+			replaceRootPathWithTag(msg);
 			EscapeNewline(msg);
 			if (expect.find(regextoken) == 0)
 			{
@@ -316,10 +336,11 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 					try 
 					{
 						cerr << "             reading as much as possible from plugin:" << endl;
+						cerr << msg << endl;
 						do {
 							string l = p.ReadLine();
 							UnescapeString(msg);
-							replaceRoot(l);
+							replaceRootPathWithTag(l);
 							EscapeNewline(msg);
 							cerr << l << endl;
 						} while (true);
