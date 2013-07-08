@@ -179,6 +179,9 @@ int run(int argc, char* argv[])
 	absroot = string(getenv("PWD")) + "/" + root;
 #endif
 
+	cout << "Root:    " << root <<  endl;
+	cout << "AbsRoot: " << absroot <<  endl;
+
 	if (verbose)
 		cout << "Plugin : " << argv[1] << endl;
 
