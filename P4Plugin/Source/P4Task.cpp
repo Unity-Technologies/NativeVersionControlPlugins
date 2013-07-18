@@ -187,6 +187,14 @@ int P4Task::Run()
 
 bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
 {
+	// Simple hack to test custom commands
+	if (cmd == UCOM_CustomCommand)
+	{
+		m_Task->Pipe().WarnLine(string("You called the custom command ") + args[1]);
+		m_Task->Pipe().EndResponse();
+		return true;
+	}
+	
 	// Dispatch
 	P4Command* p4c = LookupCommand(UnityCommandToString(cmd));
 	if (!p4c)
