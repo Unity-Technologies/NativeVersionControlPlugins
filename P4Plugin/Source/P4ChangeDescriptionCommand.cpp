@@ -12,19 +12,19 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log().Info() << "ChangeDescriptionCommand::Run()"  << unityplugin::Endl;
+		Conn().Log().Info() << "ChangeDescriptionCommand::Run()"  << Endl;
 		
 		ChangelistRevision cl;
-		Pipe() >> cl;
+		Conn() >> cl;
 		
 		const string cmd = string("change -o ") + (cl == kDefaultListRevision ? string("") : cl);
 				
 		task.CommandRun(cmd, this);
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		
 		return true;
 	}
@@ -33,11 +33,11 @@ public:
 	void OutputInfo( char level, const char *data )
     {		
 		string result;
-		Pipe().VerboseLine(data);
+		Conn().VerboseLine(data);
 		ReadDescription(data, result);
 		if (result == "<enter description here>\n\n")
 			result.clear();
-		Pipe().DataLine(result);
+		Conn().DataLine(result);
 	}
 	
 	int ReadDescription(const char *data, string& result)

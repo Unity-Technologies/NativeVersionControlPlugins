@@ -13,7 +13,7 @@ public:
 	{
 		if (!task.IsConnected()) // Cannot login without being connected
 		{
-			Pipe().Log().Info() << "Cannot login when not connected" << unityplugin::Endl;
+			Conn().Log().Info() << "Cannot login when not connected" << Endl;
 			return false;
 		}
 		
@@ -27,13 +27,13 @@ public:
 		if (!task.CommandRun(cmd, this) && !m_CheckingForLoggedIn)
 		{
 			string errorMessage = GetStatusMessage();			
-			Pipe().Log().Notice() << "ERROR: " << errorMessage << unityplugin::Endl;
+			Conn().Log().Notice() << "ERROR: " << errorMessage << Endl;
 		}
 		
 		if (m_CheckingForLoggedIn)
-			Pipe().Log().Debug() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << unityplugin::Endl;
+			Conn().Log().Debug() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << Endl;
 		else
-			Pipe().Log().Info() << "Login " << (m_LoggedIn ? "succeeded" : "failed") << unityplugin::Endl;
+			Conn().Log().Info() << "Login " << (m_LoggedIn ? "succeeded" : "failed") << Endl;
 
 		m_CheckingForLoggedIn = false;
 		return m_LoggedIn;
@@ -42,8 +42,8 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
-		Pipe().Log().Debug() << "OutputInfo: " << d << unityplugin::Endl;
-		Pipe().VerboseLine(d);
+		Conn().Log().Debug() << "OutputInfo: " << d << Endl;
+		Conn().VerboseLine(d);
 
 		m_LoggedIn = d == "'login' not necessary, no password set for this user.";
 		if (m_LoggedIn)
@@ -90,10 +90,10 @@ public:
 	// Entering password
 	void Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 	{
-		Pipe().Log().Info() << "Prompted for password by server" << unityplugin::Endl;
-		Pipe().Log().Debug() << "Prompt: " << msg.Text() << unityplugin::Endl;
+		Conn().Log().Info() << "Prompted for password by server" << Endl;
+		Conn().Log().Debug() << "Prompt: " << msg.Text() << Endl;
 		buf.Set(m_Password.c_str());
-		Pipe().VerboseLine("Prompted for password");
+		Conn().VerboseLine("Prompted for password");
 	}
 	
 private:

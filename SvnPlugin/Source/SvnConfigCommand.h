@@ -26,46 +26,46 @@ public:
 			break;
 
 		case CK_AssetsPath:
-			req.conn.Log().Info() << "Set assetsPath to " << val << unityplugin::Endl;
+			req.conn.Log().Info() << "Set assetsPath to " << val << Endl;
 			task.SetAssetsPath(val);
 			break;
 
 		case CK_LogLevel:
-			req.conn.Log().Info() << "Set log level to " << val << unityplugin::Endl;
+			req.conn.Log().Info() << "Set log level to " << val << Endl;
 		    req.conn.Log().SetLogLevel(req.GetLogLevel());
 			break;
 
 		case CK_Unknown:
 			if (req.keyStr == "vcSubversionRepos")
 			{
-				req.conn.Log().Info() << "Set repos to " << val << unityplugin::Endl;
+				req.conn.Log().Info() << "Set repos to " << val << Endl;
 				task.SetRepository(val);
 			}
 			else if (req.keyStr == "vcSubversionUsername")
 			{
-				req.conn.Log().Info() << "Set username to " << val << unityplugin::Endl;
+				req.conn.Log().Info() << "Set username to " << val << Endl;
 				task.SetUser(val);
 			}		
 			else if (req.keyStr == "vcSubversionPassword")
 			{
-				req.conn.Log().Info() << "Set password to *********" << unityplugin::Endl;
+				req.conn.Log().Info() << "Set password to *********" << Endl;
 				task.SetPassword(val);
 			}
 			else if (req.keyStr == "vcSubversionOptions")
 			{
-				req.conn.Log().Info() << "Set options to " << val << unityplugin::Endl;
+				req.conn.Log().Info() << "Set options to " << val << Endl;
 				task.SetOptions(val);
 			}
 			else if (req.keyStr == "vcSubversionExecutable")
 			{
-				req.conn.Log().Info() << "Set executable path to \"" << val << "\"" << unityplugin::Endl;
+				req.conn.Log().Info() << "Set executable path to \"" << val << "\"" << Endl;
 				task.SetSvnExecutable(val);
 			}
 			else
 			{
 				std::string msg = "Unknown config field set on subversion plugin: ";
 				msg += req.keyStr;
-				req.conn.Pipe().WarnLine(msg, MAConfig);
+				req.conn.WarnLine(msg, MAConfig);
 				req.invalid = true;
 			}
 		}

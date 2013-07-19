@@ -25,7 +25,7 @@ public:
 						if (!EnsureDirectory(req.targetDir))
 						{
 							std::string msg = ToString("Could not create temp dir: ", req.targetDir);
-							req.Pipe().ErrorLine(msg);
+							req.conn.ErrorLine(msg);
 							req.assets.clear();
 							resp.Write();
 							return true;
@@ -50,23 +50,23 @@ public:
 						// include this asset in the response.
 						if (!EnsurePresent(task, mine))
 						{
-							//req.conn.Log().Debug() << access(mine.GetPath().c_str(), F_OK) << unityplugin::Endl;
-							req.conn.Log().Notice() << "No 'mine' file " << mine.GetPath() << unityplugin::Endl;
-							req.Pipe().ErrorLine(std::string("No 'mine' file for ") + assetPath);
+							//req.conn.Log().Debug() << access(mine.GetPath().c_str(), F_OK) << Endl;
+							req.conn.Log().Notice() << "No 'mine' file " << mine.GetPath() << Endl;
+							req.conn.ErrorLine(std::string("No 'mine' file for ") + assetPath);
 							continue;
 						}
 						
 						if (!EnsurePresent(task, conflict, assetPath))
 						{
-							req.conn.Log().Notice() << "No 'conflict' file " << conflict.GetPath() << unityplugin::Endl;
-							req.Pipe().ErrorLine(std::string("No 'conflict' file for ") + assetPath);
+							req.conn.Log().Notice() << "No 'conflict' file " << conflict.GetPath() << Endl;
+							req.conn.ErrorLine(std::string("No 'conflict' file for ") + assetPath);
 							continue;
 						}
 
 						if (!EnsurePresent(task, base, assetPath))
 						{
-							req.conn.Log().Notice() << "No 'base' file " << base.GetPath() << unityplugin::Endl;
-							req.Pipe().ErrorLine(std::string("No 'base' file for ") + assetPath);
+							req.conn.Log().Notice() << "No 'base' file " << base.GetPath() << Endl;
+							req.conn.ErrorLine(std::string("No 'base' file for ") + assetPath);
 							continue;
 						}
 							
@@ -77,8 +77,8 @@ public:
 				}
 				catch (std::exception& e)
 				{
-					req.conn.Log().Notice() << e.what() << unityplugin::Endl;
-					req.conn.Pipe().ErrorLine("Error downloading file through svn");
+					req.conn.Log().Notice() << e.what() << Endl;
+					req.conn.ErrorLine("Error downloading file through svn");
 					resp.assets.clear();
 					resp.Write();
 					return true;

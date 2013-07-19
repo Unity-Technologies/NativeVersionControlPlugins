@@ -2,13 +2,13 @@
 #include <vector>
 #include <string>
 #include <set>
-#include "UnityPipe.h"
+#include "Connection.h"
 #include "P4Task.h"
 #include "VersionedAsset.h"
 
 typedef std::vector<std::string> CommandArgs;
-UnityPipe& operator<<(UnityPipe& p, const VCSStatus& v);
-UnityPipe& SendToPipe(UnityPipe& p, const VCSStatus& st, MessageArea ma, bool safeSend = true);
+Connection& operator<<(Connection& p, const VCSStatus& v);
+Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma, bool safeSend = true);
 
 /* 
  * Base class for all commands that unity can issue and is supported
@@ -43,7 +43,7 @@ public:
 	void Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e );
 	void Finished();
 
-	static UnityPipe& Pipe() { return *s_UnityPipe; }
+	static Connection& Conn() { return *s_Conn; }
 	
 protected:
 	P4Command(const char* name);
@@ -64,7 +64,7 @@ protected:
 	static bool MapToLocal(P4Task& task, VersionedAssetList& assets);
 
 	friend class P4Task;
-	static UnityPipe* s_UnityPipe;
+	static Connection* s_Conn;
 private:
 	VCSStatus m_Status;
 };

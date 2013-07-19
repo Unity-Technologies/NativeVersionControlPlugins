@@ -19,10 +19,8 @@ enum ConfigKey
 class ConfigRequest : public BaseRequest
 {
 public:
-	ConfigRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn)
+	ConfigRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn)
 	{
-		UnityPipe& upipe = conn.Pipe();
-
 		if (args.size() < 2)
 		{
 			std::string msg = "Plugin got invalid config setting :";
@@ -30,8 +28,8 @@ public:
 				msg += " ";
 				msg += *i;
 			}
-			upipe.WarnLine(msg, MAConfig);
-			upipe.EndResponse();
+			conn.WarnLine(msg, MAConfig);
+			conn.EndResponse();
 			invalid = true;
 			return;
 		}
@@ -51,16 +49,16 @@ public:
 		values = std::vector<std::string>(args.begin()+2, args.end());
 	}
 
-	unityplugin::LogLevel  GetLogLevel() const 
+	LogLevel GetLogLevel() const 
 	{
 		std::string val = Values();
-		unityplugin::LogLevel level = unityplugin::LOG_DEBUG;
+		LogLevel level = LOG_DEBUG;
 		if (val == "info")
-			level = unityplugin::LOG_INFO;
+			level = LOG_INFO;
 		else if (val == "notice")
-			level = unityplugin::LOG_NOTICE;
+			level = LOG_NOTICE;
 		else if (val == "fatal")
-			level = unityplugin::LOG_FATAL;
+			level = LOG_FATAL;
 		return level;
 	}
 
@@ -95,7 +93,7 @@ public:
 	};
 
 	ConfigResponse(ConfigRequest& req) 
-		: request(req), requiresNetwork(false), 
+		: request(req), conn(req.conn), requiresNetwork(false), 
 		  enablesCheckout(true), enablesLocking(true), enablesRevertUnchanged(true)
 	{
 	}
@@ -113,15 +111,13 @@ public:
 		if (request.invalid)
 			return;
 
-		UnityPipe& upipe = request.conn.Pipe();
-		
 		switch (request.key)
 		{
 		case CK_Versions:
 		{
 			int v = SelectVersion(request.values);
-			upipe.DataLine(v, MAConfig);
-			upipe.Log().Info() << "Selected plugin protocol version " << v << unityplugin::Endl;
+			conn.DataLine(v, MAConfig);
+			conn.Log().Info() << "Selected plugin protocol version " << v << Endl;
 			break;
 		} 
 		case CK_Traits:
@@ -133,33 +129,33 @@ public:
 				(enablesLocking  ? 1 : 0) +
 				(enablesRevertUnchanged  ? 1 : 0);
 
-			upipe.DataLine(count);
+			conn.DataLine(count);
 
 			if (requiresNetwork)
-				upipe.DataLine("requiresNetwork", MAConfig); 
+				conn.DataLine("requiresNetwork", MAConfig); 
 			if (enablesCheckout)
-				upipe.DataLine("enablesCheckout", MAConfig); 
+				conn.DataLine("enablesCheckout", MAConfig); 
 			if (enablesLocking)
-				upipe.DataLine("enablesLocking", MAConfig); 
+				conn.DataLine("enablesLocking", MAConfig); 
 			if (enablesRevertUnchanged)
-				upipe.DataLine("enablesRevertUnchanged", MAConfig); 
+				conn.DataLine("enablesRevertUnchanged", MAConfig); 
 
 			// The per plugin defined traits
-			upipe.DataLine(traits.size());
+			conn.DataLine(traits.size());
 
 			for (std::vector<PluginTrait>::const_iterator i = traits.begin();
 				 i != traits.end(); ++i)
 			{
-				upipe.DataLine(i->id);
-				upipe.DataLine(i->label, MAConfig);
-				upipe.DataLine(i->description, MAConfig);
-				upipe.DataLine(i->defaultValue);
-				upipe.DataLine(i->flags);
+				conn.DataLine(i->id);
+				conn.DataLine(i->label, MAConfig);
+				conn.DataLine(i->description, MAConfig);
+				conn.DataLine(i->defaultValue);
+				conn.DataLine(i->flags);
 			}
 			break;
 		}
 		}
-		upipe.EndResponse();
+		conn.EndResponse();
 	}
 	
 	void AddSupportedVersion(int v)
@@ -174,7 +170,8 @@ public:
 	std::vector<PluginTrait> traits;
 	std::set<int> supportedVersions;
 
-	ConfigRequest request;
+	ConfigRequest& request;
+	Connection& conn;
 private:
 
 	int SelectVersion(const CommandArgs& args)

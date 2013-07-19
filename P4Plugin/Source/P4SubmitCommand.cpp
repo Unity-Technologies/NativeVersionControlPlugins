@@ -42,20 +42,20 @@ public:
 		ClearStatus();
 		m_Spec.clear();
 		
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		bool saveOnly = args.size() > 1 && args[1] == "saveOnly";
 		
 		Changelist changelist;
-		Pipe() >> changelist;
+		Conn() >> changelist;
 		
 		VersionedAssetList assetList;
-		Pipe() >> assetList;
+		Conn() >> assetList;
 		bool hasFiles = !assetList.empty();
 		
 		// Run a view mapping job to get the right depot relative paths for the spec file
 		string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
-		Pipe().Log().Debug() << "Paths resolved are: " << localPaths << unityplugin::Endl;
+		Conn().Log().Debug() << "Paths resolved are: " << localPaths << Endl;
 		
 		const vector<Mapping>& mappings = GetMappings(task, assetList);
 
@@ -63,7 +63,7 @@ public:
 		{
 			// Abort since there was an error mapping files to depot path
 			RunAndSendStatus(task, assetList);
-			Pipe().EndResponse();
+			Conn().EndResponse();
 			return true;
 		}
 				
@@ -100,7 +100,7 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 
 		if (hasFiles)
 		{
@@ -111,7 +111,7 @@ public:
 			; // @TODO: handle this case
 		}
 
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		
 		m_Spec.clear();
 		return true;
@@ -120,8 +120,8 @@ public:
 	// Default handler of P4
 	virtual void InputData( StrBuf *buf, Error *err ) 
 	{
-		Pipe().Log().Debug() << "Spec is:" << unityplugin::Endl;
-		Pipe().Log().Debug() << m_Spec << unityplugin::Endl;
+		Conn().Log().Debug() << "Spec is:" << Endl;
+		Conn().Log().Debug() << m_Spec << Endl;
 		buf->Set(m_Spec.c_str());
 	}
 	
@@ -140,7 +140,7 @@ public:
 		
 		if (StartsWith(value, pendingMerges))
 		{
-			Pipe().WarnLine("Merges still pending. Resolve before submitting.", MASystem);
+			Conn().WarnLine("Merges still pending. Resolve before submitting.", MASystem);
 			return; // ignore
 		}
 		

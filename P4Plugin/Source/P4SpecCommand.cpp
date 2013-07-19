@@ -18,14 +18,14 @@ public:
 		if (!task.CommandRun(cmd, this))
 		{
 			string errorMessage = GetStatusMessage();			
-			Pipe().Log().Notice() << "ERROR: " << errorMessage << unityplugin::Endl;
+			Conn().Log().Notice() << "ERROR: " << errorMessage << Endl;
 			return false;
 		}
 		else
 		{
 			if (!m_Root.empty())
 				task.SetP4Root(m_Root);
-			Pipe().Log().Info() << "Root set to " << m_Root << unityplugin::Endl;
+			Conn().Log().Info() << "Root set to " << m_Root << Endl;
 			return true;
 		}
 	}
@@ -34,7 +34,7 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		stringstream ss(data);
-		Pipe().VerboseLine(data);
+		Conn().VerboseLine(data);
 		size_t minlen = 5; // "Root:" 
 		
 		string line;

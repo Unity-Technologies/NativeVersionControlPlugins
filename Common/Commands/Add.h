@@ -4,9 +4,9 @@
 class AddRequest : public BaseRequest
 {
 public:
-	AddRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn) 
+	AddRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn) 
 	{
-		conn.Pipe() >> assetList;
+		conn >> assetList;
 	}
 	
 	VersionedAssetList assetList;

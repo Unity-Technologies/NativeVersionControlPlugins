@@ -5,19 +5,18 @@
 class DownloadRequest : public BaseRequest
 {
 public:
-	DownloadRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn)
+	DownloadRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn)
 	{
 		assets.clear();
-		UnityPipe& upipe = conn.Pipe();
-		upipe >> targetDir;
-		upipe >> revisions;
-		upipe >> assets;
+		conn >> targetDir;
+		conn >> revisions;
+		conn >> assets;
 
 		if (assets.empty() || revisions.empty())
 		{
 			assets.clear();
-			upipe << assets;
-			upipe.EndResponse();
+			conn << assets;
+			conn.EndResponse();
 			invalid = true;
 		}
 	}
@@ -32,19 +31,18 @@ public:
 class DownloadResponse : public BaseResponse
 {
 public:
-    DownloadResponse(DownloadRequest& req) : request(req) {}
+    DownloadResponse(DownloadRequest& req) : request(req), conn(req.conn) {}
 
 	void Write()
 	{
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-	
-		upipe << assets;
-		upipe.EndResponse();
+		conn << assets;
+		conn.EndResponse();
 	}
 
 	DownloadRequest& request;
+	Connection& conn;
 	VersionedAssetList assets;
 };

@@ -5,18 +5,17 @@
 class SubmitRequest : public BaseRequest
 {
 public:
-	SubmitRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn)
+	SubmitRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn)
 	{
 		assets.clear();
-		UnityPipe& upipe = conn.Pipe();
-		upipe >> changelist;
-		upipe >> assets;
+		conn >> changelist;
+		conn >> assets;
 
 		if (assets.empty())
 		{
 			assets.clear();
-			upipe << assets;
-			upipe.EndResponse();
+			conn << assets;
+			conn.EndResponse();
 			invalid = true;
 		}
 	}
@@ -29,20 +28,19 @@ public:
 class SubmitResponse : public BaseResponse
 {
 public:
-    SubmitResponse(SubmitRequest& req) : request(req) {}
+    SubmitResponse(SubmitRequest& req) : request(req), conn(req.conn) {}
 
 	void Write()
 	{
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-	
-		upipe << assets;
-		upipe.EndResponse();
+		conn << assets;
+		conn.EndResponse();
 	}
 
 	SubmitRequest& request;
+	Connection& conn;
 	VersionedAssetList assets;
 };
 

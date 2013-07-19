@@ -8,12 +8,12 @@ public:
 	{
 		// Subversion does 
 		SvnLogResult result;
-		req.conn.Log().Info() << "Incoming assets for revision " << req.revision << unityplugin::Endl;
+		req.conn.Log().Info() << "Incoming assets for revision " << req.revision << Endl;
 		task.GetLog(result, req.revision, req.revision, true);
 
 		if (result.entries.empty())
 		{
-			req.conn.Pipe().WarnLine("No assets for svn revision");
+			req.conn.WarnLine("No assets for svn revision");
 		}
 		else
 		{
@@ -30,7 +30,7 @@ public:
 			{
 				VersionedAssetSet::const_iterator j = aset.find(*i);
 				if (j == aset.end())
-					req.conn.Log().Notice() << "Couldn't get state of file in incoming changelist. Skipping " << j->GetPath() << unityplugin::Endl;
+					req.conn.Log().Notice() << "Couldn't get state of file in incoming changelist. Skipping " << j->GetPath() << Endl;
 				else
 					*i = *j;
 			}

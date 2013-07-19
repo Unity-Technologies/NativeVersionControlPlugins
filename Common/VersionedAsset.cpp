@@ -1,5 +1,5 @@
 #include "VersionedAsset.h"
-#include "UnityPipe.h"
+#include "Connection.h"
 #include <algorithm>
 #include <functional>
 
@@ -105,14 +105,14 @@ vector<string> Paths(const VersionedAssetList& assets)
 	return result;
 }
 
-UnityPipe& operator<<(UnityPipe& p, const VersionedAsset& asset)
+Connection& operator<<(Connection& p, const VersionedAsset& asset)
 {
 	p.DataLine(asset.GetPath());
 	p.DataLine(asset.GetState());
 	return p;
 }
 
-UnityPipe& operator>>(UnityPipe& p, VersionedAsset& v)
+Connection& operator>>(Connection& p, VersionedAsset& v)
 {
     string line;
 	p.ReadLine(line);

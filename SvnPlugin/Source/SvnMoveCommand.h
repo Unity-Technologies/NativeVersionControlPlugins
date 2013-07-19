@@ -19,7 +19,7 @@ public:
 			++i;
 			if (i == req.assets.end())
 			{
-				req.conn.Pipe().ErrorLine(ToString("No destination path while moving source path ", srcPath));
+				req.conn.ErrorLine(ToString("No destination path while moving source path ", srcPath));
 				break;
 			}
 			std::string dstPath = "\"";

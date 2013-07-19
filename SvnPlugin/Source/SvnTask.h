@@ -1,5 +1,5 @@
 #pragma once
-#include "UnityConnection.h"
+#include "Connection.h"
 #include "VersionedAsset.h"
 #include "Utility.h"
 
@@ -58,7 +58,7 @@ private:
 	
 	bool m_IsOnline;
 
-	UnityConnection* m_Connection;
+	Connection* m_Connection;
 };
 
 class SvnException : public std::exception

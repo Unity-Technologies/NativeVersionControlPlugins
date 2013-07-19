@@ -1,5 +1,5 @@
 #include "Changes.h"
-#include "UnityPipe.h"
+#include "Connection.h"
 #include <algorithm>
 
 using namespace std;
@@ -50,13 +50,13 @@ void Changelist::SetCommitter(const std::string& committer)
 	m_Committer = committer;
 }
 
-//UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision)
+//Connection& operator<<(Connection& p, ChangelistRevision revision)
 //{
 //	p << revision.c_str();
 //	return p;
 //}
 
-UnityPipe& operator>>(UnityPipe& p, ChangelistRevision& revision)
+Connection& operator>>(Connection& p, ChangelistRevision& revision)
 {
 	string line;
 	p.ReadLine(line);
@@ -64,14 +64,14 @@ UnityPipe& operator>>(UnityPipe& p, ChangelistRevision& revision)
 	return p;
 }
 
-UnityPipe& operator<<(UnityPipe& p, const Changelist& changelist)
+Connection& operator<<(Connection& p, const Changelist& changelist)
 {
 	p.DataLine(changelist.GetRevision().c_str());
 	p.DataLine(changelist.GetDescription());
 	return p;
 }
 
-UnityPipe& operator>>(UnityPipe& p, Changelist& cl)
+Connection& operator>>(Connection& p, Changelist& cl)
 {
 	string line;
 	p.ReadLine(line);

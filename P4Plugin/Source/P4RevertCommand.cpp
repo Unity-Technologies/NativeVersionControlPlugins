@@ -15,22 +15,22 @@ public:
 		m_ProjectPath = task.GetP4Root();
 		m_Result.clear();
 
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 	
 		string cmd = SetupCommand(args);
 	
 		VersionedAssetList assetList;
-		Pipe() >> assetList;
+		Conn() >> assetList;
 		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 	
-		Pipe().Log().Debug() << "Paths resolved are: " << paths << unityplugin::Endl;
+		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 	
 		if (paths.empty())
 		{
-			Pipe().BeginList();
-			Pipe().WarnLine("No paths for revert command", MARemote);
-			Pipe().EndList();
-			Pipe().EndResponse();
+			Conn().BeginList();
+			Conn().WarnLine("No paths for revert command", MARemote);
+			Conn().EndList();
+			Conn().EndResponse();
 			return true;
 		}
 	
@@ -41,22 +41,22 @@ public:
 		if (!MapToLocal(task, m_Result))
 		{
 			// Abort since there was an error mapping files to depot path
-			Pipe().BeginList();
-			Pipe().WarnLine("Files couldn't be mapped in perforce view");
-			Pipe().EndList();
-			Pipe().EndResponse();
+			Conn().BeginList();
+			Conn().WarnLine("Files couldn't be mapped in perforce view");
+			Conn().EndList();
+			Conn().EndResponse();
 			return true;
 		}
 
 		IncludeFolders(assetList);
 
-		Pipe() << m_Result;
+		Conn() << m_Result;
 		m_Result.clear();
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		return true;
 	}
 
@@ -125,8 +125,8 @@ public:
 
 			if (EndsWith(value, TrimEnd(" - file(s) not opened on this client.\n")))
 			{
-				Pipe().Log().Debug() << value << unityplugin::Endl;
-				Pipe().VerboseLine(value);
+				Conn().Log().Debug() << value << Endl;
+				Conn().VerboseLine(value);
 				return; // ignore
 			}
 		}
@@ -150,7 +150,7 @@ public:
 		string::size_type iPathEnd = d.rfind("#");
 		if (iPathEnd == string::npos)
 		{
-			Pipe().WarnLine(string("Invalid revert asset - ") + d);
+			Conn().WarnLine(string("Invalid revert asset - ") + d);
 			return;
 		}
 		

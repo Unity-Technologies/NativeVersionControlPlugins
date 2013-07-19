@@ -6,18 +6,17 @@
 class MoveChangelistRequest : public BaseRequest
 {
 public:
-	MoveChangelistRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn)
+	MoveChangelistRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn)
 	{
 		assets.clear();
-		UnityPipe& upipe = conn.Pipe();
-		upipe >> changelist;
-		upipe >> assets;
+		conn >> changelist;
+		conn >> assets;
 
 		if (assets.empty())
 		{
 			assets.clear();
-			upipe << assets;
-			upipe.EndResponse();
+			conn << assets;
+			conn.EndResponse();
 			invalid = true;
 		}
 	}
@@ -30,19 +29,18 @@ public:
 class MoveChangelistResponse : public BaseResponse
 {
 public:
-    MoveChangelistResponse(MoveChangelistRequest& req) : request(req) {}
+    MoveChangelistResponse(MoveChangelistRequest& req) : request(req), conn(req.conn) {}
 
 	void Write()
 	{
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-	
-		upipe << assets;
-		upipe.EndResponse();
+		conn << assets;
+		conn.EndResponse();
 	}
 
 	MoveChangelistRequest& request;
+	Connection& conn;
 	VersionedAssetList assets;
 };

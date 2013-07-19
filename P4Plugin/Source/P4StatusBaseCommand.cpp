@@ -38,7 +38,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		string key(var.Text());
 		string value(val.Text());
-		// Pipe().Log().Debug() << key << " # " << value << endl;
+		// Conn().Log().Debug() << key << " # " << value << endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
 		{
@@ -109,9 +109,9 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 			current.RemoveState(kLocal);
 	}
 
-	Pipe().VerboseLine(current.GetPath());
+	Conn().VerboseLine(current.GetPath());
 	
-	Pipe() << current;
+	Conn() << current;
 }
 
 void P4StatusBaseCommand::HandleError( Error *err )
@@ -135,13 +135,13 @@ void P4StatusBaseCommand::HandleError( Error *err )
 			// tried to get status with no files matching wildcard //... which is ok
 			// or
 			// tried to get status of empty dir ie. not matching /path/to/empty/dir/... which is ok
-			Pipe().VerboseLine(value);
+			Conn().VerboseLine(value);
 			return;
 		}
 		else if (AddUnknown(asset, value))
 		{
-			Pipe() << asset;
-			Pipe().VerboseLine(value);
+			Conn() << asset;
+			Conn().VerboseLine(value);
 			return; // just ignore errors for unknown files and return them anyway
 		} 
 	}

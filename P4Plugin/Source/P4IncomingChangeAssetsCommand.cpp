@@ -16,19 +16,19 @@ public:
 		m_Result.clear();
 
 		ChangelistRevision cl;
-		Pipe() >> cl;
+		Conn() >> cl;
 		
 		vector<string> toks;
 		if (Tokenize(toks, m_ProjectPath, "/") == 0)
 		{
-			Pipe().BeginList();
-			Pipe().WarnLine(string("Project path invalid - ") + m_ProjectPath);
-			Pipe().EndList();
-			Pipe().EndResponse();
+			Conn().BeginList();
+			Conn().WarnLine(string("Project path invalid - ") + m_ProjectPath);
+			Conn().EndList();
+			Conn().EndResponse();
 			return true;
 		}
 		
-		Pipe().Log().Debug() << "Project path is " << m_ProjectPath << unityplugin::Endl;
+		Conn().Log().Debug() << "Project path is " << m_ProjectPath << Endl;
 		
 		string rev = cl == kDefaultListRevision ? string("default") : cl;
 		const std::string cmd = string("describe -s ") + rev;
@@ -38,25 +38,25 @@ public:
 		if (!MapToLocal(task, m_Result))
 		{
 			// Abort since there was an error mapping files to depot path
-			Pipe().BeginList();
-			Pipe().WarnLine("Files couldn't be mapped in perforce view");
-			Pipe().EndList();
-			Pipe().EndResponse();
+			Conn().BeginList();
+			Conn().WarnLine("Files couldn't be mapped in perforce view");
+			Conn().EndList();
+			Conn().EndResponse();
 			return true;
 		}
 
-		Pipe() << m_Result;
+		Conn() << m_Result;
 		m_Result.clear();
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		
 		return true;
 	}
 	
 	void OutputText( const char *data, int length)
 	{
-		Pipe().Log().Debug() << "OutputText()" << unityplugin::Endl;
+		Conn().Log().Debug() << "OutputText()" << Endl;
 	}
 	
     // Called once per asset 
@@ -68,14 +68,14 @@ public:
 		// to get the filesystem path we remove the append this
 		// to the Root path.
 		
-		Pipe().Log().Info() << "OutputInfo: " << data << unityplugin::Endl;
+		Conn().Log().Info() << "OutputInfo: " << data << Endl;
 		
 		string d(data);
-		Pipe().VerboseLine(d);
+		Conn().VerboseLine(d);
 		string::size_type i = d.rfind(" ");
 		if (i == string::npos || i < 2 || i+1 >= d.length()) // 2 == "//".length()
 		{
-			Pipe().WarnLine(string("Invalid change asset - ") + d);
+			Conn().WarnLine(string("Invalid change asset - ") + d);
 			return;
 		}
 		

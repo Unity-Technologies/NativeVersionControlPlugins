@@ -1,10 +1,11 @@
 COMMON_SRCS = ./Common/Changes.cpp \
 	      ./Common/CommandLine.cpp \
 	      ./Common/FileSystem.cpp \
+	      ./Common/Pipe.cpp \
 	      ./Common/Utility.cpp \
 	      ./Common/VersionedAsset.cpp \
 	      ./Common/Status.cpp \
-	      ./Common/UnityConnection.cpp \
+	      ./Common/Connection.cpp \
 	      ./Common/Command.cpp \
 		  ./Common/Log.cpp \
 		  ./Common/POpen.cpp
@@ -12,11 +13,11 @@ COMMON_SRCS = ./Common/Changes.cpp \
 COMMON_INCLS = ./Common/Changes.h \
 	       ./Common/CommandLine.h \
 	       ./Common/FileSystem.h \
-	       ./Common/UnityPipe.h \
+	       ./Common/Pipe.h \
 	       ./Common/Utility.h \
 	       ./Common/VersionedAsset.h \
 	       ./Common/Status.h \
-		   ./Common/UnityConnection.h \
+		   ./Common/Connection.h \
 	       ./Common/Command.h \
 		   ./Common/Dispatch.h \
 		   ./Common/Log.h \

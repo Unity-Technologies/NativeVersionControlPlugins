@@ -17,7 +17,7 @@ public:
 		// also used to move assets to a newly constructed changelist
 		if (saveOnly) 
 		{
-			req.Pipe().Progress(-1, 0, "Saving changelist");
+			req.conn.Progress(-1, 0, "Saving changelist");
 			std::string createChangelistCmd = "changelist ";
 			std::string firstLineOfDescription = req.changelist.GetDescription();
 			firstLineOfDescription = firstLineOfDescription.substr(0, firstLineOfDescription.find('\n'));
@@ -62,7 +62,7 @@ public:
 		}
 		cmd += Join(Paths(req.assets), " ", "\"");
 		
-		req.Pipe().Progress(-1, 0, "submitting");
+		req.conn.Progress(-1, 0, "submitting");
 		APOpen ppipe = task.RunCommand(cmd);
 		
 		std::string line;
@@ -72,7 +72,7 @@ public:
 			req.conn.Log().Info() << line << "\n";
 			
 			if (line.find("is not under version control and is not part of the commit, yet its child") != std::string::npos)
-				req.conn.Pipe().WarnLine(line.substr(5)); // strip "svn: "
+				req.conn.WarnLine(line.substr(5)); // strip "svn: "
 		}
 		
 		task.GetStatus(req.assets, resp.assets, recursive);

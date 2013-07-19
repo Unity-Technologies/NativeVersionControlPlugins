@@ -13,29 +13,29 @@ public:
 	{
 		ClearStatus();
 
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 	
 		string cmd = SetupCommand(args);
 		if (cmd.empty())
 		{
-			Pipe().BeginList();
-			Pipe().EndList();
-			Pipe().EndResponse();
+			Conn().BeginList();
+			Conn().EndList();
+			Conn().EndResponse();
 			return true;
 		}
 
 		VersionedAssetList assetList;
-		Pipe() >> assetList;
+		Conn() >> assetList;
 		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 	
-		Pipe().Log().Debug() << "Paths resolved are: " << paths << unityplugin::Endl;
+		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 	
 		if (paths.empty())
 		{
-			Pipe().BeginList();
-			Pipe().WarnLine("No paths for filemode command", MARemote);
-			Pipe().EndList();
-			Pipe().EndResponse();
+			Conn().BeginList();
+			Conn().WarnLine("No paths for filemode command", MARemote);
+			Conn().EndList();
+			Conn().EndResponse();
 			return true;
 		}
 	
@@ -44,13 +44,13 @@ public:
 		task.CommandRun(cmd, this);
 		
 		assetList.clear();
-		Pipe() << assetList;
+		Conn() << assetList;
 		assetList.clear();
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		return true;
 	}
 
@@ -58,7 +58,7 @@ public:
 	{
 		if (args.size() < 3)
 		{
-			Pipe().WarnLine("Too few arguments for filemode command");
+			Conn().WarnLine("Too few arguments for filemode command");
 			return ""; // no command
 		}
 
@@ -77,12 +77,12 @@ public:
 			}
 			else
 			{
-				Pipe().WarnLine(string("Unknown filemode flag ") + mode);
+				Conn().WarnLine(string("Unknown filemode flag ") + mode);
 			}
 		}
 		else
 		{
-			Pipe().WarnLine(string("Unknown filemode method ") + method);
+			Conn().WarnLine(string("Unknown filemode method ") + method);
 		}
 		return "";
 	}

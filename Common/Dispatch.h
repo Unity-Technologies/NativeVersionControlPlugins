@@ -1,10 +1,10 @@
 #pragma once
-#include "UnityConnection.h"
+#include "Connection.h"
 #include "Commands/AllReqResp.h"
 
 // Helper for Dispatch()
 template <template<class> class CommandTmpl, class Req, class Resp, class Sess>
-bool RunCommand(UnityConnection& conn, Sess& session, const CommandArgs& args)
+bool RunCommand(Connection& conn, Sess& session, const CommandArgs& args)
 {
 	Req req(args, conn);
 
@@ -34,10 +34,10 @@ bool RunCommand(UnityConnection& conn, Sess& session, const CommandArgs& args)
  * first.
  */
 template <template<class> class CommandTmpl, class Session>
-bool Dispatch(UnityConnection& conn, Session& session, 
+bool Dispatch(Connection& conn, Session& session, 
 			  UnityCommand cmd, const CommandArgs& args)
 {
-	conn.Log().Info() << Join(args, " ") << unityplugin::Endl;
+	conn.Log().Info() << Join(args, " ") << Endl;
 
 	switch (cmd)
 	{

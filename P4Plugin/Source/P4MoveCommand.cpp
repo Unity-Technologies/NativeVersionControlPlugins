@@ -12,24 +12,24 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		bool noLocalFileMove = args.size() > 1 && args[1] == "noLocalFileMove";
 
 		VersionedAssetList assetList;
-		Pipe() >> assetList;
+		Conn() >> assetList;
 		
 		if ( assetList.empty() ) 
 		{
-			Pipe().EndResponse();
+			Conn().EndResponse();
 			return true;
 		}
 		
 		// Process two assets at a time ie. src,dest
 		if ( assetList.size() % 2 ) 
 		{
-			Pipe().WarnLine("uneven number of assets during move", MASystem);
-			Pipe().EndResponse();
+			Conn().WarnLine("uneven number of assets during move", MASystem);
+			Conn().EndResponse();
 			return true;
 		}
 
@@ -45,7 +45,7 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			Pipe().Log().Debug() << "Ensure editable source " << paths << unityplugin::Endl;
+			Conn().Log().Debug() << "Ensure editable source " << paths << Endl;
 			
 			string err;
 			bool editable = (src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal)) != 0;
@@ -53,7 +53,7 @@ public:
 			if (!editable)
 			{
 				string srcPath = ResolvePaths(b, b+1, kPathWild | kPathRecursive);
-				Pipe().Log().Info() << "edit " << srcPath << unityplugin::Endl;
+				Conn().Log().Info() << "edit " << srcPath << Endl;
 				if (!task.CommandRun("edit " + srcPath, this))
 				{
 					break;
@@ -78,7 +78,7 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			Pipe().Log().Info() << "move " << noLocalFileMoveFlag << paths << unityplugin::Endl;
+			Conn().Log().Info() << "move " << noLocalFileMoveFlag << paths << Endl;
 			if (!task.CommandRun("move " + noLocalFileMoveFlag + paths, this))
 			{
 				break;
@@ -95,7 +95,7 @@ public:
 					errorMessage += src.GetPath();
 					errorMessage += " to ";
 					errorMessage += dest.GetPath();
-					Pipe().WarnLine(errorMessage);
+					Conn().WarnLine(errorMessage);
 				}
 			}
 
@@ -110,11 +110,11 @@ public:
 		}
 		
 		// We just wrap up the communication here.
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 		
 		RunAndSendStatus(task, targetAssetList);
 		
-		Pipe().EndResponse();
+		Conn().EndResponse();
 
 		return true;
 	}

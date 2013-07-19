@@ -1,7 +1,5 @@
 #include "Log.h"
 
-namespace unityplugin
-{
 
 LogWriter::LogWriter(LogStream& stream, bool isOn) : m_Stream(stream), m_On(isOn) 
 {
@@ -105,4 +103,3 @@ LogStream& Endl(LogStream& w)
 	return w;
 }
 
-} // end namespace

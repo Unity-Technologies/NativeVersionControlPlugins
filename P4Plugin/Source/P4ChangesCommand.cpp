@@ -15,10 +15,10 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{				
 		ClearStatus();
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		const string cmd = string("changes -s pending -u ") + task.GetP4User() + " -c " + task.GetP4Client();
 
-		Pipe().BeginList();
+		Conn().BeginList();
 		
 		// The default list is always there
 		Changelist defaultItem;
@@ -26,15 +26,15 @@ public:
 		defaultItem.SetDescription(kDefaultList);
 		defaultItem.SetRevision(kDefaultListRevision);
 		
-		Pipe() << defaultItem;
+		Conn() << defaultItem;
 		
 		task.CommandRun(cmd, this);
-		Pipe().EndList();
-		Pipe() << GetStatus();
+		Conn().EndList();
+		Conn() << GetStatus();
 
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		
 		return true;
 	}
@@ -45,11 +45,11 @@ public:
 		string d(data);
 		const size_t minLength = 8; // "Change x".length()
 
-		Pipe().VerboseLine(d);
+		Conn().VerboseLine(d);
 
 		if (d.length() <= minLength)
 		{
-			Pipe().WarnLine(string("p4 changelist too short: ") + d);
+			Conn().WarnLine(string("p4 changelist too short: ") + d);
 			return;
 		}
 		
@@ -57,14 +57,14 @@ public:
 		string::size_type i = d.find(' ', 8);
 		if (i == string::npos)
 		{
-			Pipe().WarnLine(string("p4 couldn't locate revision: ") + d);
+			Conn().WarnLine(string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		
 		Changelist item;
 		item.SetDescription(d.substr(i));
 		item.SetRevision(d.substr(minLength-1, i - (minLength-1)));
-		Pipe() << item;
+		Conn() << item;
 	}
 	
 } cChanges("changes");

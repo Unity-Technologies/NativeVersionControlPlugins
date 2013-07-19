@@ -5,7 +5,7 @@
 class OutgoingRequest : public BaseRequest
 {
 public:
-	OutgoingRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn) 
+	OutgoingRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn) 
 	{
 	}	
 };
@@ -13,7 +13,7 @@ public:
 class OutgoingResponse : public BaseResponse
 {
 public:
-	OutgoingResponse(OutgoingRequest& req) : request(req) {}
+	OutgoingResponse(OutgoingRequest& req) : request(req), conn(req.conn) {}
 
 	void AddChangeSet(const std::string& name, const std::string& revision)
 	{
@@ -28,11 +28,11 @@ public:
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-		upipe << changeSets;
-		upipe.EndResponse();
+		conn << changeSets;
+		conn.EndResponse();
 	}
 
 	OutgoingRequest& request;
+	Connection& conn;
 	Changes changeSets;
 };

@@ -7,7 +7,7 @@ public:
 	bool Run(SvnTask& task, OutgoingAssetsRequest& req, OutgoingAssetsResponse& resp)
 	{
 		// Subversion does 
-		req.conn.Log().Info() << "Outgoing assets for list " << req.revision << unityplugin::Endl;
+		req.conn.Log().Info() << "Outgoing assets for list " << req.revision << Endl;
 
 		VersionedAssetList empty;
 		VersionedAssetList assets;

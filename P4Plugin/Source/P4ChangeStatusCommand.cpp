@@ -16,23 +16,23 @@ public:
 		P4Task::SetOnline(true);
 
 		ClearStatus();
-		Pipe().Log().Info() << "ChangeStatusCommand::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << "ChangeStatusCommand::Run()" << Endl;
 		
 		ChangelistRevision cl;
-		Pipe() >> cl;
+		Conn() >> cl;
 		
 		string cmd = "fstat -T \"depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" -W -e ";
 		cmd += (cl == kDefaultListRevision ? string("default") : cl) + " //...";
 		
 		// We're sending along an asset list with an unknown size.
-		Pipe().BeginList();
+		Conn().BeginList();
 		
 		task.CommandRun(cmd, this);
 		
 		// The OutputState and other callbacks will now output to stdout.´
 		// We just wrap up the communication here.
-		Pipe().EndList();
-		Pipe() << GetStatus();
+		Conn().EndList();
+		Conn() << GetStatus();
 
 		if (P4Task::IsOnline() && !wasOnline)
 		{
@@ -41,7 +41,7 @@ public:
 			P4Task::NotifyOnline();
 		}
 
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		
 		return true;
 	}

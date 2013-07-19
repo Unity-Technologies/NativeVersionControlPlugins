@@ -42,7 +42,7 @@ public:
 		if (level != 48)
 			P4Command::OutputInfo(level, data);
 
-		Pipe().VerboseLine(msg);
+		Conn().VerboseLine(msg);
 
 		if (msgLen > (kDelim1Len + kDelim2Len + 12) && msg.find(" - merging ") != string::npos) // 12 being the smallest possible path repr.
 			HandleMergableAsset(msg);
@@ -129,30 +129,30 @@ public:
 	bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		string baseCmd = "print -q -o ";
 		string targetDir;
-		Pipe().ReadLine(targetDir);
+		Conn().ReadLine(targetDir);
 		
 		vector<string> versions;
 		// The wanted versions to download. e.g. you can download both head, base of a file at the same time
-		Pipe() >> versions;
+		Conn() >> versions;
 		
 		VersionedAssetList assetList;
-		Pipe() >> assetList;
+		Conn() >> assetList;
 		vector<string> paths;
 		ResolvePaths(paths, assetList, kPathWild | kPathSkipFolders);
 		
-		Pipe().Log().Debug() << "Paths resolved" << unityplugin::Endl;
+		Conn().Log().Debug() << "Paths resolved" << Endl;
 
-		Pipe().BeginList();
+		Conn().BeginList();
 		
 		if (paths.empty())
 		{
-			Pipe().EndList();
-			Pipe().WarnLine("No paths in fileset perforce command", MARemote);
-			Pipe().EndResponse();
+			Conn().EndList();
+			Conn().WarnLine("No paths in fileset perforce command", MARemote);
+			Conn().EndResponse();
 			return true;
 		}
 
@@ -173,13 +173,13 @@ public:
 					tmpFile += "head";
 					string fileCmd = cmd + "\"" + tmpFile + "\" \"" + *i + "#head\"";
 
-					Pipe().Log().Info() << fileCmd << unityplugin::Endl;
+					Conn().Log().Info() << fileCmd << Endl;
 					if (!task.CommandRun(fileCmd, this))
 						break;
 					
 					VersionedAsset asset;
 					asset.SetPath(tmpFile);
-					Pipe() << asset;
+					Conn() << asset;
 
 				}
 				else if (*j == "mineAndConflictingAndBase")
@@ -193,9 +193,9 @@ public:
 						cConflictInfo.conflicts.clear();
 						string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 						string rcmd = "resolve -o -n " + localPaths;
-						Pipe().Log().Info() << rcmd << unityplugin::Endl;
+						Conn().Log().Info() << rcmd << Endl;
 						task.CommandRun(rcmd, &cConflictInfo);
-						Pipe() << cConflictInfo.GetStatus();
+						Conn() << cConflictInfo.GetStatus();
 						
 						if (cConflictInfo.HasErrors())
 						{
@@ -203,7 +203,7 @@ public:
 							string msg = cConflictInfo.GetStatusMessage();
 							if (!StartsWith(msg, "No file(s) to resolve"))
 							{
-								Pipe() << cConflictInfo.GetStatus();
+								Conn() << cConflictInfo.GetStatus();
 								goto error;
 							}
 						}
@@ -214,19 +214,19 @@ public:
 					
 					// Location of "mine" version of file. In Perforce this is always
 					// the original location of the file.
-					Pipe() << assetList[idx];
+					Conn() << assetList[idx];
 
 					VersionedAsset asset;
 					if (ci != cConflictInfo.conflicts.end())
 					{
 						string conflictFile = tmpFile + "conflicting";
 						string conflictCmd = cmd + "\"" + conflictFile + "\" \"" + ci->second.conflict + "\"";
-						Pipe().Log().Info() << conflictCmd << unityplugin::Endl;
+						Conn().Log().Info() << conflictCmd << Endl;
 						if (!task.CommandRun(conflictCmd, this))
 							break;
 						
 						asset.SetPath(conflictFile);
-						Pipe() << asset;
+						Conn() << asset;
 						
 						string baseFile = "";
 
@@ -235,7 +235,7 @@ public:
 						{
 							baseFile = tmpFile + "base";
 							string baseCmd = cmd + "\"" + baseFile + "\" \"" + ci->second.base + "\"";
-							Pipe().Log().Info() << baseCmd << unityplugin::Endl;
+							Conn().Log().Info() << baseCmd << Endl;
 							if (!task.CommandRun(baseCmd, this))
 								break;
 						}
@@ -244,13 +244,13 @@ public:
 							asset.SetState(kMissing);
 						}
 						asset.SetPath(baseFile);
-						Pipe() << asset;						
+						Conn() << asset;						
 					}
 					else 
 					{
 						// no conflict info for this file
 						asset.SetState(kMissing);
-						Pipe() << asset << asset;
+						Conn() << asset << asset;
 					}	
 				}
 			}
@@ -258,9 +258,9 @@ public:
 	error:
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndList();
-		Pipe() << GetStatus();
-		Pipe().EndResponse();
+		Conn().EndList();
+		Conn() << GetStatus();
+		Conn().EndResponse();
 
 		cConflictInfo.conflicts.clear();
 		

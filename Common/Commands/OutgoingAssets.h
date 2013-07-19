@@ -6,17 +6,16 @@
 class OutgoingAssetsRequest : public BaseRequest
 {
 public:
-	OutgoingAssetsRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn) 
+	OutgoingAssetsRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn) 
 	{
-		UnityPipe& upipe = conn.Pipe();
-		upipe >> revision;
+		conn >> revision;
 
 		if (revision.empty())
 		{
 			VersionedAssetList assets;
-			upipe << assets;
-			upipe.ErrorLine("Cannot get assets for empty revision");
-			upipe.EndResponse();
+			conn << assets;
+			conn.ErrorLine("Cannot get assets for empty revision");
+			conn.EndResponse();
 			invalid = true;
 		}
 	}	
@@ -27,18 +26,18 @@ public:
 class OutgoingAssetsResponse : public BaseResponse
 {
 public:
-	OutgoingAssetsResponse(OutgoingAssetsRequest& req) : request(req) {}
+	OutgoingAssetsResponse(OutgoingAssetsRequest& req) : request(req), conn(req.conn) {}
 
 	void Write()
 	{
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-		upipe << assets;
-		upipe.EndResponse();
+		conn << assets;
+		conn.EndResponse();
 	}
 
 	OutgoingAssetsRequest& request;
+	Connection& conn;
 	VersionedAssetList assets;
 };

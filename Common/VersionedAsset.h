@@ -64,6 +64,6 @@ typedef std::set<VersionedAsset> VersionedAssetSet;
 
 std::vector<std::string> Paths(const VersionedAssetList& assets);
 
-struct UnityPipe;
-UnityPipe& operator<<(UnityPipe& p, const VersionedAsset& v);
-UnityPipe& operator>>(UnityPipe& p, VersionedAsset& v);
+struct Connection;
+Connection& operator<<(Connection& p, const VersionedAsset& v);
+Connection& operator>>(Connection& p, VersionedAsset& v);

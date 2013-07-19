@@ -9,7 +9,7 @@
 
 using namespace std;
 
-UnityPipe& SendToPipe(UnityPipe& p, const VCSStatus& st, MessageArea ma, bool safeSend)
+Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma, bool safeSend)
 {
 	// Convertion of p4 errors to unity vcs errors
 	for (VCSStatus::const_iterator i = st.begin(); i != st.end(); ++i)
@@ -44,9 +44,9 @@ UnityPipe& SendToPipe(UnityPipe& p, const VCSStatus& st, MessageArea ma, bool sa
 	return p;
 }
 
-UnityPipe& operator<<(UnityPipe& p, const VCSStatus& st)
+Connection& operator<<(Connection& p, const VCSStatus& st)
 {
-	return SendToPipe(p, st, MAGeneral, false);
+	return SendToConnection(p, st, MAGeneral, false);
 }
 
 // Global map of all commands registered at initialization time
@@ -61,7 +61,7 @@ P4Command* LookupCommand(const string& name)
 	return i->second;
 }
 
-UnityPipe* P4Command::s_UnityPipe = NULL;
+Connection* P4Command::s_Conn = NULL;
 
 P4Command::P4Command(const char* name) : m_AllowConnect(true)
 {
@@ -116,27 +116,27 @@ bool P4Command::ConnectAllowed()
 // Default handler of P4
 void P4Command::OutputStat( StrDict *varList ) 
 { 
-	Pipe().Log().Info() << "Default ClientUser OutputState()\n";
+	Conn().Log().Info() << "Default ClientUser OutputState()\n";
 }
 
 
 // Default handler of P4
 void P4Command::InputData( StrBuf *buf, Error *err ) 
 { 
-	Pipe().Log().Info() << "Default ClientUser InputData()\n";
+	Conn().Log().Info() << "Default ClientUser InputData()\n";
 }
 
 void P4Command::Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 {
-	Pipe().VerboseLine("Prompting...");
-	Pipe().Log().Info() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
+	Conn().VerboseLine("Prompting...");
+	Conn().Log().Info() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
 }
 
 
 // Default handler of P4
 void P4Command::Finished() 
 { 
-//	Pipe().Log().Info() << "Default ClientUser Finished()\n";
+//	Conn().Log().Info() << "Default ClientUser Finished()\n";
 }
 
 
@@ -158,8 +158,8 @@ void P4Command::HandleError( Error *err )
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	Pipe().WarnLine(errBuf);
-	Pipe().Log().Debug() << "error: " << errBuf << unityplugin::Endl;
+	Conn().WarnLine(errBuf);
+	Conn().Log().Debug() << "error: " << errBuf << Endl;
 }
 
 static bool ErrorStringMatch(Error *err, const char* msg)
@@ -198,12 +198,12 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 
 		else
 		{
-			Pipe().Log().Notice() << "Unhandled status error -> " << value << unityplugin::Endl;
+			Conn().Log().Notice() << "Unhandled status error -> " << value << Endl;
 			return true;
 		}
 
-		Pipe().InfoLine(value);
-		Pipe().Log().Notice() << value << unityplugin::Endl;
+		Conn().InfoLine(value);
+		Conn().Log().Notice() << value << Endl;
  
 		return false;
 	}
@@ -212,29 +212,29 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 
 void P4Command::ErrorPause( char* errBuf, Error* e)
 {
-	Pipe().Log().Notice() << "Error: Default ClientUser ErrorPause()\n";
+	Conn().Log().Notice() << "Error: Default ClientUser ErrorPause()\n";
 }
 
 
 void P4Command::OutputText( const char *data, int length)
 {
-	Pipe().Log().Info() << "Error: Default ClientUser OutputText\n";
+	Conn().Log().Info() << "Error: Default ClientUser OutputText\n";
 }
 
 
 void P4Command::OutputBinary( const char *data, int length)
 {
-	Pipe().Log().Info() << "Error: Default ClientUser OutputBinary\n";
+	Conn().Log().Info() << "Error: Default ClientUser OutputBinary\n";
 }
 
 
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
 {
-	Pipe().Log().Info() << "level " << (int) level << ": " << data << unityplugin::Endl;
+	Conn().Log().Info() << "level " << (int) level << ": " << data << Endl;
 	std::stringstream ss;
 	ss << data << " (level " << (int) level << ")";	
-	Pipe().InfoLine(ss.str());
+	Conn().InfoLine(ss.str());
 }
 
 void P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList)
@@ -242,13 +242,13 @@ void P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetLi
 	P4StatusCommand* c = dynamic_cast<P4StatusCommand*>(LookupCommand("status"));
 	if (!c)
 	{
-		Pipe().ErrorLine("Cannot locate status command");
+		Conn().ErrorLine("Cannot locate status command");
 		return; // Returning this is just to keep things running.
 	}
 	
 	bool recursive = false;
 	c->RunAndSend(task, assetList, recursive);
-	Pipe() << c->GetStatus();
+	Conn() << c->GetStatus();
 }
 
 const char * kDelim = "_XUDELIMX_"; // magic delimiter
@@ -315,7 +315,7 @@ const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, cons
 	string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
 	
 	task.CommandRun("where " + localPaths, &cWhere);
-	Pipe() << cWhere.GetStatus();
+	Conn() << cWhere.GetStatus();
 	
 	if (cWhere.HasErrors())
 	{

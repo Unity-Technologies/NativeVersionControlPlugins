@@ -16,13 +16,13 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 	ClearStatus();
 
 	bool recursive = args.size() > 1;
-	Pipe().Log().Info() << "StatusCommand::Run()" << unityplugin::Endl;
+	Conn().Log().Info() << "StatusCommand::Run()" << Endl;
 			
 	VersionedAssetList assetList;
-	Pipe() >> assetList;
+	Conn() >> assetList;
 	
 	RunAndSend(task, assetList, recursive);
-	Pipe() << GetStatus();
+	Conn() << GetStatus();
 
 	if (P4Task::IsOnline() && !wasOnline)
 	{
@@ -31,7 +31,7 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 		P4Task::NotifyOnline();
 	}
 
-	Pipe().EndResponse();
+	Conn().EndResponse();
 
 	return true;
 }
@@ -40,14 +40,14 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 {
 	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
-	Pipe().Log().Debug() << "Paths to stat are: " << paths << unityplugin::Endl;
+	Conn().Log().Debug() << "Paths to stat are: " << paths << Endl;
 	
-	Pipe().BeginList();
+	Conn().BeginList();
 	
 	if (paths.empty())
 	{
-		Pipe().EndList();
-		// Pipe().ErrorLine("No paths to stat", MASystem);
+		Conn().EndList();
+		// Conn().ErrorLine("No paths to stat", MASystem);
 		return;
 	}
 	
@@ -59,7 +59,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 	
 	// The OutputState and other callbacks will now output to stdout.
 	// We just wrap up the communication here.
-	Pipe().EndList();
+	Conn().EndList();
 }
 
 P4StatusCommand cStatus("status");

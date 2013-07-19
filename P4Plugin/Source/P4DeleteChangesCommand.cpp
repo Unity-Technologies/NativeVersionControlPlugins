@@ -11,19 +11,19 @@ public:
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		std::string errorMessage;
 		
 		const string cmd = "change -d";
 		
 		ChangelistRevisions changes;
-		Pipe() >> changes;
+		Conn() >> changes;
 		
 		if (changes.empty())
 		{
 			
-			Pipe().WarnLine("Changes to delete is empty");
-			Pipe().EndResponse();
+			Conn().WarnLine("Changes to delete is empty");
+			Conn().EndResponse();
 			return true;
 		}
 		
@@ -39,13 +39,13 @@ public:
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
 
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 		
 		// @TODO: send changed assets
 		VersionedAssetList dummy;
-		Pipe() << dummy;
+		Conn() << dummy;
 		
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		
 		return true;
 	}	

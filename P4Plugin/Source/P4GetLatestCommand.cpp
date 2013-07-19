@@ -13,27 +13,27 @@ public:
 	{
 		incomingAssetList.clear();
 		ClearStatus();
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		string cmd = "sync";
 		
 		VersionedAssetList assetList;
-		Pipe() >> assetList;
+		Conn() >> assetList;
 		string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
 		
-		Pipe().Log().Debug() << "Paths resolved are: " << paths << unityplugin::Endl;
+		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 		
 		if (paths.empty())
 		{
-			Pipe().WarnLine("No paths in getlatest perforce command", MARemote);
-			Pipe().EndResponse();
+			Conn().WarnLine("No paths in getlatest perforce command", MARemote);
+			Conn().EndResponse();
 			return true;
 		}
 		
 		cmd += " " + paths;
 		
 		task.CommandRun(cmd, this);
-		Pipe() << GetStatus();
+		Conn() << GetStatus();
 		
 		// Stat the files to get the most recent state.
 		// This could probably be optimized by reading the output of the command better
@@ -41,7 +41,7 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndResponse();
+		Conn().EndResponse();
 		return true;
 	}
 
@@ -72,7 +72,7 @@ public:
 			return;
 		}
 
-		Pipe().VerboseLine(data);
+		Conn().VerboseLine(data);
 
 		// format e.g.:
 		// //depot/P4Test/Assets/Lars.meta#2 - updating /Users/foobar/UnityProjects/PerforceTest/P4Test/Assets/Lars.meta

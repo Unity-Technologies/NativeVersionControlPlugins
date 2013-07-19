@@ -39,7 +39,7 @@ public:
 
 			if (!EnsureDirectory(tmpDir))
 			{
-				req.conn.Pipe().WarnLine(std::string("Could not create temp folder during 'revert keep modifications': ") + tmpDir);
+				req.conn.WarnLine(std::string("Could not create temp folder during 'revert keep modifications': ") + tmpDir);
 				resp.Write();
 				return true;
 			}
@@ -50,10 +50,10 @@ public:
 				// Find relative folder path to projectPath
 				std::string relPath = i->GetPath().substr(0, projectPath.length());
 				std::string copyTo = tmpDir + relPath;
-				req.conn.Log().Debug() << "CopyFile " << i->GetPath() << " -> " << copyTo << unityplugin::Endl;
+				req.conn.Log().Debug() << "CopyFile " << i->GetPath() << " -> " << copyTo << Endl;
 				if (!CopyAFile(i->GetPath(), copyTo, true))
 				{
-					req.conn.Pipe().WarnLine(std::string("Could not copy file info to temp folder during 'revert keep modifications'"));
+					req.conn.WarnLine(std::string("Could not copy file info to temp folder during 'revert keep modifications'"));
 					resp.Write();
 					return true;
 				}
@@ -83,10 +83,10 @@ public:
 				// Find relative folder path to projectPath
 				std::string relPath = i->GetPath().substr(0, projectPath.length());
 				std::string copyFrom = tmpDir + relPath;
-				req.conn.Log().Debug() << "CopyFile " << copyFrom << " -> " << i->GetPath() << unityplugin::Endl;
+				req.conn.Log().Debug() << "CopyFile " << copyFrom << " -> " << i->GetPath() << Endl;
 				if (!CopyAFile(copyFrom, i->GetPath(), true))
 				{
-					req.conn.Pipe().WarnLine(std::string("Could not copy file info from temp folder during 'revert keep modifications'"));
+					req.conn.WarnLine(std::string("Could not copy file info from temp folder during 'revert keep modifications'"));
 					// Keep going to try to make the damage as small as possible
 				}
 			}

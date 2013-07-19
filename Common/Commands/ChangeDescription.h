@@ -6,17 +6,16 @@
 class ChangeDescriptionRequest : public BaseRequest
 {
 public:
-	ChangeDescriptionRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn) 
+	ChangeDescriptionRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn) 
 	{
-		UnityPipe& upipe = conn.Pipe();
-		upipe >> revision;
+		conn >> revision;
 
 		if (revision.empty())
 		{
 			VersionedAssetList assets;
-			upipe << assets;
-			upipe.ErrorLine("Cannot get assets for empty revision");
-			upipe.EndResponse();
+			conn << assets;
+			conn.ErrorLine("Cannot get assets for empty revision");
+			conn.EndResponse();
 			invalid = true;
 		}
 	}	
@@ -27,18 +26,18 @@ public:
 class ChangeDescriptionResponse : public BaseResponse
 {
 public:
-	ChangeDescriptionResponse(ChangeDescriptionRequest& req) : request(req) {}
+	ChangeDescriptionResponse(ChangeDescriptionRequest& req) : request(req), conn(req.conn) {}
 
 	void Write()
 	{
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-		upipe.DataLine(description);
-		upipe.EndResponse();
+		conn.DataLine(description);
+		conn.EndResponse();
 	}
 
 	ChangeDescriptionRequest& request;
+	Connection& conn;
 	std::string description;
 };

@@ -1,9 +1,6 @@
 #pragma once
 #include <fstream>
 
-namespace unityplugin
-{
-
 // Log levels. 
 // Lower levels are included in highers levels automatically.
 enum LogLevel
@@ -94,4 +91,3 @@ LogStream& operator<<(LogStream& w, LogStream& (*pf)(LogStream&));
 LogStream& Flush(LogStream& w);
 LogStream& Endl(LogStream& w);
 
-} // end namespace

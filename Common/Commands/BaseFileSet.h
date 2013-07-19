@@ -7,17 +7,16 @@ template <int>
 class BaseFileSetRequest : public BaseRequest
 {
 public:
-	BaseFileSetRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn)
+	BaseFileSetRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn)
 	{
 		assets.clear();
-		UnityPipe& upipe = conn.Pipe();
-		upipe >> assets;
+		conn >> assets;
 
 		if (assets.empty())
 		{
 			assets.clear();
-			upipe << assets;
-			upipe.EndResponse();
+			conn << assets;
+			conn.EndResponse();
 			invalid = true;
 		}
 	}
@@ -43,20 +42,19 @@ template <class Req>
 class BaseFileSetResponse : public BaseResponse
 {
 public:
-    BaseFileSetResponse(Req& req) : request(req) {}
+    BaseFileSetResponse(Req& req) : request(req), conn(req.conn) {}
 
 	void Write()
 	{
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-	
-		upipe << assets;
-		upipe.EndResponse();
+		conn << assets;
+		conn.EndResponse();
 	}
 
 	Req& request;
+	Connection& conn;
 	VersionedAssetList assets;
 };
 

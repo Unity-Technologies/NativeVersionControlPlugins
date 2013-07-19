@@ -28,22 +28,22 @@ public:
 		ClearStatus();
 		m_Changelists.clear();
 
-		Pipe().Log().Info() << args[0] << "::Run()" << unityplugin::Endl;
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetAssetsPath(), '/'), '\\') + "/...";
 		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" \"") + rootPathWildcard + "\"";
 				
-		Pipe().BeginList();
+		Conn().BeginList();
 		
 		if (!task.CommandRun(cmd, this))
 		{
 			// The OutputStat and other callbacks will now output to stdout.
 			// We just wrap up the communication here.
 			m_Changelists.clear();
-			Pipe().EndList();
-			Pipe() << GetStatus();
-			Pipe().EndResponse();
+			Conn().EndList();
+			Conn() << GetStatus();
+			Conn().EndResponse();
 			return true;
 		}
 		
@@ -55,7 +55,7 @@ public:
 		{
 			ss.str("");
 			ss << "changes -l -s submitted \"@" << *i << ",@" << *i << "\"";
-			Pipe().Log().Info() << "    " << ss.str() << unityplugin::Endl;
+			Conn().Log().Info() << "    " << ss.str() << Endl;
 			
 			if (!task.CommandRun(ss.str(), this))
 			{
@@ -67,9 +67,9 @@ public:
 		
 		// The OutputState and other callbacks will now output to stdout.
 		// We just wrap up the communication here.
-		Pipe().EndList();
-		Pipe() << GetStatus();
-		Pipe().EndResponse();
+		Conn().EndList();
+		Conn() << GetStatus();
+		Conn().EndResponse();
 		
 		return true;
 	}
@@ -77,7 +77,7 @@ public:
 	// Called once per file for status commands
 	void OutputStat( StrDict *varList )
 	{
-		//Pipe().Log().Info() << "Output list stat" << endl;
+		//Conn().Log().Info() << "Output list stat" << endl;
 		
 		int i;
 		StrRef var, val;
@@ -104,7 +104,7 @@ public:
 			string value(val.Text());
 			verboseLine += key + ":" + value + ", ";
 
-			//Pipe().Log().Debug() << "    " << key << " # " << value << endl;
+			//Conn().Log().Debug() << "    " << key << " # " << value << endl;
 			
 			if (key == "depotFile")
 				depotFile = string(val.Text());
@@ -127,10 +127,10 @@ public:
 			else if (key == "haveRev")
 				haveRev = atoi(val.Text());
 			else 
-				Pipe().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << unityplugin::Endl;
+				Conn().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << Endl;
 		}
 
-		Pipe().VerboseLine(verboseLine);
+		Conn().VerboseLine(verboseLine);
 
 		if (headChange == -1 && added)
 			return; // don't think about files added locally
@@ -141,7 +141,7 @@ public:
 		
 		if (depotFile.empty() || headChange == -1 || headRev == -1)
 		{
-			Pipe().WarnLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
+			Conn().WarnLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
 		} 
 		else if (haveRev != headRev && !syncedDelete)
 		{
@@ -153,13 +153,13 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
-		Pipe().VerboseLine(d);
+		Conn().VerboseLine(d);
 
 		const size_t minLength = 8; // "Change x".length()
 		
 		if (d.length() <= minLength)
 		{
-			Pipe().WarnLine(string("p4 changelist too short: ") + d);
+			Conn().WarnLine(string("p4 changelist too short: ") + d);
 			return;
 		}
 		
@@ -167,7 +167,7 @@ public:
 		string::size_type i = d.find(' ', 8);
 		if (i == string::npos)
 		{
-			Pipe().WarnLine(string("p4 couldn't locate revision: ") + d);
+			Conn().WarnLine(string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		
@@ -175,7 +175,7 @@ public:
 		Changelist item;
 		item.SetDescription(d.substr(i+1));
 		item.SetRevision(d.substr(minLength-1, i - (minLength-1)));
-		Pipe() << item;
+		Conn() << item;
 	}
 	
 private:	

@@ -5,7 +5,7 @@
 class IncomingRequest : public BaseRequest
 {
 public:
-	IncomingRequest(const CommandArgs& args, UnityConnection& conn) : BaseRequest(args, conn) 
+	IncomingRequest(const CommandArgs& args, Connection& conn) : BaseRequest(args, conn) 
 	{
 	}	
 };
@@ -13,7 +13,7 @@ public:
 class IncomingResponse : public BaseResponse
 {
 public:
-	IncomingResponse(IncomingRequest& req) : request(req) {}
+	IncomingResponse(IncomingRequest& req) : request(req), conn(req.conn) {}
 
 	void AddChangeSet(const Changelist& cl)
 	{
@@ -25,12 +25,12 @@ public:
 		if (request.invalid)
 			return;
 		
-		UnityPipe& upipe = request.conn.Pipe();
-		upipe << changeSets;
-		upipe.EndResponse();
+		conn << changeSets;
+		conn.EndResponse();
 	}
 
 	IncomingRequest& request;
+	Connection& conn;
 	Changes changeSets;
 };
 

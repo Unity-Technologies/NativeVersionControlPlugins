@@ -13,7 +13,7 @@ public:
 	{
 		if (!task.IsConnected()) // Cannot logout without being connected
 		{
-			Pipe().Log().Info() << "Cannot logout when not connected" << unityplugin::Endl;
+			Conn().Log().Info() << "Cannot logout when not connected" << Endl;
 			return false;
 		}
 		
@@ -22,7 +22,7 @@ public:
 		if (!task.CommandRun("logout", this))
 		{
 			string errorMessage = GetStatusMessage();			
-			Pipe().Log().Notice() << errorMessage << unityplugin::Endl;
+			Conn().Log().Notice() << errorMessage << Endl;
 		}
 		
 		return true;

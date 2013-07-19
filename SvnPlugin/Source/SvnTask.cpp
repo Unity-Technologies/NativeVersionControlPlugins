@@ -105,7 +105,7 @@ void SvnTask::SetSvnExecutable(const std::string& e)
 			m_SvnPath = e;
 			return;
 		}
-		m_Connection->Pipe().WarnLine(string("No svn executable at path '") + e + "'");
+		m_Connection->WarnLine(string("No svn executable at path '") + e + "'");
 	}
 
 #if defined(_WINDOWS)
@@ -157,7 +157,7 @@ string SvnTask::GetProjectPath() const
 
 int SvnTask::Run()
 {
-	m_Connection = new UnityConnection("./Library/svnplugin.log");
+	m_Connection = new Connection("./Library/svnplugin.log");
 
 	UnityCommand cmd;
 	CommandArgs args;
@@ -179,23 +179,23 @@ int SvnTask::Run()
 			}
 			catch (SvnException& ex)
 			{
-				m_Connection->Log().Fatal() << "Fatal 1: " << ex.what() << unityplugin::Endl;
-				m_Connection->Pipe().ErrorLine(ex.what());
-				m_Connection->Pipe().EndResponse();
+				m_Connection->Log().Fatal() << "Fatal 1: " << ex.what() << Endl;
+				m_Connection->ErrorLine(ex.what());
+				m_Connection->EndResponse();
 				return 1;
 			}
 			catch (PluginException& ex)
 			{
-				m_Connection->Log().Fatal() << "Fatal 2: " << ex.what() << unityplugin::Endl;
-				m_Connection->Pipe().ErrorLine(ex.what());
-				m_Connection->Pipe().EndResponse();
+				m_Connection->Log().Fatal() << "Fatal 2: " << ex.what() << Endl;
+				m_Connection->ErrorLine(ex.what());
+				m_Connection->EndResponse();
 				return 1;
 			}
 		}
 	} 
 	catch (std::exception& e)
 	{
-		m_Connection->Log().Fatal() << "Fatal: " << e.what() << unityplugin::Endl;
+		m_Connection->Log().Fatal() << "Fatal: " << e.what() << Endl;
 	}
 	
 	return 1;
@@ -206,7 +206,7 @@ APOpen SvnTask::RunCommand(const std::string& cmd)
 	string cred = GetCredentials();
 	string cmdline = "\"";
 	cmdline += m_SvnPath + "\" " + cred + cmd;
-	m_Connection->Log().Info() << cmdline << unityplugin::Endl;
+	m_Connection->Log().Info() << cmdline << Endl;
 	try
 	{
 		return APOpen(new POpen(cmdline));
@@ -499,7 +499,7 @@ bool SvnTask::HandleConnectErrorLine(const std::string& line)
 		string::size_type si = line.find('\'');
 		if (si != string::npos)
 			msg += line.substr(si);
-		m_Connection->Pipe().WarnLine(msg, MAProtocol);
+		m_Connection->WarnLine(msg, MAProtocol);
 		NotifyOffline(msg);
 	} 
 	else if (svnVersionError)
@@ -508,7 +508,7 @@ bool SvnTask::HandleConnectErrorLine(const std::string& line)
 		string msg = "Project ";
 		msg += line.substr(i);
 		msg += ". The unity builtin svn is a lower version. You can specify a custom svn path in Editor Settings.";
-		m_Connection->Pipe().WarnLine(msg, MAProtocol);
+		m_Connection->WarnLine(msg, MAProtocol);
 		NotifyOffline(msg);
 	}
 	
@@ -529,7 +529,7 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 	cmd += " ";
 	cmd += Join(Paths(assets), " ", "\"");
 
-	m_Connection->Pipe().Progress(-1, 0, "secs. while reading status...");
+	m_Connection->Progress(-1, 0, "secs. while reading status...");
 
 	APOpen ppipe = RunCommand(cmd);
 
@@ -547,11 +547,11 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		time_t thisTick = time(NULL);
 		if (lastTick != thisTick)
 		{
-			m_Connection->Pipe().Progress(-1, thisTick - startTick, "secs. while reading status...");
+			m_Connection->Progress(-1, thisTick - startTick, "secs. while reading status...");
 			lastTick = thisTick;
 		}
 
-		m_Connection->Log().Debug() << line << unityplugin::Endl;
+		m_Connection->Log().Debug() << line << Endl;
 		if (EndsWith(line, " was not found."))
 			continue;
 
@@ -560,7 +560,7 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 			// Special case: If "EditorSettings.asset" is local if means that the repository is not valid and we mark it as such
 			if (EndsWith(line, "\\ProjectSettings\\EditorSettings.asset' is not a working copy") || EndsWith(line, "/ProjectSettings/EditorSettings.asset' is not a working copy"))
 			{
-				m_Connection->Pipe().WarnLine("EditorSettings.asset file not part of a subversion working copy\nRemember to add at least the 'Assets' folder and meta file to subversion");
+				m_Connection->WarnLine("EditorSettings.asset file not part of a subversion working copy\nRemember to add at least the 'Assets' folder and meta file to subversion");
 				NotifyOffline("Project is not in a subversion working folder", true);
 				return true;
 			}
@@ -689,17 +689,17 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 		cacheRev = atoi(from.c_str());
 		if (cacheRev)
 		{
-			m_Connection->Log().Debug() << "Checking cache for single log revision " << cacheRev << unityplugin::Endl;
+			m_Connection->Log().Debug() << "Checking cache for single log revision " << cacheRev << Endl;
 			std::map<int, SvnLogResult::Entry>::iterator i = g_LogCache.find(cacheRev);
 			if (i != g_LogCache.end())
 			{
-				m_Connection->Log().Debug() << "  Found in cache" << unityplugin::Endl;
+				m_Connection->Log().Debug() << "  Found in cache" << Endl;
 				result.entries.push_back(i->second);
 				return;
 			}
 			else 
 			{
-				m_Connection->Log().Debug() << "  Not in cache" << unityplugin::Endl;
+				m_Connection->Log().Debug() << "  Not in cache" << Endl;
 			}
 		}
 	}
@@ -722,7 +722,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 	if (includeAssets)
 		cmd += " -v ";
 
-	m_Connection->Pipe().Progress(-1, 0, "secs. while reading log...");
+	m_Connection->Progress(-1, 0, "secs. while reading log...");
 
 	APOpen ppipe = RunCommand(cmd);
 
@@ -740,11 +740,11 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 		time_t thisTick = time(NULL);
 		if (lastTick != thisTick)
 		{
-			m_Connection->Pipe().Progress(-1, thisTick - startTick, "secs. while reading log...");
+			m_Connection->Progress(-1, thisTick - startTick, "secs. while reading log...");
 			lastTick = thisTick;
 		}
 
-		m_Connection->Log().Debug() << line << unityplugin::Endl;
+		m_Connection->Log().Debug() << line << Endl;
 		if (EndsWith(line, "is not a working copy"))
 		{
 			NotifyOffline("Project is not in a subversion working folder", true);
@@ -767,7 +767,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 		if (!ppipe->ReadLine(line)) 
 			break; 
 		
-		m_Connection->Log().Debug() << line << unityplugin::Endl;
+		m_Connection->Log().Debug() << line << Endl;
 		Enforce<SvnException>(line.length() >= MIN_HEADER_LINE_LENGTH && line[0] == 'r',
 							  string("Invalid log header: ") + line);
 		
@@ -790,7 +790,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			if (!ppipe->ReadLine(line)) 
 				break;
 			
-			m_Connection->Log().Debug() << line << unityplugin::Endl;
+			m_Connection->Log().Debug() << line << Endl;
 			
 			// Read until blank line which delimits asset files
 			while (ppipe->ReadLine(line))
@@ -798,7 +798,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 				if (line.empty())
 					break;
 				
-				m_Connection->Log().Debug() << line << unityplugin::Endl;
+				m_Connection->Log().Debug() << line << Endl;
 
 				asset.Reset();
 				string::size_type i1 = line.find_first_not_of(' ');
@@ -866,14 +866,14 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			// Skip first line of message which is blank
 			if (!ppipe->ReadLine(line)) 
 				break;
-			m_Connection->Log().Debug() << line << unityplugin::Endl;
+			m_Connection->Log().Debug() << line << Endl;
 		}
 		
 		for (long i = 0; i < messageLineCount; i++)
 		{
 			if (!ppipe->ReadLine(line)) 
 				break;
-			m_Connection->Log().Debug() << line << unityplugin::Endl;
+			m_Connection->Log().Debug() << line << Endl;
 			entry.message += line + "\n";
 		}
 
@@ -920,11 +920,11 @@ void SvnTask::NotifyOffline(const std::string& reason, bool invalidWorkingCopy)
 	int i = 0;
 	while (disableCmds[i])
 	{
-		m_Connection->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		m_Connection->Command(string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
 
-	m_Connection->Pipe().Command(string("offline ") + reason, MAProtocol);
+	m_Connection->Command(string("offline ") + reason, MAProtocol);
 
 	g_LogCacheAssetsCount = 0;
 	g_LogCache.clear();
@@ -951,7 +951,7 @@ void SvnTask::NotifyOnline()
 	int i = 0;
 	while (enableCmds[i])
 	{
-		m_Connection->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		m_Connection->Command(string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
 
@@ -963,11 +963,11 @@ void SvnTask::NotifyOnline()
 	i = 0;
 	while (disableCmds[i])
 	{
-		m_Connection->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		m_Connection->Command(string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
 	m_IsOnline = true;
-	m_Connection->Pipe().Command("online");
+	m_Connection->Command("online");
 	g_LogCacheAssetsCount = 0;
 	g_LogCache.clear();
 }

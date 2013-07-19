@@ -35,8 +35,8 @@ private:
 typedef std::vector<Changelist> Changes;
 typedef std::vector<ChangelistRevision> ChangelistRevisions;
 
-struct UnityPipe;
-//UnityPipe& operator<<(UnityPipe& p, ChangelistRevision revision);
-UnityPipe& operator>>(UnityPipe& p, ChangelistRevision& revision);
-UnityPipe& operator<<(UnityPipe& p, const Changelist& changelist);
-UnityPipe& operator>>(UnityPipe& p, Changelist& changelist);
+struct Connection;
+//Connection& operator<<(Connection& p, ChangelistRevision revision);
+Connection& operator>>(Connection& p, ChangelistRevision& revision);
+Connection& operator<<(Connection& p, const Changelist& changelist);
+Connection& operator>>(Connection& p, Changelist& changelist);
