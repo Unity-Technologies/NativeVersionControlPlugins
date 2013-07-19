@@ -1,10 +1,12 @@
 c:pluginConfig pluginTraits
 --
-o1:4
+o1:6
 o8:requiresNetwork
 o8:enablesCheckout
 o8:enablesLocking
 o8:enablesRevertUnchanged
+o8:enablesChangelists
+o8:enablesGetLatestOnChangeSetSubset
 o1:4
 o1:vcPerforceUsername
 o8:Username
@@ -26,5 +28,29 @@ o8:Server
 o8:The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666
 o1:perforce
 o1:0
+o1:overlays
+o1:11
+o1:1
+o1:default
+o1:4
+o1:default
+o1:16
+o1:default
+o1:32
+o1:default
+o1:64
+o1:default
+o1:128
+o1:default
+o1:256
+o1:default
+o1:512
+o1:default
+o1:1024
+o1:default
+o1:2048
+o1:default
+o1:4096
+o1:default
 r1:end of response
 --

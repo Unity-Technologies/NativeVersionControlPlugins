@@ -1,5 +1,5 @@
-c:pluginConfig pluginVersions 1
+c:pluginConfig pluginVersions 2
 --
-o8:1
+o8:2
 r1:end of response
 --
