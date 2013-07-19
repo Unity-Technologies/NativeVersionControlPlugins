@@ -15,7 +15,7 @@ public:
 	bool IsConnected() const;
 
 	// Read a command from unity
-	UnityCommand ReadCommand(std::vector<std::string>& args);
+	UnityCommand ReadCommand(CommandArgs& args);
 
 	// Get the log stream
 	unityplugin::LogStream& Log();

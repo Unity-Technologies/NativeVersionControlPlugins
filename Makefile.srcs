@@ -6,7 +6,6 @@ COMMON_SRCS = ./Common/Changes.cpp \
 	      ./Common/Status.cpp \
 	      ./Common/UnityConnection.cpp \
 	      ./Common/Command.cpp \
-	      ./Common/Task.cpp \
 		  ./Common/Log.cpp \
 		  ./Common/POpen.cpp
 
@@ -19,7 +18,6 @@ COMMON_INCLS = ./Common/Changes.h \
 	       ./Common/Status.h \
 		   ./Common/UnityConnection.h \
 	       ./Common/Command.h \
-	       ./Common/Task.h \
 		   ./Common/Dispatch.h \
 		   ./Common/Log.h \
 		   ./Common/POpen.h

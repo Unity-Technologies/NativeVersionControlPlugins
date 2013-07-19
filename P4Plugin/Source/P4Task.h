@@ -1,7 +1,7 @@
 #pragma once
 #include "clientapi.h"
 #include "Status.h"
-#include "Task.h"
+#include "UnityConnection.h"
 
 #include <stdio.h>
 
@@ -78,7 +78,7 @@ private:
 	// Command execution
 	std::string m_CommandOutput;
 
-	Task* m_Task;
+	UnityConnection* m_Connection;
 
 	friend class P4Command;
 	static P4Task* s_Singleton;

@@ -12,6 +12,7 @@ public:
 	P4ConfigCommand(const char* name) : P4Command(name) {}
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
+		//ConfigRequest req(args, task.
 		if (args.size() < 2)
 		{
 			string msg = "Perforce plugin got invalid config setting :"; 
@@ -37,7 +38,7 @@ public:
 
 		// This command actually handles several commands all 
 		// concerning connecting to the perforce server
-		if (key == "vcPerforceUsername")
+		if (key == "vcPerforceUsername") 
 		{
 			task.SetP4User(value);
 		}

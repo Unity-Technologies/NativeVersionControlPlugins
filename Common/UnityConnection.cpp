@@ -20,8 +20,19 @@ UnityPipe* UnityConnection::Connect()
 }
 
 // read a command from stdin
-UnityCommand UnityConnection::ReadCommand(vector<string>& args)
+UnityCommand UnityConnection::ReadCommand(CommandArgs& args)
 {
+	try
+	{
+		if (!IsConnected())
+			Connect();
+	}
+	catch (exception& e)
+	{
+		Log().Notice() << "While reading command: " << e.what() << Endl;
+		return UCOM_Invalid;
+	}
+	
 	args.clear();
     string read;
 	Pipe().ReadLine(read);
@@ -29,8 +40,12 @@ UnityCommand UnityConnection::ReadCommand(vector<string>& args)
 	if (read.empty())
 	{
 		// broken pipe -> error.
-		Enforce<CommandException>(Pipe().IsEOF(), UCOM_Invalid, "empty command");
-
+		if (!Pipe().IsEOF())
+		{
+			Pipe().ErrorLine("Read empty command from connection");
+			return UCOM_Invalid;
+		}
+			
 		Log().Info() << "End of pipe" << Endl;
 		return UCOM_Shutdown;
 	}
@@ -43,14 +58,18 @@ UnityCommand UnityConnection::ReadCommand(vector<string>& args)
 	}
 
 	if (!stopCounter)
-		throw CommandException(UCOM_Invalid, "too many bogus lines");
-	
+	{
+		Pipe().ErrorLine("Too many bogus lines");
+		return UCOM_Invalid;
+	}
+
 	string command = read.substr(2);
 
 	if (Tokenize(args, command) == 0)
-		throw CommandException(UCOM_Invalid, 
-							   string("invalid formatted - ") + command);
-
+	{
+		Pipe().ErrorLine(string("invalid formatted - '") + command + "'");
+		return UCOM_Invalid;
+	}
 	return StringToUnityCommand(args[0].c_str());
 }
 

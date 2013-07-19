@@ -1,8 +1,20 @@
 #pragma once
 #include "Base.h"
+#include "Log.h"
+#include "Utility.h"
+
 #include <set>
 #include <algorithm>
 #include <iterator>
+
+enum ConfigKey
+{
+	CK_Traits,
+	CK_Versions,
+	CK_AssetsPath,
+	CK_LogLevel,
+	CK_Unknown,
+};
 
 class ConfigRequest : public BaseRequest
 {
@@ -13,7 +25,7 @@ public:
 
 		if (args.size() < 2)
 		{
-			std::string msg = "Subversion plugin got invalid config setting :";
+			std::string msg = "Plugin got invalid config setting :";
 			for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i) {
 				msg += " ";
 				msg += *i;
@@ -21,15 +33,45 @@ public:
 			upipe.WarnLine(msg, MAConfig);
 			upipe.EndResponse();
 			invalid = true;
+			return;
 		}
 		
-		key = args[1];
+		keyStr = args[1];
+		key = CK_Unknown;
+		
+		if (keyStr == "pluginTraits")
+			key = CK_Traits;
+		else if (keyStr == "pluginVersions")
+			key = CK_Versions;
+		else if (keyStr == "assetsPath")
+			key = CK_AssetsPath;
+		else if (keyStr == "vcSharedLogLevel")
+			key = CK_LogLevel;
+		
 		values = std::vector<std::string>(args.begin()+2, args.end());
 	}
+
+	unityplugin::LogLevel  GetLogLevel() const 
+	{
+		std::string val = Values();
+		unityplugin::LogLevel level = unityplugin::LOG_DEBUG;
+		if (val == "info")
+			level = unityplugin::LOG_INFO;
+		else if (val == "notice")
+			level = unityplugin::LOG_NOTICE;
+		else if (val == "fatal")
+			level = unityplugin::LOG_FATAL;
+		return level;
+	}
+
+	std::string Values() const 
+	{
+		return Join(values, " ");
+	}
 	
-	std::string key;
+    ConfigKey key;
+	std::string keyStr;
 	std::vector<std::string> values;
-	
 };
 
 class ConfigResponse : public BaseResponse
@@ -45,9 +87,9 @@ public:
 
 	struct PluginTrait 
 	{
-		std::string id; // e.g. "svnUsername"
+		std::string id; // e.g. "vcSubversionUsername"
 		std::string label; // e.g. "Username"
-		std::string description; // e.g. "The subversion user name"
+		std::string description; // e.g. "The user name"
 		std::string defaultValue; // e.g. "anonymous"
 		int flags;
 	};
@@ -73,13 +115,16 @@ public:
 
 		UnityPipe& upipe = request.conn.Pipe();
 		
-		if (request.key == "pluginVersions")
+		switch (request.key)
+		{
+		case CK_Versions:
 		{
 			int v = SelectVersion(request.values);
 			upipe.DataLine(v, MAConfig);
 			upipe.Log().Info() << "Selected plugin protocol version " << v << unityplugin::Endl;
+			break;
 		} 
-		else if (request.key == "pluginTraits")
+		case CK_Traits:
 		{
 			// First mandatory traits
 			int count = 
@@ -111,10 +156,17 @@ public:
 				upipe.DataLine(i->defaultValue);
 				upipe.DataLine(i->flags);
 			}
+			break;
+		}
 		}
 		upipe.EndResponse();
 	}
 	
+	void AddSupportedVersion(int v)
+	{
+		supportedVersions.insert(v);
+	}
+
 	bool requiresNetwork;
 	bool enablesCheckout;
 	bool enablesLocking;

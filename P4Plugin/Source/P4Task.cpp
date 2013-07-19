@@ -154,7 +154,7 @@ const std::string& P4Task::GetAssetsPath() const
 
 int P4Task::Run()
 {
-	m_Task = new Task("./Library/p4plugin.log");
+	m_Connection = new UnityConnection("./Library/p4plugin.log");
 
 
 	try 
@@ -164,11 +164,11 @@ int P4Task::Run()
 		
 		for ( ;; )
 		{
-			cmd = m_Task->ReadCommand(args);
+			cmd = m_Connection->ReadCommand(args);
 			
 			// Make it convenient to get the pipe even though the commands
 			// are callback based.
-			P4Command::s_UnityPipe = &m_Task->Pipe();
+			P4Command::s_UnityPipe = &m_Connection->Pipe();
 			
 			if (cmd == UCOM_Invalid)
 				return 1; // error
@@ -180,7 +180,7 @@ int P4Task::Run()
 	} 
 	catch (exception& e)
 	{
-		m_Task->Log().Fatal() << "Unhandled exception: " << e.what() << unityplugin::Endl;
+		m_Connection->Log().Fatal() << "Unhandled exception: " << e.what() << unityplugin::Endl;
 	}
 	return 1;
 }
@@ -190,8 +190,8 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
 	// Simple hack to test custom commands
 	if (cmd == UCOM_CustomCommand)
 	{
-		m_Task->Pipe().WarnLine(string("You called the custom command ") + args[1]);
-		m_Task->Pipe().EndResponse();
+		m_Connection->Pipe().WarnLine(string("You called the custom command ") + args[1]);
+		m_Connection->Pipe().EndResponse();
 		return true;
 	}
 	
@@ -251,7 +251,7 @@ bool P4Task::Connect()
 	if (status.size())
 	{
 		if (P4Command::HandleOnlineStatusOnError(&m_Error))
-			SendToPipe(m_Task->Pipe(), status, MAProtocol);
+			SendToPipe(m_Connection->Pipe(), status, MAProtocol);
 	}
 
 	if( m_Error.Test() )
@@ -282,10 +282,10 @@ void P4Task::NotifyOffline(const string& reason)
 	int i = 0;
 	while (disableCmds[i])
 	{
-		s_Singleton->m_Task->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		s_Singleton->m_Connection->Pipe().Command(string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
-	s_Singleton->m_Task->Pipe().Command(string("offline ") + reason, MAProtocol);
+	s_Singleton->m_Connection->Pipe().Command(string("offline ") + reason, MAProtocol);
 }
 
 void P4Task::NotifyOnline()
@@ -303,11 +303,11 @@ void P4Task::NotifyOnline()
 	if (s_Singleton->m_IsOnline)
 		return;
 
-	s_Singleton->m_Task->Pipe().Command("online", MAProtocol);
+	s_Singleton->m_Connection->Pipe().Command("online", MAProtocol);
 	int i = 0;
 	while (enableCmds[i])
 	{
-		s_Singleton->m_Task->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		s_Singleton->m_Connection->Pipe().Command(string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
 	s_Singleton->m_IsOnline = true;
@@ -334,12 +334,12 @@ bool P4Task::Login()
 
 	if (HasUnicodeNeededError(p4c->GetStatus()))
 	{
-		m_Task->Pipe().InfoLine("Enabling unicode mode");
+		m_Connection->Pipe().InfoLine("Enabling unicode mode");
 		EnableUTF8Mode();
 		loggedIn = p4c->Run(*this, args);
 	}
 
-	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
+	SendToPipe(m_Connection->Pipe(), p4c->GetStatus(), MAProtocol);
 	
 	if (loggedIn)
 	{
@@ -348,7 +348,7 @@ bool P4Task::Login()
 
 	if (GetP4Password().empty())
 	{
-		m_Task->Log().Debug() << "Empty password -> skipping login" << unityplugin::Endl;
+		m_Connection->Log().Debug() << "Empty password -> skipping login" << unityplugin::Endl;
 		return true;
 	}
 
@@ -363,7 +363,7 @@ bool P4Task::Login()
 		loggedIn = p4c->Run(*this, args);
 	}
 
-	SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
+	SendToPipe(m_Connection->Pipe(), p4c->GetStatus(), MAProtocol);
 
 	if (!loggedIn)
 	{
@@ -378,7 +378,7 @@ bool P4Task::Login()
 		vector<string> args;
 		args.push_back("spec");
 		bool res = p4c->Run(*this, args); // fetched root info
-		SendToPipe(m_Task->Pipe(), p4c->GetStatus(), MAProtocol);
+		SendToPipe(m_Connection->Pipe(), p4c->GetStatus(), MAProtocol);
 		if (!res)
 			NotifyOffline("Couldn't fetch client spec file from perforce server");
 		return res;
@@ -413,7 +413,7 @@ bool P4Task::Disconnect()
 	// NotifyOffline("Disconnected");
 
 	VCSStatus status = errorToVCSStatus(m_Error);
-	SendToPipe(m_Task->Pipe(), status, MAProtocol);
+	SendToPipe(m_Connection->Pipe(), status, MAProtocol);
 
 	if( m_Error.Test() )
 	    return false;
@@ -431,8 +431,8 @@ bool P4Task::IsConnected()
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
 	
-	m_Task->Log().Info() << command << unityplugin::Endl;
-	m_Task->Pipe().VerboseLine(command);
+	m_Connection->Log().Info() << command << unityplugin::Endl;
+	m_Connection->Pipe().VerboseLine(command);
 
 	// Force connection if this hasn't been set-up already.
 	// That is unless the command explicitely disallows connect.
