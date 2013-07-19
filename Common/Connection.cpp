@@ -117,7 +117,7 @@ Connection& Connection::EndList()
 
 Connection& Connection::EndResponse()
 {
-	WriteLine("r1:end of response\n", m_Log.Debug());
+	WriteLine("r1:end of response", m_Log.Debug());
 	m_Log.Debug() << "\n--------------------------\n";
 	m_Log.Flush();
 	return *this;
