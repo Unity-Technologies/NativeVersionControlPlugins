@@ -92,18 +92,22 @@ public:
 		}
 		else if (key == "pluginTraits")
 		{
-			Pipe().DataLine("4");
+			// We have 4 flags set
+			Pipe().DataLine("6");
 			Pipe().DataLine("requiresNetwork", MAConfig); 			
 			Pipe().DataLine("enablesCheckout", MAConfig);
 			Pipe().DataLine("enablesLocking", MAConfig);
 			Pipe().DataLine("enablesRevertUnchanged", MAConfig);
-		
+			Pipe().DataLine("enablesChangelists", MAConfig);
+			Pipe().DataLine("enablesGetLatestOnChangeSetSubset", MAConfig);
+
+			// We provide 4 configuration fields for the GUI to display
 			Pipe().DataLine("4");
-			Pipe().DataLine("vcPerforceUsername");
-			Pipe().DataLine("Username", MAConfig);
-			Pipe().DataLine("The perforce user name", MAConfig);
-			Pipe().DataLine("");
-			Pipe().DataLine("1"); // required field
+			Pipe().DataLine("vcPerforceUsername");               // key
+			Pipe().DataLine("Username", MAConfig);               // label
+			Pipe().DataLine("The perforce user name", MAConfig); // description
+			Pipe().DataLine("");                                 // default
+			Pipe().DataLine("1");                                // 1 == required field, 2 == password field
 
 			Pipe().DataLine("vcPerforcePassword");
 			Pipe().DataLine("Password", MAConfig);
@@ -122,7 +126,33 @@ public:
 			Pipe().DataLine("The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666", MAConfig);
 			Pipe().DataLine("perforce");
 			Pipe().DataLine("0"); // 
-		} 
+
+			// We have 11 custom overlay icons
+			Pipe().DataLine("overlays");
+			Pipe().DataLine("11");
+			Pipe().DataLine(IntToString(kLocal)); // for this state
+			Pipe().DataLine("default");           // use this path. "default" and "blank" paths can be used when you have not custom overlays.
+			Pipe().DataLine(IntToString(kOutOfSync));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kCheckedOutLocal));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kCheckedOutRemote));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kDeletedLocal));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kDeletedRemote));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kAddedLocal));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kAddedRemote));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kConflicted));
+			Pipe().DataLine("default");
+			Pipe().DataLine(IntToString(kLockedLocal));
+			Pipe().DataLine("default");
+		    Pipe().DataLine(IntToString(kLockedRemote));
+			Pipe().DataLine("default");
+		}
 		else if (key == "end")
 		{
 			task.Logout();
@@ -142,7 +172,7 @@ public:
 		set<int> unitySupportedVersions;
 		set<int> pluginSupportedVersions;
 		
-		pluginSupportedVersions.insert(1);
+		pluginSupportedVersions.insert(2);
 		
 		// Read supported versions from unity
 		CommandArgs::const_iterator i = args.begin();
