@@ -61,9 +61,6 @@ void Pipe::Flush()
 Pipe& Pipe::Write(const string& str)
 {
 #if defined(_WINDOWS)
-	stringstream ss;
-	ss << v;
-	string str = ss.str();
 	const CHAR* buf = str.c_str(); 
 	size_t toWrite = str.length();
 	DWORD written;

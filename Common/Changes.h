@@ -35,7 +35,7 @@ private:
 typedef std::vector<Changelist> Changes;
 typedef std::vector<ChangelistRevision> ChangelistRevisions;
 
-struct Connection;
+class Connection;
 //Connection& operator<<(Connection& p, ChangelistRevision revision);
 Connection& operator>>(Connection& p, ChangelistRevision& revision);
 Connection& operator<<(Connection& p, const Changelist& changelist);
