@@ -31,9 +31,9 @@ public:
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
-		string rootPathWildcard = TrimEnd(TrimEnd(task.GetAssetsPath(), '/'), '\\') + "/...";
+		string rootPathWildcard = TrimEnd(TrimEnd(task.GetProjectPath(), '/'), '\\') + "/...";
 		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" \"") + rootPathWildcard + "\"";
-				
+		
 		Conn().BeginList();
 		
 		if (!task.CommandRun(cmd, this))

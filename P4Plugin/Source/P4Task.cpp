@@ -140,16 +140,19 @@ void P4Task::SetP4Root(const string& r)
 	m_Root = r; 
 }
 
-
-void P4Task::SetAssetsPath(const std::string& p)
+void P4Task::SetProjectPath(const std::string& p)
 {
-	m_AssetsPathConfig = p;
+	if (p != m_ProjectPathConfig)
+	{
+		m_ProjectPathConfig = p;
+		ChangeCWD(p);
+	}
 	m_IsOnline = false;
 }
 
-const std::string& P4Task::GetAssetsPath() const
+const std::string& P4Task::GetProjectPath() const
 {
-  return m_AssetsPathConfig;
+  return m_ProjectPathConfig;
 }
 
 int P4Task::Run()

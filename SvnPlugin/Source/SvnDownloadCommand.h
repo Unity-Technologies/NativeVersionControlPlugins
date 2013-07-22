@@ -114,7 +114,7 @@ public:
 				base.SetRevision(line.substr(i+2)); 
 				
 				// strip field name part to get filename
-				base.SetPath(task.GetAssetsPath() + "/" + line.substr(29)); 
+				base.SetPath(task.GetProjectPath() + "/Assets/" + line.substr(29)); 
 			}
 			else if (StartsWith(line, "Conflict Previous Working File:"))
 			{
@@ -122,7 +122,7 @@ public:
 				std::string::size_type i = line.rfind('.');
 				
 				// strip field name part to get filename
-				mine.SetPath(task.GetAssetsPath() + "/" + line.substr(32)); 
+				mine.SetPath(task.GetProjectPath() + "/Assets/" + line.substr(32)); 
 			}
 			else if (StartsWith(line, "Conflict Current Base File:"))
 			{
@@ -133,7 +133,7 @@ public:
 					conflict.SetRevision(line.substr(i+2)); 
 					
 					// strip field name part to get filename
-					conflict.SetPath(task.GetAssetsPath() + "/" + line.substr(28)); 
+					conflict.SetPath(task.GetProjectPath() + "/Assets/" + line.substr(28)); 
 			}
 		}
 	}

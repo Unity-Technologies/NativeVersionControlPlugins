@@ -11,6 +11,7 @@ bool CopyAFile(const std::string& fromPath, const std::string& toPath, bool crea
 bool MoveAFile(const std::string& fromPath, const std::string& toPath);
 bool IsDirectory(const std::string& path);
 bool PathExists(const std::string& path);
+bool ChangeCWD(const std::string& path);
 
 #if WIN32
 #include "windows.h"

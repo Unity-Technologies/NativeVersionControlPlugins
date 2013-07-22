@@ -2,7 +2,7 @@ c:pluginConfig vcSharedLogLevel verbose
 --
 r1:end of response
 --
-c:pluginConfig assetsPath <absroot>
+c:pluginConfig projectPath <absroot>
 --
 r1:end of response
 --

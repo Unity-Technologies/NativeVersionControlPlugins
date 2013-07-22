@@ -133,11 +133,12 @@ std::string SvnTask::GetCredentials() const
 	return c;
 }
 
-void SvnTask::SetAssetsPath(const string& p)
+void SvnTask::SetProjectPath(const string& p)
 {
-	if (m_AssetsPath != p)
+	if (m_ProjectPath != p)
 	{
-		m_AssetsPath = p;
+		m_ProjectPath = p;
+		ChangeCWD(p);
 		g_LogCacheAssetsCount = 0;
 		g_LogCache.clear();
 		g_StatusNextCacheUpdateTime = time(NULL);
@@ -145,14 +146,9 @@ void SvnTask::SetAssetsPath(const string& p)
 	m_IsOnline = false;		
 }
 
-const string& SvnTask::GetAssetsPath() const
+const string& SvnTask::GetProjectPath() const
 {
-	return m_AssetsPath;
-}
-
-string SvnTask::GetProjectPath() const
-{
-	return m_AssetsPath.substr(0, m_AssetsPath.rfind('/'));
+	return m_ProjectPath;
 }
 
 int SvnTask::Run()

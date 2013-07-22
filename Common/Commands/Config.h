@@ -11,7 +11,7 @@ enum ConfigKey
 {
 	CK_Traits,
 	CK_Versions,
-	CK_AssetsPath,
+	CK_ProjectPath,
 	CK_LogLevel,
 	CK_Unknown,
 };
@@ -41,8 +41,8 @@ public:
 			key = CK_Traits;
 		else if (keyStr == "pluginVersions")
 			key = CK_Versions;
-		else if (keyStr == "assetsPath")
-			key = CK_AssetsPath;
+		else if (keyStr == "projectPath")
+			key = CK_ProjectPath;
 		else if (keyStr == "vcSharedLogLevel")
 			key = CK_LogLevel;
 		

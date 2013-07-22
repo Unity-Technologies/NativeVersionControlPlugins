@@ -28,6 +28,7 @@ static string ParentDirectory(const string& path)
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #include "shlwapi.h"
+#include <direct.h>
 
 static inline void UTF8ToWide( const char* utf8, wchar_t* outBuffer, int outBufferSize )
 {
@@ -117,6 +118,13 @@ bool PathExists(const std::string& path)
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	return PathFileExistsW(widePath) == TRUE;	
+}
+
+bool ChangeCWD(const std::string& path)
+{
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
+	return _wchdir(widePath) != -1;	
 }
 
 static bool RemoveReadOnlyW(LPCWSTR path)
@@ -388,6 +396,11 @@ bool DeleteRecursive(const string& path)
 bool PathExists(const std::string& path)
 {
 	return access(path.c_str(), F_OK) == 0;
+}
+
+bool ChangeCWD(const std::string& path)
+{
+	return chdir(path.c_str()) != -1;
 }
 
 static bool fcopy(FILE *f1, FILE *f2)

@@ -23,9 +23,8 @@ public:
 	void SetSvnExecutable(const std::string& e);
 	const std::string& GetSvnExecutable() const;
 
-	void SetAssetsPath(const std::string& p);
-	const std::string& GetAssetsPath() const;
-	std::string GetProjectPath() const;
+	void SetProjectPath(const std::string& p);
+	const std::string& GetProjectPath() const;
 
 	int Run();
 
@@ -49,7 +48,7 @@ private:
 	bool HandleConnectErrorLine(const std::string& line);
 
 	std::string m_SvnPath;
-	std::string m_AssetsPath;
+	std::string m_ProjectPath;
 
 	std::string m_RepositoryConfig;
 	std::string m_UserConfig;

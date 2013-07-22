@@ -27,8 +27,8 @@ public:
 	const std::string& GetP4Password() const;
 	void SetP4Root(const std::string& r);
 	const std::string& GetP4Root() const;
-	void SetAssetsPath(const std::string& p);
-	const std::string& GetAssetsPath() const;
+	void SetProjectPath(const std::string& p);
+	const std::string& GetProjectPath() const;
 	
 	int Run();
 	bool IsConnected();
@@ -73,7 +73,7 @@ private:
 	std::string m_UserConfig;
 	std::string m_ClientConfig;
 	std::string m_PasswordConfig;
-	std::string m_AssetsPathConfig;
+	std::string m_ProjectPathConfig;
 	
 	// Command execution
 	std::string m_CommandOutput;

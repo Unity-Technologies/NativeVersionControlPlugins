@@ -25,9 +25,9 @@ public:
 			resp.AddSupportedVersion(1);
 			break;
 
-		case CK_AssetsPath:
-			req.conn.Log().Info() << "Set assetsPath to " << val << Endl;
-			task.SetAssetsPath(val);
+		case CK_ProjectPath:
+			req.conn.Log().Info() << "Set projectPath to " << val << Endl;
+			task.SetProjectPath(val);
 			break;
 
 		case CK_LogLevel:

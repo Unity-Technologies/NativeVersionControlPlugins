@@ -46,17 +46,17 @@ public:
 		{
 			task.SetP4Client(value);
 		}
-		else if (key == "assetsPath")
+		else if (key == "projectPath")
 		{
 			// The asset path is just the rest of the config commands joined
-			string assetPath;
+			string projectPath;
 			for (size_t i = 2; i < args.size(); ++i)
 			{
-				assetPath += args[i];
-				assetPath += " ";
+				projectPath += args[i];
+				projectPath += " ";
 			}
-			task.SetAssetsPath(TrimEnd(assetPath));
-			Conn().Log().Info() << "Set assetPath to" << assetPath << Endl;
+			task.SetProjectPath(TrimEnd(projectPath));
+			Conn().Log().Info() << "Set projectPath to" << projectPath << Endl;
 		}
 		else if (key == "vcSharedLogLevel")
 		{
