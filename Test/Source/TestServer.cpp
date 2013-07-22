@@ -250,10 +250,11 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			{
 				string incfile = command.substr(9, command.length() - 1 - 9);
 				if (!newbaseline)
-					cout << "{" << endl;
+					cout << endl;
 				bool orig_newbaseline = newbaseline;
 				newbaseline = false;
-				int res = runScript(p, incfile, indent + "  ");
+				string subIndent = indent + "  ";
+				int res = runScript(p, incfile, subIndent);
 				newbaseline = orig_newbaseline;
 				if (res)
 				{
@@ -262,7 +263,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 					return res;
 				}
 				if (!newbaseline)
-					cout << "} ";
+					cout << subIndent;
 				continue;
 			}
 
