@@ -1,4 +1,5 @@
 use File::Path;
+use Cwd;
 
 if ($ENV{'TARGET'} eq "win32")
 {
@@ -19,7 +20,7 @@ sub PerforceIntegrationTests
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "localhost:1667";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
-	$ENV{'P4CLIENTROOTABS'} = $ENV{'PWD'} . "/" . $ENV{'P4CLIENTROOT'};
+	$ENV{'P4CLIENTROOTABS'} = getcwd() . "/" . $ENV{'P4CLIENTROOT'};
 	$ENV{'P4CLIENT'} = "testclient";
 	$ENV{'P4CHARSET'} = 'utf8';
 	$ENV{'P4PASSWD'} = 'secret';
