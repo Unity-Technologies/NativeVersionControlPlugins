@@ -19,7 +19,8 @@
     <ClCompile Include="..\Common\POpen.cpp" />
     <ClCompile Include="..\Common\Status.cpp" />
     <ClCompile Include="..\Common\Task.cpp" />
-    <ClCompile Include="..\Common\UnityConnection.cpp" />
+    <ClCompile Include="..\Common\Connection.cpp" />
+    <ClCompile Include="..\Common\Pipe.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="..\Common\VersionedAsset.cpp" />
     <ClCompile Include="Source\P4AddCommand.cpp" />
@@ -78,8 +79,8 @@
     <ClInclude Include="..\Common\POpen.h" />
     <ClInclude Include="..\Common\Status.h" />
     <ClInclude Include="..\Common\Task.h" />
-    <ClInclude Include="..\Common\UnityConnection.h" />
-    <ClInclude Include="..\Common\UnityPipe.h" />
+    <ClInclude Include="..\Common\Connection.h" />
+    <ClInclude Include="..\Common\Pipe.h" />
     <ClInclude Include="..\Common\Utility.h" />
     <ClInclude Include="..\Common\VersionedAsset.h" />
     <ClInclude Include="Source\P4Command.h" />
