@@ -190,6 +190,7 @@ Connection& Connection::WritePrefix(const char* prefix, MessageArea ma, LogWrite
 	Write(prefix, log);
 	Write(ma, log);
 	Write(":", log);
+	return *this;
 }
 
 
