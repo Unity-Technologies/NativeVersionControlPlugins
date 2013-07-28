@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# PlasticSCMPlugin is the PlasticSCM's Unity plugin launcher script for Mac OS provided by Codice Software S.L.
+#
+
+EXE_TO_CHECK="PlasticSCMUnityPlugin"
+EXE_DEFAULT_PATH="/Applications/PlasticSCM/client/PlasticSCMUnityPlugin"
+EXE_FULL_PATH=""
+RETVAL=0
+
+start() {
+    startPlugin
+    RETVAL=$?
+}
+
+# Start PlasticSCM Unity Plugin
+startPlugin() {
+
+    # Check if process file exists
+    EXE_FULL_PATH=$EXE_TO_CHECK
+    checkExe $EXE_FULL_PATH
+    exec_file_exists=$?
+
+    # fallback to the default install path in case of error
+    if [ $exec_file_exists -ne 0 ]
+    then
+        checkPath $EXE_DEFAULT_PATH
+        exec_file_exists=$?
+        if [ $exec_file_exists -eq 0 ]
+        then
+            EXE_FULL_PATH=$EXE_DEFAULT_PATH
+        fi
+    fi
+    
+    if [ $exec_file_exists -eq 0 ]
+    then
+        exec $EXE_FULL_PATH
+        RETVAL=0
+        return
+    fi
+
+    notifyPlasticSCMNotInstalled
+    RETVAL=1
+    return
+}
+
+# Check whether plugin file exists
+checkExe() {
+    which_retval=1
+    exe_path=`which $1`
+    which_retval=$?
+    if [ $which_retval -eq 0 ]
+    then
+        EXE_FULL_PATH=$exe_path
+    fi
+    return $which_retval
+}
+
+# Check path exists
+checkPath() {
+    retval=1
+    if [ -f $1 ]; then
+        retval=0
+    fi
+    return $retval
+}
+
+# Notify error to Unity
+notifyPlasticSCMNotInstalled()  {
+    echo "e1:PlasticSCM not installed. Please visit http://www.plasticscm.com to download PlasticSCM or contact support team at: support@codicesoftware.com"
+    echo "r1:end of response"
+}
+
+# Starting point
+start
+exit $RETVAL
