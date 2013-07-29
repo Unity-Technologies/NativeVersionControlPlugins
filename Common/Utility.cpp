@@ -44,10 +44,17 @@ size_t Tokenize(std::vector<std::string>& result,
 
 string Join(const vector<string>& items, const string& delim, const string& surround)
 {
+	return Join(items.begin(), items.end(), delim, surround);
+}
+
+string Join(const vector<string>::const_iterator i1, 
+			const vector<string>::const_iterator i2,
+			const string& delim, const string& surround)
+{
 	string result;
-	for (vector<string>::const_iterator i = items.begin(); i != items.end(); ++i)
+	for (vector<string>::const_iterator i = i1; i != i2; ++i)
 	{
-		if (i != items.begin())
+		if (i != i1)
 			result += delim;
 		result += surround + *i + surround;
 	}

@@ -9,6 +9,9 @@
 std::string IntToString (int i);
 size_t Tokenize(std::vector<std::string>& result, const std::string& str, 
 				const std::string& delimiters = " ");
+std::string Join(const std::vector<std::string>::const_iterator i1, 
+				 const std::vector<std::string>::const_iterator i2,
+				 const std::string& delim = ", ", const std::string& surround = "");
 std::string Join(const std::vector<std::string>& items, const std::string& delim = ", ", const std::string& surround = "");
 std::string Replace(const std::string& str, const std::string& lookFor, const std::string& replaceWith);
 std::string TrimStart(const std::string& str, char c = ' ');

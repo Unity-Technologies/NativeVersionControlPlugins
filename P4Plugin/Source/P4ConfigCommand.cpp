@@ -26,7 +26,7 @@ public:
 		}
 		
 		string key = args[1];
-		string value = args.size() > 2 ? args[2] : string();
+		string value = Join(args.begin() + 2, args.end(), " ");
 		
 		ClearStatus();
 		
@@ -48,15 +48,8 @@ public:
 		}
 		else if (key == "projectPath")
 		{
-			// The asset path is just the rest of the config commands joined
-			string projectPath;
-			for (size_t i = 2; i < args.size(); ++i)
-			{
-				projectPath += args[i];
-				projectPath += " ";
-			}
-			task.SetProjectPath(TrimEnd(projectPath));
-			Conn().Log().Info() << "Set projectPath to" << projectPath << Endl;
+			task.SetProjectPath(TrimEnd(value));
+			Conn().Log().Info() << "Set projectPath to" << value << Endl;
 		}
 		else if (key == "vcSharedLogLevel")
 		{
