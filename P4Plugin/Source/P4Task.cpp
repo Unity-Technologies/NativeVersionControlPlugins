@@ -175,6 +175,7 @@ void P4Task::SetProjectPath(const std::string& p)
 	{
 		m_ProjectPathConfig = p;
 		ChangeCWD(p);
+		m_Client.SetCwd(p.c_str());
 	}
 	m_IsOnline = false;
 }
@@ -300,6 +301,9 @@ bool P4Task::Connect()
 	    return false;
 
 	m_P4Connect = true;
+
+	m_Client.SetVar("enableStreams");
+	m_Client.SetProtocol("enableStreams", "");
 
 	// We enforce ticket based authentication since that
 	// is supported on every security level.
