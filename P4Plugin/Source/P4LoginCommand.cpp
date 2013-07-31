@@ -27,7 +27,7 @@ public:
 		if (!task.CommandRun(cmd, this) && !m_CheckingForLoggedIn)
 		{
 			string errorMessage = GetStatusMessage();			
-			Conn().Log().Notice() << "ERROR: " << errorMessage << Endl;
+			Conn().Log().Fatal() << errorMessage << Endl;
 		}
 		
 		if (m_CheckingForLoggedIn)
@@ -67,17 +67,6 @@ public:
 	{
 		if ( err == 0 )
 			return;
-
-		StrBuf buf;
-		err->Fmt(&buf);
-		string value(buf.Text());
-
-		if (value.find("Unicode server permits only unicode enabled clients") != string::npos)
-		{
-			VCSStatus s = errorToVCSStatus(*err);
-			GetStatus().insert(s.begin(), s.end());
-			return; // Do not propegate. It will be handled by P4Task 
-		}
 
 		// Suppress errors when just checking for logged in state
 		if (m_CheckingForLoggedIn)

@@ -7,8 +7,8 @@ enum LogLevel
 {
 	LOG_DEBUG,  // protocol messages
 	LOG_INFO,   // commands
-	LOG_NOTICE, // warnings and errors
-	LOG_FATAL,  // exceptions
+	LOG_NOTICE, // warnings 
+	LOG_FATAL,  // errors and exceptions
 };
 
 

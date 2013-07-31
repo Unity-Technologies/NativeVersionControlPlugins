@@ -25,6 +25,32 @@
 
 using namespace std;
 
+// Clean up messages to make it look nicer in Unity
+// Return true is a line was removed
+static bool ReplaceLineWithPrefix(string& m, const string& prefix, const string& replaceWith)
+{
+	if (!StartsWith(m, prefix))
+		return false;
+	string::size_type i = m.find('\n');
+	if (i == string::npos)
+		return false;
+	m.replace(0, i+1, replaceWith);
+	return true;
+}
+
+static bool RemoveLineWithPrefix(string& m, const string& prefix)
+{
+	return ReplaceLineWithPrefix(m, prefix, "");
+}
+
+static void CleanupErrorMessage(string& m)
+{
+	if (RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c")) ;
+	else if (ReplaceLineWithPrefix(m, 
+								   "Merges still pending -- use 'resolve' to merge files.",
+								   "Merges still pending. Please resolve and resubmit.")) ;
+}
+
 VCSStatus errorToVCSStatus(Error& e)
 {
 	VCSSeverity sev = VCSSEV_Error;
@@ -36,10 +62,10 @@ VCSStatus errorToVCSStatus(Error& e)
 		case E_INFO: // information, not necessarily an error
 			sev = VCSSEV_Info;
 			break;
-		case E_WARN: // a minor error occurred
-		case E_FAILED: // the command was used incorrectly
+		case E_WARN:   // a minor error occurred
 			sev = VCSSEV_Warn;
 			break;
+		case E_FAILED: // the command was used incorrectly
 		case E_FATAL:  // fatal error, the command can't be processed
 			sev = VCSSEV_Error;
 			break;
@@ -48,12 +74,15 @@ VCSStatus errorToVCSStatus(Error& e)
 	}
 
 	if (e.CheckId(MsgClient::ClobberFile)) // TODO: Check if clobberfile is severity failed and remove if so
-		sev = VCSSEV_Warn;
+		sev = VCSSEV_Error;
 		
 	StrBuf msg;
 	e.Fmt(&msg);
 	VCSStatus status;
 	string msgStr = msg.Text();
+
+	CleanupErrorMessage(msgStr);
+	
 	if (!msgStr.empty() || sev != VCSSEV_OK)
 		status.insert(VCSStatusItem(sev, msgStr));
 	return status;
@@ -222,7 +251,7 @@ bool P4Task::Connect()
 	// if not possible
     if ( m_P4Connect && !Disconnect()) return false;
 
-    m_Error.Clear();
+    Error err;
 	m_Client.SetProg( "Unity" );
     m_Client.SetVersion( "1.0" );
 
@@ -237,27 +266,37 @@ bool P4Task::Connect()
 		m_Client.SetPassword(m_PasswordConfig.c_str());
 	m_Client.SetClient(m_ClientConfig.c_str());
 	
-	m_Client.Init( &m_Error );
+	m_Client.Init( &err );
 	
-	VCSStatus status = errorToVCSStatus(m_Error);
+	VCSStatus status = errorToVCSStatus(err);
 
 	// Retry in case of unicode needs to be enabled on client	
 	if (HasUnicodeNeededError(status))
 	{
-		m_Error.Clear();
+		err.Clear();
 		EnableUTF8Mode();
 
-		m_Client.Init( &m_Error );
-		VCSStatus status = errorToVCSStatus(m_Error);
+		m_Client.Init( &err );
+		VCSStatus status = errorToVCSStatus(err);
 	}
 
 	if (status.size())
 	{
-		if (P4Command::HandleOnlineStatusOnError(&m_Error))
+		// If errors are not about connection becoming offline
+		// send messages to Unity.
+		if (P4Command::HandleOnlineStatusOnError(&err))
+		{
+			// Error was about vcs not online. Offline status
+			// has been sent to Unity and logged.
+			;
+		}
+		else
+		{
 			SendToConnection(*m_Connection, status, MAProtocol);
+		}
 	}
 
-	if( m_Error.Test() )
+	if( err.Test() )
 	    return false;
 
 	m_P4Connect = true;
@@ -401,7 +440,7 @@ void P4Task::Logout()
 // Finalise the perforce client 
 bool P4Task::Disconnect()
 {
-    m_Error.Clear();
+    Error err;
 
 	m_IsOnline = false;
 
@@ -410,15 +449,15 @@ bool P4Task::Disconnect()
 		return true;
 	}
 
-	m_Client.Final( &m_Error );
+	m_Client.Final( &err );
     m_P4Connect = false;
 
 	// NotifyOffline("Disconnected");
 
-	VCSStatus status = errorToVCSStatus(m_Error);
+	VCSStatus status = errorToVCSStatus(err);
 	SendToConnection(*m_Connection, status, MAProtocol);
 
-	if( m_Error.Test() )
+	if( err.Test() )
 	    return false;
 
     return true;

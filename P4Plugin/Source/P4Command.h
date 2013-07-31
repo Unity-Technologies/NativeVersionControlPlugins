@@ -8,7 +8,7 @@
 
 typedef std::vector<std::string> CommandArgs;
 Connection& operator<<(Connection& p, const VCSStatus& v);
-Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma, bool safeSend = true);
+Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma);
 
 /* 
  * Base class for all commands that unity can issue and is supported

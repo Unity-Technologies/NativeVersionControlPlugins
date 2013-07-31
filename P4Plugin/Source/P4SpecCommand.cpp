@@ -18,7 +18,7 @@ public:
 		if (!task.CommandRun(cmd, this))
 		{
 			string errorMessage = GetStatusMessage();			
-			Conn().Log().Notice() << "ERROR: " << errorMessage << Endl;
+			Conn().Log().Fatal() << errorMessage << Endl;
 			return false;
 		}
 		else

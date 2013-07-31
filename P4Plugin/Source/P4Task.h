@@ -67,7 +67,6 @@ private:
 	ClientApi       m_Client;
 	StrBuf          m_Spec;
 	std::string		m_Root;
-	Error			m_Error;
 
 	std::string m_PortConfig;
 	std::string m_UserConfig;

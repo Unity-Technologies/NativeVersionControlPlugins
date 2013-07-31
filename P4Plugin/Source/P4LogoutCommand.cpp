@@ -21,8 +21,8 @@ public:
 		
 		if (!task.CommandRun("logout", this))
 		{
-			string errorMessage = GetStatusMessage();			
-			Conn().Log().Notice() << errorMessage << Endl;
+			string errorMessage = GetStatusMessage();
+			Conn().Log().Fatal() << errorMessage << Endl;
 		}
 		
 		return true;

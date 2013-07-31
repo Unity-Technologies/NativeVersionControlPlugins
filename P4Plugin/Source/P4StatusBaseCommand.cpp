@@ -146,8 +146,7 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		} 
 	}
 
-	if (HandleOnlineStatusOnError(err))
-		P4Command::HandleError(err);
+	P4Command::HandleError(err);
 }
 
 bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& value)

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma, bool safeSend)
+Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma)
 {
 	// Convertion of p4 errors to unity vcs errors
 	for (VCSStatus::const_iterator i = st.begin(); i != st.end(); ++i)
@@ -17,10 +17,7 @@ Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma,
 		switch (i->severity)
 		{
 		case VCSSEV_OK: 
-			if (safeSend)
-				p.InfoLine(i->message, ma);
-			else
-				p.VerboseLine(i->message, ma);
+			p.VerboseLine(i->message, ma);
 			break;
 		case VCSSEV_Info:
 			p.InfoLine(i->message, ma);
@@ -29,16 +26,15 @@ Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma,
 			p.WarnLine(i->message, ma);
 			break;
 		case VCSSEV_Error:
-			if (safeSend)
-				p.WarnLine(i->message, ma);
-			else
-				p.ErrorLine(i->message, ma);
+			p.ErrorLine(i->message, ma);
 			break;
 		case VCSSEV_Command: 
 			p.Command(i->message, ma);
 			break;
 		default:
-			p.ErrorLine(string("<Unknown errortype>: ") + i->message, ma);
+			// MAPlugin will make Unity restart the plugin
+			p.ErrorLine(string("<Unknown errortype>: ") + i->message, MAPlugin);
+			break;
 		}
 	}
 	return p;
@@ -46,7 +42,7 @@ Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma,
 
 Connection& operator<<(Connection& p, const VCSStatus& st)
 {
-	return SendToConnection(p, st, MAGeneral, false);
+	return SendToConnection(p, st, MAGeneral);
 }
 
 // Global map of all commands registered at initialization time
@@ -146,20 +142,29 @@ void P4Command::HandleError( Error *err )
 	if ( err == 0 )
 		return;
 
+	StrBuf buf;
+	err->Fmt(&buf);
+
+	if (HandleOnlineStatusOnError(err))
+	{
+		Conn().Log().Fatal() <<  buf.Text() << Endl;
+		return; // Error logged and Unity notified about plugin offline
+	}
+
+	// This is a regular non-connection related error
+
 	VCSStatus s = errorToVCSStatus(*err);
 	m_Status.insert(s.begin(), s.end());
 
-	// Base implementation. Will callback to P4Command::OutputError 
-	// But only do so if the online state handler hasn't dealt with the issue
-	if (HandleOnlineStatusOnError(err))
-		ClientUser::HandleError( err );
+	// m_Status will contain the error messages to be sent to unity
+	// Just log locally
+	Conn().Log().Fatal() << buf.Text() << Endl;
 }
 
 // Default handler of perforce error calbacks
 void P4Command::OutputError( const char *errBuf )
 {
-	Conn().WarnLine(errBuf);
-	Conn().Log().Debug() << "error: " << errBuf << Endl;
+	Conn().Log().Fatal() << "We cannot get to here" << Endl;
 }
 
 static bool ErrorStringMatch(Error *err, const char* msg)
@@ -196,35 +201,33 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 		else if (value.find("Client '") != string::npos && value.find("' unknown") != string::npos)
 			P4Task::NotifyOffline("Perforce workspace does not exist on server. Check your Editor Settings.");
 
+		else if (ErrorStringMatch(err, "Unicode server permits only unicode enabled clients"))
+			P4Task::NotifyOffline("Unicode perforce server permits only unicode enabled clients");
+
 		else
 		{
-			Conn().Log().Notice() << "Unhandled status error -> " << value << Endl;
-			return true;
+			return false; // error not recognized as a online/offline error
 		}
-
-		Conn().InfoLine(value);
-		Conn().Log().Notice() << value << Endl;
- 
-		return false;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 void P4Command::ErrorPause( char* errBuf, Error* e)
 {
-	Conn().Log().Notice() << "Error: Default ClientUser ErrorPause()\n";
+	Conn().Log().Fatal() << "Error: Default ClientUser ErrorPause()\n";
 }
 
 
 void P4Command::OutputText( const char *data, int length)
 {
-	Conn().Log().Info() << "Error: Default ClientUser OutputText\n";
+	Conn().Log().Fatal() << "Error: Default ClientUser OutputText\n";
 }
 
 
 void P4Command::OutputBinary( const char *data, int length)
 {
-	Conn().Log().Info() << "Error: Default ClientUser OutputBinary\n";
+	Conn().Log().Fatal() << "Error: Default ClientUser OutputBinary\n";
 }
 
 
