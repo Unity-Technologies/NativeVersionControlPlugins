@@ -16,7 +16,6 @@ i1:Enabling unicode mode
 v1:login -s
 v1:'login' not necessary, no password set for this user.
 w1:./<root>/... - no such file(s).\n
-w1:./<root>/... - no such file(s).\n
 o1:-1
 d1:end of list
 r1:end of response
