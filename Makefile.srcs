@@ -60,6 +60,8 @@ P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4FileModeCommand.cpp \
 		./P4Plugin/Source/P4Task.cpp \
 		./P4Plugin/Source/P4UnlockCommand.cpp \
+		./P4Plugin/Source/P4InfoCommand.cpp \
+		./P4Plugin/Source/P4StreamsCommand.cpp \
 		./P4Plugin/Source/P4Utility.cpp
 
 P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
@@ -67,6 +69,8 @@ P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 		 ./P4Plugin/Source/P4StatusBaseCommand.h \
 		 ./P4Plugin/Source/P4StatusCommand.h \
 		 ./P4Plugin/Source/P4Task.h \
+		 ./P4Plugin/Source/P4Info.h \
+		 ./P4Plugin/Source/P4Stream.h \
 		 ./P4Plugin/Source/P4Utility.h
 
 P4PLUGIN_LINK = -lclient -lrpc -lsupp 

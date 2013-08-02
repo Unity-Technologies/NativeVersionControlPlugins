@@ -53,6 +53,8 @@
     <ClCompile Include="Source\P4StatusCommand.cpp" />
     <ClCompile Include="Source\P4SubmitCommand.cpp" />
     <ClCompile Include="Source\P4Task.cpp" />
+    <ClCompile Include="Source\P4InfoCommand.cpp" />
+    <ClCompile Include="Source\P4StreamsCommand.cpp" />
     <ClCompile Include="Source\P4UnlockCommand.cpp" />
     <ClCompile Include="Source\P4Utility.cpp" />
   </ItemGroup>
@@ -86,6 +88,8 @@
     <ClInclude Include="Source\P4StatusBaseCommand.h" />
     <ClInclude Include="Source\P4StatusCommand.h" />
     <ClInclude Include="Source\P4Task.h" />
+    <ClInclude Include="Source\P4Info.h" />
+    <ClInclude Include="Source\P4Stream.h" />
     <ClInclude Include="Source\P4Utility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

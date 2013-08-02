@@ -159,6 +159,18 @@ const string& P4Task::GetP4Password() const
 	return m_PasswordConfig;
 }
 
+void P4Task::SetP4Host(const string& c)
+{
+	m_Client.SetHost(c.c_str()); 
+	m_HostConfig = c;
+	m_IsOnline = false;
+}
+
+string P4Task::GetP4Host()
+{
+	return m_Client.GetHost().Text(); 
+}
+
 const string& P4Task::GetP4Root() const
 { 
 	return m_Root; 
@@ -183,6 +195,26 @@ void P4Task::SetProjectPath(const std::string& p)
 const std::string& P4Task::GetProjectPath() const
 {
   return m_ProjectPathConfig;
+}
+
+void P4Task::SetP4Info(const P4Info& info)
+{
+	m_Info = info;
+}
+
+const P4Info& P4Task::GetP4Info() const
+{
+	return m_Info;
+}
+
+void P4Task::SetP4Streams(const P4Streams& s)
+{
+	m_Streams = s;
+}
+
+const P4Streams& P4Task::GetP4Streams() const
+{
+	return m_Streams;
 }
 
 int P4Task::Run()
@@ -417,18 +449,49 @@ bool P4Task::Login()
 		return false; // error login
 	}
 
-	if (GetP4Root().empty())
+	// Need to get Root path as the first thing on connect
+	p4c = LookupCommand("spec");
+	args.clear();
+	args.push_back("spec");
+	bool res = p4c->Run(*this, args); // fetched root info
+	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+	if (!res)
 	{
-		// Need to get Root path as the first thing on connect
-		p4c = LookupCommand("spec");
-		vector<string> args;
-		args.push_back("spec");
-		bool res = p4c->Run(*this, args); // fetched root info
-		SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
-		if (!res)
-			NotifyOffline("Couldn't fetch client spec file from perforce server");
-		return res;
+		NotifyOffline("Couldn't fetch client spec file from perforce server");
+		return false;
 	}
+
+	// Need to get Info
+	p4c = LookupCommand("info");
+	args.clear();
+	args.push_back("info");
+	res = p4c->Run(*this, args); // fetched root info
+	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+	if (!res)
+	{
+		NotifyOffline("Couldn't fetch client info from perforce server");
+		return false;
+	}
+
+	// Need to get Streams if any
+	p4c = LookupCommand("streams");
+	args.clear();
+	args.push_back("streams");
+	res = p4c->Run(*this, args); // fetched root info
+	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+	if (!res)
+	{
+		NotifyOffline("Couldn't fetch client streams from perforce server");
+		return false;
+	}
+
+	// Upon login check if the client is know to the server and if not
+	// tell unity 
+	if (GetP4Info().clientIsKnown)
+	{
+		; // TODO: do the stuff
+	}
+
 	return true; // root reused
 }
 
@@ -455,6 +518,8 @@ bool P4Task::Disconnect()
 
 	m_Client.Final( &err );
     m_P4Connect = false;
+	m_Info = P4Info();
+	m_Streams = P4Streams();
 
 	// NotifyOffline("Disconnected");
 
