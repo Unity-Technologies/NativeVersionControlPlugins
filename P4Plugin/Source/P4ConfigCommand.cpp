@@ -78,6 +78,10 @@ public:
 				value += ":1666"; // default port
 			task.SetP4Port(value);
 		}
+		else if (key == "vcPerforceHost")
+		{
+			task.SetP4Host(value);
+		}
 		else if (key == "pluginVersions")
 		{
 			int sel = SelectVersion(args);
@@ -96,7 +100,7 @@ public:
 			Conn().DataLine("enablesGetLatestOnChangeSetSubset", MAConfig);
 
 			// We provide 4 configuration fields for the GUI to display
-			Conn().DataLine("4");
+			Conn().DataLine("5");
 			Conn().DataLine("vcPerforceUsername");               // key
 			Conn().DataLine("Username", MAConfig);               // label
 			Conn().DataLine("The perforce user name", MAConfig); // description
@@ -119,6 +123,12 @@ public:
 			Conn().DataLine("Server", MAConfig);
 			Conn().DataLine("The perforce server using format: hostname:port. Port hostname defaults to 'perforce' and port defaults to 1666", MAConfig);
 			Conn().DataLine("perforce");
+			Conn().DataLine("0"); // 
+
+			Conn().DataLine("vcPerforceHost");
+			Conn().DataLine("Host", MAConfig);
+			Conn().DataLine("The perforce host ie. P4HOST. It can often be left blank.", MAConfig);
+			Conn().DataLine("");
 			Conn().DataLine("0"); // 
 
 			// We have 11 custom overlay icons
