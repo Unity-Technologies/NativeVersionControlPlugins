@@ -68,6 +68,17 @@ public:
 		if ( err == 0 )
 			return;
 
+		StrBuf buf;
+		err->Fmt(&buf);
+		string value(buf.Text());
+
+		if (value.find("Unicode server permits only unicode enabled clients") != string::npos)
+		{
+			VCSStatus s = errorToVCSStatus(*err);
+			GetStatus().insert(s.begin(), s.end());
+			return; // Do not propagate. It will be handled by P4Task and is not an error. 
+		}
+
 		// Suppress errors when just checking for logged in state
 		if (m_CheckingForLoggedIn)
 			return;
