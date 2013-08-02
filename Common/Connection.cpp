@@ -18,7 +18,7 @@ Connection::Connection(const string& logPath)
 	: m_Log(NULL), m_Pipe(NULL) 
 { 
 	// Rotate log file if too large
-	if (GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
+	if (PathExists(logPath) && GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
 	{
 		string prevPath("prev");
 		prevPath += logPath;
