@@ -158,7 +158,10 @@ std::string& Connection::ReadLine(std::string& target)
 {
 	m_Pipe->ReadLine(target);
 	DecodeString(target);
-	m_Log.Debug() << "UNITY > " << target << Endl;
+	if (StartsWith(target, "c:pluginConfig vcPerforcePassword"))
+		m_Log.Debug() << "UNITY > [password data stripped]" << Endl;
+	else
+		m_Log.Debug() << "UNITY > " << target << Endl;
 	return target;
 }
 
