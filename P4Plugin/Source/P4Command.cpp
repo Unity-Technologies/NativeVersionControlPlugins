@@ -285,16 +285,28 @@ public:
 			// Each path has a postfix of kDelim that we have added in order to tokenize the 
 			// result into the three paths. Perforce doesn't check if files exists it just
 			// shows the mappings and therefore this will work.
-
-			string::size_type i = msg.find(kDelim); // depotPath end
-			string::size_type j = msg.find(kDelim, i+1); // workspacePath end
-			j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
-			string::size_type k = msg.find(kDelim, j); // clientPath end
-			if (i != string::npos && i > 2 && k != string::npos)
+			// Additionally, if the info line starts with a '-' this is just informational and should be ignored.
+			if (msg[0] == '-')
 			{
+				// Just informational line
 				propergate = false;
-				P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
-				mappings.push_back(m);
+			}
+			else if (msg[0] != '/')
+			{
+				; // do propegate to log
+			}
+			else
+			{
+				string::size_type i = msg.find(kDelim); // depotPath end
+				string::size_type j = msg.find(kDelim, i+1); // workspacePath end
+				j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
+				string::size_type k = msg.find(kDelim, j); // clientPath end
+				if (i != string::npos && i > 2 && k != string::npos)
+				{
+					propergate = false;
+					P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
+					mappings.push_back(m);
+				}
 			}
 		}	
 
