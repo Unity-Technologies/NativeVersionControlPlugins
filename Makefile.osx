@@ -24,9 +24,13 @@ SVNPLUGIN_MODULES = $(SVNPLUGIN_SRCS:.c=.o)
 SVNPLUGIN_MODULES := $(SVNPLUGIN_MODULES:.cpp=.o)
 SVNPLUGIN_TARGET = SubversionPlugin
 
+PLASTICSCMPLUGIN_TARGET = PlasticSCMPlugin/PlasticSCMPlugin
+
 default: all
 
-all: P4Plugin SvnPlugin testserver
+all: P4Plugin SvnPlugin PlasticSCMPlugin testserver
+	@mkdir -p Build/$(PLATFORM)
+	cp $(PLASTICSCMPLUGIN_TARGET) Build/$(PLATFORM)
 
 testserver: $(TESTSERVER_TARGET)
 	@mkdir -p Build/$(PLATFORM)
