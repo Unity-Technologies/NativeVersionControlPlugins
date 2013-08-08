@@ -13,7 +13,7 @@ public:
 		ClearStatus();
 		m_Root.clear();
 		
-		const string cmd = string("client -o ") + task.GetP4Client();
+		const string cmd = string("client -o ") + Quote(task.GetP4Client());
 		
 		if (!task.CommandRun(cmd, this))
 		{
