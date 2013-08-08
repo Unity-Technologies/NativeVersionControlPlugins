@@ -141,6 +141,14 @@ bool StartsWith(const string& str, const string& lookFor)
 	return true;
 }
 
+std::string Quote(const std::string& str)
+{
+	string s = "\"";
+	s += str;
+	s += "\"";
+	return s;
+}
+
 #if defined(_WINDOWS)
 #include <stdio.h>
 string ErrorCodeToMsg( DWORD code )
