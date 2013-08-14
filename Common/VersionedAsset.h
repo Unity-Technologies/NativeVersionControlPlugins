@@ -5,10 +5,10 @@
 enum State
 {
 	kNone = 0,
-	kLocal = 1 << 0, // Local only assets - not registered in version control (May have been deleted previosly though and therefore known by version control)
-	kSynced = 1 << 1,
-	kOutOfSync = 1 << 2,
-	kMissing = 1 << 3,
+	kLocal = 1 << 0, // Asset in on local disk. If none of the sync flags below are set it means vcs doesn't know about this local file.
+	kSynced = 1 << 1, // Asset is known to vcs and in sync locally
+	kOutOfSync = 1 << 2, // Asset is known to vcs and outofsync locally
+	kMissing = 1 << 3, 
 	kCheckedOutLocal = 1 << 4,
 	kCheckedOutRemote = 1 << 5,
 	kDeletedLocal = 1 << 6,

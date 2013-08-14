@@ -38,7 +38,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		string key(var.Text());
 		string value(val.Text());
-		// Conn().Log().Debug() << key << " # " << value << endl;
+		// Conn().Log().Debug() << key << " # " << value << Endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
 		{
@@ -49,10 +49,6 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		else if (key == "clientFile")
 		{
 			current.SetPath(Replace(value, "\\", "/"));
-			if (IsReadOnly(current.GetPath()))
-				current.AddState(kReadOnly);
-			else
-				current.RemoveState(kReadOnly);
 		}
 		else if (key == "depotFile")
 		{
@@ -96,18 +92,18 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		}
 	}
 	
+	if (PathExists(current.GetPath()))
+	{
+		current.AddState(kLocal);
+		if (IsReadOnly(current.GetPath()))
+			current.AddState(kReadOnly);
+	}
+
 	if (!isStateSet)
 	{
-		int baseState = current.GetState() & ( kCheckedOutRemote | kLockedLocal | kLockedRemote | kConflicted | kReadOnly | kMetaFile );
-		int newState = ActionToState(action, headAction, haveRev, headRev) | baseState;
-		
-		current.SetState(newState);
-
-		// Make sure it is actually present locally
-		if ( (newState & kLocal) && 
-			 !PathExists(current.GetPath()) )
-			current.RemoveState(kLocal);
-	}
+		int actionState = ActionToState(action, headAction, haveRev, headRev);
+		current.AddState((State)actionState);
+	}		
 
 	Conn().VerboseLine(current.GetPath());
 	
@@ -140,6 +136,14 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		}
 		else if (AddUnknown(asset, value))
 		{
+
+			if (PathExists(asset.GetPath()))
+			{
+				asset.AddState(kLocal);
+				if (IsReadOnly(asset.GetPath()))
+					asset.AddState(kReadOnly);
+			}
+
 			Conn() << asset;
 			Conn().VerboseLine(value);
 			return; // just ignore errors for unknown files and return them anyway
@@ -154,16 +158,7 @@ bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& valu
 	const string notFound = " - no such file(s).";
 
 	current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
-	int baseState = current.GetState() & ( kConflicted | kReadOnly | kMetaFile );
-	current.SetState(kLocal | baseState);
-	current.RemoveState(kLockedLocal);
-	current.RemoveState(kLockedRemote);
-	if (IsReadOnly(current.GetPath()))
-		current.AddState(kReadOnly);
-	else
-		current.RemoveState(kReadOnly);
-
 	if (EndsWith(current.GetPath(), "*")) 
 		return false; // skip invalid files
-	return true; 
+	return true;
 }

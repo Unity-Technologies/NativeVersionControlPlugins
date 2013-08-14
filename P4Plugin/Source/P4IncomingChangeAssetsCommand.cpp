@@ -88,6 +88,7 @@ public:
 		string action = d.substr(i+1);
 		int state = action.empty() ? kNone : ActionToState(action,"","","");
 		a.SetState(state);
+		a.RemoveState(kCheckedOutLocal);
 		
 		m_Result.push_back(a);
 	}
