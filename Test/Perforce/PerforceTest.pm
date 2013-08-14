@@ -139,7 +139,7 @@ EOF
 sub TeardownClient
 {
 	print "Tearing down workspace $ENV{'P4CLIENT'}\n";
-	system("$ENV{'P4EXEC'} -p $ENV{'P4PORT'} client -d $ENV{'P4CLIENT'}");
+	system("$ENV{'P4EXEC'} -p $ENV{'P4PORT'} client -f -d $ENV{'P4CLIENT'}");
 	#rmtree $ENV{'P4CLIENTROOT'};
 	1;
 }
