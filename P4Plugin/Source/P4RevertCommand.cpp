@@ -178,7 +178,9 @@ public:
 		if (revertAsDeleted)
 			a.AddState(kDeletedLocal);
 		else if (abandoned)
+		{
 			; // no op
+		}
 		else
 			a.AddState(kSynced);
 
