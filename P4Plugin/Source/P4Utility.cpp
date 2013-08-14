@@ -13,7 +13,7 @@ int ActionToState(const string& action, const string& headAction,
 	else if (action == "edit") state |= kCheckedOutLocal;
 	else if (action == "delete") state |= kDeletedLocal;
 	else if (action == "move/delete") state |= kDeletedLocal;
-	else if (action == "local") state |= kLocal;
+	// else if (action == "local") state |= kLocal;
 	/*
 	 else if (action == "")
 	 {
@@ -27,25 +27,34 @@ int ActionToState(const string& action, const string& headAction,
 	
 	if (remoteUpdates)
 	{
+		state |= kOutOfSync;
 		if (headAction == "add") state |= kAddedRemote;
 		else if (headAction == "move/add") state |= kAddedRemote;
-		else if (headAction == "edit") state |= kCheckedOutRemote;
-		else if (headAction == "delete") 
+		// else if (headAction == "edit") state |= kOutOfSync;
+		else if (headAction == "delete")
 		{
 			if (haveRev.empty())
-				state |= kLocal; // We have no revision locally and it has been deleted on server
+			{
+				// Not in registered as in workspace and deleted remote ie. remove outofsync flag
+				// This may happen deleting a file in vcs and creating a new file with the
+				// same name.
+				state = state & ~kOutOfSync;
+			}
 			else
+			{
 				state |= kDeletedRemote;
+			}
 		}
 		else if (headAction == "move/delete") state |= kDeletedRemote;
-		else state |= kOutOfSync;
+		// else state |= kOutOfSync;
 	}
 	else if (headRev.empty())
 	{
-		// state |= kLocal;
+		// Mean haveRev is also empty and file not know to perforce. (might be addedLocal though)
 	}
-	else
+	else 
 	{
+		// HeadRev and HaveRev are there and equal. Things are in sync
 		state |= kSynced;
 	}
 
