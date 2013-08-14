@@ -45,10 +45,11 @@ static bool RemoveLineWithPrefix(string& m, const string& prefix)
 
 static void CleanupErrorMessage(string& m)
 {
-	if (RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c")) ;
-	else if (ReplaceLineWithPrefix(m, 
-								   "Merges still pending -- use 'resolve' to merge files.",
-								   "Merges still pending. Please resolve and resubmit.")) ;
+	RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c") ||
+	ReplaceLineWithPrefix(m, 
+						  "Merges still pending -- use 'resolve' to merge files.",
+						  "Merges still pending. Please resolve and resubmit.")
+						  ;
 }
 
 VCSStatus errorToVCSStatus(Error& e)
