@@ -29,7 +29,7 @@ v1:login -s
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile.txt
 o1:<absroot>/testfile.txt
-o1:256
+o1:257
 d1:end of list
 c32:online
 c32:enableCommand add
