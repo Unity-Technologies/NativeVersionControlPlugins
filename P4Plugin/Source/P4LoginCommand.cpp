@@ -42,7 +42,6 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
-		Conn().Log().Debug() << "OutputInfo: " << d << Endl;
 		Conn().VerboseLine(d);
 
 		m_LoggedIn = d == "'login' not necessary, no password set for this user.";
