@@ -234,7 +234,8 @@ void P4Command::OutputBinary( const char *data, int length)
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
 {
-	Conn().Log().Info() << "level " << (int) level << ": " << data << Endl;
+	if (Conn().Log().GetLogLevel() != LOG_DEBUG)
+		Conn().Log().Info() << "level " << (int) level << ": " << data << Endl;
 	std::stringstream ss;
 	ss << data << " (level " << (int) level << ")";	
 	Conn().InfoLine(ss.str());

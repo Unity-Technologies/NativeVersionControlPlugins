@@ -481,7 +481,8 @@ bool P4Task::IsConnected()
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
 	
-	m_Connection->Log().Info() << command << Endl;
+	if (m_Connection->Log().GetLogLevel() != LOG_DEBUG)
+		m_Connection->Log().Info() << command << Endl;
 	m_Connection->VerboseLine(command);
 
 	// Force connection if this hasn't been set-up already.
