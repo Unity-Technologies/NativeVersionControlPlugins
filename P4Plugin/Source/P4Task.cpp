@@ -207,11 +207,14 @@ int P4Task::Run()
 			if (cmd == UCOM_Invalid)
 				return 1; // error
 			else if (cmd == UCOM_Shutdown)
+			{
+				m_Connection->EndResponse(); // good manner shutdown
 				return 0; // ok 
+			}
 			else if (!Dispatch(cmd, args))
 				return 0; // ok
 		}
-	} 
+	}
 	catch (exception& e)
 	{
 		m_Connection->Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
