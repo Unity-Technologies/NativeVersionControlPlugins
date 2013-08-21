@@ -98,6 +98,7 @@ Pipe& Connection::GetPipe()
 
 void Connection::Flush()
 {
+	m_Log.Flush();
 	m_Pipe->Flush();
 }
 
@@ -198,7 +199,7 @@ Connection& Connection::WritePrefix(const char* prefix, MessageArea ma, LogWrite
 
 
 // Encode newlines in strings
-	Connection& Connection::Write(const std::string& v, LogWriter& log)
+Connection& Connection::Write(const std::string& v, LogWriter& log)
 {
 	std::string tmp = Replace(v, "\\", "\\\\");
 	tmp = Replace(tmp, "\n", "\\n");
