@@ -1,6 +1,8 @@
 #include "Utility.h"
 #include "P4Command.h"
 #include "P4Utility.h"
+#include <time.h>
+
 using namespace std;
 
 
@@ -11,6 +13,9 @@ public:
 	
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
+		m_StartTime = time(0);
+		m_ProjectPath = task.GetProjectPath();
+
 		incomingAssetList.clear();
 		ClearStatus();
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
@@ -94,8 +99,11 @@ public:
 		string path = d.substr(i1);
 		
 		incomingAssetList.push_back(VersionedAsset(path, kSynced, rev));
+		Conn().Progress(-1, time(0) - m_StartTime, StartsWith(path, m_ProjectPath) ? path.substr(m_ProjectPath.length()) : path);
 	}
 
 	VersionedAssetList incomingAssetList;
+	time_t m_StartTime;
+	std::string m_ProjectPath;
 
 } cGetLatest;

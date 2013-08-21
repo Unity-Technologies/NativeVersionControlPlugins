@@ -3,6 +3,7 @@
 #include "P4Task.h"
 #include "P4Utility.h"
 #include <sstream>
+#include <time.h>
 
 using namespace std;
 
@@ -39,6 +40,9 @@ public:
 	P4SubmitCommand(const char* name) : P4Command(name) {}
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
+		m_StartTickTime = time(0);
+		m_ProjectPath = task.GetProjectPath();
+
 		ClearStatus();
 		m_Spec.clear();
 		
@@ -124,7 +128,19 @@ public:
 		Conn().Log().Debug() << m_Spec << Endl;
 		buf->Set(m_Spec.c_str());
 	}
-	
+
+	virtual void OutputInfo( char level, const char *data )
+	{
+		P4Command::OutputInfo(level, data);	
+
+		string d(data);
+		string::size_type i = d.find(m_ProjectPath);
+		if (i != string::npos)
+			d.replace(i, m_ProjectPath.length(), "");
+
+		Conn().Progress(-1, time(0) - m_StartTickTime, d);
+	}
+
 	virtual void HandleError( Error *err )
 	{
 		if ( err == 0 )
@@ -147,5 +163,7 @@ public:
 		P4Command::HandleError(err);
 	}
 	
+	time_t m_StartTickTime;
+	string m_ProjectPath;
 	
 } cSubmit("submit");
