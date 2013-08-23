@@ -128,9 +128,8 @@ string& Pipe::ReadLine(string& target)
 			break; // error 	
 				
 		// Put data to the buffer
-		buffer[bytesRead] = 0x0; // terminate the read string
-		m_Buffer += (char*)buffer;
-	}; 
+		m_Buffer.append(buffer, bytesRead);
+	};
 			
 	if (!success)
 	{
