@@ -45,6 +45,7 @@ public:
 
 	void Reset();
 	bool IsFolder() const;
+	bool IsMeta() const { return m_State & kMetaFile; }
 
 	bool operator<(const VersionedAsset& other) const;
 
