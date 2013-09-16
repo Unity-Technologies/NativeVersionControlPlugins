@@ -58,35 +58,35 @@ public:
 	template <typename T>
 	Connection& DataLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		WritePrefixLine(DATA_PREFIX, ma, msg, m_Log.Debug());
+		WritePrefixLine(DATA_PREFIX, ma, msg, m_Log->Debug());
 		return *this;
 	}
 
 	template <typename T>
 	Connection& VerboseLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		WritePrefixLine(VERBOSE_PREFIX, ma, msg, m_Log.Debug());
+		WritePrefixLine(VERBOSE_PREFIX, ma, msg, m_Log->Debug());
 		return *this;
 	}
 
 	template <typename T>
 	Connection& ErrorLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		WritePrefixLine(ERROR_PREFIX, ma, msg, m_Log.Notice());
+		WritePrefixLine(ERROR_PREFIX, ma, msg, m_Log->Notice());
 		return *this;
 	}
 
 	template <typename T>
 	Connection& WarnLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		WritePrefixLine(WARNING_PREFIX, ma, msg, m_Log.Notice());
+		WritePrefixLine(WARNING_PREFIX, ma, msg, m_Log->Notice());
 		return *this;
 	}
 
 	template <typename T>
 	Connection& InfoLine(const T& msg, MessageArea ma = MAGeneral)
 	{
-		WritePrefixLine(INFO_PREFIX, ma, msg, m_Log.Debug());
+		WritePrefixLine(INFO_PREFIX, ma, msg, m_Log->Debug());
 		return *this;
 	}
 
@@ -132,7 +132,7 @@ private:
 		return *this;
 	}
 
-	LogStream m_Log;
+	LogStream* m_Log;
 	Pipe* m_Pipe;
 };
 
