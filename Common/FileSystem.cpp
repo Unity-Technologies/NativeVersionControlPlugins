@@ -131,17 +131,17 @@ bool ChangeCWD(const std::string& path)
 
 size_t GetFileLength(const std::string& pathName)
 {
-	struct __stat32 statBuffer;
-
 	wchar_t widePath[kDefaultPathBufferSize];
-	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
-
-	if( _wstat32(widePath, &statbuffer) != 0 )
+	ConvertUnityPathName(pathName.c_str(), widePath, kDefaultPathBufferSize);
+	WIN32_FILE_ATTRIBUTE_DATA attrs;
+	if (GetFileAttributesExW(widePath, GetFileExInfoStandard, &attrs) == 0)
 	{
-		throw std::runtime_error("Error getting file length");
+		throw std::runtime_error("Error getting file length attribute");
 	}
-	
-	return statbuffer.st_size;
+
+	if (attrs.nFileSizeHigh)
+		return UINT_MAX;
+	return attrs.nFileSizeLow;
 }
 
 static bool RemoveReadOnlyW(LPCWSTR path)
