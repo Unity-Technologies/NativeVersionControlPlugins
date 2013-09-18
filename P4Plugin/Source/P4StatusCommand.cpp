@@ -38,6 +38,7 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 
 void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetList, bool recursive)
 {
+	m_StreamResultToConnection = true;
 	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
 	Conn().Log().Debug() << "Paths to stat are: " << paths << Endl;
@@ -51,7 +52,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 		return;
 	}
 	
-	string cmd = "fstat -T \"depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
+	string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
 	cmd += " " + paths;
 
 	// We're sending along an asset list with an unknown size.
@@ -60,6 +61,27 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 	// The OutputState and other callbacks will now output to stdout.
 	// We just wrap up the communication here.
 	Conn().EndList();
+}
+
+void P4StatusCommand::Run(P4Task& task, const VersionedAssetList& assetList, bool recursive, VersionedAssetList& result)
+{
+	m_StreamResultToConnection = false;
+	result.clear();
+	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
+	
+	Conn().Log().Debug() << "Paths to stat are: " << paths << Endl;
+	
+	if (paths.empty())
+	{
+		// Conn().ErrorLine("No paths to stat", MASystem);
+		return;
+	}
+	
+	string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
+	cmd += " " + paths;
+
+	// We're sending along an asset list with an unknown size.
+	task.CommandRun(cmd, this);
 }
 
 P4StatusCommand cStatus("status");
