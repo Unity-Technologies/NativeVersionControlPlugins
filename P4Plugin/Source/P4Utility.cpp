@@ -9,10 +9,10 @@ int ActionToState(const string& action, const string& headAction,
 	int state = kNone; // kLocal
 	
 	if (action == "add") state |= kAddedLocal;
-	else if (action == "move/add") state |= kAddedLocal;
+	else if (action == "move/add") state |= kAddedLocal | kMovedLocal;
 	else if (action == "edit") state |= kCheckedOutLocal;
 	else if (action == "delete") state |= kDeletedLocal;
-	else if (action == "move/delete") state |= kDeletedLocal;
+	else if (action == "move/delete") state |= kDeletedLocal | kMovedLocal;
 	// else if (action == "local") state |= kLocal;
 	/*
 	 else if (action == "")
@@ -29,7 +29,7 @@ int ActionToState(const string& action, const string& headAction,
 	{
 		state |= kOutOfSync;
 		if (headAction == "add") state |= kAddedRemote;
-		else if (headAction == "move/add") state |= kAddedRemote;
+		else if (headAction == "move/add") state |= kAddedRemote | kMovedRemote;
 		// else if (headAction == "edit") state |= kOutOfSync;
 		else if (headAction == "delete")
 		{
@@ -45,7 +45,7 @@ int ActionToState(const string& action, const string& headAction,
 				state |= kDeletedRemote;
 			}
 		}
-		else if (headAction == "move/delete") state |= kDeletedRemote;
+		else if (headAction == "move/delete") state |= kDeletedRemote | kMovedRemote;
 		// else state |= kOutOfSync;
 	}
 	else if (headRev.empty())
