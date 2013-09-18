@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <set>
 #include "Log.h"
 #include "Pipe.h"
 #include "Command.h"
@@ -151,6 +152,15 @@ Connection& operator<<(Connection& p, const std::vector<T>& v)
 }
 
 template <typename T>
+Connection& operator<<(Connection& p, const std::set<T>& v)
+{
+	p.DataLine(v.size());
+	for (typename std::set<T>::const_iterator i = v.begin(); i != v.end(); ++i)
+		p << *i;
+	return p;
+}
+
+template <typename T>
 Connection& operator>>(Connection& conn, std::vector<T>& v)
 {
 	std::string line;
@@ -173,6 +183,35 @@ Connection& operator>>(Connection& conn, std::vector<T>& v)
 		{
 			conn >> t;
 			v.push_back(t);
+		}
+		conn.ReadLine(line);
+	}
+	return conn;
+}
+
+template <typename T>
+Connection& operator>>(Connection& conn, std::set<T>& v)
+{
+	std::string line;
+	conn.ReadLine(line);
+	int count = atoi(line.c_str());
+	T t;
+	if (count >= 0)
+	{
+		while (count--)
+		{
+			conn >> t;
+			v.insert(t);
+		}
+	}
+	else 
+	{
+		// TODO: Remove
+		// Newline delimited list
+		while (!conn.PeekLine(line).empty())
+		{
+			conn >> t;
+			v.insert(t);
 		}
 		conn.ReadLine(line);
 	}
