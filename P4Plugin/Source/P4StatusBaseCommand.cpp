@@ -5,7 +5,8 @@
 
 using namespace std;
 
-P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name)
+P4StatusBaseCommand::P4StatusBaseCommand(const char* name, bool streamResultToConnection) 
+	: P4Command(name), m_StreamResultToConnection(streamResultToConnection)
 {
 }
 
@@ -107,7 +108,10 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 
 	Conn().VerboseLine(current.GetPath());
 	
-	Conn() << current;
+	if (m_StreamResultToConnection)
+		Conn() << current;
+	else
+		m_StatusResult.push_back(current);
 }
 
 void P4StatusBaseCommand::HandleError( Error *err )
@@ -144,7 +148,10 @@ void P4StatusBaseCommand::HandleError( Error *err )
 					asset.AddState(kReadOnly);
 			}
 
-			Conn() << asset;
+			if (m_StreamResultToConnection)
+				Conn() << asset;
+			else
+				m_StatusResult.push_back(asset);
 			Conn().VerboseLine(value);
 			return; // just ignore errors for unknown files and return them anyway
 		} 

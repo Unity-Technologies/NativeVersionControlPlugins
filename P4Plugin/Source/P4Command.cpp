@@ -255,6 +255,19 @@ void P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetLi
 	Conn() << c->GetStatus();
 }
 
+void P4Command::RunAndGetStatus(P4Task& task, const VersionedAssetList& assetList, VersionedAssetList& result)
+{
+	P4StatusCommand* c = dynamic_cast<P4StatusCommand*>(LookupCommand("status"));
+	if (!c)
+	{
+		Conn().ErrorLine("Cannot locate status command");
+		return; // Returning this is just to keep things running.
+	}
+	
+	bool recursive = false;
+	c->Run(task, assetList, recursive, result);
+}
+
 const char * kDelim = "_XUDELIMX_"; // magic delimiter
 
 static class P4WhereCommand : public P4Command
