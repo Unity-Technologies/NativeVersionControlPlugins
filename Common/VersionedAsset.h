@@ -21,6 +21,8 @@ enum State
 	kUpdating = 1 << 13,
 	kReadOnly = 1 << 14,
 	kMetaFile = 1 << 15,
+	kMovedLocal = 1 << 16, // only used plugin side for perforce.
+	kMovedRemote = 1 << 17, // only used plugin side for perforce.
 };
 
 class VersionedAsset
@@ -35,9 +37,12 @@ public:
 	void SetState(int newState);
 	void AddState(State state);
 	void RemoveState(State state);
-	
+	bool HasState(State state) { return m_State & state; }
+
 	const std::string& GetPath() const;
 	void SetPath(const std::string& path);
+	const std::string& GetMovedPath() const;
+	void SetMovedPath(const std::string& path);
 	const std::string& GetRevision() const;
 	void SetRevision(const std::string& r);
 	const std::string& GetChangeListID() const;
@@ -52,6 +57,7 @@ public:
 private:
 	int m_State;
 	std::string m_Path;
+	std::string m_MovedPath; // Only used for moved files. May be src or dst file depending on the kDeletedLocal/kAddedLocal flag
 	std::string m_Revision;
 	std::string m_ChangeListID; // Some VCS doesn't support this so it is optional
 };
