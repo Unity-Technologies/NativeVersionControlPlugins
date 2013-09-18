@@ -66,9 +66,9 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 void P4StatusCommand::Run(P4Task& task, const VersionedAssetList& assetList, bool recursive, VersionedAssetList& result)
 {
 	m_StreamResultToConnection = false;
-	result.clear();
 	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
+	result.clear();
 	Conn().Log().Debug() << "Paths to stat are: " << paths << Endl;
 	
 	if (paths.empty())
@@ -82,6 +82,7 @@ void P4StatusCommand::Run(P4Task& task, const VersionedAssetList& assetList, boo
 
 	// We're sending along an asset list with an unknown size.
 	task.CommandRun(cmd, this);
+	result.swap(m_StatusResult);
 }
 
 P4StatusCommand cStatus("status");
