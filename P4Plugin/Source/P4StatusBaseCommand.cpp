@@ -51,6 +51,10 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		{
 			current.SetPath(Replace(value, "\\", "/"));
 		}
+		else if (key == "movedFile")
+		{
+			current.SetMovedPath(value);
+		}
 		else if (key == "depotFile")
 		{
 			depotFile = value;
