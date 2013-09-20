@@ -45,7 +45,6 @@ CM_TARGET_BEGIN(
 	
 	CM_TARGET_ADD_SOURCES( 
 		"Sources"
-		./Source/SvnPlugin_OSX.cpp
 		./Source/SvnTask.cpp
 		./Source/AllSvnCommands.h
 		./Source/SvnAddCommand.h
@@ -71,28 +70,59 @@ CM_TARGET_BEGIN(
 		./Source/SvnUnlockCommand.h
 	)
 	
-	IF (APPLE OR UNIX)
+	IF (APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
 			./Source/SvnPlugin_OSX.cpp
 		)
-	ENDIF (APPLE OR UNIX)
+	ENDIF (APPLE)
 	
-	IF (WIN32 AND NOT UNIX)
+	IF (WIN32)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
+			./Source/SvnPlugin_OSX.cpp
 			./Source/SvnPlugin_WIN.cpp
 		)
-	ENDIF (WIN32 AND NOT UNIX)
+	ENDIF (WIN32)
+	
+	IF (UNIX)
+		CM_TARGET_ADD_SOURCES( 
+			"Sources"
+			./Source/SvnPlugin_OSX.cpp
+		)
+	ENDIF (UNIX)
 	
 	# Libraries
 	# -----------------------------------------------
-	CM_TARGET_ADD_LIBRARIES(
-	)
+	IF (APPLE)
+		CM_TARGET_ADD_LIBRARIES(
+		)
+	ENDIF (APPLE)
+	
+	IF (WIN32)
+		CM_TARGET_ADD_LIBRARIES(
+			shlwapi.lib
+		)
+	ENDIF (WIN32)
+	
+	IF (UNIX)
+		CM_TARGET_ADD_LIBRARIES(
+		)
+	ENDIF (UNIX)
 	
 	# Link flags
 	# -----------------------------------------------
-	CM_TARGET_ADD_LINK_FLAGS ( "-v -arch i386 -g -framework Cocoa -lstdc++" )
+	IF (APPLE)
+		CM_TARGET_ADD_LINK_FLAGS ( "-arch i386 -g -framework Cocoa -lstdc++" )
+	ENDIF (APPLE)
+	
+	IF (WIN32)
+		CM_TARGET_ADD_LINK_FLAGS ( "" )
+	ENDIF (WIN32)
+
+	IF (UNIX)
+		CM_TARGET_ADD_LINK_FLAGS ( "-g -fpermissive -lrt -ldl -lstdc++" )
+	ENDIF (UNIX)
 	
 # End of target definition
 # -----------------------------------------------

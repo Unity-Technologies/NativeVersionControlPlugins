@@ -4,6 +4,9 @@ CM_TARGET_BEGIN(
 	.
 	PerforcePlugin
 )	
+
+	CM_CONFIGURE_MSVC_RUNTIME()
+
 	# Dependencies
 	# -----------------------------------------------
 	
@@ -14,6 +17,15 @@ CM_TARGET_BEGIN(
 	
 	# Defines
 	# -----------------------------------------------
+	IF (WIN32)
+		CM_TARGET_ADD_DEFINES(-D_CRT_SECURE_NO_WARNINGS)
+		CM_TARGET_ADD_DEFINES(-D_CRT_SECURE_NODEPRECATE)
+		CM_TARGET_ADD_DEFINES(-D_CRT_NONSTDC_NO_DEPRECATE)
+		CM_TARGET_ADD_DEFINES(-D_SCL_SECURE_NO_DEPRECATE)
+		CM_TARGET_ADD_DEFINES(-D_SECURE_SCL=0)
+		CM_TARGET_ADD_DEFINES(-D_WINDOWS)
+		CM_TARGET_ADD_DEFINES(-DWIN32)
+	ENDIF (WIN32)
 	
 	# Sources
 	# -----------------------------------------------
@@ -84,20 +96,27 @@ CM_TARGET_BEGIN(
 		./Source/P4Utility.cpp
 	)
 	
-	IF (APPLE OR UNIX)
+	IF (APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
 			./Source/P4Plugin_Posix.cpp
 		)
-	ENDIF (APPLE OR UNIX)
+	ENDIF (APPLE)
 	
-	IF (WIN32 AND NOT UNIX)
+	IF (WIN32)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
 			./Source/P4Plugin_WIN.cpp
 		)
-	ENDIF (WIN32 AND NOT UNIX)
+	ENDIF (WIN32)
 
+	IF (UNIX)
+		CM_TARGET_ADD_SOURCES( 
+			"Sources"
+			./Source/P4Plugin_Posix.cpp
+		)
+	ENDIF (UNIX)
+	
 	# Libraries
 	# -----------------------------------------------
 	IF (APPLE)
@@ -113,12 +132,12 @@ CM_TARGET_BEGIN(
 	
 	IF (WIN32)
 		CM_TARGET_ADD_LIBRARIES(
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32/libclient.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32/librpc.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32/libp4sslstub.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32/libsupp.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32/ssleay32MT.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32/libeay32MT.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libclient.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/librpc.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libp4sslstub.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libsupp.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/ssleay32MTd.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libeay32MTd.lib
 		)
 	ENDIF (WIN32)
 	
@@ -135,7 +154,17 @@ CM_TARGET_BEGIN(
 	
 	# Link flags
 	# -----------------------------------------------
-	CM_TARGET_ADD_LINK_FLAGS ( "-v -arch i386 -g -framework Cocoa -lstdc++" )
+	IF (APPLE)
+		CM_TARGET_ADD_LINK_FLAGS ( "-arch i386 -g -framework Cocoa -lstdc++" )
+	ENDIF (APPLE)
+	
+	IF (WIN32)
+		CM_TARGET_ADD_LINK_FLAGS ( "" )
+	ENDIF (WIN32)
+
+	IF (UNIX)
+		CM_TARGET_ADD_LINK_FLAGS ( "-g -fpermissive -lrt -ldl -lstdc++" )
+	ENDIF (UNIX)
 	
 # End of target definition
 # -----------------------------------------------
