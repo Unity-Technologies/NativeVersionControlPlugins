@@ -1,11 +1,13 @@
+IF (WIN32)
+	CM_CONFIGURE_MSVC_RUNTIME()
+ENDIF (WIN32)
+
 CM_TARGET_BEGIN(
 	P4Plugin
 	EXECUTABLE
 	.
 	PerforcePlugin
 )	
-
-	CM_CONFIGURE_MSVC_RUNTIME()
 
 	# Dependencies
 	# -----------------------------------------------
@@ -132,9 +134,10 @@ CM_TARGET_BEGIN(
 	
 	IF (WIN32)
 		CM_TARGET_ADD_LIBRARIES(
+			shlwapi.lib
+			ws2_32.lib
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libclient.lib
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/librpc.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libp4sslstub.lib
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libsupp.lib
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/ssleay32MTd.lib
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libeay32MTd.lib
