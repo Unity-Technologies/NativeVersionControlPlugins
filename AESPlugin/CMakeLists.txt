@@ -3,10 +3,10 @@ IF (WIN32)
 ENDIF (WIN32)
 
 CM_TARGET_BEGIN(
-	SvnPlugin
+	AESPlugin
 	EXECUTABLE
 	.
-	SubversionPlugin
+	AESPlugin
 )	
 	# Dependencies
 	# -----------------------------------------------
@@ -49,50 +49,26 @@ CM_TARGET_BEGIN(
 	
 	CM_TARGET_ADD_SOURCES( 
 		"Sources"
-		./Source/SvnTask.cpp
-		./Source/AllSvnCommands.h
-		./Source/SvnAddCommand.h
-		./Source/SvnChangeDescription.h
-		./Source/SvnCheckoutCommand.h
-		./Source/SvnCommand.h
-		./Source/SvnConfigCommand.h
-		./Source/SvnDeleteCommand.h
-		./Source/SvnDownloadCommand.h
-		./Source/SvnGetLatestCommand.h
-		./Source/SvnIncomingAssetsCommand.h
-		./Source/SvnIncomingCommand.h
-		./Source/SvnLockCommand.h
-		./Source/SvnMoveChangelistCommand.h
-		./Source/SvnMoveCommand.h
-		./Source/SvnOutgoingAssetsCommand.h
-		./Source/SvnOutgoingCommand.h
-		./Source/SvnResolveCommand.h
-		./Source/SvnRevertCommand.h
-		./Source/SvnStatusCommand.h
-		./Source/SvnSubmitCommand.h
-		./Source/SvnTask.h
-		./Source/SvnUnlockCommand.h
 	)
 	
 	IF (APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
-			./Source/SvnPlugin_OSX.cpp
+			./Source/AESPlugin_OSX.cpp
 		)
 	ENDIF (APPLE)
 	
 	IF (WIN32)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
-			./Source/SvnPlugin_OSX.cpp
-			./Source/SvnPlugin_WIN.cpp
+			./Source/AESPlugin_WIN.cpp
 		)
 	ENDIF (WIN32)
 	
 	IF (UNIX AND NOT APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
-			./Source/SvnPlugin_OSX.cpp
+			./Source/AESPlugin_Posix.cpp
 		)
 	ENDIF (UNIX AND NOT APPLE)
 	
