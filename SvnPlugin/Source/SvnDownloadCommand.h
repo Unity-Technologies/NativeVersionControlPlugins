@@ -118,9 +118,6 @@ public:
 			}
 			else if (StartsWith(line, "Conflict Previous Working File:"))
 			{
-				// file format is abx.txt.mine
-				std::string::size_type i = line.rfind('.');
-				
 				// strip field name part to get filename
 				mine.SetPath(task.GetProjectPath() + "/Assets/" + line.substr(32)); 
 			}
@@ -130,10 +127,10 @@ public:
 				std::string::size_type i = line.rfind('.');
 				
 				// extract e.g 21 part from abx.txt.r21
-					conflict.SetRevision(line.substr(i+2)); 
+                conflict.SetRevision(line.substr(i+2)); 
 					
-					// strip field name part to get filename
-					conflict.SetPath(task.GetProjectPath() + "/Assets/" + line.substr(28)); 
+                // strip field name part to get filename
+                conflict.SetPath(task.GetProjectPath() + "/Assets/" + line.substr(28)); 
 			}
 		}
 	}

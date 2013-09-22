@@ -58,7 +58,7 @@ char** CommandLineToArgv( const char* CmdLine, int* _argc )
     i = 0;
     j = 0;
 
-    while( a = CmdLine[i] ) {
+    while( (a = CmdLine[i]) != '\0' ) {
         if(in_QM) {
             if(a == '\"') {
                 in_QM = FALSE;
@@ -127,7 +127,7 @@ void Trace( const char msg[], ... )
     const int maxSize = 1024;
 
     va_list arg;
-    char * traceMessage;
+    char * traceMessage = NULL;
     va_start( arg, msg ); 
 
     int required = VSNPRINTF( NULL, 0, msg, arg );

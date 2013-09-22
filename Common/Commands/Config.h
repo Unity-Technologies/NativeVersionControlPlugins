@@ -93,8 +93,7 @@ public:
 	};
 
 	ConfigResponse(ConfigRequest& req) 
-		: request(req), conn(req.conn), requiresNetwork(false), 
-		  enablesCheckout(true), enablesLocking(true), enablesRevertUnchanged(true)
+		: requiresNetwork(false), enablesCheckout(true), enablesLocking(true), enablesRevertUnchanged(true), request(req), conn(req.conn)
 	{
 	}
 
@@ -154,7 +153,11 @@ public:
 			}
 			break;
 		}
+        default:
+        {
+            // Do nothing
 		}
+        }
 		conn.EndResponse();
 	}
 	

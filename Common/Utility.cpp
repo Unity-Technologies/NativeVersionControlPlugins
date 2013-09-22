@@ -99,7 +99,7 @@ string TrimStart(const string& str, char c)
 
 string TrimEnd(const string& str, char c)
 {
-	string::size_type i1 = str.length() - 1;
+	int i1 = (int)str.length() - 1;
 	
 	while ( i1 >= 0 && str[i1] == c) 
 	{
