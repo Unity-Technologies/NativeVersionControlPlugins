@@ -19,9 +19,9 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CM_BIN_DIR} )
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CM_ROOT_DIRECTORY} )
 
 MESSAGE( "==========================================")
-MESSAGE( "Root:   " ${CM_ROOT_DIRECTORY} )
-MESSAGE( "Bin:    " ${CM_BIN_DIR} )
-MESSAGE( "Distrib:" ${CM_DISTRIB_DIR} )
+MESSAGE( "Root:       " ${CM_ROOT_DIRECTORY} )
+MESSAGE( "Bin:        " ${CM_BIN_DIR} )
+MESSAGE( "Distrib:    " ${CM_DISTRIB_DIR} )
 MESSAGE( "==========================================")
 
 ################################################################################################

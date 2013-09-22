@@ -112,12 +112,12 @@ CM_TARGET_BEGIN(
 		)
 	ENDIF (WIN32)
 
-	IF (UNIX)
+	IF (UNIX AND NOT APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
 			./Source/P4Plugin_Posix.cpp
 		)
-	ENDIF (UNIX)
+	ENDIF (UNIX AND NOT APPLE)
 	
 	# Libraries
 	# -----------------------------------------------
@@ -133,6 +133,7 @@ CM_TARGET_BEGIN(
 	ENDIF (APPLE)
 	
 	IF (WIN32)
+		#TODO: Check for $(CONFIGURATION) is Debug or Release
 		CM_TARGET_ADD_LIBRARIES(
 			shlwapi.lib
 			ws2_32.lib
@@ -144,7 +145,7 @@ CM_TARGET_BEGIN(
 		)
 	ENDIF (WIN32)
 	
-	IF (UNIX)
+	IF (UNIX AND NOT APPLE)
 		CM_TARGET_ADD_LIBRARIES(
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/linux32/libclient.a
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/linux32/librpc.a
@@ -153,7 +154,7 @@ CM_TARGET_BEGIN(
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/linux32/libssl.a
 			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/linux32/libcrypto.a
 		)
-	ENDIF (UNIX)
+	ENDIF (UNIX AND NOT APPLE)
 	
 	# Link flags
 	# -----------------------------------------------
@@ -165,9 +166,9 @@ CM_TARGET_BEGIN(
 		CM_TARGET_ADD_LINK_FLAGS ( "" )
 	ENDIF (WIN32)
 
-	IF (UNIX)
+	IF (UNIX AND NOT APPLE)
 		CM_TARGET_ADD_LINK_FLAGS ( "-g -fpermissive -lrt -ldl -lstdc++" )
-	ENDIF (UNIX)
+	ENDIF (UNIX AND NOT APPLE)
 	
 # End of target definition
 # -----------------------------------------------
