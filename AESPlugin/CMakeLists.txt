@@ -14,10 +14,45 @@ CM_TARGET_BEGIN(
 	# Includes
 	# -----------------------------------------------
 	CM_TARGET_ADD_INCLUDES(../Common)
+	CM_TARGET_ADD_INCLUDES(./External/openSSL/include)
+	CM_TARGET_ADD_INCLUDES(./External/simpleJSON)
+	
+	IF (APPLE)
+		CM_TARGET_ADD_INCLUDES(./External/curl/macosx32/include)
+	ENDIF (APPLE)
+	
+	IF (WIN32)
+		CM_TARGET_ADD_INCLUDES(./External/curl/win32/include)
+	ENDIF (WIN32)
+	
+	IF (UNIX AND NOT APPLE)
+		CM_TARGET_ADD_INCLUDES(./External/curl/linux32/include)
+	ENDIF (UNIX AND NOT APPLE)
 	
 	# Defines
 	# -----------------------------------------------
-	
+	IF (APPLE)
+		CM_TARGET_ADD_DEFINES(
+		)
+	ENDIF (APPLE)
+
+	IF (WIN32)
+		CM_TARGET_ADD_DEFINES(
+			-D_CRT_SECURE_NO_WARNINGS
+			-D_CRT_SECURE_NODEPRECATE
+			-D_CRT_NONSTDC_NO_DEPRECATE
+			-D_SCL_SECURE_NO_DEPRECATE
+			-D_SECURE_SCL=0
+			-D_WINDOWS
+			-DWIN32
+		)
+	ENDIF (WIN32)
+
+	IF (UNIX AND NOT APPLE)
+		CM_TARGET_ADD_DEFINES(
+		)
+	ENDIF (UNIX AND NOT APPLE)
+
 	# Sources
 	# -----------------------------------------------
 	CM_TARGET_ADD_SOURCES( 
@@ -49,6 +84,10 @@ CM_TARGET_BEGIN(
 	
 	CM_TARGET_ADD_SOURCES( 
 		"Sources"
+		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSON.h
+		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSON.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSONValue.h
+		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSONValue.cpp
 	)
 	
 	IF (APPLE)
@@ -76,24 +115,33 @@ CM_TARGET_BEGIN(
 	# -----------------------------------------------
 	IF (APPLE)
 		CM_TARGET_ADD_LIBRARIES(
+			${CMAKE_CURRENT_SOURCE_DIR}/External/curl/macosx32/lib/libcurl.a
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/macosx32/lib/libcrypto.a
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/macosx32/lib/libssl.a
 		)
 	ENDIF (APPLE)
 	
 	IF (WIN32)
 		CM_TARGET_ADD_LIBRARIES(
 			shlwapi.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/External/curl/win32/lib/libcurl_a_X86.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/macosx32/lib/libeay32.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/macosx32/lib/ssleay32.lib
 		)
 	ENDIF (WIN32)
 	
 	IF (UNIX AND NOT APPLE)
 		CM_TARGET_ADD_LIBRARIES(
+			${CMAKE_CURRENT_SOURCE_DIR}/External/curl/linux32/lib/libcurl.a
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/linux32/lib/libcrypto.a
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/linux32/lib/libssl.a
 		)
 	ENDIF (UNIX AND NOT APPLE)
 	
 	# Link flags
 	# -----------------------------------------------
 	IF (APPLE)
-		CM_TARGET_ADD_LINK_FLAGS ( "-arch i386 -g -framework Cocoa -lstdc++" )
+		CM_TARGET_ADD_LINK_FLAGS ( "-arch i386 -g -framework Cocoa -lstdc++ -lz" )
 	ENDIF (APPLE)
 	
 	IF (WIN32)

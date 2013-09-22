@@ -36,7 +36,7 @@ public:
 	{	
 		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
 		string msg(data);
-		bool propagate = true;
+		//bool propagate = true;
 		size_t msgLen = msg.length();
 		
 		if (level != 48)

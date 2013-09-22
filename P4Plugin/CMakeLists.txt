@@ -98,6 +98,50 @@ CM_TARGET_BEGIN(
 		./Source/P4Utility.cpp
 	)
 	
+	CM_TARGET_ADD_SOURCES( 
+		"External"
+		./Source/r12.2/include/p4/charcvt.h
+		./Source/r12.2/include/p4/clientapi.h
+		./Source/r12.2/include/p4/clientmerge.h
+		./Source/r12.2/include/p4/clientprog.h
+		./Source/r12.2/include/p4/clientresolvea.h
+		./Source/r12.2/include/p4/clientuser.h
+		./Source/r12.2/include/p4/datetime.h
+		./Source/r12.2/include/p4/debug.h
+		./Source/r12.2/include/p4/diff.h
+		./Source/r12.2/include/p4/echoctl.h
+		./Source/r12.2/include/p4/enviro.h
+		./Source/r12.2/include/p4/error.h
+		./Source/r12.2/include/p4/errorlog.h
+		./Source/r12.2/include/p4/errornum.h
+		./Source/r12.2/include/p4/filesys.h
+		./Source/r12.2/include/p4/handler.h
+		./Source/r12.2/include/p4/hostenv.h
+		./Source/r12.2/include/p4/i18napi.h
+		./Source/r12.2/include/p4/ident.h
+		./Source/r12.2/include/p4/keepalive.h
+		./Source/r12.2/include/p4/mapapi.h
+		./Source/r12.2/include/p4/msgclient.h
+		./Source/r12.2/include/p4/msgserver.h
+		./Source/r12.2/include/p4/netconnect.h
+		./Source/r12.2/include/p4/netportparser.h
+		./Source/r12.2/include/p4/ntservice.h
+		./Source/r12.2/include/p4/options.h
+		./Source/r12.2/include/p4/p4tags.h
+		./Source/r12.2/include/p4/pathsys.h
+		./Source/r12.2/include/p4/runcmd.h
+		./Source/r12.2/include/p4/signaler.h
+		./Source/r12.2/include/p4/spec.h
+		./Source/r12.2/include/p4/stdhdrs.h
+		./Source/r12.2/include/p4/strarray.h
+		./Source/r12.2/include/p4/strbuf.h
+		./Source/r12.2/include/p4/strdict.h
+		./Source/r12.2/include/p4/strops.h
+		./Source/r12.2/include/p4/strtable.h
+		./Source/r12.2/include/p4/threading.h
+		./Source/r12.2/include/p4/vararray.h
+	)
+	
 	IF (APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"

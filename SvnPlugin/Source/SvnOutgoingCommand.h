@@ -7,7 +7,7 @@ class SvnCommand<OutgoingRequest>
 public:
 	bool Run(SvnTask& task, OutgoingRequest& req, OutgoingResponse& resp)
 	{
-		bool recursive = req.args.size() > 1;
+		//bool recursive = req.args.size() > 1;
 		Changes changes;
 		GetChanges(task, changes);
 		resp.changeSets.swap(changes);

@@ -17,7 +17,7 @@ static time_t g_StatusNextCacheUpdateTime = 0;
 static VersionedAssetList g_StatusResultAssetsCache;
 static std::set<string> g_StatusResultPathsCache;
 
-SvnTask::SvnTask() : m_Connection(NULL), m_IsOnline(false)
+SvnTask::SvnTask() : m_IsOnline(false), m_Connection(NULL)
 {
 	SetSvnExecutable(""); // Set default svn executable
 }
@@ -590,7 +590,7 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		// The last field is the file path and can include spaces
 		if (StartsWith(line, "--- Changelist"))
 		{
-			const int prefixLen = 15; // "-- Changelist '" length
+			//const int prefixLen = 15; // "-- Changelist '" length
 			currentChangelist = Trim(TrimEnd(line.substr(15), ':'), '\'');
 			continue;
 		}
