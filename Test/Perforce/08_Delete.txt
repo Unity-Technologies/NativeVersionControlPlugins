@@ -11,19 +11,7 @@ v1:login -s
 v1:'login' not necessary, no password set for this user.
 i1://depot/testfile2.txt#1 - opened for delete (level 48)
 o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
-v1:login -s
-v1:'login' not necessary, no password set for this user.
-d1:end of list
-r1:end of response
---
-c:status recurse
-1
-./Test/tmp/testclient/testfile2.txt
-0
---
-o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
 v1:login -s
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
@@ -51,5 +39,20 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
+r1:end of response
+--
+c:status recurse
+1
+./Test/tmp/testclient/testfile2.txt
+0
+--
+o1:-1
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/testfile2.txt
+o1:<absroot>/testfile2.txt
+o1:66
+d1:end of list
 r1:end of response
 --
