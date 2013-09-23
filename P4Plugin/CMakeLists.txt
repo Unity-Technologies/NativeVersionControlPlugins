@@ -89,9 +89,11 @@ CM_TARGET_BEGIN(
 		./Source/P4SpecCommand.cpp
 		./Source/P4StatusBaseCommand.h
 		./Source/P4StatusBaseCommand.cpp
+		./Source/P4StatusCommand.h
 		./Source/P4StatusCommand.cpp
 		./Source/P4SubmitCommand.cpp
 		./Source/P4FileModeCommand.cpp
+		./Source/P4Task.h
 		./Source/P4Task.cpp
 		./Source/P4UnlockCommand.cpp
 		./Source/P4Utility.h
