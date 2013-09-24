@@ -90,6 +90,20 @@ CM_TARGET_BEGIN(
 		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSONValue.cpp
 	)
 	
+	CM_TARGET_ADD_SOURCES( 
+		"Sources"
+		./Source/AESConnection.h
+		./Source/AESConnection.cpp
+		./Source/AESRequest.h
+		./Source/AESRequest.cpp
+		./Source/AESResponse.h
+		./Source/AESResponse.cpp
+		./Source/AESCommand.h
+		./Source/AESCommand.cpp
+		./Source/AESTask.h
+		./Source/AESTask.cpp
+	)
+
 	IF (APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
