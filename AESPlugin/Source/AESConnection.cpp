@@ -10,11 +10,8 @@ AESConnection::~AESConnection()
         curl_easy_cleanup(m_handle);
 }
 
-int AESConnection::Initialize()
+bool AESConnection::Initialize()
 {
     m_handle = curl_easy_init();
-    if (m_handle)
-    {
-        
-    }
+    return (m_handle != NULL);
 }
