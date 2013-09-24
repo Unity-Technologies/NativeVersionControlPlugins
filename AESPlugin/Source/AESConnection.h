@@ -8,7 +8,7 @@ public:
     AESConnection();
     ~AESConnection();
     
-    int Initialize();
+    bool Initialize();
 
 private:
     CURL* m_handle;
