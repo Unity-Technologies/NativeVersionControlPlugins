@@ -34,12 +34,17 @@ protected:
     bool CheckoutAssets(VersionedAssetList& assetList);
     bool GetAssets(VersionedAssetList& assetList);
     bool RevertAssets(VersionedAssetList& assetList);
+    bool RemoveAssets(VersionedAssetList& assetList);
+    bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList);
     bool ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList);
     bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false);
     bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
+    bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool GetAssetsChanges(Changes& changes);
     bool GetAssetsIncomingChanges(Changes& changes);
+    bool UpdateRevision(const ChangelistRevision& revision);
+    bool DeleteRevision(const ChangelistRevision& revision);
 
 private:
     void Initialize();

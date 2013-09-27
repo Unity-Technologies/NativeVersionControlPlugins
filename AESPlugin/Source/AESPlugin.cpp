@@ -125,6 +125,16 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
     return DummyPerform(assetList, kLocal|kSynced);
 }
 
+bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
+{
+    return DummyPerform(assetList, kLocal|kSynced);
+}
+
+bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList)
+{
+    return DummyPerform(toAssetList, kLocal|kSynced);
+}
+
 bool AESPlugin::ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     return DummyPerform(assetList, -1);
@@ -145,6 +155,11 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     return true;
 }
 
+bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList)
+{
+    return true;
+}
+
 bool AESPlugin::GetAssetsChanges(Changes& changes)
 {
     return true;
@@ -154,3 +169,14 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
 {
     return true;
 }
+
+bool AESPlugin::UpdateRevision(const ChangelistRevision& revision)
+{
+    return true;
+}
+
+bool AESPlugin::DeleteRevision(const ChangelistRevision& revision)
+{
+    return true;
+}
+
