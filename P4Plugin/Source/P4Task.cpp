@@ -189,7 +189,7 @@ const std::string& P4Task::GetProjectPath() const
 int P4Task::Run()
 {
 	m_Connection = new Connection("./Library/p4plugin.log");
-
+    m_Connection->Log().SetLogLevel(LOG_DEBUG);
 
 	try 
 	{

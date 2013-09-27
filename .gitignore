@@ -1,4 +1,5 @@
 *.o
 Build/
+Library/
 PerforcePlugin
 SubversionPlugin

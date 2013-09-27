@@ -1,0 +1,44 @@
+c:pluginConfig pluginTraits
+--
+o1:3
+o8:requiresNetwork
+o8:enablesCheckout
+o8:enablesGetLatestOnChangeSetSubset
+o1:3
+o1:aesURL
+o8:URL
+o8:The AES URL
+o1:
+o1:1
+o1:aesUsername
+o8:Username
+o8:The AES username
+o1:
+o1:1
+o1:aesPassword
+o8:Password
+o8:The AES password
+o1:
+o1:2
+o1:overlays
+o1:9
+o1:1
+o1:default
+o1:4
+o1:default
+o1:16
+o1:default
+o1:32
+o1:default
+o1:64
+o1:default
+o1:128
+o1:default
+o1:256
+o1:default
+o1:512
+o1:default
+o1:1024
+o1:default
+r1:end of response
+--
