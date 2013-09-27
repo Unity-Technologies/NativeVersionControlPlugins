@@ -207,18 +207,26 @@ bool VersionControlPlugin::HandleAdd()
     return true;
 }
 
-bool VersionControlPlugin::HandleChangeDescription(const CommandArgs& args)
+bool VersionControlPlugin::HandleChangeDescription()
 {
     GetConnection().Log().Debug() << "HandleChangeDescription" << Endl << Flush;
 
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    ChangelistRevision revision;
+    GetConnection() >> revision;
+    
+    if (UpdateRevision(revision))
+    {
+        SetOnline();
+    }
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
 
-bool VersionControlPlugin::HandleChangeMove(const CommandArgs& args)
+bool VersionControlPlugin::HandleChangeMove()
 {
     GetConnection().Log().Debug() << "HandleChangeMove" << Endl << Flush;
     
@@ -434,59 +442,76 @@ bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
 }
 
 
-bool VersionControlPlugin::HandleDelete(const CommandArgs& args)
+bool VersionControlPlugin::HandleDelete()
 {
     GetConnection().Log().Debug() << "HandleDelete" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+    
+	GetConnection().BeginList();
+    if (RemoveAssets(assetList))
+    {
+        SetOnline();
+        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
+        {
+            GetConnection() << (*i);
+        }
+    }
+    GetConnection().EndList();
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
 
-bool VersionControlPlugin::HandleDeleteChanges(const CommandArgs& args)
+bool VersionControlPlugin::HandleDeleteChanges()
 {
     GetConnection().Log().Debug() << "HandleDeleteChanges" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    ChangelistRevisions changes;
+    GetConnection() >> changes;
+    
+    if (changes.empty())
+    {
+        GetConnection().WarnLine("Changes to delete is empty");
+        PostHandleCommand(wasOnline);
+        return true;
+    }
+    
+    for (ChangelistRevisions::const_iterator i = changes.begin() ; i != changes.end() ; i++)
+    {
+        if (DeleteRevision(*i))
+        {
+            SetOnline();
+        }
+    }
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
 
-bool VersionControlPlugin::HandleDownload(const CommandArgs& args)
+bool VersionControlPlugin::HandleDownload()
 {
     GetConnection().Log().Debug() << "HandleDownload" << Endl << Flush;
-    
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
-    
-    return true;
+    return false;
 }
 
-bool VersionControlPlugin::HandleExit(const CommandArgs& args)
+bool VersionControlPlugin::HandleExit()
 {
     GetConnection().Log().Debug() << "HandleExit" << Endl << Flush;
-    
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
-    
-    return true;
+    return false;
 }
 
-bool VersionControlPlugin::HandleFileMode(const CommandArgs& args)
+bool VersionControlPlugin::HandleFileMode()
 {
     GetConnection().Log().Debug() << "HandleFileMode" << Endl << Flush;
-    
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
-    
-    return true;
+    return false;
 }
 
 bool VersionControlPlugin::HandleGetlatest()
@@ -537,18 +562,33 @@ bool VersionControlPlugin::HandleIncoming()
     return true;
 }
 
-bool VersionControlPlugin::HandleIncomingChangeAssets(const CommandArgs& args)
+bool VersionControlPlugin::HandleIncomingChangeAssets()
 {
     GetConnection().Log().Debug() << "HandleIncomingChangeAssets" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    ChangelistRevision cl;
+    GetConnection() >> cl;
+    
+    GetConnection().BeginList();
+    VersionedAssetList assetList;
+    if (GetIncomingAssetsChangeStatus(cl, assetList))
+    {
+        SetOnline();
+        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
+        {
+            GetConnection() << (*i);
+        }
+    }
+    GetConnection().EndList();
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
 
-bool VersionControlPlugin::HandleLock(const CommandArgs& args)
+bool VersionControlPlugin::HandleLock()
 {
     GetConnection().Log().Debug() << "HandleLock" << Endl << Flush;
     
@@ -573,7 +613,7 @@ bool VersionControlPlugin::HandleLock(const CommandArgs& args)
     return true;
 }
 
-bool VersionControlPlugin::HandleLogin(const CommandArgs& args)
+bool VersionControlPlugin::HandleLogin()
 {
     GetConnection().Log().Debug() << "HandleLogin" << Endl << Flush;
     
@@ -588,14 +628,28 @@ bool VersionControlPlugin::HandleMove(const CommandArgs& args)
 {
     GetConnection().Log().Debug() << "HandleMove" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+    
+	GetConnection().BeginList();
+    if (MoveAssets(assetList, assetList))
+    {
+        SetOnline();
+        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
+        {
+            GetConnection() << (*i);
+        }
+    }
+    GetConnection().EndList();
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
 
-bool VersionControlPlugin::HandleQueryConfigParameters(const CommandArgs& args)
+bool VersionControlPlugin::HandleQueryConfigParameters()
 {
     GetConnection().Log().Debug() << "HandleQueryConfigParameters" << Endl << Flush;
     
@@ -606,7 +660,7 @@ bool VersionControlPlugin::HandleQueryConfigParameters(const CommandArgs& args)
     return true;
 }
 
-bool VersionControlPlugin::HandleResolve(const CommandArgs& args)
+bool VersionControlPlugin::HandleResolve()
 {
     GetConnection().Log().Debug() << "HandleResolve" << Endl << Flush;
     
@@ -617,7 +671,7 @@ bool VersionControlPlugin::HandleResolve(const CommandArgs& args)
     return true;
 }
 
-bool VersionControlPlugin::HandleRevert(const CommandArgs& args)
+bool VersionControlPlugin::HandleRevert()
 {
     GetConnection().Log().Debug() << "HandleRevert" << Endl << Flush;
     
@@ -642,7 +696,7 @@ bool VersionControlPlugin::HandleRevert(const CommandArgs& args)
     return true;
 }
 
-bool VersionControlPlugin::HandleRevertChanges(const CommandArgs& args)
+bool VersionControlPlugin::HandleRevertChanges()
 {
     GetConnection().Log().Debug() << "HandleRevertChanges" << Endl << Flush;
     
@@ -712,7 +766,7 @@ bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
     return true;
 }
 
-bool VersionControlPlugin::HandleUnlock(const CommandArgs& args)
+bool VersionControlPlugin::HandleUnlock()
 {
     GetConnection().Log().Debug() << "HandleUnlock" << Endl << Flush;
     
@@ -808,10 +862,10 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleAdd();
         
         case UCOM_ChangeDescription:
-            return HandleChangeDescription(args);
+            return HandleChangeDescription();
             
         case UCOM_ChangeMove:
-            return HandleChangeMove(args);
+            return HandleChangeMove();
             
         case UCOM_Changes:
             return HandleChanges();
@@ -829,19 +883,19 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleCustomCommand(args);
             
         case UCOM_Delete:
-            return HandleDelete(args);
+            return HandleDelete();
             
         case UCOM_DeleteChanges:
-            return HandleDeleteChanges(args);
+            return HandleDeleteChanges();
             
         case UCOM_Download:
-            return HandleDownload(args);
+            return HandleDownload();
             
         case UCOM_Exit:
-            return HandleExit(args);
+            return HandleExit();
             
         case UCOM_FileMode:
-            return HandleFileMode(args);
+            return HandleFileMode();
             
         case UCOM_GetLatest:
             return HandleGetlatest();
@@ -850,28 +904,28 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleIncoming();
             
         case UCOM_IncomingChangeAssets:
-            return HandleIncomingChangeAssets(args);
+            return HandleIncomingChangeAssets();
             
         case UCOM_Lock:
-            return HandleLock(args);
+            return HandleLock();
             
         case UCOM_Login:
-            return HandleLogin(args);
+            return HandleLogin();
             
         case UCOM_Move:
             return HandleMove(args);
             
         case UCOM_QueryConfigParameters:
-            return HandleQueryConfigParameters(args);
+            return HandleQueryConfigParameters();
             
         case UCOM_Resolve:
-            return HandleResolve(args);
+            return HandleResolve();
             
         case UCOM_Revert:
-            return HandleRevert(args);
+            return HandleRevert();
             
         case UCOM_RevertChanges:
-            return HandleRevertChanges(args);
+            return HandleRevertChanges();
             
         case UCOM_Status:
             return HandleStatus(args);
@@ -880,7 +934,7 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleSubmit(args);
             
         case UCOM_Unlock:
-            return HandleUnlock(args);
+            return HandleUnlock();
             
         default:
             GetConnection().EndResponse();
