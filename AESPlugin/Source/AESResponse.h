@@ -1,7 +1,8 @@
 #ifndef AESRESPONSE_H
 #define AESRESPONSE_H
 
-class AESResponse {
+class AESResponse
+{
 };
 
 #endif // AESRESPONSE_H

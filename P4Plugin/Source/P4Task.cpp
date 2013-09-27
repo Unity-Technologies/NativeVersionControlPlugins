@@ -221,7 +221,7 @@ const P4Streams& P4Task::GetP4Streams() const
 int P4Task::Run()
 {
 	m_Connection = new Connection("./Library/p4plugin.log");
-
+    m_Connection->Log().SetLogLevel(LOG_DEBUG);
 
 	try 
 	{

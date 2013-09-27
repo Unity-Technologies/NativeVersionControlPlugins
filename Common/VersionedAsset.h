@@ -72,5 +72,5 @@ typedef std::set<VersionedAsset> VersionedAssetSet;
 std::vector<std::string> Paths(const VersionedAssetList& assets);
 
 class Connection;
-Connection& operator<<(Connection& p, const VersionedAsset& v);
-Connection& operator>>(Connection& p, VersionedAsset& v);
+Connection& operator<<(Connection& p, const VersionedAsset& asset);
+Connection& operator>>(Connection& p, VersionedAsset& asset);

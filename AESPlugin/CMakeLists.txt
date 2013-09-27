@@ -6,7 +6,7 @@ CM_TARGET_BEGIN(
 	AESPlugin
 	EXECUTABLE
 	.
-	AESPlugin
+	AssetExchangeServerPlugin
 )	
 	# Dependencies
 	# -----------------------------------------------
@@ -57,29 +57,31 @@ CM_TARGET_BEGIN(
 	# -----------------------------------------------
 	CM_TARGET_ADD_SOURCES( 
 		"Common"
-		../Common/Changes.h
-	    ../Common/Changes.cpp
-	    ../Common/Command.h
-	    ../Common/Command.cpp
-	    ../Common/CommandLine.h
-	    ../Common/CommandLine.cpp
-	    ../Common/Connection.h
-	    ../Common/Connection.cpp
-	    ../Common/Dispatch.h
-	    ../Common/FileSystem.h
-	    ../Common/FileSystem.cpp
-	    ../Common/Log.h
-	    ../Common/Log.cpp
-	    ../Common/Pipe.h
-	    ../Common/Pipe.cpp
-	    ../Common/POpen.h
-	    ../Common/POpen.cpp
-	    ../Common/Status.h
-	    ../Common/Status.cpp
-	    ../Common/Utility.h
-	    ../Common/Utility.cpp
-	    ../Common/VersionedAsset.h
-	    ../Common/VersionedAsset.cpp
+        ../Common/Changes.cpp
+        ../Common/Changes.h
+        ../Common/Command.cpp
+        ../Common/Command.h
+        ../Common/CommandLine.cpp
+        ../Common/CommandLine.h
+        ../Common/Connection.cpp
+        ../Common/Connection.h
+        ../Common/Dispatch.h
+        ../Common/FileSystem.cpp
+        ../Common/FileSystem.h
+        ../Common/Log.cpp
+        ../Common/Log.h
+        ../Common/Pipe.cpp
+        ../Common/Pipe.h
+        ../Common/POpen.cpp
+        ../Common/POpen.h
+        ../Common/Status.cpp
+        ../Common/Status.h
+        ../Common/Utility.cpp
+        ../Common/Utility.h
+        ../Common/VersionControlPlugin.cpp
+        ../Common/VersionControlPlugin.h
+        ../Common/VersionedAsset.cpp
+        ../Common/VersionedAsset.h
 	)
 	
 	CM_TARGET_ADD_SOURCES( 
@@ -92,36 +94,34 @@ CM_TARGET_BEGIN(
 	
 	CM_TARGET_ADD_SOURCES( 
 		"Sources"
-		./Source/AESConnection.h
-		./Source/AESConnection.cpp
+		./Source/AESClient.h
+		./Source/AESClient.cpp
 		./Source/AESRequest.h
 		./Source/AESRequest.cpp
 		./Source/AESResponse.h
 		./Source/AESResponse.cpp
-		./Source/AESCommand.h
-		./Source/AESCommand.cpp
-		./Source/AESTask.h
-		./Source/AESTask.cpp
+		./Source/AESPlugin.h
+		./Source/AESPlugin.cpp
 	)
 
 	IF (APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
-			./Source/AESPlugin_OSX.cpp
+			./Source/AESMain_OSX.cpp
 		)
 	ENDIF (APPLE)
 	
 	IF (WIN32)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
-			./Source/AESPlugin_WIN.cpp
+			./Source/AESMain_WIN.cpp
 		)
 	ENDIF (WIN32)
 	
 	IF (UNIX AND NOT APPLE)
 		CM_TARGET_ADD_SOURCES( 
 			"Sources"
-			./Source/AESPlugin_Posix.cpp
+			./Source/AESMain_Posix.cpp
 		)
 	ENDIF (UNIX AND NOT APPLE)
 	

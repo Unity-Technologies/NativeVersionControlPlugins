@@ -36,3 +36,7 @@ struct VCSStatusItemCmp
 typedef std::set<VCSStatusItem, VCSStatusItemCmp> VCSStatus;
 
 bool StatusContains(const VCSStatus& status, const std::string& needle);
+
+class Connection;
+
+Connection& operator<<(Connection& p, const VCSStatus& st);

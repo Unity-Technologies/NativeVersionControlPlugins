@@ -9,42 +9,6 @@
 
 using namespace std;
 
-Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma)
-{
-	// Convertion of p4 errors to unity vcs errors
-	for (VCSStatus::const_iterator i = st.begin(); i != st.end(); ++i)
-	{
-		switch (i->severity)
-		{
-		case VCSSEV_OK: 
-			p.VerboseLine(i->message, ma);
-			break;
-		case VCSSEV_Info:
-			p.InfoLine(i->message, ma);
-			break;
-		case VCSSEV_Warn:
-			p.WarnLine(i->message, ma);
-			break;
-		case VCSSEV_Error:
-			p.ErrorLine(i->message, ma);
-			break;
-		case VCSSEV_Command: 
-			p.Command(i->message, ma);
-			break;
-		default:
-			// MAPlugin will make Unity restart the plugin
-			p.ErrorLine(string("<Unknown errortype>: ") + i->message, MAPlugin);
-			break;
-		}
-	}
-	return p;
-}
-
-Connection& operator<<(Connection& p, const VCSStatus& st)
-{
-	return SendToConnection(p, st, MAGeneral);
-}
-
 // Global map of all commands registered at initialization time
 typedef std::map<string, P4Command*> CommandMap;
 static CommandMap* s_Commands = NULL;

@@ -115,20 +115,50 @@ vector<string> Paths(const VersionedAssetList& assets)
 	return result;
 }
 
+
+std::string StateToString(int state)
+{
+    std::string res = "";
+	if (((State)state & kLocal) == kLocal) res.append("Local,");
+    if (((State)state & kSynced) == kSynced) res.append("Synced,");
+    if (((State)state & kOutOfSync) == kOutOfSync) res.append("OutOfSync,");
+    if (((State)state & kMissing) == kMissing) res.append("Missing,");
+    if (((State)state & kCheckedOutLocal) == kCheckedOutLocal) res.append("CheckedOutLocal,");
+    if (((State)state & kCheckedOutRemote) == kCheckedOutRemote) res.append("CheckedOutRemote,");
+    if (((State)state & kDeletedLocal) == kDeletedLocal) res.append("DeletedLocal,");
+    if (((State)state & kDeletedRemote) == kDeletedRemote) res.append("DeletedRemote,");
+    if (((State)state & kAddedLocal) == kAddedLocal) res.append("AddedLocal,");
+    if (((State)state & kAddedRemote) == kAddedRemote) res.append("AddedRemote,");
+    if (((State)state & kConflicted) == kConflicted) res.append("Conflicted,");
+    if (((State)state & kLockedLocal) == kLockedLocal) res.append("LockedLocal,");
+    if (((State)state & kLockedRemote) == kLockedRemote) res.append("LockedRemote,");
+    if (((State)state & kUpdating) == kUpdating) res.append("Updating,");
+    if (((State)state & kReadOnly) == kReadOnly) res.append("ReadOnly,");
+    if (((State)state & kMetaFile) == kMetaFile) res.append("MetaFile,");
+    if (((State)state & kMovedLocal) == kMovedLocal) res.append("MovedLocal,");
+    if (((State)state & kMovedRemote) == kMovedRemote) res.append("MovedRemote,");
+    
+    if (res.size() == 0) return "None";
+    
+    res.resize(res.size()-1);
+    return res;
+}
+
 Connection& operator<<(Connection& p, const VersionedAsset& asset)
 {
+    p.Log().Debug() << "State for " << asset.GetPath() << " is " << StateToString(asset.GetState()) << Endl << Flush;
 	p.DataLine(asset.GetPath());
 	p.DataLine(asset.GetState());
 	return p;
 }
-
-Connection& operator>>(Connection& p, VersionedAsset& v)
+Connection& operator>>(Connection& p, VersionedAsset& asset)
 {
     string line;
 	p.ReadLine(line);
-	v.SetPath(line);
+	asset.SetPath(line);
 	p.ReadLine(line);
 	int state = atoi(line.c_str());
-	v.SetState(state);
+	asset.SetState(state);
+    p.Log().Debug() << "State for " << asset.GetPath() << " is " << StateToString(asset.GetState()) << Endl << Flush;
 	return p;
 }
