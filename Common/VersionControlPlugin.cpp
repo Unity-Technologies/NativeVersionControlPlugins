@@ -71,10 +71,6 @@ VersionControlPlugin::VersionControlPlugin(int argc, char** argv) : m_ProjectPat
     InitializeArguments(argc, argv);
 }
 
-VersionControlPlugin::~VersionControlPlugin()
-{
-}
-
 void VersionControlPlugin::InitializeArguments(int argc, char** argv)
 {
     for (int i = 1 ; i < argc ; )
@@ -108,7 +104,12 @@ int VersionControlPlugin::Run()
 {
     VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
     m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName());
-    GetConnection().Log().SetLogLevel(LOG_DEBUG);
+    
+    i = m_arguments.find("-v");
+    if (i != m_arguments.end())
+    {
+        GetConnection().Log().SetLogLevel(LOG_DEBUG);
+    }
     
 	try
 	{
@@ -598,7 +599,7 @@ bool VersionControlPlugin::HandleLock()
 	GetConnection() >> assetList;
     
 	GetConnection().BeginList();
-    if (AddAssets(assetList))
+    if (LockAssets(assetList))
     {
         SetOnline();
         for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
@@ -618,7 +619,10 @@ bool VersionControlPlugin::HandleLogin()
     GetConnection().Log().Debug() << "HandleLogin" << Endl << Flush;
     
     bool m_WasOnline = PreHandleCommand();
-    // TODO
+    if (Login())
+    {
+        SetOnline();
+    }
     PostHandleCommand(m_WasOnline);
     
     return true;
@@ -653,9 +657,13 @@ bool VersionControlPlugin::HandleQueryConfigParameters()
 {
     GetConnection().Log().Debug() << "HandleQueryConfigParameters" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    VersionControlPluginCfgFields& fields = GetConfigFields();
+    for (VersionControlPluginCfgFields::iterator i = fields.begin() ; i != fields.end() ; i++)
+    {
+        VersionControlPluginCfgField& field = (*i);
+        GetConnection().DataLine(string("text ") + field.GetLabel());
+    }
+    GetConnection().DataLine("");
     
     return true;
 }
@@ -664,9 +672,23 @@ bool VersionControlPlugin::HandleResolve()
 {
     GetConnection().Log().Debug() << "HandleResolve" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+    
+	GetConnection().BeginList();
+    if (ResolveAssets(assetList))
+    {
+        SetOnline();
+        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
+        {
+            GetConnection() << (*i);
+        }
+    }
+    GetConnection().EndList();
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
@@ -700,9 +722,24 @@ bool VersionControlPlugin::HandleRevertChanges()
 {
     GetConnection().Log().Debug() << "HandleRevertChanges" << Endl << Flush;
     
-    bool m_WasOnline = PreHandleCommand();
-    // TODO
-    PostHandleCommand(m_WasOnline);
+    bool wasOnline = PreHandleCommand();
+    
+    ChangelistRevision cl;
+    GetConnection() >> cl;
+    
+    GetConnection().BeginList();
+    VersionedAssetList assetList;
+    if (RevertChanges(cl, assetList))
+    {
+        SetOnline();
+        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
+        {
+            GetConnection() << (*i);
+        }
+    }
+    GetConnection().EndList();
+    
+    PostHandleCommand(wasOnline);
     
     return true;
 }
@@ -776,7 +813,7 @@ bool VersionControlPlugin::HandleUnlock()
 	GetConnection() >> assetList;
     
 	GetConnection().BeginList();
-    if (AddAssets(assetList))
+    if (UnlockAssets(assetList))
     {
         SetOnline();
         for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)

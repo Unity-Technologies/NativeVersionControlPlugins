@@ -30,6 +30,16 @@ public:
         kPasswordField = 2
     };
 
+    VersionControlPluginCfgField()
+    {
+        m_Name = "";
+        m_Label = "";
+        m_Description = "";
+        m_DefaultValue = "";
+        m_Flags = kNoneField;
+        m_Value = "";
+    }
+    
     VersionControlPluginCfgField(const std::string& name, const std::string& label, const std::string& description, const std::string& defaultValue, FieldFlags flags)
     {
         m_Name = name;
@@ -39,29 +49,26 @@ public:
         m_Flags = flags;
         m_Value = m_DefaultValue;
     }
-
-	const std::string& GetName() const { return m_Name; }
-	void SetName(const std::string& name) { m_Name = name; }
     
-	const std::string& GetLabel() const { return m_Label; }
-	void SetLabel(const std::string& label) { m_Label = label; }
-
+    VersionControlPluginCfgField(const VersionControlPluginCfgField& other)
+    {
+        m_Name = other.GetName();
+        m_Label = other.GetLabel();
+        m_Description = other.GetDescription();
+        m_DefaultValue = other.GetDefaultValue();
+        m_Flags = (FieldFlags)other.GetFlags();
+        m_Value = other.GetValue();
+    }
+    
+	const std::string& GetName() const { return m_Name; }
+    const std::string& GetLabel() const { return m_Label; }
 	const std::string& GetDescription() const { return m_Description; }
-    void SetDescription(const std::string& desc) { m_Description = desc; }
-
     const std::string& GetDefaultValue() const { return m_DefaultValue; }
-    void SetDefaultValue(const std::string& defaultValue) { m_DefaultValue = defaultValue; }
-
     const std::string& GetValue() const { return m_Value; }
 	void SetValue(const std::string& newValue) { m_Value = newValue; }
-    
-	bool IsRequired() const { return (m_Flags & kRequiredField) == kRequiredField; }
-	bool IsPassword() const { return (m_Flags & kPasswordField) == kPasswordField; }
-	
     int GetFlags() const { return m_Flags; }
-    void SetFlags(int flags) { m_Flags = (FieldFlags)flags; }
 
-    VersionControlPluginCfgField& operator=( const VersionControlPluginCfgField& rhs )
+    VersionControlPluginCfgField& operator= (const VersionControlPluginCfgField& rhs)
     {
         m_Name = rhs.GetName();
         m_Label = rhs.GetLabel();
@@ -136,7 +143,6 @@ protected:
     VersionControlPlugin();
     VersionControlPlugin(int argc, char** argv);
     VersionControlPlugin(const char* args);
-    ~VersionControlPlugin();
     
     Connection& GetConnection() { return (*m_Connection); }
 
@@ -157,13 +163,17 @@ protected:
     virtual int Connect() = 0;
     virtual void Disconnect() = 0;
     virtual bool IsConnected() = 0;
+    virtual int Login() = 0;
     
     virtual bool AddAssets(VersionedAssetList& assetList) = 0;
     virtual bool CheckoutAssets(VersionedAssetList& assetList) = 0;
     virtual bool GetAssets(VersionedAssetList& assetList) = 0;
     virtual bool RevertAssets(VersionedAssetList& assetList) = 0;
+    virtual bool ResolveAssets(VersionedAssetList& assetList) = 0;
     virtual bool RemoveAssets(VersionedAssetList& assetList) = 0;
     virtual bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList) = 0;
+    virtual bool LockAssets(VersionedAssetList& assetList) = 0;
+    virtual bool UnlockAssets(VersionedAssetList& assetList) = 0;
     virtual bool ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
     virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList) = 0;
     virtual bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false) = 0;
@@ -173,10 +183,7 @@ protected:
     virtual bool GetAssetsIncomingChanges(Changes& changes) = 0;
     virtual bool UpdateRevision(const ChangelistRevision& revision) = 0;
     virtual bool DeleteRevision(const ChangelistRevision& revision) = 0;
-
-	std::string m_ProjectPath;
-    VCSStatus m_Status;
-    VersionControlPluginMapOfArguments m_arguments;
+    virtual bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
 
     void NotifyOffline(const std::string& reason);
     void NotifyOnline();
@@ -225,6 +232,10 @@ private:
     
     int SelectVersion(const VersionControlPluginVersions& unitySupportedVersions);
 
+	std::string m_ProjectPath;
+    VCSStatus m_Status;
+    VersionControlPluginMapOfArguments m_arguments;
+    
     bool m_IsOnline;
     Connection* m_Connection;
     
