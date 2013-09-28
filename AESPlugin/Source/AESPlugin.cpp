@@ -26,6 +26,14 @@ AESPlugin::AESPlugin(int argc, char** argv) :
     Initialize();
 }
 
+AESPlugin::AESPlugin(const char* args) :
+    VersionControlPlugin(args),
+    m_IsConnected(false),
+    m_AES(NULL)
+{
+    Initialize();
+}
+
 AESPlugin::~AESPlugin()
 {
     Disconnect();
@@ -78,6 +86,15 @@ void AESPlugin::Disconnect()
     m_IsConnected = false;
 }
 
+int AESPlugin::Login()
+{
+    GetConnection().Log().Debug() << "Login" << Endl << Flush;
+    if (!IsConnected())
+        return -1;
+    
+    return 0;
+}
+
 bool DummyPerform(VersionedAssetList& assetList, int state)
 {
     VersionedAssetList::iterator i = assetList.begin();
@@ -125,6 +142,11 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
     return DummyPerform(assetList, kLocal|kSynced);
 }
 
+bool AESPlugin::ResolveAssets(VersionedAssetList& assetList)
+{
+    return DummyPerform(assetList, -1);
+}
+
 bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
 {
     return DummyPerform(assetList, kLocal|kSynced);
@@ -133,6 +155,16 @@ bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
 bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList)
 {
     return DummyPerform(toAssetList, kLocal|kSynced);
+}
+
+bool AESPlugin::LockAssets(VersionedAssetList& assetList)
+{
+    return false;
+}
+
+bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
+{
+    return false;
 }
 
 bool AESPlugin::ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList)
@@ -180,3 +212,7 @@ bool AESPlugin::DeleteRevision(const ChangelistRevision& revision)
     return true;
 }
 
+bool AESPlugin::RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList)
+{
+    return true;
+}

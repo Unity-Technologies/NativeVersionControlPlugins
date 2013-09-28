@@ -13,6 +13,7 @@ class AESPlugin: public VersionControlPlugin
 public:
     AESPlugin();
     AESPlugin(int argc, char** argv);
+    AESPlugin(const char* args);
     ~AESPlugin();
     
     inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
@@ -29,13 +30,17 @@ protected:
     int Connect();
     void Disconnect();
     inline bool IsConnected() { return m_IsConnected; }
+    int Login();
 
     bool AddAssets(VersionedAssetList& assetList);
     bool CheckoutAssets(VersionedAssetList& assetList);
     bool GetAssets(VersionedAssetList& assetList);
     bool RevertAssets(VersionedAssetList& assetList);
+    bool ResolveAssets(VersionedAssetList& assetList);
     bool RemoveAssets(VersionedAssetList& assetList);
     bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList);
+    bool LockAssets(VersionedAssetList& assetList);
+    bool UnlockAssets(VersionedAssetList& assetList);
     bool ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList);
     bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false);
@@ -45,6 +50,7 @@ protected:
     bool GetAssetsIncomingChanges(Changes& changes);
     bool UpdateRevision(const ChangelistRevision& revision);
     bool DeleteRevision(const ChangelistRevision& revision);
+    bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
 
 private:
     void Initialize();
