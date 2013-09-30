@@ -50,7 +50,7 @@ LogWriter& Endl(LogWriter& w);
 class LogStream
 {		
 public:
-	LogStream(const std::string& path, LogLevel level = LOG_NOTICE);
+	LogStream(const std::string& path, LogLevel level = LOG_DEBUG);
 	~LogStream();
 	
 	LogStream& Self(void);

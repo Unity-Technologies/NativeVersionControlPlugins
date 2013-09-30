@@ -133,22 +133,25 @@ int VersionControlPlugin::Run()
         
 		for ( ;; )
 		{
-            GetConnection().Log().Debug() << "ReadCommand" << Endl << Flush;
+            GetConnection().Log().Debug() << "ReadCommand" << Endl;
             
 			cmd = GetConnection().ReadCommand(args);
             
 			if (cmd == UCOM_Invalid)
+            {
+                GetConnection().Log().Debug() << "Invalid command" << Endl;
 				return 1; // error
-			
+			}
+            
             if (cmd == UCOM_Shutdown)
 			{
-                GetConnection().Log().Debug() << "Shutdown" << Endl << Flush;
+                GetConnection().Log().Debug() << "Shutdown" << Endl;
 				GetConnection().EndResponse();
 				return 0; // ok
 			}
 			
             if (!Dispatch(cmd, args))
-				return 1; // error
+				return 0; // error
 		}
 	}
 	catch (exception& e)
@@ -161,12 +164,16 @@ int VersionControlPlugin::Run()
 
 bool VersionControlPlugin::PreHandleCommand()
 {
+    GetConnection().Log().Debug() << "PreHandleCommand" << Endl;
+    
     ClearStatus();
     return IsOnline();
 }
 
 void VersionControlPlugin::PostHandleCommand(bool wasOnline)
 {
+    GetConnection().Log().Debug() << "PostHandleCommand " << (wasOnline?"WASONLINE":"WASOFFLINE") << Endl;
+    
 	GetConnection() << GetStatus();
 
     if (!wasOnline && IsOnline())
@@ -185,7 +192,7 @@ void VersionControlPlugin::PostHandleCommand(bool wasOnline)
 
 bool VersionControlPlugin::HandleAdd()
 {
-    GetConnection().Log().Debug() << "HandleAdd" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleAdd" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -201,6 +208,7 @@ bool VersionControlPlugin::HandleAdd()
             GetConnection() << (*i);
         }
     }
+    
     GetConnection().EndList();
     
     PostHandleCommand(wasOnline);
@@ -210,7 +218,7 @@ bool VersionControlPlugin::HandleAdd()
 
 bool VersionControlPlugin::HandleChangeDescription()
 {
-    GetConnection().Log().Debug() << "HandleChangeDescription" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleChangeDescription" << Endl;
 
     bool wasOnline = PreHandleCommand();
     
@@ -229,7 +237,7 @@ bool VersionControlPlugin::HandleChangeDescription()
 
 bool VersionControlPlugin::HandleChangeMove()
 {
-    GetConnection().Log().Debug() << "HandleChangeMove" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleChangeMove" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -257,7 +265,7 @@ bool VersionControlPlugin::HandleChangeMove()
 
 bool VersionControlPlugin::HandleChanges()
 {
-    GetConnection().Log().Debug() << "HandleChanges" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleChanges" << Endl;
 
     bool wasOnline = PreHandleCommand();
     
@@ -285,7 +293,7 @@ bool VersionControlPlugin::HandleChanges()
 
 bool VersionControlPlugin::HandleChangeStatus()
 {
-    GetConnection().Log().Debug() << "HandleChangeStatus" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleChangeStatus" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -311,7 +319,7 @@ bool VersionControlPlugin::HandleChangeStatus()
 
 bool VersionControlPlugin::HandleCheckout()
 {
-    GetConnection().Log().Debug() << "HandleCheckout " << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleCheckout " << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -336,7 +344,7 @@ bool VersionControlPlugin::HandleCheckout()
 
 bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleConfig" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleConfig" << Endl;
     
     if (args.size() < 2)
     {
@@ -353,12 +361,12 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
     string key = args[1];
     string value = Join(args.begin() + 2, args.end(), " ");
     
-    GetConnection().Log().Info() << "Got config " << key << " = '" << value << "'" << Endl << Flush;
+    GetConnection().Log().Info() << "Got config " << key << " = '" << value << "'" << Endl;
     
     if (key == "projectPath")
     {
         SetProjectPath(TrimEnd(value));
-        GetConnection().Log().Info() << "Set " << key << " to " << value << Endl << Flush;
+        GetConnection().Log().Info() << "Set " << key << " to " << value << Endl;
         GetConnection().EndResponse();
         return true;
     }
@@ -407,15 +415,7 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
     
     if (key == "end")
     {
-        if (!IsConnected())
-        {
-            GetConnection().DataLine("Cannot logout when not connected");
-        }
-        else
-        {
-            GetConnection().VerboseLine("logout");
-            Disconnect();
-        }
+        Disconnect();
         GetConnection().EndResponse();
         return true;
     }
@@ -426,6 +426,7 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
         return true;
     }
     
+    GetConnection().Log().Notice() << "Unknown config field set on version control plugin: " << key << Endl;
     GetConnection().WarnLine(ToString("Unknown config field set on version control plugin: ", key), MAConfig);
     GetConnection().EndResponse();
     return false;
@@ -433,7 +434,7 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleCustomCommand" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleCustomCommand" << Endl;
     
     bool m_WasOnline = PreHandleCommand();
     // TODO
@@ -445,7 +446,7 @@ bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleDelete()
 {
-    GetConnection().Log().Debug() << "HandleDelete" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleDelete" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -470,7 +471,7 @@ bool VersionControlPlugin::HandleDelete()
 
 bool VersionControlPlugin::HandleDeleteChanges()
 {
-    GetConnection().Log().Debug() << "HandleDeleteChanges" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleDeleteChanges" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -499,25 +500,25 @@ bool VersionControlPlugin::HandleDeleteChanges()
 
 bool VersionControlPlugin::HandleDownload()
 {
-    GetConnection().Log().Debug() << "HandleDownload" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleDownload" << Endl;
     return false;
 }
 
 bool VersionControlPlugin::HandleExit()
 {
-    GetConnection().Log().Debug() << "HandleExit" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleExit" << Endl;
     return false;
 }
 
 bool VersionControlPlugin::HandleFileMode()
 {
-    GetConnection().Log().Debug() << "HandleFileMode" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleFileMode" << Endl;
     return false;
 }
 
 bool VersionControlPlugin::HandleGetlatest()
 {
-    GetConnection().Log().Debug() << "HandleGetlatest" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleGetlatest" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -542,7 +543,7 @@ bool VersionControlPlugin::HandleGetlatest()
 
 bool VersionControlPlugin::HandleIncoming()
 {
-    GetConnection().Log().Debug() << "HandleIncoming" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleIncoming" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -565,7 +566,7 @@ bool VersionControlPlugin::HandleIncoming()
 
 bool VersionControlPlugin::HandleIncomingChangeAssets()
 {
-    GetConnection().Log().Debug() << "HandleIncomingChangeAssets" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleIncomingChangeAssets" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -591,7 +592,7 @@ bool VersionControlPlugin::HandleIncomingChangeAssets()
 
 bool VersionControlPlugin::HandleLock()
 {
-    GetConnection().Log().Debug() << "HandleLock" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleLock" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -616,7 +617,7 @@ bool VersionControlPlugin::HandleLock()
 
 bool VersionControlPlugin::HandleLogin()
 {
-    GetConnection().Log().Debug() << "HandleLogin" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleLogin" << Endl;
     
     bool m_WasOnline = PreHandleCommand();
     if (Login())
@@ -630,7 +631,7 @@ bool VersionControlPlugin::HandleLogin()
 
 bool VersionControlPlugin::HandleMove(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleMove" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleMove" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -655,7 +656,7 @@ bool VersionControlPlugin::HandleMove(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleQueryConfigParameters()
 {
-    GetConnection().Log().Debug() << "HandleQueryConfigParameters" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleQueryConfigParameters" << Endl;
     
     VersionControlPluginCfgFields& fields = GetConfigFields();
     for (VersionControlPluginCfgFields::iterator i = fields.begin() ; i != fields.end() ; i++)
@@ -670,7 +671,7 @@ bool VersionControlPlugin::HandleQueryConfigParameters()
 
 bool VersionControlPlugin::HandleResolve()
 {
-    GetConnection().Log().Debug() << "HandleResolve" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleResolve" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -695,7 +696,7 @@ bool VersionControlPlugin::HandleResolve()
 
 bool VersionControlPlugin::HandleRevert()
 {
-    GetConnection().Log().Debug() << "HandleRevert" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleRevert" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -720,7 +721,7 @@ bool VersionControlPlugin::HandleRevert()
 
 bool VersionControlPlugin::HandleRevertChanges()
 {
-    GetConnection().Log().Debug() << "HandleRevertChanges" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleRevertChanges" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -746,7 +747,7 @@ bool VersionControlPlugin::HandleRevertChanges()
 
 bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleSubmit" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleSubmit" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -774,7 +775,7 @@ bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleStatus" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleStatus" << Endl;
     
     bool recursive = false;
     if (args.size() == 2 && args[1] == "recursive")
@@ -805,7 +806,7 @@ bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleUnlock()
 {
-    GetConnection().Log().Debug() << "HandleUnlock" << Endl << Flush;
+    GetConnection().Log().Debug() << "HandleUnlock" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -876,6 +877,9 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
 {
     string key = args[1];
     string value = Join(args.begin() + 2, args.end(), " ");
+    
+    GetConnection().Log().Info() << "Set " << key << " to " << value << Endl;
+    
     VersionControlPluginCfgFields& fields = GetConfigFields();
     for (VersionControlPluginCfgFields::iterator i = fields.begin() ; i != fields.end() ; i++)
     {
@@ -883,21 +887,22 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
         if (field.GetName() == key)
         {
             field.SetValue(TrimEnd(value));
-            GetConnection().Log().Info() << "Set " << key << " to " << value << Endl << Flush;
+            GetConnection().Log().Info() << key << " set to " << value << Endl;
             return true;
         }
     }
     
+    GetConnection().Log().Info() << "Unable to set " << key << " to " << value << Endl;
     return false;
 }
 
 bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "Dispatch" << Endl << Flush;
+    GetConnection().Log().Debug() << "Dispatch " << UnityCommandToString(command) << Endl;
     switch (command) {
         case UCOM_Add:
             return HandleAdd();
-        
+            
         case UCOM_ChangeDescription:
             return HandleChangeDescription();
             
@@ -974,6 +979,7 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleUnlock();
             
         default:
+            GetConnection().Log().Debug() << "Command " << UnityCommandToString(command) << " not handled" << Endl;
             GetConnection().EndResponse();
             return false;
     }

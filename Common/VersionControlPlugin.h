@@ -137,15 +137,21 @@ public:
     };
     
     int Run();
+
+    inline bool IsOnline() const { return m_IsOnline; }
+    inline void SetOnline() { m_IsOnline = true; }
+    inline void SetOffline() { m_IsOnline = false; }
+
+    Connection& GetConnection() { return (*m_Connection); }
     
+    bool Test(VersionedAssetList& assetList);
+
 protected:
     
     VersionControlPlugin();
     VersionControlPlugin(int argc, char** argv);
     VersionControlPlugin(const char* args);
     
-    Connection& GetConnection() { return (*m_Connection); }
-
     inline void SetProjectPath(const std::string& path) { m_ProjectPath = path; }
     inline const std::string& GetProjectPath() const { return m_ProjectPath; }
     
@@ -162,8 +168,8 @@ protected:
 
     virtual int Connect() = 0;
     virtual void Disconnect() = 0;
-    virtual bool IsConnected() = 0;
-    virtual int Login() = 0;
+    virtual bool IsConnected() { return true; }
+    virtual int Login() { return 0; }
     
     virtual bool AddAssets(VersionedAssetList& assetList) = 0;
     virtual bool CheckoutAssets(VersionedAssetList& assetList) = 0;
@@ -188,13 +194,10 @@ protected:
     void NotifyOffline(const std::string& reason);
     void NotifyOnline();
     
-    inline bool IsOnline() const { return m_IsOnline; }
-    inline void SetOnline() { m_IsOnline = true; }
-    inline void SetOffline() { m_IsOnline = false; }
-    
 private:
     void InitializeArguments(int argc, char** argv);
 
+    
     bool PreHandleCommand();
     void PostHandleCommand(bool wasOnline);
 
