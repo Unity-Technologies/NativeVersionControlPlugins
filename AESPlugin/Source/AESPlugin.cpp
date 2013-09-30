@@ -41,10 +41,12 @@ AESPlugin::~AESPlugin()
 
 void AESPlugin::Initialize()
 {
+    string prefix = "vcAssetExchangeServer"; // Mandatory, MUST match 'vc' + plugin executable name
+
     m_Fields.reserve(3);
-    m_Fields.push_back(VersionControlPluginCfgField("aesURL", "URL", "The AES URL", "", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField("aesUsername", "Username", "The AES username", "", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField("aesPassword", "Password", "The AES password", "", VersionControlPluginCfgField::kPasswordField));
+    m_Fields.push_back(VersionControlPluginCfgField(prefix + "URL", "URL", "The AES URL", "", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(prefix + "Username", "Username", "The AES username", "", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(prefix + "Password", "Password", "The AES password", "", VersionControlPluginCfgField::kPasswordField));
     
     m_Versions.insert(kUnity43);
     
@@ -66,7 +68,7 @@ VersionControlPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
 
 int AESPlugin::Connect()
 {
-    GetConnection().Log().Debug() << "Connect" << Endl << Flush;
+    GetConnection().Log().Debug() << "Connect" << Endl;
     if (IsConnected())
         return 0;
     
@@ -78,7 +80,9 @@ int AESPlugin::Connect()
 
 void AESPlugin::Disconnect()
 {
-    GetConnection().Log().Debug() << "Disconnect" << Endl << Flush;
+    GetConnection().Log().Debug() << "Disconnect" << Endl;
+    SetOffline();
+
     if (!IsConnected())
         return;
     
@@ -88,7 +92,7 @@ void AESPlugin::Disconnect()
 
 int AESPlugin::Login()
 {
-    GetConnection().Log().Debug() << "Login" << Endl << Flush;
+    GetConnection().Log().Debug() << "Login" << Endl;
     if (!IsConnected())
         return -1;
     

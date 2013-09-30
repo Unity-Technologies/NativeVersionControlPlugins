@@ -1,22 +1,45 @@
-#ifndef AESPLUGIN_H
-#define AESPLUGIN_H
+#ifndef FSPLUGIN_H
+#define FSPLUGIN_H
 
 #include "VersionControlPlugin.h"
 #include "Connection.h"
-#include "AESClient.h"
 
 #include <string>
+#include <vector>
+#include <map>
 
-// AES main task
-class AESPlugin: public VersionControlPlugin
+class FSChange
 {
 public:
-    AESPlugin();
-    AESPlugin(int argc, char** argv);
-    AESPlugin(const char* args);
-    ~AESPlugin();
+    enum FSAction { kAddOrUpdate, kDelete, kAddDirectory, kDeleteDirectory };
     
-    inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
+    FSChange(FSAction action, const VersionedAsset& asset)
+    {
+        m_Action = action;
+        m_Asset = asset;
+    }
+    
+    FSAction getAction() const { return m_Action; }
+    VersionedAsset getAsset() const { return m_Asset; }
+    
+private:
+    FSAction m_Action;
+    VersionedAsset m_Asset;
+};
+
+typedef std::map<std::string, FSChange> FSChanges;
+
+
+// FS main task
+class FSPlugin: public VersionControlPlugin
+{
+public:
+    FSPlugin();
+    FSPlugin(int argc, char** argv);
+    FSPlugin(const char* args);
+    ~FSPlugin();
+    
+    inline const char* GetLogFileName() { return "./Library/fsPlugin.log"; }
     inline const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
     inline const TraitsFlags GetSupportedTraitFlags() {
         return (kRequireNetwork | kEnablesCheckout | kEnablesGetLatestOnChangeSetSubset );
@@ -55,7 +78,9 @@ protected:
 
 private:
     void Initialize();
-    
+
+    bool DummyPerform(const std::string cmd, VersionedAssetList& assetList, int state);
+
     bool m_IsConnected;
     
     VersionControlPluginCfgFields m_Fields;
@@ -63,7 +88,7 @@ private:
     VersionControlPluginVersions m_Versions;
     VersionControlPluginOverlays m_Overlays;
     
-    AESClient* m_AES;
+    FSChanges m_Changes;
 };
 
-#endif // AESPLUGIN_H
+#endif // FSPLUGIN_H
