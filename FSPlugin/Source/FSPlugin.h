@@ -5,30 +5,7 @@
 #include "Connection.h"
 
 #include <string>
-#include <vector>
 #include <map>
-
-class FSChange
-{
-public:
-    enum FSAction { kAddOrUpdate, kDelete, kAddDirectory, kDeleteDirectory };
-    
-    FSChange(FSAction action, const VersionedAsset& asset)
-    {
-        m_Action = action;
-        m_Asset = asset;
-    }
-    
-    FSAction getAction() const { return m_Action; }
-    VersionedAsset getAsset() const { return m_Asset; }
-    
-private:
-    FSAction m_Action;
-    VersionedAsset m_Asset;
-};
-
-typedef std::map<std::string, FSChange> FSChanges;
-
 
 // FS main task
 class FSPlugin: public VersionControlPlugin
@@ -58,6 +35,7 @@ protected:
 
     bool AddAssets(VersionedAssetList& assetList);
     bool CheckoutAssets(VersionedAssetList& assetList);
+    bool DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList);
     bool GetAssets(VersionedAssetList& assetList);
     bool RevertAssets(VersionedAssetList& assetList);
     bool ResolveAssets(VersionedAssetList& assetList);
@@ -72,7 +50,7 @@ protected:
     bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool GetAssetsChanges(Changes& changes);
     bool GetAssetsIncomingChanges(Changes& changes);
-    bool UpdateRevision(const ChangelistRevision& revision);
+    bool UpdateRevision(const ChangelistRevision& revision, std::string& description);
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
 
@@ -88,7 +66,9 @@ private:
     VersionControlPluginVersions m_Versions;
     VersionControlPluginOverlays m_Overlays;
     
-    FSChanges m_Changes;
+    typedef std::map<std::string, VersionedAsset> VersionedAssetMap;
+    VersionedAssetMap m_Changes;
+    VersionedAssetMap m_IncomingChanges;
 };
 
 #endif // FSPLUGIN_H

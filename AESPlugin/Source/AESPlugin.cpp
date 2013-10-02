@@ -141,6 +141,11 @@ bool AESPlugin::GetAssets(VersionedAssetList& assetList)
     return DummyPerform(assetList, kLocal|kSynced);
 }
 
+bool AESPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
+{
+    return DummyPerform(assetList, kLocal|kSynced);
+}
+
 bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
 {
     return DummyPerform(assetList, kLocal|kSynced);
@@ -198,6 +203,13 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 
 bool AESPlugin::GetAssetsChanges(Changes& changes)
 {
+    Changelist defaultItem;
+    defaultItem.SetDescription("default");
+    defaultItem.SetRevision(kDefaultListRevision);
+    
+    changes.clear();
+    changes.push_back(defaultItem);
+    
     return true;
 }
 
@@ -206,7 +218,7 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
     return true;
 }
 
-bool AESPlugin::UpdateRevision(const ChangelistRevision& revision)
+bool AESPlugin::UpdateRevision(const ChangelistRevision& revision, string& description)
 {
     return true;
 }
