@@ -35,6 +35,7 @@ protected:
 
     bool AddAssets(VersionedAssetList& assetList);
     bool CheckoutAssets(VersionedAssetList& assetList);
+    bool DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList);
     bool GetAssets(VersionedAssetList& assetList);
     bool RevertAssets(VersionedAssetList& assetList);
     bool ResolveAssets(VersionedAssetList& assetList);
@@ -49,7 +50,7 @@ protected:
     bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool GetAssetsChanges(Changes& changes);
     bool GetAssetsIncomingChanges(Changes& changes);
-    bool UpdateRevision(const ChangelistRevision& revision);
+    bool UpdateRevision(const ChangelistRevision& revision, std::string& description);
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
 

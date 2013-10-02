@@ -21,6 +21,9 @@ inline T  operator  ~(const T s)            { return (T)~(unsigned)s; }
 
 enum VersionControlUnityVersion { kUnity42 = 1, kUnity43 = 2 };
 
+/*
+ * VersionControl Plugin configuration field.
+ */
 class VersionControlPluginCfgField {
 public:
     enum FieldFlags
@@ -93,6 +96,9 @@ ENUM_FLAGS(VersionControlPluginCfgField::FieldFlags);
 
 Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field);
 
+/*
+ * VersionControl Plugin abstract class
+ */
 class VersionControlPlugin
 {
 public:
@@ -136,67 +142,244 @@ public:
         kAll = (1 << 20) - 1
     };
     
+    // Main loop
     int Run();
-
-    inline bool IsOnline() const { return m_IsOnline; }
-    inline void SetOnline() { m_IsOnline = true; }
-    inline void SetOffline() { m_IsOnline = false; }
-
-    Connection& GetConnection() { return (*m_Connection); }
-    
-    bool Test(VersionedAssetList& assetList);
 
 protected:
     
+    // Constructors
     VersionControlPlugin();
     VersionControlPlugin(int argc, char** argv);
     VersionControlPlugin(const char* args);
     
-    inline void SetProjectPath(const std::string& path) { m_ProjectPath = path; }
-    inline const std::string& GetProjectPath() const { return m_ProjectPath; }
-    
-    virtual const char* GetLogFileName() = 0;
-    virtual const VersionControlPluginVersions& GetSupportedVersions() = 0;
-    virtual const TraitsFlags GetSupportedTraitFlags() = 0;
-    virtual VersionControlPluginCfgFields& GetConfigFields() = 0;
-    virtual CommandsFlags GetOnlineUICommands() = 0;
-    virtual const VersionControlPluginOverlays& GetOverlays() { return s_emptyOverlays; };
-    
-	const VCSStatus& GetStatus() const;
-	VCSStatus& GetStatus();
-	void ClearStatus();
-
-    virtual int Connect() = 0;
-    virtual void Disconnect() = 0;
-    virtual bool IsConnected() { return true; }
-    virtual int Login() { return 0; }
-    
-    virtual bool AddAssets(VersionedAssetList& assetList) = 0;
-    virtual bool CheckoutAssets(VersionedAssetList& assetList) = 0;
-    virtual bool GetAssets(VersionedAssetList& assetList) = 0;
-    virtual bool RevertAssets(VersionedAssetList& assetList) = 0;
-    virtual bool ResolveAssets(VersionedAssetList& assetList) = 0;
-    virtual bool RemoveAssets(VersionedAssetList& assetList) = 0;
-    virtual bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList) = 0;
-    virtual bool LockAssets(VersionedAssetList& assetList) = 0;
-    virtual bool UnlockAssets(VersionedAssetList& assetList) = 0;
-    virtual bool ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
-    virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList) = 0;
-    virtual bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false) = 0;
-    virtual bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
-    virtual bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
-    virtual bool GetAssetsChanges(Changes& changes) = 0;
-    virtual bool GetAssetsIncomingChanges(Changes& changes) = 0;
-    virtual bool UpdateRevision(const ChangelistRevision& revision) = 0;
-    virtual bool DeleteRevision(const ChangelistRevision& revision) = 0;
-    virtual bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
-
+    // Online/Offline
+    inline bool IsOnline() const { return m_IsOnline; }
+    inline void SetOnline() { m_IsOnline = true; }
+    inline void SetOffline() { m_IsOnline = false; }
     void NotifyOffline(const std::string& reason);
     void NotifyOnline();
     
+    // Get plugin connection with Unity.
+    Connection& GetConnection() { return (*m_Connection); }
+
+    // ProjectPath getter/setter
+    inline void SetProjectPath(const std::string& path) { m_ProjectPath = path; }
+    inline const std::string& GetProjectPath() const { return m_ProjectPath; }
+    
+    // VCStatus
+	const VCSStatus& GetStatus() const;
+	void ClearStatus();
+    VCSStatus& StatusAdd(VCSStatusItem& item);
+    
+    /*
+     * Get the log file name.
+     * Returns:
+     *  - string that reperesent the log file name.
+     */
+    virtual const char* GetLogFileName() = 0;
+    
+    /*
+     * Get the supported Unity versions.
+     * Returns:
+     *  - set of supported Unity versions.
+     */
+    virtual const VersionControlPluginVersions& GetSupportedVersions() = 0;
+    
+    /*
+     * Get the supported plugin traits.
+     * Returns:
+     *  - The supported plugin traits.
+     */
+    virtual const TraitsFlags GetSupportedTraitFlags() = 0;
+    
+    /*
+     * Get the plugin configuration fields.
+     * Returns:
+     *  - list of plugin configuration fields.
+     */
+    virtual VersionControlPluginCfgFields& GetConfigFields() = 0;
+    
+    /*
+     * Get the commands that should be enabled when plugin is online.
+     * Returns:
+     *  - the commands to enable when plugin is online.
+     */
+    virtual CommandsFlags GetOnlineUICommands() = 0;
+    
+    /*
+     * Get the plugin overlays (with icons if not default).
+     * Returns:
+     *  - the plugin overlays.
+     */
+    virtual const VersionControlPluginOverlays& GetOverlays() { return s_emptyOverlays; };
+    
+    //
+    virtual int Connect() = 0;
+    
+    //
+    virtual void Disconnect() = 0;
+    
+    //
+    virtual bool IsConnected() { return true; }
+    
+    //
+    virtual int Login() { return 0; }
+    
+    /*
+     * Add assets to VC.
+     * Parameters: 
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be added.
+     * On output, assetList contains assests that have been added with appropriate status.
+     */
+    virtual bool AddAssets(VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Checkout assets in VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be checked out.
+     * On output, assetList contains assests that have been checked out with appropriate status.
+     */
+    virtual bool CheckoutAssets(VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Download assets from VC.
+     * Parameters:
+     *  - targetDir: IN target directory.
+     *  - changes: IN list of changes.
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to download.
+     * On output, assetList contains assests that have been downloaded from VC with appropriate status.
+     */
+    virtual bool DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Get assets from VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to get.
+     * On output, assetList contains assests that have been get from VC with appropriate status.
+     */
+    virtual bool GetAssets(VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Revert assets from VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be reverted.
+     * On output, assetList contains assests that have been reverted with appropriate status.
+     */
+    virtual bool RevertAssets(VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Resolve assets from VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be resolved.
+     * On output, assetList contains assests that have been resolved with appropriate status.
+     */
+    virtual bool ResolveAssets(VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Remove assets from VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be removed.
+     * On output, assetList contains assests that have been removed with appropriate status.
+     */
+    virtual bool RemoveAssets(VersionedAssetList& assetList) = 0;
+    
+    //
+    virtual bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList) = 0;
+    
+    /*
+     * Lock assets in VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be locked.
+     * On output, assetList contains assests that have been locked with appropriate status.
+     */
+    virtual bool LockAssets(VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Unlock assets in VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be unlocked.
+     * On output, assetList contains assests that have been unlocked with appropriate status.
+     */
+    virtual bool UnlockAssets(VersionedAssetList& assetList) = 0;
+    
+    //
+    virtual bool ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+    
+    //
+    virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Get assets status from VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     *  - recursive: IN boolean, true if status is made recursively
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests for which status is asked.
+     * On output, assetList contains assests with appropriate status.
+     */
+    virtual bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false) = 0;
+    
+    //
+    virtual bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+    
+    //
+    virtual bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+    
+    //
+    virtual bool GetAssetsChanges(Changes& changes) = 0;
+    
+    //
+    virtual bool GetAssetsIncomingChanges(Changes& changes) = 0;
+    
+    //
+    virtual bool UpdateRevision(const ChangelistRevision& revision, std::string& description) = 0;
+    
+    //
+    virtual bool DeleteRevision(const ChangelistRevision& revision) = 0;
+    
+    //
+    virtual bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+
 private:
     void InitializeArguments(int argc, char** argv);
-
     
     bool PreHandleCommand();
     void PostHandleCommand(bool wasOnline);

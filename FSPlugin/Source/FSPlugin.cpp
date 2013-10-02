@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 
 #include <set>
+#include <sys/stat.h>
 
 #if defined(_WINDOWS)
 #include "windows.h"
@@ -10,6 +11,31 @@
 using namespace std;
 
 enum FSFields { kFSPath };
+
+int CompareFiles(const string& left, const string &right)
+{
+    struct stat sleft;
+    if (stat(left.c_str(), &sleft) < 0)
+        return -1;
+    
+    struct stat sright;
+    if (stat(right.c_str(), &sright) < 0)
+        return 1;
+    
+    if (sleft.st_mtimespec.tv_sec < sright.st_mtimespec.tv_sec)
+        return -1;
+    
+    if (sleft.st_mtimespec.tv_sec > sright.st_mtimespec.tv_sec)
+        return 1;
+    
+    if (sleft.st_mtimespec.tv_nsec < sright.st_mtimespec.tv_nsec)
+        return -1;
+     
+    if (sleft.st_mtimespec.tv_nsec > sright.st_mtimespec.tv_nsec)
+        return 1;
+    
+    return 0;
+}
 
 FSPlugin::FSPlugin() :
     VersionControlPlugin(),
@@ -48,6 +74,8 @@ void FSPlugin::Initialize()
     
     m_Overlays[kLocal] = "default";
     m_Overlays[kOutOfSync] = "default";
+	m_Overlays[kCheckedOutLocal] = "default";
+	m_Overlays[kCheckedOutRemote] = "default";
     m_Overlays[kDeletedLocal] = "default";
     m_Overlays[kDeletedRemote] = "default";
     m_Overlays[kAddedLocal] = "default";
@@ -159,7 +187,7 @@ bool FSPlugin::AddAssets(VersionedAssetList& assetList)
         
         GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
 
-        if (asset.HasState(kAddedLocal))
+        if (PathExists(localPath) || asset.HasState(kAddedLocal))
         {
             assetList.erase(i);
             continue;
@@ -170,7 +198,7 @@ bool FSPlugin::AddAssets(VersionedAssetList& assetList)
             asset.SetState(kLocal | kSynced | kAddedLocal);
             asset.RemoveState(kUpdating);
 
-            m_Changes.insert(make_pair(asset.GetPath(), FSChange(FSChange::kAddDirectory, asset)));
+            m_Changes.insert(make_pair(asset.GetPath(), asset));
             
             assetList.erase(i);
             continue;
@@ -182,7 +210,7 @@ bool FSPlugin::AddAssets(VersionedAssetList& assetList)
         asset.SetState(state);
         asset.RemoveState(kUpdating);
 
-        m_Changes.insert(make_pair(asset.GetPath(), FSChange(FSChange::kAddOrUpdate, asset)));
+        m_Changes.insert(make_pair(asset.GetPath(), asset));
         
         i++;
     }
@@ -192,17 +220,149 @@ bool FSPlugin::AddAssets(VersionedAssetList& assetList)
 
 bool FSPlugin::CheckoutAssets(VersionedAssetList& assetList)
 {
-    return DummyPerform("CheckoutAssets", assetList, kLocal|kSynced|kCheckedOutLocal);
+    GetConnection().Log().Debug() << "CheckoutAssets" << Endl;
+    
+    if (!IsConnected())
+    {
+        if (Connect() != 0)
+        {
+            assetList.clear();
+            return true;
+        }
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        VersionedAsset& asset = (*i);
+        
+        string path = asset.GetPath();
+        string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
+        
+        GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
+        
+        if (asset.HasState(kAddedLocal))
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        if (asset.IsFolder())
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        if (asset.HasState(kOutOfSync))
+        {
+            CopyAFile(localPath, path, true);
+        }
+        
+        int state = kLocal | kSynced | kCheckedOutLocal;
+        if (asset.IsMeta()) state |= kMetaFile;
+        
+        asset.SetState(state);
+        asset.RemoveState(kUpdating);
+        
+        m_Changes.insert(make_pair(asset.GetPath(), asset));
+        
+        i++;
+    }
+    
+    return true;
+}
+
+bool FSPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
+{
+    return DummyPerform("Download", assetList, kLocal|kSynced);
 }
 
 bool FSPlugin::GetAssets(VersionedAssetList& assetList)
 {
-    return DummyPerform("GetAssets", assetList, kLocal|kSynced);
+    GetConnection().Log().Debug() << "GetAssets" << Endl;
+    
+    if (!IsConnected())
+    {
+        if (Connect() != 0)
+        {
+            assetList.clear();
+            return true;
+        }
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        VersionedAsset& asset = (*i);
+        
+        string path = asset.GetPath();
+        string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
+        
+        GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
+        
+        if (asset.IsFolder())
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        if (PathExists(localPath))
+        {
+            CopyAFile(localPath, path, true);
+            asset.AddState(kSynced);
+            asset.RemoveState(kOutOfSync);
+        }
+        else
+        {
+            asset.RemoveState(kSynced);
+            asset.RemoveState(kOutOfSync);
+        }
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::RevertAssets(VersionedAssetList& assetList)
 {
-    return DummyPerform("RevertAssets", assetList, kLocal|kSynced);
+    GetConnection().Log().Debug() << "RevertAssets" << Endl;
+    
+    if (!IsConnected())
+    {
+        if (Connect() != 0)
+        {
+            assetList.clear();
+            return true;
+        }
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        VersionedAsset& asset = (*i);
+        VersionedAssetMap::iterator j = m_Changes.find(asset.GetPath());
+        if (j == m_Changes.end())
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        asset.RemoveState(kCheckedOutLocal);
+        asset.RemoveState(kLockedLocal);
+        asset.RemoveState(kAddedLocal);
+        
+        //VersionedAsset& managedAsset = j->second;
+        string path = asset.GetPath();
+        string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
+        
+        GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
+        
+        m_Changes.erase(j);
+        
+        i++;
+    }
+    return true;
 }
 
 bool FSPlugin::ResolveAssets(VersionedAssetList& assetList)
@@ -254,32 +414,32 @@ bool FSPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& as
     while (i != assetList.end())
     {
         VersionedAsset& asset = (*i);
-        FSChanges::iterator j = m_Changes.find(asset.GetPath());
+        VersionedAssetMap::iterator j = m_Changes.find(asset.GetPath());
         if (j == m_Changes.end())
         {
             assetList.erase(i);
             continue;
         }
         
-        FSChange& change = j->second;
+        VersionedAsset& managedAsset = j->second;
         string path = asset.GetPath();
         string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
         
         GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
         
-        if (change.getAction() == FSChange::kAddDirectory)
+        if (managedAsset.IsFolder() && (managedAsset.HasState(kCheckedOutLocal) || managedAsset.HasState(kAddedLocal)))
         {
             asset.SetState(kLocal | kSynced);
             GetConnection().Log().Debug() << "Create directory " << localPath << Endl;
             EnsureDirectory(localPath);
         }
-        else if (change.getAction() == FSChange::kDeleteDirectory)
+        else if (managedAsset.IsFolder() && managedAsset.HasState(kDeletedLocal))
         {
             asset.SetState(kNone);
             GetConnection().Log().Debug() << "Delete directory " << localPath << Endl;
             DeleteRecursive(localPath);
         }
-        else if (change.getAction() == FSChange::kAddOrUpdate)
+        else if (!managedAsset.IsFolder() && (managedAsset.HasState(kCheckedOutLocal) || managedAsset.HasState(kAddedLocal)))
         {
             asset.SetState(kLocal | kSynced);
             if (asset.IsMeta())
@@ -289,15 +449,16 @@ bool FSPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& as
             GetConnection().Log().Debug() << "Copy file " << path << " to " << localPath << Endl;
             CopyAFile(path, localPath, true);
         }
-        else if (change.getAction() == FSChange::kAddOrUpdate)
+        else if (!managedAsset.IsFolder() && managedAsset.HasState(kDeletedLocal))
         {
-            asset.SetState(kNone);
+            m_Changes.erase(j);
             GetConnection().Log().Debug() << "Delete file " << localPath << Endl;
             DeleteRecursive(localPath);
+            assetList.erase(i);
         }
         
         m_Changes.erase(j);
-        
+
         i++;
     }
     return true;
@@ -305,7 +466,55 @@ bool FSPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& as
 
 bool FSPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 {
-    return DummyPerform("GetAssetsStatus", assetList, -1);
+    GetConnection().Log().Debug() << "GetAssetsStatus" << Endl;
+
+    if (!IsConnected())
+    {
+        if (Connect() != 0)
+        {
+            assetList.clear();
+            return true;
+        }
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        VersionedAsset& asset = (*i);
+        
+        if (asset.IsFolder())
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        string path = asset.GetPath();
+        string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
+        
+        int state = asset.GetState();
+        state |= kLocal;
+        if (PathExists(localPath)) {
+            if (CompareFiles(path, localPath) < 0)
+                state |= kOutOfSync;
+            else
+                state |= kSynced;
+        }
+        else
+        {
+            state &= ~kSynced;
+            state &= ~kOutOfSync;
+        }
+        
+        asset.SetState(state);
+        if (asset.HasState(kAddedLocal) || asset.HasState(kDeletedLocal) || asset.HasState(kCheckedOutLocal) || asset.HasState(kLockedLocal))
+        {
+            m_Changes.insert(make_pair(asset.GetPath(), asset));
+        }
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList)
@@ -322,10 +531,9 @@ bool FSPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Version
     }
     
     assetList.clear();
-    for (FSChanges::const_iterator i = m_Changes.begin() ; i != m_Changes.end() ; i++)
+    for (VersionedAssetMap::const_iterator i = m_Changes.begin() ; i != m_Changes.end() ; i++)
     {
-        const FSChange& change = i->second;
-        const VersionedAsset& asset = change.getAsset();
+        const VersionedAsset& asset = i->second;
         string path = asset.GetPath();
         string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
         
@@ -356,7 +564,7 @@ bool FSPlugin::GetAssetsChanges(Changes& changes)
             return true;
         }
     }
-
+    
     if (m_Changes.size() == 0)
     {
         changes.clear();
@@ -372,9 +580,11 @@ bool FSPlugin::GetAssetsIncomingChanges(Changes& changes)
     return true;
 }
 
-bool FSPlugin::UpdateRevision(const ChangelistRevision& revision)
+bool FSPlugin::UpdateRevision(const ChangelistRevision& revision, string& description)
 {
     GetConnection().Log().Debug() << "UpdateRevision" << Endl;
+    
+    description.clear();
     
     return true;
 }

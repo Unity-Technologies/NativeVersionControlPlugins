@@ -90,14 +90,15 @@ const VCSStatus& VersionControlPlugin::GetStatus() const
 	return m_Status;
 }
 
-VCSStatus& VersionControlPlugin::GetStatus()
-{
-	return m_Status;
-}
-
 void VersionControlPlugin::ClearStatus()
 {
     m_Status.clear();
+}
+
+VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem& item)
+{
+    m_Status.insert(item);
+    return m_Status;
 }
 
 int VersionControlPlugin::Run()
@@ -225,9 +226,11 @@ bool VersionControlPlugin::HandleChangeDescription()
     ChangelistRevision revision;
     GetConnection() >> revision;
     
-    if (UpdateRevision(revision))
+    string description("");
+    if (UpdateRevision(revision, description))
     {
         SetOnline();
+        GetConnection().DataLine(description);
     }
     
     PostHandleCommand(wasOnline);
@@ -501,17 +504,43 @@ bool VersionControlPlugin::HandleDeleteChanges()
 bool VersionControlPlugin::HandleDownload()
 {
     GetConnection().Log().Debug() << "HandleDownload" << Endl;
-    return false;
+    
+    bool wasOnline = PreHandleCommand();
+    
+    string targetDir;
+    ChangelistRevisions changes;
+    VersionedAssetList assetList;
+    
+    GetConnection() >> targetDir;
+    GetConnection() >> changes;
+    GetConnection() >> assetList;
+    
+	GetConnection().BeginList();
+    if (DownloadAssets(targetDir, changes, assetList))
+    {
+        SetOnline();
+        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
+        {
+            GetConnection() << (*i);
+        }
+    }
+    GetConnection().EndList();
+    
+    PostHandleCommand(wasOnline);
+    
+    return true;
 }
 
 bool VersionControlPlugin::HandleExit()
 {
+    // TODO: no protocol documentation found
     GetConnection().Log().Debug() << "HandleExit" << Endl;
     return false;
 }
 
 bool VersionControlPlugin::HandleFileMode()
 {
+    // TODO: no protocol documentation found
     GetConnection().Log().Debug() << "HandleFileMode" << Endl;
     return false;
 }
