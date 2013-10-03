@@ -151,7 +151,7 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
     return DummyPerform(assetList, kLocal|kSynced);
 }
 
-bool AESPlugin::ResolveAssets(VersionedAssetList& assetList)
+bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod method)
 {
     return DummyPerform(assetList, -1);
 }
@@ -174,11 +174,6 @@ bool AESPlugin::LockAssets(VersionedAssetList& assetList)
 bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
 {
     return false;
-}
-
-bool AESPlugin::ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList)
-{
-    return DummyPerform(assetList, -1);
 }
 
 bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList)
@@ -216,6 +211,11 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
 bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
 {
     return true;
+}
+
+bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList)
+{
+    return DummyPerform(assetList, -1);
 }
 
 bool AESPlugin::UpdateRevision(const ChangelistRevision& revision, string& description)

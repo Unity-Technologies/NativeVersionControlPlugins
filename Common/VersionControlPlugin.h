@@ -107,6 +107,7 @@ public:
     typedef std::vector<VersionControlPluginCfgField> VersionControlPluginCfgFields;
     typedef std::map<State, std::string> VersionControlPluginOverlays;
     
+    // Plugin configuration traits flags
     enum TraitsFlags {
         kRequireNetwork = 1 << 0,
         kEnablesCheckout = 1 << 1,
@@ -118,6 +119,7 @@ public:
         kEnablesConflictHandlingByPlugin = 1 << 7
     };
     
+    // Plugin UI commands flags
     enum CommandsFlags {
         kAdd = 1 << 0,
 		kChangeDescription = 1 << 1,
@@ -142,7 +144,14 @@ public:
         kAll = (1 << 20) - 1
     };
     
-    // Main loop
+    // Plugin resolve method
+    enum ResolveMethod {
+        kMine = 1 << 0,
+        kTheirs = 1 << 1,
+        kMerged = 1 << 2
+    };
+    
+    // Main loop, read command from input and process it until EOF.
     int Run();
 
 protected:
@@ -169,7 +178,7 @@ protected:
     // VCStatus
 	const VCSStatus& GetStatus() const;
 	void ClearStatus();
-    VCSStatus& StatusAdd(VCSStatusItem& item);
+    VCSStatus& StatusAdd(VCSStatusItem item);
     
     /*
      * Get the log file name.
@@ -213,16 +222,32 @@ protected:
      */
     virtual const VersionControlPluginOverlays& GetOverlays() { return s_emptyOverlays; };
     
-    //
+    /*
+     * Connect to underlying VC system.
+     * Returns:
+     * - 0 if success, other values on failure (VCStatus contains errors).
+     */
     virtual int Connect() = 0;
     
-    //
+    /*
+     * Disconnect from underlying VC system.
+     * Returns:
+     * - 0 if success, other values on failure (VCStatus contains errors).
+     */
     virtual void Disconnect() = 0;
     
-    //
+    /*
+     * Check whether or not plugin is connected to underlying VC system.
+     * Returns:
+     * - true if connected, false otherwise.
+     */
     virtual bool IsConnected() { return true; }
     
-    //
+    /*
+     * Login to underlying VC system.
+     * Returns:
+     * - 0 if logged in, other values on failure (VCStatus contains errors).
+     */
     virtual int Login() { return 0; }
     
     /*
@@ -291,13 +316,14 @@ protected:
      * Resolve assets from VC.
      * Parameters:
      *  - assetList: IN/OUT list of versioned asset.
+     *  - method: IN resolve method.
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
      * On input, assetList contains assests to be resolved.
      * On output, assetList contains assests that have been resolved with appropriate status.
      */
-    virtual bool ResolveAssets(VersionedAssetList& assetList) = 0;
+    virtual bool ResolveAssets(VersionedAssetList& assetList, ResolveMethod method = kMine) = 0;
     
     /*
      * Remove assets from VC.
@@ -311,7 +337,17 @@ protected:
      */
     virtual bool RemoveAssets(VersionedAssetList& assetList) = 0;
     
-    //
+    /*
+     * Move assets in VC.
+     * Parameters:
+     *  - fromAssetList: IN list of versioned asset.
+     *  - toAssetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, fromAssetList contains assests to be moved and toAssetList the corresponding asset.
+     * On output, toAssetList contains assests that have been moved with appropriate status.
+     */
     virtual bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList) = 0;
     
     /*
@@ -338,10 +374,17 @@ protected:
      */
     virtual bool UnlockAssets(VersionedAssetList& assetList) = 0;
     
-    //
-    virtual bool ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
-    
-    //
+    /*
+     * Submit assets in VC.
+     * Parameters:
+     *  - changeList: IN change list (revision, description, timestamp and commiter).
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be submitted.
+     * On output, assetList contains assests that have been submitted with appropriate status.
+     */
     virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList) = 0;
     
     /*
@@ -357,25 +400,97 @@ protected:
      */
     virtual bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false) = 0;
     
-    //
+    /*
+     * Get assets status from VC for a specific revision.
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests for which status is asked.
+     * On output, assetList contains assests with appropriate status.
+     */
     virtual bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
     
-    //
+    /*
+     * Get assets incomig status from VC for a specific revision.
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests for which status is asked.
+     * On output, assetList contains assests with appropriate status.
+     */
     virtual bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
     
-    //
+    /*
+     * Get changes from VC.
+     * Parameters:
+     *  - changes: OUT list of changes.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On output, changes contains list of outgoing changes.
+     */
     virtual bool GetAssetsChanges(Changes& changes) = 0;
     
-    //
+    /*
+     * Get incoming changes from VC.
+     * Parameters:
+     *  - changes: OUT list of changes.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On output, changes contains list of incoming changes.
+     */
     virtual bool GetAssetsIncomingChanges(Changes& changes) = 0;
     
-    //
+    /*
+     * Set assest revision in VC.
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests for which revision should be set.
+     * On output, assetList contains assests with appropriate status.
+     */
+    virtual bool SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+    
+    /*
+     * Update specific revision in VC.
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - description: OUT new description.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     */
     virtual bool UpdateRevision(const ChangelistRevision& revision, std::string& description) = 0;
     
-    //
+    /*
+     * Delete specific revision from VC.
+     * Parameters:
+     *  - revision: IN specific revision.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     */
     virtual bool DeleteRevision(const ChangelistRevision& revision) = 0;
     
-    //
+    /*
+     * Revert assests to a specific revision from VC.
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be reverted.
+     * On output, assetList contains assests that have been reverted with appropriate status.
+     */
     virtual bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
 
 private:
@@ -405,7 +520,7 @@ private:
     bool HandleLogin();
     bool HandleMove(const CommandArgs& args);
     bool HandleQueryConfigParameters();
-    bool HandleResolve();
+    bool HandleResolve(const CommandArgs& args);
     bool HandleRevert();
     bool HandleRevertChanges();
     bool HandleSetConfigParameters(const CommandArgs& args);

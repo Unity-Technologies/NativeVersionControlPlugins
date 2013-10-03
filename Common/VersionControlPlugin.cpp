@@ -29,7 +29,7 @@ static const char* gVersionControlPluginCommands[] =
     0
 };
 
-static const char* gVersionControlPluginFlags[] =
+static const char* gVersionControlPluginTraits[] =
 {
     "requiresNetwork",
     "enablesCheckout",
@@ -56,6 +56,7 @@ VersionControlPlugin::VersionControlPluginOverlays VersionControlPlugin::s_empty
 
 VersionControlPlugin::VersionControlPlugin() : m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
 {
+    InitializeArguments(0, NULL);
 }
 
 VersionControlPlugin::VersionControlPlugin(const char* args) : m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
@@ -95,7 +96,7 @@ void VersionControlPlugin::ClearStatus()
     m_Status.clear();
 }
 
-VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem& item)
+VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem item)
 {
     m_Status.insert(item);
     return m_Status;
@@ -251,7 +252,7 @@ bool VersionControlPlugin::HandleChangeMove()
 	GetConnection() >> assetList;
     
 	GetConnection().BeginList();
-    if (ChangeOrMoveAssets(revision, assetList))
+    if (SetRevision(revision, assetList))
     {
         SetOnline();
         for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
@@ -446,7 +447,6 @@ bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
     return true;
 }
 
-
 bool VersionControlPlugin::HandleDelete()
 {
     GetConnection().Log().Debug() << "HandleDelete" << Endl;
@@ -533,16 +533,24 @@ bool VersionControlPlugin::HandleDownload()
 
 bool VersionControlPlugin::HandleExit()
 {
-    // TODO: no protocol documentation found
     GetConnection().Log().Debug() << "HandleExit" << Endl;
-    return false;
+    
+    bool wasOnline = PreHandleCommand();
+    // TODO: no protocol documentation found
+    PostHandleCommand(wasOnline);
+    
+    return true;
 }
 
 bool VersionControlPlugin::HandleFileMode()
 {
-    // TODO: no protocol documentation found
     GetConnection().Log().Debug() << "HandleFileMode" << Endl;
-    return false;
+    
+    bool wasOnline = PreHandleCommand();
+    // TODO: no protocol documentation found
+    PostHandleCommand(wasOnline);
+    
+    return true;
 }
 
 bool VersionControlPlugin::HandleGetlatest()
@@ -698,17 +706,34 @@ bool VersionControlPlugin::HandleQueryConfigParameters()
     return true;
 }
 
-bool VersionControlPlugin::HandleResolve()
+bool VersionControlPlugin::HandleResolve(const CommandArgs& args)
 {
     GetConnection().Log().Debug() << "HandleResolve" << Endl;
     
+    ResolveMethod method = kMine;
+    if (args.size() == 2)
+    {
+        if (args[1] == "mine")
+        {
+            method = kMine;
+        }
+        else if (args[1] == "theirs")
+        {
+            method = kTheirs;
+        }
+        else if (args[1] == "merged")
+        {
+            method = kMerged;
+        }
+    }
+
     bool wasOnline = PreHandleCommand();
     
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
 	GetConnection().BeginList();
-    if (ResolveAssets(assetList))
+    if (ResolveAssets(assetList, method))
     {
         SetOnline();
         for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
@@ -863,12 +888,12 @@ bool VersionControlPlugin::HandleConfigTraits()
     vector<string> flagsList;
     TraitsFlags flags = GetSupportedTraitFlags();
 	int i = 0;
-	while (gVersionControlPluginFlags[i])
+	while (gVersionControlPluginTraits[i])
 	{
         TraitsFlags v = (TraitsFlags)(1 << i);
         if ((flags & v) == v)
         {
-            flagsList.push_back(gVersionControlPluginFlags[i]);
+            flagsList.push_back(gVersionControlPluginTraits[i]);
         }
 		++i;
 	}
@@ -898,6 +923,8 @@ bool VersionControlPlugin::HandleConfigTraits()
             GetConnection().DataLine(i->second);
         }
     }
+    
+    //TODO: CustomCommands
 
     return true;
 }
@@ -990,7 +1017,7 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleQueryConfigParameters();
             
         case UCOM_Resolve:
-            return HandleResolve();
+            return HandleResolve(args);
             
         case UCOM_Revert:
             return HandleRevert();
