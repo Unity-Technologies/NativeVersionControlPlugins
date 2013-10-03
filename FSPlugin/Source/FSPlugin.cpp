@@ -12,6 +12,7 @@ using namespace std;
 
 enum FSFields { kFSPath };
 
+#if !defined(_WINDOWS)
 int CompareFiles(const string& left, const string &right)
 {
     struct stat sleft;
@@ -28,14 +29,22 @@ int CompareFiles(const string& left, const string &right)
     if (sleft.st_mtimespec.tv_sec > sright.st_mtimespec.tv_sec)
         return 1;
     
+    /*
     if (sleft.st_mtimespec.tv_nsec < sright.st_mtimespec.tv_nsec)
         return -1;
      
     if (sleft.st_mtimespec.tv_nsec > sright.st_mtimespec.tv_nsec)
         return 1;
+     */
     
     return 0;
 }
+#else 
+int CompareFiles(const string& left, const string &right)
+{
+    return 0;
+}
+#endif
 
 FSPlugin::FSPlugin() :
     VersionControlPlugin(),
@@ -120,47 +129,23 @@ int FSPlugin::Login()
     return 0;
 }
 
-bool FSPlugin::DummyPerform(const std::string cmd, VersionedAssetList& assetList, int state)
+bool FSPlugin::CheckConnectedAndLogged()
 {
-    GetConnection().Log().Debug() << cmd << Endl;
-    
     if (!IsConnected())
     {
         if (Connect() != 0)
         {
-            assetList.clear();
-            return true;
+            StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot connect to VC system"));
+            return false;
         }
-    }
-    
-    VersionedAssetList::iterator i = assetList.begin();
-    while (i != assetList.end())
-    {
-        VersionedAsset& asset = (*i);
-        
-        string path = asset.GetPath();
-        string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
-        GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
 
-        if (asset.IsFolder())
+        if (Login() != 0)
         {
-            GetConnection().Log().Debug() << "Asset " << asset.GetPath() << " is a folder" << Endl;
-            assetList.erase(i);
-            continue;
+            StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot log to to VC system"));
+            return false;
         }
-        
-        if (state > 0)
-        {
-            if (asset.IsMeta()) state |= kMetaFile;
-            asset.SetState(state);
-        }
-        
-        asset.AddState(kLocal);
-        asset.RemoveState(kUpdating);
-        
-        i++;
     }
-    
+
     return true;
 }
 
@@ -168,13 +153,10 @@ bool FSPlugin::AddAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "AddAssets" << Endl;
 
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     VersionedAssetList::iterator i = assetList.begin();
@@ -222,13 +204,10 @@ bool FSPlugin::CheckoutAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "CheckoutAssets" << Endl;
     
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     VersionedAssetList::iterator i = assetList.begin();
@@ -274,20 +253,58 @@ bool FSPlugin::CheckoutAssets(VersionedAssetList& assetList)
 
 bool FSPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
 {
-    return DummyPerform("Download", assetList, kLocal|kSynced);
+    GetConnection().Log().Debug() << "DownloadAssets" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        VersionedAsset& asset = (*i);
+        
+        string path = asset.GetPath();
+        string localPath = m_Fields[kFSPath].GetValue() + path.substr(GetProjectPath().size());
+        
+        GetConnection().Log().Debug() << "Asset Path: " << path << ", LocalPath: " << localPath << Endl;
+        
+        if (asset.HasState(kAddedLocal))
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        if (asset.IsFolder())
+        {
+            assetList.erase(i);
+            continue;
+        }
+        
+        CopyAFile(localPath, path, true);
+        
+        int state = kLocal | kSynced;
+        if (asset.IsMeta()) state |= kMetaFile;
+        
+        asset.SetState(state);
+        asset.RemoveState(kUpdating);
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::GetAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "GetAssets" << Endl;
     
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     VersionedAssetList::iterator i = assetList.begin();
@@ -308,15 +325,20 @@ bool FSPlugin::GetAssets(VersionedAssetList& assetList)
         
         if (PathExists(localPath))
         {
-            CopyAFile(localPath, path, true);
-            asset.AddState(kSynced);
-            asset.RemoveState(kOutOfSync);
+            if (!(asset.HasState(kCheckedOutLocal) || asset.HasState(kLockedLocal)) && CompareFiles(localPath, path) >= 0)
+            {
+                CopyAFile(localPath, path, true);
+                asset.AddState(kSynced);
+                asset.RemoveState(kOutOfSync);
+            }
         }
         else
         {
             asset.RemoveState(kSynced);
             asset.RemoveState(kOutOfSync);
         }
+        
+        asset.RemoveState(kUpdating);
         
         i++;
     }
@@ -328,13 +350,10 @@ bool FSPlugin::RevertAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "RevertAssets" << Endl;
     
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     VersionedAssetList::iterator i = assetList.begin();
@@ -365,49 +384,142 @@ bool FSPlugin::RevertAssets(VersionedAssetList& assetList)
     return true;
 }
 
-bool FSPlugin::ResolveAssets(VersionedAssetList& assetList)
+bool FSPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod method)
 {
-    return DummyPerform("ResolveAssets", assetList, -1);
+    GetConnection().Log().Debug() << "ResolveAssets" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::RemoveAssets(VersionedAssetList& assetList)
 {
-    return DummyPerform("RemoveAssets", assetList, kLocal|kSynced);
+    GetConnection().Log().Debug() << "RemoveAssets" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList)
 {
-    return DummyPerform("MoveAssets", toAssetList, kLocal|kSynced);
+    GetConnection().Log().Debug() << "MoveAssets" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        toAssetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::const_iterator i = fromAssetList.begin();
+    VersionedAssetList::iterator j = toAssetList.begin();
+    while (i != fromAssetList.end() && j != toAssetList.end())
+    {
+        //const VersionedAsset& fromAsset = (*i);
+        //VersionedAsset& toAsset = (*j);
+        
+        i++; j++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::LockAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "LockAssets" << Endl;
-    return false;
+
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::UnlockAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "UnlockAssets" << Endl;
-    return false;
+
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
+    return true;
 }
 
-bool FSPlugin::ChangeOrMoveAssets(const ChangelistRevision& revision, VersionedAssetList& assetList)
+bool FSPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
-    return DummyPerform("ChangeOrMoveAssets", assetList, -1);
+    GetConnection().Log().Debug() << "SetRevision" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
+    return true;
 }
 
 bool FSPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "SubmitAssets" << Endl;
     
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     VersionedAssetList::iterator i = assetList.begin();
@@ -468,13 +580,10 @@ bool FSPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 {
     GetConnection().Log().Debug() << "GetAssetsStatus" << Endl;
 
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     VersionedAssetList::iterator i = assetList.begin();
@@ -495,9 +604,15 @@ bool FSPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
         state |= kLocal;
         if (PathExists(localPath)) {
             if (CompareFiles(path, localPath) < 0)
+            {
+                state &= kSynced;
                 state |= kOutOfSync;
+            }
             else
+            {
                 state |= kSynced;
+                state &= ~kOutOfSync;
+            }
         }
         else
         {
@@ -521,13 +636,10 @@ bool FSPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Version
 {
     GetConnection().Log().Debug() << "GetAssetsChangeStatus" << Endl;
     
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            assetList.clear();
-            return true;
-        }
+        assetList.clear();
+        return true;
     }
     
     assetList.clear();
@@ -549,20 +661,26 @@ bool FSPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Version
 
 bool FSPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
-    return DummyPerform("GetIncomingAssetsChangeStatus", assetList, -1);
+    GetConnection().Log().Debug() << "GetIncomingAssetsChangeStatus" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    assetList.clear();
+    return true;
 }
 
 bool FSPlugin::GetAssetsChanges(Changes& changes)
 {
     GetConnection().Log().Debug() << "GetAssetsChanges" << Endl;
     
-    if (!IsConnected())
+    if (!CheckConnectedAndLogged())
     {
-        if (Connect() != 0)
-        {
-            changes.clear();
-            return true;
-        }
+        changes.clear();
+        return true;
     }
     
     if (m_Changes.size() == 0)
@@ -577,12 +695,23 @@ bool FSPlugin::GetAssetsIncomingChanges(Changes& changes)
 {
     GetConnection().Log().Debug() << "GetAssetsIncomingChanges" << Endl;
     
+    if (!CheckConnectedAndLogged())
+    {
+        changes.clear();
+        return true;
+    }
+    
     return true;
 }
 
 bool FSPlugin::UpdateRevision(const ChangelistRevision& revision, string& description)
 {
     GetConnection().Log().Debug() << "UpdateRevision" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        return true;
+    }
     
     description.clear();
     
@@ -593,12 +722,31 @@ bool FSPlugin::DeleteRevision(const ChangelistRevision& revision)
 {
     GetConnection().Log().Debug() << "DeleteRevision" << Endl;
     
+    if (!CheckConnectedAndLogged())
+    {
+        return true;
+    }
+    
     return true;
 }
 
 bool FSPlugin::RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "RevertChanges" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
     
     return true;
 }
