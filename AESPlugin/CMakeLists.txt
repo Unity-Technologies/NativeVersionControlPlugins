@@ -96,12 +96,13 @@ CM_TARGET_BEGIN(
 		"Sources"
 		./Source/AESClient.h
 		./Source/AESClient.cpp
-		./Source/AESRequest.h
-		./Source/AESRequest.cpp
-		./Source/AESResponse.h
-		./Source/AESResponse.cpp
 		./Source/AESPlugin.h
 		./Source/AESPlugin.cpp
+		./Source/TransferInterface.h
+		./Source/RESTInterface.h
+		./Source/RESTInterface.cpp
+		./Source/CurlInterface.h
+		./Source/CurlInterface.cpp
 	)
 
 	IF (APPLE)

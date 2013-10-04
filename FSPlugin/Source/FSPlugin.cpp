@@ -683,9 +683,13 @@ bool FSPlugin::GetAssetsChanges(Changes& changes)
         return true;
     }
     
-    if (m_Changes.size() == 0)
+    Changelist defaultItem;
+    defaultItem.SetDescription("default");
+    defaultItem.SetRevision(kDefaultListRevision);
+    changes.push_back(defaultItem);
+
+    if (m_Changes.size() != 0)
     {
-        changes.clear();
     }
     
     return true;
