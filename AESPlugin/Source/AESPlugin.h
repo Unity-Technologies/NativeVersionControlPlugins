@@ -19,7 +19,7 @@ public:
     inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
     inline const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
     inline const TraitsFlags GetSupportedTraitFlags() {
-        return (kRequireNetwork | kEnablesCheckout | kEnablesGetLatestOnChangeSetSubset );
+        return (kRequireNetwork | kEnablesGetLatestOnChangeSetSubset );
     }
     inline VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
     virtual const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
@@ -32,7 +32,8 @@ public:
 protected:
     
     int Login();
-
+    bool CheckConnectedAndLogged();
+    
     bool AddAssets(VersionedAssetList& assetList);
     bool CheckoutAssets(VersionedAssetList& assetList);
     bool DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList);
@@ -59,11 +60,22 @@ private:
     
     bool m_IsConnected;
     
+    std::string GetRemotePath(const VersionedAsset& asset);
+    
     VersionControlPluginCfgFields m_Fields;
 
     VersionControlPluginVersions m_Versions;
     VersionControlPluginOverlays m_Overlays;
     
+    typedef std::map<std::string, VersionedAsset> VersionedAssetMap;
+    VersionedAssetMap m_Outgoing;
+
+    typedef std::map<std:: string, VersionedAssetMap> VersionedAssetMapPerRevision;
+    VersionedAssetMapPerRevision m_Incoming;
+    
+    Changes m_Revisions;
+    ChangelistRevision m_CurrRevision;
+
     AESClient* m_AES;
 };
 

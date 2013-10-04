@@ -273,12 +273,7 @@ bool VersionControlPlugin::HandleChanges()
 
     bool wasOnline = PreHandleCommand();
     
-    Changelist defaultItem;
-    defaultItem.SetDescription("default");
-    defaultItem.SetRevision(kDefaultListRevision);
-    
     GetConnection().BeginList();
-    GetConnection() << defaultItem;
     Changes changes;
     if (GetAssetsChanges(changes))
     {
