@@ -29,10 +29,10 @@ public:
 
 private:
     enum CurlMethod { kGET, kPOST, kDOWNLOAD, kUPLOAD };
-	static size_t WriteMemoryCallback(void *data, size_t size, size_t elements, void *interface);
-	static size_t WriteFileCallback(void *data, size_t size, size_t elements, void *interface);
-	static size_t ReadFileCallback(void *data, size_t size, size_t elements, void *interface);
-	static size_t HeaderCallback(void *data, size_t size, size_t elements, void *interface);
+	static size_t WriteMemoryCallback(void *data, size_t size, size_t elements, void *callback);
+	static size_t WriteFileCallback(void *data, size_t size, size_t elements, void *callback);
+	static size_t ReadFileCallback(void *data, size_t size, size_t elements, void *callback);
+	static size_t HeaderCallback(void *data, size_t size, size_t elements, void *callback);
 
 	void SetErrorMessage(const char* c);
     bool DoCurl(CurlMethod method, const std::string& url, std::string* postData, std::map<std::string, std::string>* headers, std::string& response);

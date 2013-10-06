@@ -45,6 +45,7 @@ CM_TARGET_BEGIN(
 			-D_SECURE_SCL=0
 			-D_WINDOWS
 			-DWIN32
+			-DCURL_STATICLIB
 		)
 	ENDIF (WIN32)
 
@@ -140,8 +141,8 @@ CM_TARGET_BEGIN(
 		CM_TARGET_ADD_LIBRARIES(
 			shlwapi.lib
 			${CMAKE_CURRENT_SOURCE_DIR}/External/curl/win32/lib/libcurl_a_X86.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/macosx32/lib/libeay32.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/macosx32/lib/ssleay32.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/win32/lib/libeay32.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/External/openSSL/win32/lib/ssleay32.lib
 		)
 	ENDIF (WIN32)
 	

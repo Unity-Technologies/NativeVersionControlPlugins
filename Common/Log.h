@@ -67,8 +67,12 @@ public:
 
 	template<typename T> LogStream& Write(const T& v);
 private:
+    void WritePrefix();
+    
 	LogLevel m_LogLevel;
+	LogLevel m_CurrLogLevel;
 	std::ofstream m_Stream;
+    std::string m_Buffer;
 	LogWriter m_OnWriter;  // write logs to file
 	LogWriter m_OffWriter; // throw away logs
 };
@@ -77,8 +81,14 @@ private:
 template<typename T>
 LogStream& LogStream::Write(const T& v)
 {
-	m_Stream << v;
-	return *this;
+    m_Buffer += v;
+    if (*m_Buffer.rbegin() == '\n')
+    {
+        WritePrefix();
+        m_Stream << m_Buffer.c_str();
+        m_Buffer.clear();
+	}
+    return *this;
 }
 
 template<typename T>

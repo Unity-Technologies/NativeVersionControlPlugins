@@ -78,27 +78,16 @@ int AESPlugin::Connect()
         return 0;
     
     m_AES = new AESClient(m_Fields[kAESURL].GetValue());
-    m_IsConnected = m_AES->Ping();
-    if (!m_IsConnected)
+    if (!m_AES->Ping())
     {
-        GetConnection().Log().Debug() << "Connect failed " << Endl;
-    }
-    
-    /*
-    if (!m_AES->Login(m_Fields[kAESUserName].GetValue(), m_Fields[kAESPassword].GetValue()))
-    {
-        GetConnection().Log().Debug() << "Connect failed: " << m_AES->GetLastError() << Endl;
-        m_IsConnected = false;
+        GetConnection().Log().Debug() << "Connect failed " << m_AES->GetLastError() << Endl;
+        //SetOnline();
+        //NotifyOffline(m_AES->GetLastError());
         return -1;
     }
     
-    AESEntry entry;
-    bool res = m_AES->Exists("current", "/ProjectSettings/AudioManager.asset", &entry);
-
-    res = m_AES->Exists("current", "/Assets/bigcat.JPG", &entry);
-    */
-    
-    return (m_IsConnected ? 0 : -1);
+    m_IsConnected = true;
+    return 0;
 }
 
 void AESPlugin::Disconnect()
@@ -119,7 +108,13 @@ int AESPlugin::Login()
     if (!IsConnected())
         return -1;
     
-    return (m_AES->Login(m_Fields[kAESUserName].GetValue(), m_Fields[kAESPassword].GetValue()) ? 0 : -1);
+    if (!m_AES->Login(m_Fields[kAESUserName].GetValue(), m_Fields[kAESPassword].GetValue()))
+    {
+        GetConnection().Log().Debug() << "Login failed " << m_AES->GetLastError() << Endl;
+        return -1;
+    }
+    
+    return 0;
 }
 
 bool AESPlugin::CheckConnectedAndLogged()
@@ -145,7 +140,7 @@ bool AESPlugin::CheckConnectedAndLogged()
     return true;
 }
 
-string AESPlugin::GetRemotePath(const VersionedAsset& asset)
+string AESPlugin::BuildRemotePath(const VersionedAsset& asset)
 {
     const string path = asset.GetPath();
     return m_Fields[kAESURL].GetValue() + '/' + m_CurrRevision + path.substr(GetProjectPath().size());
@@ -167,7 +162,7 @@ bool AESPlugin::AddAssets(VersionedAssetList& assetList)
         VersionedAsset& asset = (*i);
         
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         if (asset.HasState(kAddedLocal) || !asset.HasState(kLocal))
@@ -223,7 +218,7 @@ bool AESPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRev
         VersionedAsset& asset = (*i);
         
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         if (asset.HasState(kAddedLocal))
@@ -268,7 +263,7 @@ bool AESPlugin::GetAssets(VersionedAssetList& assetList)
         VersionedAsset& asset = (*i);
         
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         if (asset.IsFolder())
@@ -329,7 +324,7 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
         
         //VersionedAsset& managedAsset = j->second;
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         m_Outgoing.erase(j);
@@ -460,7 +455,7 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
         
         VersionedAsset& managedAsset = j->second;
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         if (managedAsset.IsFolder() && (managedAsset.HasState(kCheckedOutLocal) || managedAsset.HasState(kAddedLocal)))
@@ -522,7 +517,7 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
         }
         
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         int state = asset.GetState();
@@ -567,7 +562,7 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     {
         const VersionedAsset& asset = i->second;
         string path = asset.GetPath();
-        string remotePath = GetRemotePath(asset);
+        string remotePath = BuildRemotePath(asset);
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         if (!asset.IsFolder())

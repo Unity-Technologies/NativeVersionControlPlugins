@@ -37,7 +37,7 @@ public:
 	void SetState(int newState);
 	void AddState(State state);
 	void RemoveState(State state);
-	bool HasState(State state) { return m_State & state; }
+	bool HasState(State state) { return ((m_State & state) == state); }
 
 	const std::string& GetPath() const;
 	void SetPath(const std::string& path);
@@ -50,7 +50,7 @@ public:
 
 	void Reset();
 	bool IsFolder() const;
-	bool IsMeta() const { return m_State & kMetaFile; }
+	bool IsMeta() const { return ((m_State & kMetaFile) == kMetaFile); }
 
 	bool operator<(const VersionedAsset& other) const;
 

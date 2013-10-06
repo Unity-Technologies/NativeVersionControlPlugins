@@ -60,7 +60,7 @@ private:
     
     bool m_IsConnected;
     
-    std::string GetRemotePath(const VersionedAsset& asset);
+    std::string BuildRemotePath(const VersionedAsset& asset);
     
     VersionControlPluginCfgFields m_Fields;
 
