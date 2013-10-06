@@ -2,6 +2,9 @@
 #include "CommandLine.h"
 #include "Command.h"
 
+#include <algorithm>
+#include <iterator>
+
 using namespace std;
 
 static const char* gVersionControlPluginCommands[] =

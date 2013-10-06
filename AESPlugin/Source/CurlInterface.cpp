@@ -4,11 +4,11 @@
 
 using namespace std;
 
-const char* USERAGENT = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 GTB6";
+const char* USERAGENT = "UnityPlayer/AESPlugin (http://unity3d.com)";
 
-size_t CurlInterface::HeaderCallback(void *data, size_t size, size_t elements, void *interface)
+size_t CurlInterface::HeaderCallback(void *data, size_t size, size_t elements, void *callback)
 {
-	CurlInterface *pThis = static_cast<CurlInterface *>(interface);
+	CurlInterface *pThis = static_cast<CurlInterface *>(callback);
 	string header = "";
 	header.append((char *)data, size*elements);
 	header = Trim(header,'\n');
@@ -42,23 +42,23 @@ size_t CurlInterface::HeaderCallback(void *data, size_t size, size_t elements, v
     return size*elements;
 }
 
-size_t CurlInterface::WriteMemoryCallback(void *data, size_t size, size_t elements, void *interface)
+size_t CurlInterface::WriteMemoryCallback(void *data, size_t size, size_t elements, void *callback)
 {
-	CurlInterface *pThis = static_cast<CurlInterface *>(interface);
+	CurlInterface *pThis = static_cast<CurlInterface *>(callback);
 	pThis->m_ResponseString.append((char *)data, size*elements);
 	return size*elements;
 }
 
-size_t CurlInterface::WriteFileCallback(void *data, size_t size, size_t elements, void *interface)
+size_t CurlInterface::WriteFileCallback(void *data, size_t size, size_t elements, void *callback)
 {
-	CurlInterface *pThis = static_cast<CurlInterface *>(interface);
+	CurlInterface *pThis = static_cast<CurlInterface *>(callback);
     size_t nwrite = fwrite(data, size, elements, pThis->m_File);
     return nwrite;
 }
 
-size_t CurlInterface::ReadFileCallback(void *data, size_t size, size_t elements, void *interface)
+size_t CurlInterface::ReadFileCallback(void *data, size_t size, size_t elements, void *callback)
 {
-	CurlInterface *pThis = static_cast<CurlInterface *>(interface);
+	CurlInterface *pThis = static_cast<CurlInterface *>(callback);
     size_t nread = fread(data, size, elements, pThis->m_File);
     return nread;
 }
@@ -264,13 +264,13 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
     if (i != m_ResponseHeaders.end())
     {
         vector<string> parts;
-        string line = i->second;
-        Tokenize(parts, line, ";");
+        Tokenize(parts, i->second, ";");
         if (parts.size() > 0 )
         {
             // we are only interested in the key/value
-            string key = parts[0].substr(0,parts[0].find_first_of("="));
-            string value = parts[0].substr(parts[0].find_first_of("=") + 1);
+            string line = parts[0];
+            string key = line.substr(0,line.find_first_of("="));
+            string value = line.substr(line.find_first_of("=") + 1);
             m_Cookies[key] = value;
         }
     }
@@ -283,14 +283,14 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
 		RESTInterface::ParseUrl(url, &server);
 		
         string followUrl = server + location;
+        map<string, string> backupHeaders = m_ResponseHeaders;
 		bool res = Get(followUrl, headers, response);
-        if (res && headers != NULL)
+        if (headers != NULL)
         {
-            for (map<string, string>::const_iterator i = m_ResponseHeaders.begin() ; i != m_ResponseHeaders.end() ; i++)
+            for (map<string, string>::const_iterator i = backupHeaders.begin() ; i != backupHeaders.end() ; i++)
             {
                 headers->insert(*i);
             }
-            headers->insert(make_pair("Location", location));
         }
         return res;
 	}
