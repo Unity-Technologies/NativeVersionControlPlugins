@@ -1,12 +1,23 @@
 #include "AESPlugin.h"
 
 #include <set>
+#include <algorithm> 
+#include <time.h>
 
 #if defined(_WINDOWS)
 #include "windows.h"
 #endif
 
 using namespace std;
+
+string ToTime(time_t timeInMilliseconds)
+{
+    struct tm* t;
+    char buffer[80];
+    t = localtime(&timeInMilliseconds);
+    strftime(buffer, sizeof(buffer), "%c", t);
+    return string(buffer);
+}
 
 enum AESFields { kAESURL, kAESUserName, kAESPassword };
 
@@ -59,11 +70,6 @@ void AESPlugin::Initialize()
     m_Overlays[kConflicted] = "default";
     
     m_CurrRevision = "current";
-
-    Changelist defaultItem;
-    defaultItem.SetDescription(m_CurrRevision);
-    defaultItem.SetRevision(kDefaultListRevision);
-    m_Revisions.push_back(defaultItem);
 }
 
 VersionControlPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
@@ -558,16 +564,19 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     }
     
     assetList.clear();
-    for (VersionedAssetMap::const_iterator i = m_Outgoing.begin() ; i != m_Outgoing.end() ; i++)
+    if (revision == m_CurrRevision)
     {
-        const VersionedAsset& asset = i->second;
-        string path = asset.GetPath();
-        string remotePath = BuildRemotePath(asset);
-        GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
-        
-        if (!asset.IsFolder())
+        for (VersionedAssetMap::const_iterator i = m_Outgoing.begin() ; i != m_Outgoing.end() ; i++)
         {
-            assetList.push_back(asset);
+            const VersionedAsset& asset = i->second;
+            string path = asset.GetPath();
+            string remotePath = BuildRemotePath(asset);
+            GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
+            
+            if (!asset.IsFolder())
+            {
+                assetList.push_back(asset);
+            }
         }
     }
     return true;
@@ -587,6 +596,11 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
     return true;
 }
 
+bool CompareRevision(const AESRevision& lhs, const AESRevision& rhs)
+{
+    return lhs.GetTimeStamp() < rhs.GetTimeStamp();
+}
+
 bool AESPlugin::GetAssetsChanges(Changes& changes)
 {
     GetConnection().Log().Debug() << "GetAssetsChanges" << Endl;
@@ -595,6 +609,28 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
     {
         changes.clear();
         return true;
+    }
+    
+    m_Revisions.clear();
+    Changelist defaultItem;
+    defaultItem.SetDescription(m_CurrRevision);
+    defaultItem.SetRevision(kDefaultListRevision);
+    m_Revisions.push_back(defaultItem);
+
+    vector<AESRevision> revisions;
+    if (m_AES->GetRevisions(revisions))
+    {
+        sort(revisions.begin(), revisions.end(), CompareRevision);
+        for (vector<AESRevision>::iterator i = revisions.begin() ; i != revisions.end() ; i++)
+        {
+            AESRevision& rev = (*i);
+            Changelist item;
+            item.SetCommitter(rev.GetComitterName());
+            item.SetDescription(rev.GetComment());
+            item.SetRevision(rev.GetRevisionID());
+            item.SetTimestamp(ToTime(rev.GetTimeStamp()));
+            m_Revisions.push_back(item);
+        }
     }
     
     changes.clear();

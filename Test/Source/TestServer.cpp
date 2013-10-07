@@ -17,53 +17,39 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE prevInstance, char* cmdLine,
 {
     int argc = 0;
     char** argv = CommandLineToArgv(cmdLine, &argc);
-	try
-	{
-		return run(argc, argv);
-	}
-	catch (ExternalProcessException e)
-	{
-		CommandLineFreeArgs(argv);
-		std::cerr << e.what() << endl;
-		return 1;
-	}
-	catch (exception e)
-	{
-		CommandLineFreeArgs(argv);
-		std::cerr << e.what() << endl;
-		return 1;
-	}
-	catch (...)
-	{
-		CommandLineFreeArgs(argv);
-		std::cerr << "Caught unhandled exception"  << endl;
-		return 1;
-	}
-}
 #else
 int main(int argc, char* argv[])
 {
+#endif
 	try
 	{
 		return run(argc, argv);
 	}
 	catch (ExternalProcessException e)
 	{
+#ifdef WIN32
+		CommandLineFreeArgs(argv);
+#endif
 		std::cerr << e.what() << endl;
 		return 1;
 	}
 	catch (exception e)
 	{
+#ifdef WIN32
+		CommandLineFreeArgs(argv);
+#endif
 		std::cerr << e.what() << endl;
 		return 1;
 	}
 	catch (...)
 	{
+#ifdef WIN32
+		CommandLineFreeArgs(argv);
+#endif
 		std::cerr << "Caught unhandled exception"  << endl;
 		return 1;
 	}
 }
-#endif
 
 static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent = "");
 
