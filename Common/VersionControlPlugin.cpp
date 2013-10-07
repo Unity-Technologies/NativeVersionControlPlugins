@@ -1,7 +1,6 @@
 #include "VersionControlPlugin.h"
 #include "CommandLine.h"
 #include "Command.h"
-
 #include <algorithm>
 #include <iterator>
 

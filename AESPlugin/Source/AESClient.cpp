@@ -89,3 +89,54 @@ bool AESClient::Exists(const std::string& revision, const std::string& path, AES
     delete json;
     return res;
 }
+
+bool AESClient::GetRevisions(std::vector<AESRevision>& revisions)
+{
+    revisions.clear();
+	string response = "";
+    string url = m_Server + m_Path + "/revisions";
+    
+    if (!m_CURL.GetJSON(url, response))
+    {
+        return false;
+    }
+    
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json == NULL || !json->IsArray())
+    {
+        return false;
+    }
+    
+    JSONArray arr = json->AsArray();
+    for (vector<JSONValue*>::const_iterator i = arr.begin() ; i != arr.end() ; i++)
+    {
+        JSONValue* elt = (*i);
+        if (elt != NULL && elt->IsObject())
+        {
+            JSONObject obj = elt->AsObject();
+
+            JSONObject author = obj.find(L"author")->second->AsObject();
+            wstring temp = ((author.find(L"name")->second)->AsString());
+            string name = string(temp.begin(), temp.end());
+            temp = ((author.find(L"email")->second)->AsString());
+            string email = string(temp.begin(), temp.end());
+            
+            time_t milliSecs = (time_t)((obj.find(L"time")->second)->AsNumber());
+
+            temp = ((obj.find(L"comment")->second)->AsString());
+            string comment = string(temp.begin(), temp.end());
+
+            temp = ((obj.find(L"id")->second)->AsString());
+            string id = string(temp.begin(), temp.end());
+
+            JSONObject data = obj.find(L"data")->second->AsObject();
+            temp = ((data.find(L"ref")->second)->AsString());
+            string ref = string(temp.begin(), temp.end());
+            
+            revisions.push_back(AESRevision(name, email, comment, id, ref, milliSecs));
+        }
+    }
+    
+    delete json;
+    return true;
+}
