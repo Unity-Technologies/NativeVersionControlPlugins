@@ -10,11 +10,11 @@
 
 using namespace std;
 
-string ToTime(time_t timeInMilliseconds)
+string ToTime(time_t timeInSeconds)
 {
     struct tm* t;
     char buffer[80];
-    t = localtime(&timeInMilliseconds);
+    t = gmtime(&timeInSeconds);
     strftime(buffer, sizeof(buffer), "%c", t);
     return string(buffer);
 }
@@ -596,9 +596,9 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
     return true;
 }
 
-bool CompareRevision(const AESRevision& lhs, const AESRevision& rhs)
+bool CompareRevisions(const AESRevision& lhs, const AESRevision& rhs)
 {
-    return lhs.GetTimeStamp() < rhs.GetTimeStamp();
+    return lhs.GetTimeStamp() > rhs.GetTimeStamp();
 }
 
 bool AESPlugin::GetAssetsChanges(Changes& changes)
@@ -620,7 +620,7 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
     vector<AESRevision> revisions;
     if (m_AES->GetRevisions(revisions))
     {
-        sort(revisions.begin(), revisions.end(), CompareRevision);
+        sort(revisions.begin(), revisions.end(), CompareRevisions);
         for (vector<AESRevision>::iterator i = revisions.begin() ; i != revisions.end() ; i++)
         {
             AESRevision& rev = (*i);

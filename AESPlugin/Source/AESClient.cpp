@@ -121,7 +121,9 @@ bool AESClient::GetRevisions(std::vector<AESRevision>& revisions)
             temp = ((author.find(L"email")->second)->AsString());
             string email = string(temp.begin(), temp.end());
             
-            time_t milliSecs = (time_t)((obj.find(L"time")->second)->AsNumber());
+            time_t tSecs = (time_t)((obj.find(L"time")->second)->AsNumber());
+            time_t tOffset = (time_t)((obj.find(L"timeZone")->second)->AsNumber()) * 60;
+            tSecs += tOffset;
 
             temp = ((obj.find(L"comment")->second)->AsString());
             string comment = string(temp.begin(), temp.end());
@@ -133,7 +135,7 @@ bool AESClient::GetRevisions(std::vector<AESRevision>& revisions)
             temp = ((data.find(L"ref")->second)->AsString());
             string ref = string(temp.begin(), temp.end());
             
-            revisions.push_back(AESRevision(name, email, comment, id, ref, milliSecs));
+            revisions.push_back(AESRevision(name, email, comment, id, ref, tSecs));
         }
     }
     
