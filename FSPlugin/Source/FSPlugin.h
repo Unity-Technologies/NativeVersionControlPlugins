@@ -11,7 +11,6 @@
 class FSPlugin: public VersionControlPlugin
 {
 public:
-    FSPlugin();
     FSPlugin(int argc, char** argv);
     FSPlugin(const char* args);
     ~FSPlugin();
@@ -23,7 +22,11 @@ public:
     }
     inline VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
     virtual const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
-    CommandsFlags GetOnlineUICommands();
+    inline CommandsFlags GetOnlineUICommands()
+    {
+        return (kAdd | kDelete | kDownload | kGetLatest | kStatus | kSubmit);
+    }
+    inline CommandsFlags GetOfflineUICommands() { return kNone; }
 
     int Connect();
     void Disconnect();
@@ -44,6 +47,7 @@ protected:
     bool LockAssets(VersionedAssetList& assetList);
     bool UnlockAssets(VersionedAssetList& assetList);
     bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList);
+    bool SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode);
     bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false);
     bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);

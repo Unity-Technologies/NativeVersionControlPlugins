@@ -35,6 +35,7 @@ public:
 
     VersionControlPluginCfgField()
     {
+        m_Prefix = "";
         m_Name = "";
         m_Label = "";
         m_Description = "";
@@ -43,8 +44,9 @@ public:
         m_Value = "";
     }
     
-    VersionControlPluginCfgField(const std::string& name, const std::string& label, const std::string& description, const std::string& defaultValue, FieldFlags flags)
+    VersionControlPluginCfgField(const std::string& prefix, const std::string& name, const std::string& label, const std::string& description, const std::string& defaultValue, FieldFlags flags)
     {
+        m_Prefix = prefix;
         m_Name = name;
         m_Label = label;
         m_Description = description;
@@ -55,6 +57,7 @@ public:
     
     VersionControlPluginCfgField(const VersionControlPluginCfgField& other)
     {
+        m_Prefix = other.GetPrefix();
         m_Name = other.GetName();
         m_Label = other.GetLabel();
         m_Description = other.GetDescription();
@@ -63,6 +66,7 @@ public:
         m_Value = other.GetValue();
     }
     
+	const std::string& GetPrefix() const { return m_Prefix; }
 	const std::string& GetName() const { return m_Name; }
     const std::string& GetLabel() const { return m_Label; }
 	const std::string& GetDescription() const { return m_Description; }
@@ -73,6 +77,7 @@ public:
 
     VersionControlPluginCfgField& operator= (const VersionControlPluginCfgField& rhs)
     {
+        m_Prefix = rhs.GetPrefix();
         m_Name = rhs.GetName();
         m_Label = rhs.GetLabel();
         m_Description = rhs.GetDescription();
@@ -84,6 +89,7 @@ public:
     }
 
 private:
+	std::string m_Prefix;
 	std::string m_Name;
 	std::string m_Label;
 	std::string m_Description;
@@ -121,6 +127,7 @@ public:
     
     // Plugin UI commands flags
     enum CommandsFlags {
+        kNone = 0,
         kAdd = 1 << 0,
 		kChangeDescription = 1 << 1,
         kChangeMove = 1 << 2,
@@ -151,15 +158,21 @@ public:
         kMerged = 1 << 2
     };
     
+    // Plugin file mode
+    enum FileMode {
+        kUnused = 0,
+        kBinary = 1 << 0,
+        kText = 1 << 1
+    };
+    
     // Main loop, read command from input and process it until EOF.
     int Run();
 
 protected:
     
     // Constructors
-    VersionControlPlugin();
-    VersionControlPlugin(int argc, char** argv);
-    VersionControlPlugin(const char* args);
+    VersionControlPlugin(const std::string& name, int argc, char** argv);
+    VersionControlPlugin(const std::string& name, const char* args);
     
     // Online/Offline
     inline bool IsOnline() const { return m_IsOnline; }
@@ -175,6 +188,9 @@ protected:
     inline void SetProjectPath(const std::string& path) { m_ProjectPath = path; }
     inline const std::string& GetProjectPath() const { return m_ProjectPath; }
     
+    // Plugin name
+    inline const std::string& GetPluginName() const { return m_PluginName; }
+
     // VCStatus
 	const VCSStatus& GetStatus() const;
 	void ClearStatus();
@@ -214,6 +230,13 @@ protected:
      *  - the commands to enable when plugin is online.
      */
     virtual CommandsFlags GetOnlineUICommands() = 0;
+
+    /*
+     * Get the commands that should be enabled when plugin is offline.
+     * Returns:
+     *  - the commands to enable when plugin is online.
+     */
+    virtual CommandsFlags GetOfflineUICommands() = 0;
     
     /*
      * Get the plugin overlays (with icons if not default).
@@ -388,6 +411,19 @@ protected:
     virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList) = 0;
     
     /*
+     * Set assets file mode in VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     *  - mode: file mode (Text or Binary)
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests for which file mode needs to be changes.
+     * On output, assetList contains assests with file mode changed.
+     */
+    virtual bool SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode) = 0;
+    
+    /*
      * Get assets status from VC.
      * Parameters:
      *  - assetList: IN/OUT list of versioned asset.
@@ -512,7 +548,7 @@ private:
     bool HandleDeleteChanges();
     bool HandleDownload();
     bool HandleExit();
-    bool HandleFileMode();
+    bool HandleFileMode(const CommandArgs& args);
     bool HandleGetlatest();
     bool HandleIncoming();
     bool HandleIncomingChangeAssets();
@@ -533,6 +569,7 @@ private:
     
     int SelectVersion(const VersionControlPluginVersions& unitySupportedVersions);
 
+    std::string m_PluginName;
 	std::string m_ProjectPath;
     VCSStatus m_Status;
     VersionControlPluginMapOfArguments m_arguments;

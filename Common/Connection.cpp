@@ -235,7 +235,7 @@ Connection& Connection::Write(const char* v, LogWriter& log)
 
 Connection& Connection::WriteEndl(LogWriter& log)
 {
-	log << "\n";
+	log << Endl;
 	m_Pipe->Write("\n");
 	return *this;
 }

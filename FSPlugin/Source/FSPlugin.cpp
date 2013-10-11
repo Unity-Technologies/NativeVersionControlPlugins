@@ -12,7 +12,12 @@ using namespace std;
 
 enum FSFields { kFSPath };
 
-#if !defined(_WINDOWS)
+#if defined(_WINDOWS)
+int CompareFiles(const string& left, const string &right)
+{
+    return 0;
+}
+#else
 int CompareFiles(const string& left, const string &right)
 {
     struct stat sleft;
@@ -30,38 +35,26 @@ int CompareFiles(const string& left, const string &right)
         return 1;
     
     /*
-    if (sleft.st_mtimespec.tv_nsec < sright.st_mtimespec.tv_nsec)
-        return -1;
+     if (sleft.st_mtimespec.tv_nsec < sright.st_mtimespec.tv_nsec)
+     return -1;
      
-    if (sleft.st_mtimespec.tv_nsec > sright.st_mtimespec.tv_nsec)
-        return 1;
+     if (sleft.st_mtimespec.tv_nsec > sright.st_mtimespec.tv_nsec)
+     return 1;
      */
     
     return 0;
 }
-#else 
-int CompareFiles(const string& left, const string &right)
-{
-    return 0;
-}
 #endif
 
-FSPlugin::FSPlugin() :
-    VersionControlPlugin(),
-    m_IsConnected(false)
-{
-    Initialize();
-}
-
 FSPlugin::FSPlugin(int argc, char** argv) :
-    VersionControlPlugin(argc, argv),
+    VersionControlPlugin("FileSystem", argc, argv),
     m_IsConnected(false)
 {
     Initialize();
 }
 
 FSPlugin::FSPlugin(const char* args) :
-    VersionControlPlugin(args),
+    VersionControlPlugin("FileSystem", args),
     m_IsConnected(false)
 {
     Initialize();
@@ -74,10 +67,8 @@ FSPlugin::~FSPlugin()
 
 void FSPlugin::Initialize()
 {
-    string prefix = "vcFileSystem"; // Mandatory, MUST match 'vc' + plugin executable name
-
     m_Fields.reserve(1);
-    m_Fields.push_back(VersionControlPluginCfgField(prefix + "Path", "Path", "The FS Path", "", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Path", "Path", "The FS Path", "", VersionControlPluginCfgField::kRequiredField));
     
     m_Versions.insert(kUnity43);
     
@@ -90,11 +81,6 @@ void FSPlugin::Initialize()
     m_Overlays[kAddedLocal] = "default";
     m_Overlays[kAddedRemote] = "default";
     m_Overlays[kConflicted] = "default";
-}
-
-VersionControlPlugin::CommandsFlags FSPlugin::GetOnlineUICommands()
-{
-    return (kAdd | kDelete | kDownload | kGetLatest | kStatus | kSubmit);
 }
 
 int FSPlugin::Connect()
@@ -573,6 +559,27 @@ bool FSPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& as
 
         i++;
     }
+    return true;
+}
+
+bool FSPlugin::SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode)
+{
+    GetConnection().Log().Debug() << "SetAssetsFileMode" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
     return true;
 }
 
