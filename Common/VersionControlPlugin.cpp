@@ -46,7 +46,7 @@ static const char* gVersionControlPluginTraits[] =
 
 Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field)
 {
-    p.DataLine(field.GetName());
+    p.DataLine("vc" + field.GetPrefix() + field.GetName());
     p.DataLine(field.GetLabel(), MAConfig);
     p.DataLine(field.GetDescription(), MAConfig);
     p.DataLine(field.GetDefaultValue());
@@ -56,12 +56,7 @@ Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field)
 
 VersionControlPlugin::VersionControlPluginOverlays VersionControlPlugin::s_emptyOverlays;
 
-VersionControlPlugin::VersionControlPlugin() : m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
-{
-    InitializeArguments(0, NULL);
-}
-
-VersionControlPlugin::VersionControlPlugin(const char* args) : m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
+VersionControlPlugin::VersionControlPlugin(const std::string& name, const char* args) : m_PluginName(name),  m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
 {
     int argc = 0;
     char** argv = CommandLineToArgv(args, &argc);
@@ -69,13 +64,26 @@ VersionControlPlugin::VersionControlPlugin(const char* args) : m_ProjectPath("")
     CommandLineFreeArgs(argv);
 }
 
-VersionControlPlugin::VersionControlPlugin(int argc, char** argv) : m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
+VersionControlPlugin::VersionControlPlugin(const std::string& name, int argc, char** argv) : m_PluginName(name), m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
 {
     InitializeArguments(argc, argv);
 }
 
 void VersionControlPlugin::InitializeArguments(int argc, char** argv)
 {
+    vector<string> pathComp;
+#ifdef WIN32
+    Tokenize(pathComp, string(argv[0]), "\\");
+#else
+    Tokenize(pathComp, string(argv[0]), "/");
+#endif
+    string tmp = (*pathComp.rbegin());
+    tmp = tmp.substr(0, tmp.find("Plugin"));
+    if (!tmp.empty())
+    {
+        m_PluginName = tmp;
+    }
+    
     for (int i = 1 ; i < argc ; )
     {
         if ((argv[i][0] == '-') && (i+1 < argc) && (argv[i+1][0] != '-')) {
@@ -203,15 +211,12 @@ bool VersionControlPlugin::HandleAdd()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (AddAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     GetConnection().EndList();
     
@@ -253,16 +258,12 @@ bool VersionControlPlugin::HandleChangeMove()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (SetRevision(revision, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -275,17 +276,13 @@ bool VersionControlPlugin::HandleChanges()
 
     bool wasOnline = PreHandleCommand();
     
-    GetConnection().BeginList();
     Changes changes;
     if (GetAssetsChanges(changes))
-    {
         SetOnline();
-        for (Changes::const_iterator i = changes.begin(); i != changes.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        changes.clear();
+    
+    GetConnection() << changes;
     
     PostHandleCommand(wasOnline);
     
@@ -301,17 +298,13 @@ bool VersionControlPlugin::HandleChangeStatus()
     ChangelistRevision cl;
     GetConnection() >> cl;
     
-    GetConnection().BeginList();
     VersionedAssetList assetList;
     if (GetAssetsChangeStatus(cl, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -327,16 +320,12 @@ bool VersionControlPlugin::HandleCheckout()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (CheckoutAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -453,16 +442,12 @@ bool VersionControlPlugin::HandleDelete()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (RemoveAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -512,16 +497,12 @@ bool VersionControlPlugin::HandleDownload()
     GetConnection() >> changes;
     GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (DownloadAssets(targetDir, changes, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -539,12 +520,39 @@ bool VersionControlPlugin::HandleExit()
     return true;
 }
 
-bool VersionControlPlugin::HandleFileMode()
+bool VersionControlPlugin::HandleFileMode(const CommandArgs& args)
 {
     GetConnection().Log().Debug() << "HandleFileMode" << Endl;
     
+    FileMode mode = kUnused;
+    if (args.size() == 3)
+    {
+        if (args[1] == "set" && args[2] == "binary")
+        {
+            mode = kBinary;
+        }
+        else if (args[1] == "set" && args[2] == "text")
+        {
+            mode = kText;
+        }
+        else
+        {
+            GetConnection().WarnLine(string("Unknown filemode ") + args[1] + " " + args[2]);
+        }
+    }
+
     bool wasOnline = PreHandleCommand();
-    // TODO: no protocol documentation found
+    
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+    
+    if (SetAssetsFileMode(assetList, mode))
+        SetOnline();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
+    
     PostHandleCommand(wasOnline);
     
     return true;
@@ -559,16 +567,12 @@ bool VersionControlPlugin::HandleGetlatest()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (GetAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -581,17 +585,13 @@ bool VersionControlPlugin::HandleIncoming()
     
     bool wasOnline = PreHandleCommand();
     
-    GetConnection().BeginList();
     Changes changes;
     if (GetAssetsIncomingChanges(changes))
-    {
         SetOnline();
-        for (Changes::const_iterator i = changes.begin(); i != changes.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        changes.clear();
+    
+    GetConnection() << changes;
     
     PostHandleCommand(wasOnline);
     
@@ -607,17 +607,13 @@ bool VersionControlPlugin::HandleIncomingChangeAssets()
     ChangelistRevision cl;
     GetConnection() >> cl;
     
-    GetConnection().BeginList();
     VersionedAssetList assetList;
     if (GetIncomingAssetsChangeStatus(cl, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -633,16 +629,12 @@ bool VersionControlPlugin::HandleLock()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (LockAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -655,9 +647,8 @@ bool VersionControlPlugin::HandleLogin()
     
     bool m_WasOnline = PreHandleCommand();
     if (Login())
-    {
         SetOnline();
-    }
+
     PostHandleCommand(m_WasOnline);
     
     return true;
@@ -672,16 +663,12 @@ bool VersionControlPlugin::HandleMove(const CommandArgs& args)
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (MoveAssets(assetList, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -729,16 +716,12 @@ bool VersionControlPlugin::HandleResolve(const CommandArgs& args)
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (ResolveAssets(assetList, method))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -754,16 +737,12 @@ bool VersionControlPlugin::HandleRevert()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (RevertAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -779,17 +758,13 @@ bool VersionControlPlugin::HandleRevertChanges()
     ChangelistRevision cl;
     GetConnection() >> cl;
     
-    GetConnection().BeginList();
     VersionedAssetList assetList;
     if (RevertChanges(cl, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -808,16 +783,12 @@ bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (SubmitAssets(changelist, assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -839,16 +810,12 @@ bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (GetAssetsStatus(assetList, recursive))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -864,16 +831,12 @@ bool VersionControlPlugin::HandleUnlock()
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-	GetConnection().BeginList();
     if (UnlockAssets(assetList))
-    {
         SetOnline();
-        for (VersionedAssetList::const_iterator i = assetList.begin(); i != assetList.end(); i++)
-        {
-            GetConnection() << (*i);
-        }
-    }
-    GetConnection().EndList();
+    else
+        assetList.clear();
+    
+    GetConnection() << assetList;
     
     PostHandleCommand(wasOnline);
     
@@ -929,6 +892,8 @@ bool VersionControlPlugin::HandleConfigTraits()
 bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
 {
     string key = args[1];
+    key = key.substr(string("vc" + GetPluginName()).length());
+    
     string value = Join(args.begin() + 2, args.end(), " ");
     
     GetConnection().Log().Info() << "Set " << key << " to " << value << Endl;
@@ -990,7 +955,7 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             return HandleExit();
             
         case UCOM_FileMode:
-            return HandleFileMode();
+            return HandleFileMode(args);
             
         case UCOM_GetLatest:
             return HandleGetlatest();
@@ -1043,13 +1008,19 @@ void VersionControlPlugin::NotifyOffline(const string& reason)
 	if (!m_IsOnline)
 		return; // nothing to notify
 
-	GetConnection().Command(string("offline ") + reason, MAProtocol);
-	m_IsOnline = false;
 	int i = 0;
+    CommandsFlags flags = GetOfflineUICommands();
 	while (gVersionControlPluginCommands[i])
 	{
-		GetConnection().Command(string("disableCommand ") + gVersionControlPluginCommands[i++], MAProtocol);
+        CommandsFlags v = (CommandsFlags)(1 << i);
+        if ((flags & v) == v)
+            GetConnection().Command(string("enableCommand ") + gVersionControlPluginCommands[i], MAProtocol);
+        else
+            GetConnection().Command(string("disableCommand ") + gVersionControlPluginCommands[i], MAProtocol);
+		++i;
 	}
+	
+    m_IsOnline = false;
 }
 
 void VersionControlPlugin::NotifyOnline()
@@ -1065,13 +1036,9 @@ void VersionControlPlugin::NotifyOnline()
 	{
         CommandsFlags v = (CommandsFlags)(1 << i);
         if ((flags & v) == v)
-        {
             GetConnection().Command(string("enableCommand ") + gVersionControlPluginCommands[i], MAProtocol);
-        }
         else
-        {
             GetConnection().Command(string("disableCommand ") + gVersionControlPluginCommands[i], MAProtocol);
-        }
 		++i;
 	}
 	

@@ -1,5 +1,7 @@
 #include "AESPlugin.h"
 
+#include "FileSystem.h"
+
 #include <set>
 #include <algorithm> 
 #include <time.h>
@@ -19,18 +21,19 @@ string ToTime(time_t timeInSeconds)
     return string(buffer);
 }
 
-enum AESFields { kAESURL, kAESUserName, kAESPassword };
-
-AESPlugin::AESPlugin() :
-    VersionControlPlugin(),
-    m_IsConnected(false),
-    m_AES(NULL)
+int CompareHash(const string& file, const AESEntry& entry)
 {
-    Initialize();
+    size_t size = GetFileLength(file);
+    if ((int)size != entry.GetSize())
+        return -1;
+    
+    return 0;
 }
 
+enum AESFields { kAESURL, kAESUserName, kAESPassword };
+
 AESPlugin::AESPlugin(int argc, char** argv) :
-    VersionControlPlugin(argc, argv),
+    VersionControlPlugin("AssetExchangeServer", argc, argv),
     m_IsConnected(false),
     m_AES(NULL)
 {
@@ -38,7 +41,7 @@ AESPlugin::AESPlugin(int argc, char** argv) :
 }
 
 AESPlugin::AESPlugin(const char* args) :
-    VersionControlPlugin(args),
+    VersionControlPlugin("AssetExchangeServer", args),
     m_IsConnected(false),
     m_AES(NULL)
 {
@@ -52,12 +55,10 @@ AESPlugin::~AESPlugin()
 
 void AESPlugin::Initialize()
 {
-    string prefix = "vcAssetExchangeServer"; // Mandatory, MUST match 'vc' + plugin executable name
-
     m_Fields.reserve(3);
-    m_Fields.push_back(VersionControlPluginCfgField(prefix + "URL", "URL", "The AES URL", "https://localhost:3030/files/Clock", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField(prefix + "Username", "Username", "The AES username", "emmanuelh@unity3d.com", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField(prefix + "Password", "Password", "The AES password", "ignored4now", VersionControlPluginCfgField::kPasswordField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "URL", "URL", "The AES URL", "https://localhost:3030/files/Clock", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Username", "Username", "The AES username", "emmanuelh@unity3d.com", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Password", "Password", "The AES password", "ignored4now", VersionControlPluginCfgField::kPasswordField));
     
     m_Versions.insert(kUnity43);
     
@@ -70,11 +71,6 @@ void AESPlugin::Initialize()
     m_Overlays[kConflicted] = "default";
     
     m_CurrRevision = "current";
-}
-
-VersionControlPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
-{
-    return (kAdd | kChanges | kDelete | kDownload | kGetLatest | kIncomingChangeAssets | kIncoming | kStatus | kSubmit);
 }
 
 int AESPlugin::Connect()
@@ -501,6 +497,27 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
     return true;
 }
 
+bool AESPlugin::SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode)
+{
+    GetConnection().Log().Debug() << "SetAssetsFileMode" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    VersionedAssetList::iterator i = assetList.begin();
+    while (i != assetList.end())
+    {
+        //VersionedAsset& asset = (*i);
+        
+        i++;
+    }
+    
+    return true;
+}
+
 bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 {
     GetConnection().Log().Debug() << "GetAssetsStatus" << Endl;
@@ -527,12 +544,21 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
         GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
         
         int state = asset.GetState();
-        if (m_AES->Exists(m_CurrRevision, path.substr(GetProjectPath().size())))
+        AESEntry entry;
+        if (m_AES->Exists(m_CurrRevision, path.substr(GetProjectPath().size()), &entry))
         {
-            GetConnection().Log().Debug() << "Found AES entry" << Endl;
+            GetConnection().Log().Debug() << "Found AES entry " << entry.GetReference() << " (" << entry.GetSize() << ")" << Endl;
             state &= ~kLocal;
-            state |= kSynced;
-            state &= ~kOutOfSync;
+            if (CompareHash(path, entry) < 0)
+            {
+                state &= kSynced;
+                state |= kOutOfSync;
+            }
+            else
+            {
+                state |= kSynced;
+                state &= ~kOutOfSync;
+            }
         }
         else
         {
@@ -611,12 +637,31 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
         return true;
     }
     
+    changes.clear();
+    Changelist defaultItem;
+    defaultItem.SetDescription(m_CurrRevision);
+    defaultItem.SetRevision(kNewListRevision);
+    changes.push_back(defaultItem);
+
+    return true;
+}
+
+bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
+{
+    GetConnection().Log().Debug() << "GetAssetsIncomingChanges" << Endl;
+    
+    if (!CheckConnectedAndLogged())
+    {
+        changes.clear();
+        return true;
+    }
+    
     m_Revisions.clear();
     Changelist defaultItem;
     defaultItem.SetDescription(m_CurrRevision);
     defaultItem.SetRevision(kDefaultListRevision);
     m_Revisions.push_back(defaultItem);
-
+    
     vector<AESRevision> revisions;
     if (m_AES->GetRevisions(revisions))
     {
@@ -638,24 +683,7 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
     {
         changes.push_back(*i);
     }
-    
-    if (m_Outgoing.size() != 0)
-    {
-    }
-    
-    return true;
-}
 
-bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
-{
-    GetConnection().Log().Debug() << "GetAssetsIncomingChanges" << Endl;
-    
-    if (!CheckConnectedAndLogged())
-    {
-        changes.clear();
-        return true;
-    }
-    
     return true;
 }
 

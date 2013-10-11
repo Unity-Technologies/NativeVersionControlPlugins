@@ -11,19 +11,23 @@
 class AESPlugin: public VersionControlPlugin
 {
 public:
-    AESPlugin();
     AESPlugin(int argc, char** argv);
     AESPlugin(const char* args);
     ~AESPlugin();
     
     inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
     inline const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
-    inline const TraitsFlags GetSupportedTraitFlags() {
+    inline const TraitsFlags GetSupportedTraitFlags()
+    {
         return (kRequireNetwork | kEnablesGetLatestOnChangeSetSubset );
     }
     inline VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
     virtual const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
-    CommandsFlags GetOnlineUICommands();
+    inline CommandsFlags GetOnlineUICommands()
+    {
+        return (kAdd | kChanges | kDelete | kDownload | kGetLatest | kIncomingChangeAssets | kIncoming | kStatus | kSubmit);
+    }
+    inline CommandsFlags GetOfflineUICommands() { return kNone; }
 
     int Connect();
     void Disconnect();
@@ -45,6 +49,7 @@ protected:
     bool LockAssets(VersionedAssetList& assetList);
     bool UnlockAssets(VersionedAssetList& assetList);
     bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList);
+    bool SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode);
     bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false);
     bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
     bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);
