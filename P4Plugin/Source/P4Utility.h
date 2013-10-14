@@ -34,3 +34,4 @@ void ResolvePaths(std::vector<std::string>& result,
 
 // Translates a workspace absolute path to p4 depot path
 std::string WorkspacePathToDepotPath(const std::string& root, const std::string& wp);
+

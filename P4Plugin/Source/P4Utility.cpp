@@ -23,38 +23,45 @@ int ActionToState(const string& action, const string& headAction,
 	 return headAction == "delete" ? kLocal : kSynced;
 	 }
 	 */
-	bool remoteUpdates = haveRev != headRev && !headRev.empty();
-	
-	if (remoteUpdates)
+	bool serverHaveRevForFile = !headRev.empty();
+	bool localHaveRevForFile = !haveRev.empty();
+
+	if (serverHaveRevForFile)
 	{
-		state |= kOutOfSync;
-		if (headAction == "add") state |= kAddedRemote;
-		else if (headAction == "move/add") state |= kAddedRemote | kMovedRemote;
-		// else if (headAction == "edit") state |= kOutOfSync;
-		else if (headAction == "delete")
+		bool remoteUpdates = haveRev != headRev;
+	
+		if (remoteUpdates)
 		{
-			if (haveRev.empty())
+			state |= kOutOfSync;
+			if (headAction == "add") state |= kAddedRemote;
+			else if (headAction == "move/add") state |= kAddedRemote | kMovedRemote;
+			// else if (headAction == "edit") state |= kOutOfSync;
+			else if (headAction == "delete")
 			{
-				// Not in registered as in workspace and deleted remote ie. remove outofsync flag
-				// This may happen deleting a file in vcs and creating a new file with the
-				// same name.
-				state = state & ~kOutOfSync;
+				if (haveRev.empty())
+				{
+					// Not in registered as in workspace and deleted remote ie. remove outofsync flag
+					// This may happen deleting a file in vcs and creating a new file with the
+					// same name.
+					state = state & ~kOutOfSync;
+				}
+				else
+				{
+					state |= kDeletedRemote;
+				}
 			}
-			else
+			else if (headAction == "move/delete") 
 			{
-				state |= kDeletedRemote;
+				state |= kDeletedRemote | kMovedRemote;
 			}
 		}
-		else if (headAction == "move/delete") state |= kDeletedRemote | kMovedRemote;
-		// else state |= kOutOfSync;
+		else
+		{
+			state |= kSynced;
+		}
 	}
-	else if (headRev.empty())
+	else if (localHaveRevForFile)
 	{
-		// Mean haveRev is also empty and file not know to perforce. (might be addedLocal though)
-	}
-	else 
-	{
-		// HeadRev and HaveRev are there and equal. Things are in sync
 		state |= kSynced;
 	}
 
