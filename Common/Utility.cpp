@@ -1,5 +1,8 @@
 #include "Utility.h"
 #include <sstream>
+#include <iterator>
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
@@ -182,4 +185,21 @@ PluginException::PluginException(const std::string& about) : m_What(about) {}
 const char* PluginException::what() const throw()
 {
 	return m_What.c_str();
+}
+
+void Partition(const StateFilter& filter,
+			   VersionedAssetList& l1_InOut,
+			   VersionedAssetList& l2_Out)
+{
+	VersionedAssetList::iterator bound = 
+		stable_partition(l1_InOut.begin(), l1_InOut.end(), filter);
+	l2_Out.clear();
+	l2_Out.reserve(distance(bound, l1_InOut.end()));
+	l2_Out.insert(l2_Out.end(), bound, l1_InOut.end());
+	l1_InOut.resize(distance(l1_InOut.begin(), bound));
+}
+
+void PathToMovedPath(VersionedAssetList& l)
+{
+	for_each(l.begin(), l.end(), mem_fun_ref(&VersionedAsset::SwapMovedPaths));
 }
