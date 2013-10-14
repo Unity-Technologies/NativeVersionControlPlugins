@@ -1,5 +1,7 @@
 #include "P4Utility.h"
 #include "Utility.h"
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
@@ -150,4 +152,21 @@ void ResolvePaths(vector<string>& result, const VersionedAssetList& list, int fl
 string WorkspacePathToDepotPath(const string& root, const string& wp)
 {
 	return string("/") + wp.substr(root.length());
+}
+
+void PathToMovedPath(VersionedAssetList& l)
+{
+	for_each(l.begin(), l.end(), mem_fun_ref(&VersionedAsset::SwapMovedPaths));
+}
+
+void Partition(const StateFilter& filter,
+	VersionedAssetList& l1_InOut,
+	VersionedAssetList& l2_Out)
+{
+	VersionedAssetList::iterator bound = 
+		stable_partition(l1_InOut.begin(), l1_InOut.end(), filter);
+	l2_Out.clear();
+	l2_Out.reserve(distance(bound, l1_InOut.end()));
+	l2_Out.insert(l2_Out.end(), bound, l1_InOut.end());
+	l1_InOut.resize(distance(l1_InOut.begin(), bound));
 }

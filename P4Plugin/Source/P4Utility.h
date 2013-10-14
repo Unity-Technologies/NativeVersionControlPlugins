@@ -35,3 +35,27 @@ void ResolvePaths(std::vector<std::string>& result,
 // Translates a workspace absolute path to p4 depot path
 std::string WorkspacePathToDepotPath(const std::string& root, const std::string& wp);
 
+void PathToMovedPath(VersionedAssetList& l);
+
+
+// For filtering assets by state
+struct StateFilter
+{
+	StateFilter(int statesToInclude, int statesToExclude = kNone)
+		: m_StatesToInclude(statesToInclude), m_StatesToExlude(statesToExclude)
+	{
+	}
+
+	inline bool operator()(const VersionedAsset& a) const
+	{
+		return a.HasState(m_StatesToInclude) && !a.HasState(m_StatesToExlude);
+	}
+
+	int m_StatesToInclude;
+	int m_StatesToExlude;
+};
+
+// Partitions an asset list into two list using a filter
+void Partition(const StateFilter& filter, VersionedAssetList& l1_InOut,
+	VersionedAssetList& l2_Out);
+

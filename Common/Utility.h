@@ -5,7 +5,6 @@
 #include <memory>
 #include <sstream>
 #include "POpen.h"
-#include "VersionedAsset.h"
 
 std::string IntToString (int i);
 size_t Tokenize(std::vector<std::string>& result, const std::string& str, 
@@ -84,26 +83,3 @@ void Enforce(bool cond, const P1& exParam1, const P2& exParam2)
 		throw Ex(exParam1, exParam2);
 }
 
-
-// For filtering assets by state
-struct StateFilter
-{
-	StateFilter(int statesToInclude, int statesToExclude = kNone)
-		: m_StatesToInclude(statesToInclude), m_StatesToExlude(statesToExclude)
-	{
-	}
-
-	inline bool operator()(const VersionedAsset& a) const
-	{
-		return a.HasState(m_StatesToInclude) && !a.HasState(m_StatesToExlude);
-	}
-
-	int m_StatesToInclude;
-	int m_StatesToExlude;
-};
-
-// Partitions an asset list into two list using a filter
-void Partition(const StateFilter& filter, VersionedAssetList& l1_InOut,
-			   VersionedAssetList& l2_Out);
-
-void PathToMovedPath(VersionedAssetList& l);
