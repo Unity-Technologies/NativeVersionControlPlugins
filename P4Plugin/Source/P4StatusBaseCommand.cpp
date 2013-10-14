@@ -53,7 +53,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		}
 		else if (key == "movedFile")
 		{
-			current.SetMovedPath(value);
+			current.SetMovedPath(Replace(value, "\\", "/"));
 		}
 		else if (key == "depotFile")
 		{
@@ -107,8 +107,12 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	if (!isStateSet)
 	{
 		int actionState = ActionToState(action, headAction, haveRev, headRev);
+		/*
+		Conn().Log().Debug() << current.GetPath() << ": action '" << action << "', headAction '" << headAction 
+							 << "', haveRev '" << haveRev << "', headRev '" << headRev << "' " << actionState << " " << current.GetState() << Endl;
+		*/
 		current.AddState((State)actionState);
-	}		
+	}
 
 	Conn().VerboseLine(current.GetPath());
 	
