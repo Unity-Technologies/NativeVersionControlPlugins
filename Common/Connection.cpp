@@ -20,12 +20,11 @@ Connection::Connection(const string& logPath)
 	// Rotate log file if too large
 	if (PathExists(logPath) && GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
 	{
-		string prevPath("prev");
-		prevPath += logPath;
+		string prevPath(logPath);
+		prevPath += "-prev";
 		if (PathExists(prevPath))
 			DeleteRecursive(prevPath);
-		if (PathExists(logPath))
-			MoveAFile(logPath, prevPath);
+		MoveAFile(logPath, prevPath);
 	}
 	m_Log = new LogStream(logPath);
 }
