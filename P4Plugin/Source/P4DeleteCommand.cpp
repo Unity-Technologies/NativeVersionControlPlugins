@@ -38,7 +38,12 @@ public:
 
 		// Now assetList contains assets to be reverted.
 		RevertAssets(task, assetList);
-	
+		
+		// Delete the just reverted files from disk since the revert -k leaves
+		// the file as writable which will result in a "cannot clobber writable file" error
+		// when trying to p4 delete it.
+		DeleteFromFileSystem(assetList);
+
 		// Assets that is not of added type but was open can be deleted.
 		// Added type needs special handling because it may not be present
 		// after we did the revert.
@@ -64,7 +69,8 @@ public:
 
 		if (paths.empty())
 		{
-			Conn().WarnLine("No paths in delete perforce command", MARemote);
+			DeleteFromFileSystem(incomingAssetList);
+			RunAndSendStatus(task, incomingAssetList);
 			Conn().EndResponse();
 			return false;
 		}
@@ -77,17 +83,22 @@ public:
 		// We just wrap up the communication here.
 		Conn() << GetStatus();
 		
-		// Finally delete all directories since this is not done by perforce by default
-		// Even moved dirs will work here because we reverted with the -k flag.
-		for (VersionedAssetList::const_iterator i = incomingAssetList.begin(); 
-			 i != incomingAssetList.end(); ++i)
-			DeleteRecursive(i->GetPath());
+		DeleteFromFileSystem(incomingAssetList);
 
 		RunAndSendStatus(task, toDelete);
 		
 		Conn().EndResponse();
 
 		return true;
+	}
+
+	void DeleteFromFileSystem( VersionedAssetList &incomingAssetList )
+	{
+		// Finally delete all directories since this is not done by perforce by default
+		// Even moved dirs will work here because we reverted with the -k flag.
+		for (VersionedAssetList::const_iterator i = incomingAssetList.begin(); 
+			i != incomingAssetList.end(); ++i)
+			DeleteRecursive(i->GetPath());
 	}
 
 	void RevertAssets(P4Task& task, const VersionedAssetList& assetList)
@@ -104,4 +115,3 @@ public:
 	}
 
 } cDelete("delete");
- 
