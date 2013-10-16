@@ -5,20 +5,12 @@ c:add
 ./Test/tmp/testclient/testfile.txt
 0
 --
-v1:add -f "./<root>/testfile.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
 v1:login -s
 i1:Enabling unicode mode
 v1:login -s
 v1:'login' not necessary, no password set for this user.
-i1://depot/testfile.txt#1 - opened for add (level 48)
-o1:-1
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
-v1:login -s
-v1:'login' not necessary, no password set for this user.
-v1:<absroot>/testfile.txt
-o1:<absroot>/testfile.txt
-o1:257
-d1:end of list
+v1:./<root>/testfile.txt - no such file(s).
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription
@@ -40,6 +32,18 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
+v1:add -f  "./<root>/testfile.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+i1://depot/testfile.txt#1 - opened for add (level 48)
+o1:-1
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/testfile.txt
+o1:<absroot>/testfile.txt
+o1:257
+d1:end of list
 r1:end of response
 --
 c:status recurse
