@@ -72,7 +72,7 @@ public:
 			DeleteFromFileSystem(incomingAssetList);
 			RunAndSendStatus(task, incomingAssetList);
 			Conn().EndResponse();
-			return false;
+			return true;
 		}
 		
 		string cmd = "delete -v ";
