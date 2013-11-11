@@ -27,6 +27,7 @@ bool AESClient::Ping()
 
 bool AESClient::Login(const string& userName, const string& password)
 {
+    /*
 	map<string,string> headers;
 	headers.insert(make_pair("Content-Type", "application/x-www-form-urlencoded"));
     
@@ -43,19 +44,20 @@ bool AESClient::Login(const string& userName, const string& password)
     }
     
     map<string,string>::const_iterator i = headers.find("Location");
-    if (i == headers.end() || i->second.empty() || i->second.find("index.html") == string::npos)
+    if (i == headers.end() || i->second.empty() || i->second.find("index.htm") == string::npos)
     {
         m_UserName = "";
         m_Password = "";
         return false;
     }
+    */
     
     m_UserName = userName;
     m_Password = password;
     return true;
 }
 
-bool AESClient::Exists(const std::string& revision, const std::string& path, AESEntry* entry)
+bool AESClient::Exists(const string& revision, const string& path, AESEntry* entry)
 {
 	string response = "";
     string url = m_Server + m_Path + "/" + revision + path + "?info";
@@ -65,80 +67,237 @@ bool AESClient::Exists(const std::string& revision, const std::string& path, AES
         return false;
     }
     
+    bool res = false;
     JSONValue* json = JSON::Parse(response.c_str());
-    if (json == NULL || !json->IsObject())
+    if (json != NULL && json->IsObject())
     {
-        return false;
+        JSONObject info = (*json);
+        if (info.find("status") != info.end())
+        {
+            SetLastMessage(*info["message"]);
+        }
+        else if (info.find("url") != info.end())
+        {
+            if (entry != NULL)
+            {
+                string ref = *info["url"];
+                ref.resize(ref.find("?"));
+                
+                entry->SetReference(ref);
+                entry->SetPath(path);
+                entry->SetHash(*info["hash"]);
+                entry->SetDir(*info["directory"]);
+                entry->SetSize((int)(*info["size"]));
+            }
+            res = true;
+        }
+        else
+        {
+            SetLastMessage("Invalid JSON");
+        }
     }
     
-    JSONObject obj = json->AsObject();
-    bool res = (obj.find(L"data") != obj.end());
-    if (res && entry != NULL)
-    {
-        JSONObject data = obj.find(L"data")->second->AsObject();
-        wstring temp = ((data.find(L"ref")->second)->AsString());
-        entry->SetReference(string(temp.begin(), temp.end()));
-        
-        temp = ((obj.find(L"hash")->second)->AsString());
-        entry->SetHash(string(temp.begin(), temp.end()));
-            
-        entry->SetDir((obj.find(L"directory")->second)->AsBool());
-        entry->SetSize((int)(obj.find(L"size")->second)->AsNumber());
-    }
-    
-    delete json;
+    if (json)
+        delete json;
     return res;
 }
 
-bool AESClient::GetRevisions(std::vector<AESRevision>& revisions)
+void DirectoryToEntries(const string& path, JSONArray& children, AESEntries& entries)
 {
-    revisions.clear();
+    for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
+    {
+        JSONObject info = *(*i);
+        bool isDir = *info["directory"];
+        string ref = *info["url"];
+        string name = *info["name"];
+        ref.resize(ref.find("?"));
+        
+        if (isDir)
+        {
+            JSONArray subChildren = *info["children"];
+            entries.push_back(AESEntry(name, path + name + "/", ref + "/", "", true, 0));
+            DirectoryToEntries(path + name + "/", subChildren, entries.back().GetChildren());
+        }
+        else
+        {
+            entries.push_back(AESEntry(name, path + name, ref, *info["hash"], false, (int)(*info["size"])));
+        }
+    }
+}
+
+bool AESClient::GetRevision(string revisionID, AESEntries& entries)
+{
+    entries.clear();
 	string response = "";
-    string url = m_Server + m_Path + "/revisions";
+    string url = m_Server + m_Path + "/" + revisionID + "?info&level=-1";
     
     if (!m_CURL.GetJSON(url, response))
     {
         return false;
     }
     
+    bool res = false;
     JSONValue* json = JSON::Parse(response.c_str());
-    if (json == NULL || !json->IsArray())
+    if (json != NULL && json->IsObject())
+    {
+        JSONObject info = (*json);
+        if (info.find("status") != info.end())
+        {
+            SetLastMessage(*info["message"]);
+        }
+        else if (info.find("children") != info.end())
+        {
+            JSONArray children = *info["children"];
+            DirectoryToEntries("", children, entries);
+            res = true;
+        }
+        else
+        {
+            SetLastMessage("Invalid JSON");
+        }
+    }
+    
+    if (json)
+        delete json;
+    return res;
+}
+
+bool AESClient::GetRevisions(vector<AESRevision>& revisions)
+{
+    revisions.clear();
+	string response = "";
+    string url = m_Server + m_Path + "?info&level=2";
+    
+    if (!m_CURL.GetJSON(url, response))
     {
         return false;
     }
     
-    JSONArray arr = json->AsArray();
-    for (vector<JSONValue*>::const_iterator i = arr.begin() ; i != arr.end() ; i++)
+    bool res = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL && json->IsObject())
     {
-        JSONValue* elt = (*i);
-        if (elt != NULL && elt->IsObject())
+        JSONObject info = (*json);
+        if (info.find("status") != info.end())
         {
-            JSONObject obj = elt->AsObject();
+            SetLastMessage(*info["message"]);
+        }
+        else if (info.find("children") != info.end())
+        {
+            JSONArray children = *info["children"];
+            for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
+            {
+                JSONObject child = *(*i);
+                
+                JSONObject author = *child["author"];
+                string name = *author["name"];
+                string email = *author["email"];
+                
+                time_t tSecs = (time_t)((double)*child["time"]);
+                time_t tOffset = (time_t)((double)*child["timeZone"]);
+                tSecs += tOffset*60;
 
-            JSONObject author = obj.find(L"author")->second->AsObject();
-            wstring temp = ((author.find(L"name")->second)->AsString());
-            string name = string(temp.begin(), temp.end());
-            temp = ((author.find(L"email")->second)->AsString());
-            string email = string(temp.begin(), temp.end());
-            
-            time_t tSecs = (time_t)((obj.find(L"time")->second)->AsNumber());
-            time_t tOffset = (time_t)((obj.find(L"timeZone")->second)->AsNumber()) * 60;
-            tSecs += tOffset;
-
-            temp = ((obj.find(L"comment")->second)->AsString());
-            string comment = string(temp.begin(), temp.end());
-
-            temp = ((obj.find(L"id")->second)->AsString());
-            string id = string(temp.begin(), temp.end());
-
-            JSONObject data = obj.find(L"data")->second->AsObject();
-            temp = ((data.find(L"ref")->second)->AsString());
-            string ref = string(temp.begin(), temp.end());
-            
-            revisions.push_back(AESRevision(name, email, comment, id, ref, tSecs));
+                JSONObject refChildren = *child["children"];
+                string ref = *refChildren["ref"];
+                
+                revisions.push_back(AESRevision(name, email, *child["comment"], *child["revisionID"], ref, tSecs));
+            }
+            res = true;
+        }
+        else
+        {
+            SetLastMessage("Invalid JSON");
         }
     }
     
-    delete json;
+    if (json)
+        delete json;
+    return res;
+}
+
+bool AESClient::Download(const AESEntry& entry, string path)
+{
+    SetLastMessage("Downloading " + entry.GetReference() + " to " + path);
     return true;
+}
+
+bool AESClient::Download(const AESEntries& entries, string basePath)
+{
+    string lastMsg = GetLastMessage();
+    bool res = true;
+    for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() && res; i++)
+    {
+        const AESEntry& entry = (*i);
+        if (entry.IsDir())
+        {
+            string path = basePath + entry.GetName() + "/";
+            res = Download(entry.GetChildren(), path);
+        }
+        else
+        {
+            res = Download(entry, basePath);
+        }
+        SetLastMessage(lastMsg + "\n" + GetLastMessage());
+    }
+    return res;
+}
+
+void EntriesToFiles(const AESEntries& entries, map<string, string>& files)
+{
+	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
+	{
+		const AESEntry& entry = (*i);
+		if (entry.IsDir())
+		{
+			EntriesToFiles(entry.GetChildren(), files);
+		}
+		else
+		{
+			string path = entry.GetName();
+			path.resize(path.find_last_of('/'));
+			files.insert(make_pair(entry.GetPath(), path));
+		}
+	}
+}
+
+void EntriesToFiles(const AESEntries& entries, vector<string>& files)
+{
+	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
+	{
+		const AESEntry& entry = (*i);
+		if (entry.IsDir())
+		{
+			EntriesToFiles(entry.GetChildren(), files);
+		}
+		else
+		{
+			files.push_back(entry.GetName());
+		}
+	}
+}
+
+bool AESClient::ApplyChanges(const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const std::string& comment)
+{
+	string response = "";
+    string url = m_Server + m_Path;
+	
+	map<string, string> addOrUpdateFiles;
+	vector<string> deleteFiles;
+	
+	EntriesToFiles(addOrUpdateEntries, addOrUpdateFiles);
+	EntriesToFiles(deleteEntries, deleteFiles);
+	if (!m_CURL.ApplyChanges(url, NULL, addOrUpdateFiles, deleteFiles, comment, response))
+		return false;
+	
+	bool res = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL && json->IsObject())
+    {
+		string data = json->Stringify();
+		res = true;
+	}
+	
+	if (json)
+        delete json;
+	return res;
 }

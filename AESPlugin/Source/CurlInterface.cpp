@@ -63,8 +63,9 @@ size_t CurlInterface::ReadFileCallback(void *data, size_t size, size_t elements,
     return nread;
 }
 
-CurlInterface::CurlInterface(int timeout) : m_ResponseString(""), m_ResponseCode(0), m_Headers(NULL), m_ConnectTimeout(timeout), m_File(NULL)
+CurlInterface::CurlInterface(int timeout) : m_ResponseString(""), m_ResponseCode(0), m_Headers(NULL), m_Form(NULL), m_ConnectTimeout(timeout), m_File(NULL)
 {
+	m_CurlErrorBuffer[0] = '\0';
 }
 
 CurlInterface::~CurlInterface()
@@ -123,6 +124,45 @@ bool CurlInterface::Download(const string& url, const string& path)
 	return DoCurl(kDOWNLOAD, url, &data, NULL, response);
 }
 
+#define CHECKCURLFORM(x) res = (x); if (res != CURL_FORMADD_OK) { SetErrorMessage("Fill FORM failed"); return false; }
+bool CurlInterface::ApplyChanges(const string& url, map<string, string>* headers, const map<string, string>& addOrModyFiles, const vector<string>& deleteFiles, const string& comment, string& response)
+{
+	if (m_Form != NULL)
+	{
+		curl_formfree(m_Form);
+	}
+	
+	CURLFORMcode res = CURL_FORMADD_OK;
+	struct curl_httppost* last = NULL;
+	
+	int pos = 0;
+	for (map<string, string>::const_iterator i = addOrModyFiles.begin() ; i != addOrModyFiles.end() ; i++)
+	{
+		string file = i->first;
+		string name = "file." + to_string(pos);
+		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_FILE, file.c_str(), CURLFORM_END));
+
+		string path = i->second;
+		name = "path." + to_string(pos);
+		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_COPYCONTENTS, path.c_str(), CURLFORM_END));
+		
+		pos++;
+	}
+	
+	pos = 0;
+	for (vector<string>::const_iterator i = deleteFiles.begin() ; i != deleteFiles.end() ; i++)
+	{
+		string file = (*i);
+		string name = "delete." + to_string(pos);
+		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_COPYCONTENTS, file.c_str(), CURLFORM_END));
+		pos++;
+	}
+	
+	CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, "comment", CURLFORM_COPYCONTENTS, comment.c_str(), CURLFORM_END));
+	
+	return DoCurl(kFORM, url, NULL, headers, response);
+}
+
 #define CHECKCURL(x) res = (x); if (res != CURLE_OK) { SetErrorMessage(curl_easy_strerror(res)) ; curl_easy_cleanup(handle); return false; }
 bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, map<string, string>* headers, string& response)
 {
@@ -177,7 +217,7 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 0));
 	CHECKCURL(curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, m_ConnectTimeout));
-    CHECKCURL(curl_easy_setopt(handle, CURLOPT_VERBOSE, 1));
+    //CHECKCURL(curl_easy_setopt(handle, CURLOPT_VERBOSE, 1));
     
     if (method == kGET)
     {
@@ -244,6 +284,19 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
         CHECKCURL(curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, CurlInterface::WriteFileCallback));
         CHECKCURL(curl_easy_setopt(handle, CURLOPT_WRITEDATA, this));
     }
+	else if (method == kFORM)
+    {
+		if (m_Form == NULL)
+		{
+			SetErrorMessage("Missing form data");
+            curl_easy_cleanup(handle);
+            return false;
+		}
+		
+        CHECKCURL(curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, CurlInterface::WriteMemoryCallback));
+        CHECKCURL(curl_easy_setopt(handle, CURLOPT_WRITEDATA, this));
+		CHECKCURL(curl_easy_setopt(handle, CURLOPT_HTTPPOST, m_Form));
+	}
     
     m_ResponseString = "";
     m_ResponseHeaders.clear();
@@ -252,6 +305,11 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
     CHECKCURL(curl_easy_perform(handle));
     
     curl_easy_cleanup(handle);
+	if (method == kFORM && m_Form != NULL)
+	{
+		curl_formfree(m_Form);
+		m_Form = NULL;
+	}
     
     string location = "";
     map<string,string>::const_iterator i = m_ResponseHeaders.find("Location");

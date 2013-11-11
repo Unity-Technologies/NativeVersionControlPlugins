@@ -22,13 +22,19 @@ public:
 	
     bool Upload(const std::string& url, const std::string& path);
 	bool Download(const std::string& url, const std::string& path);
+	bool ApplyChanges(const std::string& url, std::map<std::string, std::string>* headers,
+					  const std::map<std::string, std::string>& addOrModyFiles,
+					  const std::vector<std::string>& deleteFiles,
+					  const std::string& comment, std::string& response);
 
-	inline std::string GetErrorMessage() { return std::string(m_CurlErrorBuffer, CURL_ERROR_SIZE); }
+	inline std::string GetErrorMessage() {
+		return std::string(m_CurlErrorBuffer);
+	}
     inline int GetResponseCode() { return m_ResponseCode; }
     inline const std::string& GetResponse() { return m_ResponseString; }
 
 private:
-    enum CurlMethod { kGET, kPOST, kDOWNLOAD, kUPLOAD };
+    enum CurlMethod { kGET, kPOST, kDOWNLOAD, kUPLOAD, kFORM };
 	static size_t WriteMemoryCallback(void *data, size_t size, size_t elements, void *callback);
 	static size_t WriteFileCallback(void *data, size_t size, size_t elements, void *callback);
 	static size_t ReadFileCallback(void *data, size_t size, size_t elements, void *callback);
@@ -36,7 +42,7 @@ private:
 
 	void SetErrorMessage(const char* c);
     bool DoCurl(CurlMethod method, const std::string& url, std::string* postData, std::map<std::string, std::string>* headers, std::string& response);
-
+	
     std::map<std::string, std::string> m_ResponseHeaders;
     std::string m_ResponseString;
     int m_ResponseCode;
@@ -45,7 +51,8 @@ private:
 	CookieJar m_Cookies;
     
     char m_CurlErrorBuffer[CURL_ERROR_SIZE];
-    struct curl_slist * m_Headers;
+    struct curl_slist* m_Headers;
+	struct curl_httppost* m_Form;
     int m_ConnectTimeout;
     
     FILE* m_File;

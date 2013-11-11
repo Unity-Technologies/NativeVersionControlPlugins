@@ -32,7 +32,7 @@ public:
     int Connect();
     void Disconnect();
     inline bool IsConnected() { return m_IsConnected; }
-
+	
 protected:
     
     int Login();
@@ -75,13 +75,11 @@ private:
     typedef std::map<std::string, VersionedAsset> VersionedAssetMap;
     VersionedAssetMap m_Outgoing;
 
-    typedef std::map<std:: string, VersionedAssetMap> VersionedAssetMapPerRevision;
-    VersionedAssetMapPerRevision m_Incoming;
-    
-    Changes m_Revisions;
     ChangelistRevision m_CurrRevision;
 
     AESClient* m_AES;
 };
+
+typedef std::map<std::string, const AESEntry*> MapOfEntries;
 
 #endif // AESPLUGIN_H

@@ -17,20 +17,27 @@ const size_t MAX_LOG_FILE_SIZE = 2000000;
 Connection::Connection(const string& logPath) 
 	: m_Log(NULL), m_Pipe(NULL) 
 {
-    if (PathExists(logPath))
-    {
-        // Rotate log file if too large
-        if (GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
-        {
-            string prevPath("prev");
-            prevPath += logPath;
-            if (PathExists(prevPath))
-                DeleteRecursive(prevPath);
-            if (PathExists(logPath))
-                MoveAFile(logPath, prevPath);
-        }
-    }
-	m_Log = new LogStream(logPath);
+	if (logPath != "stdout")
+	{
+		if (PathExists(logPath))
+		{
+			// Rotate log file if too large
+			if (GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
+			{
+				string prevPath("prev");
+				prevPath += logPath;
+				if (PathExists(prevPath))
+					DeleteRecursive(prevPath);
+				if (PathExists(logPath))
+					MoveAFile(logPath, prevPath);
+			}
+		}
+		m_Log = new LogStream(logPath);
+	}
+	else
+	{
+		m_Log = new LogStream();
+	}
 }
 
 Connection::~Connection()

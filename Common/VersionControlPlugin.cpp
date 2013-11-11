@@ -114,7 +114,7 @@ VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem item)
 
 int VersionControlPlugin::Run()
 {
-    VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
+	VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
     m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName());
     
     i = m_arguments.find("-v");
@@ -123,7 +123,7 @@ int VersionControlPlugin::Run()
         GetConnection().Log().SetLogLevel(LOG_DEBUG);
     }
     
-	try
+    try
 	{
 		UnityCommand cmd;
 		vector<string> args;

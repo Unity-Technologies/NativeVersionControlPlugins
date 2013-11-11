@@ -1,4 +1,5 @@
 #include "Log.h"
+#include <iostream>
 
 LogWriter::LogWriter(LogStream& stream, bool isOn) : m_Stream(stream), m_On(isOn)
 {
@@ -17,13 +18,21 @@ LogWriter& Endl(LogWriter& w)
 	return w;
 }
 
-
-LogStream::LogStream(const std::string& path, LogLevel level)
+LogStream::LogStream(LogLevel level)
 : m_LogLevel(level),
-m_Stream(path.c_str(), std::ios_base::app),
 m_OnWriter(Self(), true),
 m_OffWriter(Self(), false)
 {
+	m_Stream = &std::cout;
+}
+
+LogStream::LogStream(const std::string& path, LogLevel level)
+: m_LogLevel(level),
+m_FileStream(path.c_str(), std::ios_base::app),
+m_OnWriter(Self(), true),
+m_OffWriter(Self(), false)
+{
+	m_Stream = &m_FileStream;
 }
 
 LogStream& LogStream::Self(void)
@@ -34,8 +43,7 @@ LogStream& LogStream::Self(void)
 
 LogStream::~LogStream()
 {
-	m_Stream.flush();
-	m_Stream.close();
+	m_Stream->flush();
 }
 
 void LogStream::SetLogLevel(LogLevel l)
@@ -70,7 +78,7 @@ LogWriter& LogStream::Fatal()
 
 LogStream& LogStream::Flush()
 {
-	m_Stream << std::flush;
+	*m_Stream << std::flush;
 	return *this;
 }
 
