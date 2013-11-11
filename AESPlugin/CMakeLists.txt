@@ -89,8 +89,6 @@ CM_TARGET_BEGIN(
 		"Sources"
 		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSON.h
 		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSON.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSONValue.h
-		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSONValue.cpp
 	)
 	
 	CM_TARGET_ADD_SOURCES( 

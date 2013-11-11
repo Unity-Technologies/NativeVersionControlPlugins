@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <fstream>
 
 // Log levels.
@@ -50,7 +51,8 @@ LogWriter& Endl(LogWriter& w);
 class LogStream
 {
 public:
-	LogStream(const std::string& path, LogLevel level = LOG_NOTICE);
+	LogStream(LogLevel level = LOG_DEBUG);
+	LogStream(const std::string& path, LogLevel level = LOG_DEBUG);
 	~LogStream();
     
 	LogStream& Self(void);
@@ -68,7 +70,8 @@ public:
 	template<typename T> LogStream& Write(const T& v);
 private:
 	LogLevel m_LogLevel;
-	std::ofstream m_Stream;
+	std::ostream* m_Stream;
+	std::ofstream m_FileStream;
 	LogWriter m_OnWriter;  // write logs to file
 	LogWriter m_OffWriter; // throw away logs
 };
@@ -77,7 +80,7 @@ private:
 template<typename T>
 LogStream& LogStream::Write(const T& v)
 {
-	m_Stream << v;
+	*m_Stream << v;
 	return *this;
 }
 
