@@ -122,7 +122,8 @@ public:
         kEnablesVersioningFolders = 1 << 4,
         kEnablesChangelists = 1 << 5,
         kEnablesGetLatestOnChangeSetSubset = 1 << 6,
-        kEnablesConflictHandlingByPlugin = 1 << 7
+        kEnablesConflictHandlingByPlugin = 1 << 7,
+		kEnablesAll = (1 << 8) - 2
     };
     
     // Plugin UI commands flags

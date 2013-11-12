@@ -8,6 +8,7 @@
 
 class AESEntry;
 typedef std::vector<AESEntry> AESEntries;
+typedef std::map<std::string, AESEntry> MapOfEntries;
 
 class AESEntry
 {
@@ -141,6 +142,7 @@ public:
     
     bool GetRevisions(std::vector<AESRevision>& revisions);
     bool GetRevision(std::string revisionID, AESEntries& entries);
+    bool GetRevisionDelta(std::string revisionID, std::string compRevisionID, AESEntries& entries);
     
     bool Download(const AESEntry& entry, std::string path);
     bool Download(const AESEntries& entries, std::string basePath);

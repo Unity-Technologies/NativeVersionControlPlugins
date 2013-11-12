@@ -21,7 +21,7 @@ public:
         return (kRequireNetwork | kEnablesCheckout | kEnablesGetLatestOnChangeSetSubset );
     }
     inline VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
-    virtual const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
+    inline const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
     inline CommandsFlags GetOnlineUICommands()
     {
         return (kAdd | kDelete | kDownload | kGetLatest | kStatus | kSubmit);

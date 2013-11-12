@@ -162,6 +162,65 @@ bool AESClient::GetRevision(string revisionID, AESEntries& entries)
     return res;
 }
 
+bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisionID, AESEntries& entries)
+{
+    entries.clear();
+	string response = "";
+    string url = m_Server + m_Path + "/" + revisionID + "/delta?compareTo=" + compRevisionID;
+    
+    if (!m_CURL.GetJSON(url, response))
+    {
+        return false;
+    }
+    
+    bool res = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL)
+    {
+		if (json->IsObject())
+		{
+			JSONObject info = (*json);
+			if (info.find("status") != info.end())
+			{
+				SetLastMessage(*info["message"]);
+			}
+		}
+		else if (json->IsArray())
+		{
+			JSONArray children = json->AsArray();
+            for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
+            {
+                JSONObject child = *(*i);
+				string oldPath = *child["oldPath"];
+				string newPath = *child["newPath"];
+				string status = *child["status"];
+				
+				int size = 0;
+				if (status == "added") size = 1;
+				else if (status == "deleted") size = -1;
+
+				string name = newPath;
+				size_t pos = name.find_last_of('/');
+				if (pos != string::npos)
+				{
+					name = name.substr(pos+1);
+				}
+				string ref = m_Server + m_Path + "/" + revisionID + "/" + newPath;
+				entries.push_back(AESEntry(name, newPath, ref, "", false, size));
+            }
+            res = true;
+		}
+		else
+		{
+			SetLastMessage("Invalid JSON");
+		}
+    }
+    
+    if (json)
+        delete json;
+    return res;
+}
+
 bool AESClient::GetRevisions(vector<AESRevision>& revisions)
 {
     revisions.clear();
