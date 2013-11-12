@@ -16,16 +16,16 @@ public:
     ~AESPlugin();
     
     inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
-    inline const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
+    const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
     inline const TraitsFlags GetSupportedTraitFlags()
     {
-        return (kRequireNetwork | kEnablesGetLatestOnChangeSetSubset );
+        return (kRequireNetwork | kEnablesCheckout | kEnablesLocking | kEnablesGetLatestOnChangeSetSubset);
     }
-    inline VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
-    virtual const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
+    VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
+    const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
     inline CommandsFlags GetOnlineUICommands()
     {
-        return (kAdd | kChanges | kDelete | kDownload | kGetLatest | kIncomingChangeAssets | kIncoming | kStatus | kSubmit);
+        return (kAdd | kChanges | kDelete | kDownload | kGetLatest | kIncomingChangeAssets | kIncoming | kStatus | kSubmit | kCheckout | kLock | kUnlock);
     }
     inline CommandsFlags GetOfflineUICommands() { return kNone; }
 
@@ -62,6 +62,7 @@ protected:
 
 private:
     void Initialize();
+	bool Refresh();
     
     bool m_IsConnected;
     
@@ -76,10 +77,11 @@ private:
     VersionedAssetMap m_Outgoing;
 
     ChangelistRevision m_CurrRevision;
+	MapOfEntries m_CurrEntries;
+	ChangelistRevisions m_Revisions;
 
     AESClient* m_AES;
 };
 
-typedef std::map<std::string, const AESEntry*> MapOfEntries;
 
 #endif // AESPLUGIN_H

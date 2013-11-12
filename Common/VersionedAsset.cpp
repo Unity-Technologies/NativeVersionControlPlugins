@@ -146,7 +146,7 @@ std::string StateToString(int state)
 
 Connection& operator<<(Connection& p, const VersionedAsset& asset)
 {
-    p.Log().Debug() << "State for " << asset.GetPath() << " is " << StateToString(asset.GetState()) << Endl << Flush;
+    //p.Log().Debug() << "State for " << asset.GetPath() << " is " << StateToString(asset.GetState()) << Endl << Flush;
 	p.DataLine(asset.GetPath());
 	p.DataLine(asset.GetState());
 	return p;
@@ -159,6 +159,6 @@ Connection& operator>>(Connection& p, VersionedAsset& asset)
 	p.ReadLine(line);
 	int state = atoi(line.c_str());
 	asset.SetState(state);
-    p.Log().Debug() << "State for " << asset.GetPath() << " is " << StateToString(asset.GetState()) << Endl << Flush;
+    //p.Log().Debug() << "State for " << asset.GetPath() << " is " << StateToString(asset.GetState()) << Endl << Flush;
 	return p;
 }
