@@ -2,6 +2,7 @@
 #define AESCLIENT_H
 
 #include "CurlInterface.h"
+#include "JSON.h"
 
 #include <string>
 #include <vector>
@@ -88,14 +89,14 @@ public:
         m_TimeStamp = (time_t)0;
     }
     
-    AESRevision(const std::string& comitterName, const std::string& comitterEmail, const std::string& comment, const std::string& revisionID, const std::string& reference, time_t timStamp)
+    AESRevision(const std::string& comitterName, const std::string& comitterEmail, const std::string& comment, const std::string& revisionID, const std::string& reference, time_t timeStamp)
     {
         m_ComitterName = comitterName;
         m_ComitterEmail = comitterEmail;
         m_Comment = comment;
         m_RevisionID = revisionID;
         m_Reference = reference;
-        m_TimeStamp = timStamp;
+        m_TimeStamp = timeStamp;
     }
 
     const std::string GetComitterName() const { return m_ComitterName; }
@@ -114,7 +115,7 @@ public:
     void SetReference(const std::string& reference) { m_Reference = reference; }
     
     time_t GetTimeStamp() const { return m_TimeStamp; }
-    void SetTimeStamp(time_t timStamp) { m_TimeStamp = timStamp; }
+    void SetTimeStamp(time_t timeStamp) { m_TimeStamp = timeStamp; }
     
 private:
     std::string m_ComitterName;
@@ -137,8 +138,6 @@ public:
     
     bool Ping();
     bool Login(const std::string& userName, const std::string& password);
-    
-    bool Exists(const std::string& revision, const std::string& path, AESEntry* entry = NULL);
     
     bool GetRevisions(std::vector<AESRevision>& revisions);
     bool GetRevision(std::string revisionID, AESEntries& entries);

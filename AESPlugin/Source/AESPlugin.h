@@ -19,7 +19,7 @@ public:
     const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
     inline const TraitsFlags GetSupportedTraitFlags()
     {
-        return (kRequireNetwork | kEnablesCheckout | kEnablesLocking | kEnablesGetLatestOnChangeSetSubset);
+        return (kRequireNetwork | kEnablesCheckout | kEnablesChangelists | kEnablesLocking | kEnablesGetLatestOnChangeSetSubset | kEnablesRevertUnchanged);
     }
     VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
     const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
@@ -63,6 +63,9 @@ protected:
 private:
     void Initialize();
 	bool Refresh();
+	
+	bool SaveStateToCacheFile();
+	bool RestoreStateFromCacheFile();
     
     bool m_IsConnected;
     

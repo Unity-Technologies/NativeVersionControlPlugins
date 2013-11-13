@@ -311,6 +311,16 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 	return false;
 }
 
+bool ReadAFile(const std::string& path, std::string& data)
+{
+	return false;
+}
+
+bool WriteAFile(const std::string& path, const std::string& data)
+{
+	return false;
+}
+
 #else // MACOS 
 
 #include <sys/stat.h>
@@ -477,4 +487,35 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 	int res = rename(fromPath.c_str(), toPath.c_str());
 	return !res;
 }
+
+bool ReadAFile(const std::string& path, std::string& data)
+{
+	FILE* fp;
+	if ((fp = fopen(path.c_str(), "r")) == 0)
+		return false;
+	
+	data.clear();
+	char buffer[BUFSIZ];
+    size_t n;
+	
+    while ((n = fread(buffer, sizeof(char), sizeof(buffer), fp)) > 0)
+    {
+		data.append(&buffer[0], n);
+    }
+	fclose(fp);
+	return true;
+}
+
+bool WriteAFile(const std::string& path, const std::string& data)
+{
+	FILE* fp;
+	if ((fp = fopen(path.c_str(), "w")) == 0)
+		return false;
+	
+	bool res = (fwrite(&data[0], sizeof(char), data.length(), fp) == data.length());
+	fflush(fp);
+	fclose(fp);
+	return res;
+}
+
 #endif

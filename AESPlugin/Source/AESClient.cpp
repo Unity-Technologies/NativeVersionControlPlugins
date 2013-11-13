@@ -57,70 +57,27 @@ bool AESClient::Login(const string& userName, const string& password)
     return true;
 }
 
-bool AESClient::Exists(const string& revision, const string& path, AESEntry* entry)
-{
-	string response = "";
-    string url = m_Server + m_Path + "/" + revision + path + "?info";
-
-    if (!m_CURL.GetJSON(url, response))
-    {
-        return false;
-    }
-    
-    bool res = false;
-    JSONValue* json = JSON::Parse(response.c_str());
-    if (json != NULL && json->IsObject())
-    {
-        JSONObject info = (*json);
-        if (info.find("status") != info.end())
-        {
-            SetLastMessage(*info["message"]);
-        }
-        else if (info.find("url") != info.end())
-        {
-            if (entry != NULL)
-            {
-                string ref = *info["url"];
-                ref.resize(ref.find("?"));
-                
-                entry->SetReference(ref);
-                entry->SetPath(path);
-                entry->SetHash(*info["hash"]);
-                entry->SetDir(*info["directory"]);
-                entry->SetSize((int)(*info["size"]));
-            }
-            res = true;
-        }
-        else
-        {
-            SetLastMessage("Invalid JSON");
-        }
-    }
-    
-    if (json)
-        delete json;
-    return res;
-}
-
-void DirectoryToEntries(const string& path, JSONArray& children, AESEntries& entries)
+void DirectoryToEntries(const string& path, const JSONArray& children, AESEntries& entries)
 {
     for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
     {
-        JSONObject info = *(*i);
-        bool isDir = *info["directory"];
-        string ref = *info["url"];
-        string name = *info["name"];
+        const JSONObject& info = (*i)->AsObject();
+        bool isDir = *(info.find("directory")->second);
+        string ref = *(info.find("url")->second);
+        string name = *(info.find("name")->second);
         ref.resize(ref.find("?"));
         
         if (isDir)
         {
-            JSONArray subChildren = *info["children"];
+            const JSONArray subChildren = *(info.find("children")->second);
             entries.push_back(AESEntry(name, path + name + "/", ref + "/", "", true, 0));
             DirectoryToEntries(path + name + "/", subChildren, entries.back().GetChildren());
         }
         else
         {
-            entries.push_back(AESEntry(name, path + name, ref, *info["hash"], false, (int)(*info["size"])));
+			string hash = *(info.find("hash")->second);
+			double size = *(info.find("size")->second);
+            entries.push_back(AESEntry(name, path + name, ref, hash, false, (int)size));
         }
     }
 }
@@ -130,9 +87,10 @@ bool AESClient::GetRevision(string revisionID, AESEntries& entries)
     entries.clear();
 	string response = "";
     string url = m_Server + m_Path + "/" + revisionID + "?info&level=-1";
-    
+	
     if (!m_CURL.GetJSON(url, response))
     {
+		SetLastMessage("GetRevision failed");
         return false;
     }
     
@@ -140,22 +98,27 @@ bool AESClient::GetRevision(string revisionID, AESEntries& entries)
     JSONValue* json = JSON::Parse(response.c_str());
     if (json != NULL && json->IsObject())
     {
-        JSONObject info = (*json);
+        const JSONObject& info = json->AsObject();
         if (info.find("status") != info.end())
         {
-            SetLastMessage(*info["message"]);
+            SetLastMessage(*(info.find("message")->second));
+            res = true;
         }
         else if (info.find("children") != info.end())
         {
-            JSONArray children = *info["children"];
+            const JSONArray& children = *(info.find("children")->second);
             DirectoryToEntries("", children, entries);
             res = true;
         }
-        else
-        {
-            SetLastMessage("Invalid JSON");
-        }
     }
+	
+	if (!res)
+	{
+		if (json)
+			SetLastMessage("GetRevision Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
+		else
+			SetLastMessage("GetRevision Not JSON: '" + response + "'");
+	}
     
     if (json)
         delete json;
@@ -170,6 +133,7 @@ bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisio
     
     if (!m_CURL.GetJSON(url, response))
     {
+		SetLastMessage("GetRevisionDelta failed");
         return false;
     }
     
@@ -179,21 +143,22 @@ bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisio
     {
 		if (json->IsObject())
 		{
-			JSONObject info = (*json);
+			const JSONObject& info = json->AsObject();
 			if (info.find("status") != info.end())
 			{
-				SetLastMessage(*info["message"]);
+				SetLastMessage(*(info.find("message")->second));
+				res = true;
 			}
 		}
 		else if (json->IsArray())
 		{
-			JSONArray children = json->AsArray();
+			const JSONArray& children = json->AsArray();
             for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
             {
-                JSONObject child = *(*i);
-				string oldPath = *child["oldPath"];
-				string newPath = *child["newPath"];
-				string status = *child["status"];
+				const JSONObject& child = (*i)->AsObject();
+				string oldPath = *(child.find("oldPath")->second);
+				string newPath = *(child.find("newPath")->second);
+				string status = *(child.find("status")->second);
 				
 				int size = 0;
 				if (status == "added") size = 1;
@@ -210,11 +175,15 @@ bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisio
             }
             res = true;
 		}
-		else
-		{
-			SetLastMessage("Invalid JSON");
-		}
     }
+    
+	if (!res)
+	{
+		if (json)
+			SetLastMessage("GetRevisionDeltaInvalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
+		else
+			SetLastMessage("GetRevisionDeltaNot JSON: '" + response + "'");
+	}
     
     if (json)
         delete json;
@@ -229,6 +198,7 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
     
     if (!m_CURL.GetJSON(url, response))
     {
+		SetLastMessage("GetRevisions failed");
         return false;
     }
     
@@ -236,38 +206,49 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
     JSONValue* json = JSON::Parse(response.c_str());
     if (json != NULL && json->IsObject())
     {
-        JSONObject info = (*json);
-        if (info.find("status") != info.end())
-        {
-            SetLastMessage(*info["message"]);
-        }
+        const JSONObject& info = json->AsObject();
+		if (info.find("status") != info.end())
+		{
+			SetLastMessage(*(info.find("message")->second));
+			res = true;
+		}
         else if (info.find("children") != info.end())
         {
-            JSONArray children = *info["children"];
+            const JSONArray& children = *(info.find("children")->second);
             for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
             {
-                JSONObject child = *(*i);
+                const JSONObject& child = (*i)->AsObject();
+                /*
+                const JSONObject& author = *(child.find("author")->second);
+                string name = *(author.find("name")->second);
+                string email = *(author.find("email")->second);
                 
-                JSONObject author = *child["author"];
-                string name = *author["name"];
-                string email = *author["email"];
-                
-                time_t tSecs = (time_t)((double)*child["time"]);
-                time_t tOffset = (time_t)((double)*child["timeZone"]);
+                time_t tSecs = (time_t)((double)*(child.find("time")->second));
+                time_t tOffset = (time_t)((double)*(child.find("timeZone")->second));
                 tSecs += tOffset*60;
 
-                JSONObject refChildren = *child["children"];
-                string ref = *refChildren["ref"];
+                const JSONObject& refChildren = *(child.find("children")->second);
+                string ref = *(refChildren.find("ref")->second);
                 
-                revisions.push_back(AESRevision(name, email, *child["comment"], *child["revisionID"], ref, tSecs));
+				string comment = *(child.find("comment")->second);
+				string revisionID = *(child.find("revisionID")->second);
+                revisions.push_back(AESRevision(name, email, comment, revisionID, ref, tSecs));
+				 */
+				string comment = *(child.find("comment")->second);
+				string revisionID = *(child.find("revisionID")->second);
+                revisions.push_back(AESRevision("me", "me@me.om", comment, revisionID, "", (time_t)0));
             }
             res = true;
         }
-        else
-        {
-            SetLastMessage("Invalid JSON");
-        }
     }
+    
+	if (!res)
+	{
+		if (json)
+			SetLastMessage("GetRevisions JSON received: '" + json->Stringify() + "' from '" + response + "'");
+		else
+			SetLastMessage("GetRevisions JSON: '" + response + "'");
+	}
     
     if (json)
         delete json;

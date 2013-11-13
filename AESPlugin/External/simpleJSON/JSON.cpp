@@ -872,7 +872,7 @@ std::string JSONValue::Stringify() const
 			break;
             
 		case JSONType_String:
-			ret_string = string_value;
+			ret_string = "\"" + string_value + "\"";
 			break;
             
 		case JSONType_Bool:
