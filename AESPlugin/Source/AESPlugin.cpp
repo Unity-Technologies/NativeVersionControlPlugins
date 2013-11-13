@@ -196,10 +196,12 @@ void AESPlugin::Disconnect()
     if (!IsConnected())
         return;
 	
+	/*
 	if (!SaveStateToCacheFile())
     {
         GetConnection().Log().Debug() << "Cannot save AES cache" << Endl;
     }
+	*/
     
     delete m_AES;
     m_IsConnected = false;
