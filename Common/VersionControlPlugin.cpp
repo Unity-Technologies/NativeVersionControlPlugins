@@ -122,6 +122,12 @@ int VersionControlPlugin::Run()
     {
         GetConnection().Log().SetLogLevel(LOG_DEBUG);
     }
+	
+	i = m_arguments.find("-p");
+    if (i != m_arguments.end())
+    {
+        SetProjectPath(i->second);
+    }
     
     try
 	{
@@ -140,6 +146,7 @@ int VersionControlPlugin::Run()
             if (!Dispatch(cmd, args))
 				return 1; // error
             
+			Disconnect();
             return 0; // ok
         }
         
@@ -158,6 +165,7 @@ int VersionControlPlugin::Run()
             if (cmd == UCOM_Shutdown)
 			{
                 GetConnection().Log().Debug() << "Shutdown" << Endl;
+				Disconnect();
 				GetConnection().EndResponse();
 				return 0; // ok
 			}
