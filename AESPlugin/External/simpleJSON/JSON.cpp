@@ -97,10 +97,10 @@ JSONValue *JSON::Parse(const char *data)
  *
  * @return std::string Returns a JSON encoded string representation of the given value
  */
-std::string JSON::Stringify(const JSONValue *value)
+std::string JSON::Stringify(const JSONValue *value, bool pretty, int indent)
 {
 	if (value != NULL)
-		return value->Stringify();
+		return value->Stringify(pretty, indent);
 	else
 		return "";
 }
@@ -861,7 +861,7 @@ JSONValue* JSONValue::Child(const char* name)
  *
  * @return std::string Returns the JSON string
  */
-std::string JSONValue::Stringify() const
+std::string JSONValue::Stringify(bool pretty, int indent) const
 {
 	std::string ret_string;
 	
@@ -872,7 +872,7 @@ std::string JSONValue::Stringify() const
 			break;
             
 		case JSONType_String:
-			ret_string = "\"" + string_value + "\"";
+			ret_string = StringifyString(string_value);
 			break;
             
 		case JSONType_Bool:
@@ -896,15 +896,21 @@ std::string JSONValue::Stringify() const
 		case JSONType_Array:
 		{
 			ret_string = "[";
+			if (pretty) ret_string += "\n";
 			JSONArray::const_iterator iter = array_value.begin();
 			while (iter != array_value.end())
 			{
-				ret_string += (*iter)->Stringify();
+				if (pretty) ret_string += std::string(indent+1, '\t');
+				ret_string += (*iter)->Stringify(pretty, indent+1);
 				
 				// Not at the end - add a separator
 				if (++iter != array_value.end())
+				{
 					ret_string += ",";
+					if (pretty) ret_string += "\n";
+				}
 			}
+			if (pretty) ret_string += "\n" + std::string(indent, '\t');
 			ret_string += "]";
 			break;
 		}
@@ -912,17 +918,23 @@ std::string JSONValue::Stringify() const
 		case JSONType_Object:
 		{
 			ret_string = "{";
+			if (pretty) ret_string += "\n";
 			JSONObject::const_iterator iter = object_value.begin();
 			while (iter != object_value.end())
 			{
+				if (pretty) ret_string += std::string(indent+1, '\t');
 				ret_string += StringifyString((*iter).first);
 				ret_string += ":";
-				ret_string += (*iter).second->Stringify();
+				ret_string += (*iter).second->Stringify(pretty, indent+1);
 				
 				// Not at the end - add a separator
 				if (++iter != object_value.end())
+				{
 					ret_string += ",";
+					if (pretty) ret_string += "\n";
+				}
 			}
+			if (pretty) ret_string += "\n" + std::string(indent, '\t');
 			ret_string += "}";
 			break;
 		}

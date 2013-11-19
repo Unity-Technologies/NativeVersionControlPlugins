@@ -12,6 +12,9 @@
 
 using namespace std;
 
+const char* kCacheFileName = "/Library/aesSnapshot.json";
+const char* kLatestRevison = "current";
+
 string ToTime(time_t timeInSeconds)
 {
     struct tm* t;
@@ -23,22 +26,27 @@ string ToTime(time_t timeInSeconds)
 
 int CompareHash(const string& file, const AESEntry& entry)
 {
-    size_t size = GetFileLength(file);
-    if ((int)size != entry.GetSize())
-        return -1;
-    
     return 0;
 }
 
-void FillMapOfEntries(const AESEntries& entries, MapOfEntries& map)
+void FillMapOfEntries(const AESEntries& entries, MapOfEntries& map, int state = -1)
 {
     for (AESEntries::const_iterator i = entries.begin() ; i != entries.end(); i++)
     {
         AESEntry entry = (*i);
-        map[entry.GetPath()] = entry;
+		string path = entry.GetPath();
+        map[path] = entry;
+		if (state != -1)
+		{
+			int s = state;
+			if (path.length() > 5 && path.substr(path.length() - 5, 5) == ".meta")
+				s |= kMetaFile;
+			
+			(map[path]).SetState(s);
+		}
         if (entry.IsDir())
         {
-            FillMapOfEntries(entry.GetChildren(), map);
+            FillMapOfEntries(entry.GetChildren(), map, state);
         }
     }
 }
@@ -70,7 +78,7 @@ void AESPlugin::Initialize()
 {
     m_Fields.reserve(4);
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "URL", "URL", "The AES URL", "http://localhost:3030", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Repository", "Repository", "The AES Repository", "TestGitRepo1", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Repository", "Repository", "The AES Repository", "TestGitRepo2", VersionControlPluginCfgField::kRequiredField));
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Username", "Username", "The AES username", "", VersionControlPluginCfgField::kRequiredField));
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Password", "Password", "The AES password", "", VersionControlPluginCfgField::kPasswordField));
     
@@ -88,80 +96,160 @@ void AESPlugin::Initialize()
 	m_Overlays[kLockedRemote] = "default";
 	m_Overlays[kConflicted] = "default";
     
-    m_CurrRevision = "current";
-	m_CurrEntries.clear();
+    m_SnapShotRevision.clear();
+	m_SnapShotEntries.clear();
 }
 
-bool AESPlugin::Refresh()
+bool AESPlugin::RefreshSnapShot()
 {
-	GetConnection().Log().Debug() << "Refresh" << Endl;
+	GetConnection().Log().Debug() << "RefreshSnapShot" << Endl;
 	
 	if (!m_IsConnected)
 		return false;
 	
-	// Fetch current enries from AES
 	AESEntries entries;
-    if (!m_AES->GetRevision(m_CurrRevision, entries))
-    {
-        GetConnection().Log().Debug() << "Cannot get " << m_CurrRevision << " revision, error: " << m_AES->GetLastMessage() << Endl;
-        return false;
-    }
-	
-	m_CurrEntries.clear();
-	FillMapOfEntries(entries, m_CurrEntries);
-	GetConnection().Log().Debug() << "Found in " << m_CurrRevision << ": " << Endl;
-	/*
-	for (MapOfEntries::const_iterator j = m_CurrEntries.begin() ; j != m_CurrEntries.end() ; j++)
+	string latest;
+	MapOfEntries snapShot;
+
+	if (!m_AES->GetLatestRevision(latest))
 	{
-		GetConnection().Log().Debug() << "- " << j->first << Endl;
+		GetConnection().Log().Debug() << "Failed to get latest snapshot revision, reason:" << m_AES->GetLastMessage() << Endl;
+		return false;
 	}
-	*/
+	
+	GetConnection().Log().Debug() << "Latest snapshot revision is " << latest << Endl;
+	if (m_AES->GetRevision(latest, entries))
+	{
+		FillMapOfEntries(entries, snapShot, kSynced);
+	}
+	else
+	{
+		GetConnection().Log().Debug() << "Failed to refresh snapshot, reason:" << m_AES->GetLastMessage() << Endl;
+		return false;
+	}
+
+	m_SnapShotRevision = latest;
+	m_SnapShotEntries.swap(snapShot);
+
+	GetConnection().Log().Debug() << "Cleanup changes" << Endl;
+	MapOfEntries::iterator i = m_ChangedEntries.begin();
+	while (i != m_ChangedEntries.end())
+	{
+		MapOfEntries::const_iterator j = m_SnapShotEntries.find(i->first);
+		if (j != m_SnapShotEntries.end())
+		{
+			i = m_ChangedEntries.erase(i);
+		}
+		else
+		{
+			i++;
+		}
+	}
+	
 	return true;
 }
 
-bool AESPlugin::SaveStateToCacheFile()
+bool AESPlugin::SaveSnapShotToFile(const string& path)
 {
-	string aesCache = GetProjectPath() + "/Library/aesCache.txt";
-	GetConnection().Log().Debug() << "SaveStateToCacheFile " << aesCache << Endl;
+	GetConnection().Log().Debug() << "SaveSnapShotToFile " << path << Endl;
 	
-	JSONArray arr;
-    for (MapOfEntries::const_iterator i = m_CurrEntries.begin() ; i != m_CurrEntries.end(); i++)
-    {
-		JSONObject elt;
-		const AESEntry& entry = i->second;
-		elt["name"] = new JSONValue(entry.GetName());
-		elt["path"] = new JSONValue(entry.GetPath());
-		elt["ref"] = new JSONValue(entry.GetReference());
-		elt["hash"] = new JSONValue(entry.GetHash());
-		elt["size"] = new JSONValue((double)entry.GetSize());
-		
-		arr.push_back(new JSONValue(elt));
-	}
-	JSONObject obj;
-	obj["entries"] = new JSONValue(arr);
-	
-	JSONValue json(obj);
-	GetConnection().Log().Debug() << "SaveState JSON: " << json.Stringify() << Endl;
-	return WriteAFile(aesCache, json.Stringify());
-}
-
-bool AESPlugin::RestoreStateFromCacheFile()
-{
-	string aesCache = GetProjectPath() + "/Library/aesCache.txt";
-	GetConnection().Log().Debug() << "RestoreStateFromCacheFile " << aesCache << Endl;
-	
-	string buffer;
-	if (!ReadAFile(aesCache, buffer))
+	if (m_SnapShotRevision.empty())
 	{
 		return false;
 	}
 	
+	JSONArray entries;
+    for (MapOfEntries::const_iterator i = m_SnapShotEntries.begin() ; i != m_SnapShotEntries.end(); i++)
+    {
+		JSONObject elt;
+		const AESEntry& entry = i->second;
+		elt["path"] = new JSONValue(entry.GetPath());
+		if (!entry.GetHash().empty()) elt["hash"] = new JSONValue(entry.GetHash());
+		elt["directory"] = new JSONValue(entry.IsDir());
+		elt["state"] = new JSONValue((double)entry.GetState());
+		if (entry.GetSize() > 0) elt["size"] = new JSONValue((double)entry.GetSize());
+		
+		entries.push_back(new JSONValue(elt));
+	}
+
+	JSONArray changes;
+    for (MapOfEntries::const_iterator i = m_ChangedEntries.begin() ; i != m_ChangedEntries.end(); i++)
+    {
+		JSONObject elt;
+		const AESEntry& entry = i->second;
+		elt["path"] = new JSONValue(entry.GetPath());
+		if (!entry.GetHash().empty()) elt["hash"] = new JSONValue(entry.GetHash());
+		elt["directory"] = new JSONValue(entry.IsDir());
+		elt["state"] = new JSONValue((double)entry.GetState());
+		if (entry.GetSize() > 0) elt["size"] = new JSONValue((double)entry.GetSize());
+		
+		changes.push_back(new JSONValue(elt));
+	}
+
+	JSONObject obj;
+	obj["entries"] = new JSONValue(entries);
+	obj["changes"] = new JSONValue(changes);
+	obj["snapshot"] = new JSONValue((string)m_SnapShotRevision);
+	
+	JSONValue json(obj);
+	return WriteAFile(path, json.Stringify());
+}
+
+bool AESPlugin::RestoreSnapShotFromFile(const string& path)
+{
+	GetConnection().Log().Debug() << "RestoreSnapShotFromFile " << path << Endl;
+	
+	string buffer;
+	if (!ReadAFile(path, buffer))
+	{
+		return false;
+	}
+	
+	m_SnapShotRevision.clear();
+	m_SnapShotEntries.clear();
+	m_ChangedEntries.clear();
+
 	bool res = false;
     JSONValue* json = JSON::Parse(buffer.c_str());
 	if (json != NULL && json->IsObject())
 	{
 		const JSONObject& obj = json->AsObject();
+		if (obj.find("snapshot") != obj.end())
+			m_SnapShotRevision = (ChangelistRevision)(*(obj.at("snapshot")));
 		
+		if (obj.find("entries") != obj.end())
+		{
+			const JSONArray& arr = *(obj.at("entries"));
+			for (vector<JSONValue*>::const_iterator i = arr.begin() ; i != arr.end() ; i++)
+			{
+				const JSONObject& entry = (*i)->AsObject();
+				string path = *(entry.at("path"));
+				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "";
+				bool isDir = *(entry.at("directory"));
+				int state = (int)((entry.at("state"))->AsNumber());
+				int size = (entry.find("size") != entry.end()) ? (int)((entry.at("size"))->AsNumber()) : 0;
+				
+				m_SnapShotEntries[path] = AESEntry(path, m_SnapShotRevision, hash, state, size, isDir);
+			}
+		}
+		
+		if (obj.find("changes") != obj.end())
+		{
+			const JSONArray& arr = *(obj.at("changes"));
+			for (vector<JSONValue*>::const_iterator i = arr.begin() ; i != arr.end() ; i++)
+			{
+				const JSONObject& entry = (*i)->AsObject();
+				string path = *(entry.at("path"));
+				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "";
+				bool isDir = *(entry.at("directory"));
+				int state = (int)((entry.at("state"))->AsNumber());
+				int size = (entry.find("size") != entry.end()) ? (int)((entry.at("size"))->AsNumber()) : 0;
+				
+				m_ChangedEntries[path] = AESEntry(path, m_SnapShotRevision, hash, state, size, isDir);
+			}
+		}
+		
+		res = true;
 	}
 	
     if (json)
@@ -178,7 +266,7 @@ int AESPlugin::Connect()
     m_AES = new AESClient(m_Fields[kAESURL].GetValue() + "/api/files/" + m_Fields[kAESRepository].GetValue());
     if (!m_AES->Ping())
     {
-        GetConnection().Log().Debug() << "Connect failed " << m_AES->GetLastError() << Endl;
+        GetConnection().Log().Debug() << "Connect failed, reason: " << m_AES->GetLastError() << Endl;
         //SetOnline();
         //NotifyOffline(m_AES->GetLastError());
         return -1;
@@ -196,12 +284,11 @@ void AESPlugin::Disconnect()
     if (!IsConnected())
         return;
 	
-	/*
-	if (!SaveStateToCacheFile())
+	string aesCache = GetProjectPath() + kCacheFileName;
+	if (!SaveSnapShotToFile(aesCache))
     {
-        GetConnection().Log().Debug() << "Cannot save AES cache" << Endl;
+        GetConnection().Log().Debug() << "Cannot save snapshot to AES cache file" << Endl;
     }
-	*/
     
     delete m_AES;
     m_IsConnected = false;
@@ -215,11 +302,37 @@ int AESPlugin::Login()
     
     if (!m_AES->Login(m_Fields[kAESUserName].GetValue(), m_Fields[kAESPassword].GetValue()))
     {
-        GetConnection().Log().Debug() << "Login failed " << m_AES->GetLastError() << Endl;
+        GetConnection().Log().Debug() << "Login failed, reason: " << m_AES->GetLastError() << Endl;
         return -1;
     }
-    
-	Refresh();
+	
+	string aesCache = GetProjectPath() + kCacheFileName;
+	/*
+	if (!PathExists(aesCache))
+	{
+		if (!RefreshSnapShot() || !SaveSnapShotToFile(aesCache))
+		{
+			GetConnection().Log().Debug() << "Cannot get snapshot from AES, reason: " << m_AES->GetLastMessage() << Endl;
+		}
+	}
+    else
+	{
+	*/
+		if (!RestoreSnapShotFromFile(aesCache))
+		{
+			GetConnection().Log().Debug() << "Cannot refresh snapshot from AES cache file" << Endl;
+		}
+	/*
+	}
+	*/
+	
+	GetConnection().Log().Debug() << "Current SnapShot " << m_SnapShotRevision << Endl;
+	for (MapOfEntries::const_iterator i = m_SnapShotEntries.begin() ; i != m_SnapShotEntries.end() ; i++)
+	{
+		const AESEntry& entry = i->second;
+		GetConnection().Log().Debug() << " - " << entry.GetPath() << " (" << entry.GetState() << ")" << Endl;
+	}
+	
     return 0;
 }
 
@@ -233,14 +346,12 @@ bool AESPlugin::CheckConnectedAndLogged()
             StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot connect to VC system"));
             return false;
         }
-        GetConnection().Log().Debug() << "Connect successfully" << Endl;
         
         if (Login() != 0)
         {
             StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot log to to VC system"));
             return false;
         }
-        GetConnection().Log().Debug() << "Logged successfully" << Endl;
     }
     
     return true;
@@ -248,8 +359,77 @@ bool AESPlugin::CheckConnectedAndLogged()
 
 string AESPlugin::BuildRemotePath(const VersionedAsset& asset)
 {
-    const string path = asset.GetPath();
-    return m_Fields[kAESURL].GetValue() + "/api/files/" + m_Fields[kAESRepository].GetValue() + '/' + m_CurrRevision + path.substr(GetProjectPath().size());
+    string path = asset.GetPath().substr(GetProjectPath().size()+1);
+	string revision = m_SnapShotRevision.empty() ? kLatestRevison : m_SnapShotRevision;
+    return m_Fields[kAESURL].GetValue() + "/api/files/" + m_Fields[kAESRepository].GetValue() + '/' + revision + '/' + path;
+}
+
+void AESPlugin::AddAssetsToChanges(const VersionedAssetList& assetList, int state)
+{
+	GetConnection().Log().Debug() << "AddAssetsToChanges (" << state << ")" << Endl;
+	
+    for (VersionedAssetList::const_iterator i = assetList.begin() ; i != assetList.end() ; i++)
+    {
+        const VersionedAsset& asset = (*i);
+        if (asset.IsFolder())
+        {
+			// Skip folders
+            continue;
+        }
+		
+        string path = asset.GetPath().substr(GetProjectPath().size()+1);
+		MapOfEntries::const_iterator j = m_ChangedEntries.find(path);
+		if (j != m_ChangedEntries.end() && (j->second.GetState() & state) == state)
+		{
+			// Already in changes
+			continue;
+		}
+
+		if (path.length() > 5 && path.substr(path.length() - 5, 5) == ".meta")
+			state |= kMetaFile;
+		
+		GetConnection().Log().Debug() << "AddAssetsToChanges " << path << Endl;
+		m_ChangedEntries[path] = AESEntry(path, kLatestRevison, "", asset.GetState() | state);
+	}
+
+	GetConnection().Log().Debug() << "Changes:" << Endl;
+	for (MapOfEntries::const_iterator i = m_ChangedEntries.begin() ; i != m_ChangedEntries.end() ; i++)
+	{
+		GetConnection().Log().Debug() << " - " << i->first << " (" << i->second.GetState() << ")" << Endl;
+	}
+}
+
+void AESPlugin::RemoveAssetsFromChanges(const VersionedAssetList& assetList, int state)
+{
+	GetConnection().Log().Debug() << "RemoveAssetsFromChanges (" << state << ")" << Endl;
+
+	GetConnection().Log().Debug() << "Changes:" << Endl;
+	for (MapOfEntries::const_iterator i = m_ChangedEntries.begin() ; i != m_ChangedEntries.end() ; i++)
+	{
+		GetConnection().Log().Debug() << " - " << i->first << " (" << i->second.GetState() << ")" << Endl;
+	}
+	
+    for (VersionedAssetList::const_iterator i = assetList.begin() ; i != assetList.end() ; i++)
+    {
+        const VersionedAsset& asset = (*i);
+        if (asset.IsFolder())
+        {
+			// Skip folders
+            continue;
+        }
+		
+        string path = asset.GetPath().substr(GetProjectPath().size()+1);
+		MapOfEntries::const_iterator j = m_ChangedEntries.find(path);
+		if (j != m_ChangedEntries.end())
+		{
+			GetConnection().Log().Debug() << "RemoveAssetsFromChanges found " << path << " (" << j->second.GetState() << ")" << Endl;
+			if (state == kNone || (j->second.GetState() & state) == state)
+			{
+				GetConnection().Log().Debug() << "RemoveAssetsFromChanges remove " << path << Endl;
+				m_ChangedEntries.erase(j);
+			}
+		}
+	}
 }
 
 bool AESPlugin::AddAssets(VersionedAssetList& assetList)
@@ -262,21 +442,7 @@ bool AESPlugin::AddAssets(VersionedAssetList& assetList)
         return true;
     }
     
-    for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
-    {
-        VersionedAsset& asset = (*i);
-        if (asset.IsFolder() || asset.HasState(kAddedLocal) || asset.HasState(kSynced))
-        {
-            continue;
-        }
-
-        string path = asset.GetPath().substr(GetProjectPath().size()+1);
-		asset.AddState(kAddedLocal);
-		
-		GetConnection().Log().Debug() << "Outgoing ADD " << path << Endl;
-        m_Outgoing.insert(make_pair(path, asset));
-    }
-    
+    AddAssetsToChanges(assetList, kAddedLocal);
     return GetAssetsStatus(assetList, false);
 }
 
@@ -289,29 +455,22 @@ bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
         return true;
     }
     
-    for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
-    {
-        VersionedAsset& asset = (*i);
-        if (asset.IsFolder() || asset.HasState(kDeletedLocal) || asset.HasState(kSynced))
-        {
-            continue;
-        }
-		
-        string path = asset.GetPath().substr(GetProjectPath().size()+1);
-		asset.AddState(kDeletedLocal);
-		
-		GetConnection().Log().Debug() << "Outgoing REMOVE" << path << Endl;
-        m_Outgoing.insert(make_pair(path, asset));
-    }
-    
+    AddAssetsToChanges(assetList, kDeletedLocal);
     return GetAssetsStatus(assetList, false);
 }
 
 bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList)
 {
     GetConnection().Log().Debug() << "MoveAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    if (!CheckConnectedAndLogged())
+    {
+        toAssetList.clear();
+        return true;
+    }
+    
+    AddAssetsToChanges(fromAssetList, kDeletedLocal);
+    AddAssetsToChanges(toAssetList, kAddedLocal);
+    return GetAssetsStatus(toAssetList, false);
 }
 
 bool AESPlugin::CheckoutAssets(VersionedAssetList& assetList)
@@ -323,22 +482,41 @@ bool AESPlugin::CheckoutAssets(VersionedAssetList& assetList)
         return true;
     }
     
-    for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
+    AddAssetsToChanges(assetList, kCheckedOutLocal);
+    return GetAssetsStatus(assetList, false);
+}
+
+bool AESPlugin::LockAssets(VersionedAssetList& assetList)
+{
+    GetConnection().Log().Debug() << "LockAssets" << Endl;
+    if (!CheckConnectedAndLogged())
     {
-        VersionedAsset& asset = (*i);
-        if (asset.IsFolder() || asset.HasState(kCheckedOutLocal))
-        {
-            continue;
-        }
-		
-        string path = asset.GetPath().substr(GetProjectPath().size()+1);
-		asset.AddState(kCheckedOutLocal);
-		
-		GetConnection().Log().Debug() << "Outgoing CHECKOUT " << path << Endl;
-        m_Outgoing.insert(make_pair(path, asset));
+        assetList.clear();
+        return true;
     }
     
+    AddAssetsToChanges(assetList, kLockedLocal);
     return GetAssetsStatus(assetList, false);
+}
+
+bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
+{
+    GetConnection().Log().Debug() << "UnlockAssets" << Endl;
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+    
+    RemoveAssetsFromChanges(assetList, kLockedLocal);
+    return GetAssetsStatus(assetList, false);
+}
+
+bool AESPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
+{
+    GetConnection().Log().Debug() << "DownloadAssets" << Endl;
+	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
+    return true;
 }
 
 bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
@@ -350,57 +528,69 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
         return true;
     }
     
-    for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
+    RemoveAssetsFromChanges(assetList, kNone);
+	
+	for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
     {
         VersionedAsset& asset = (*i);
-        if (asset.IsFolder() || !asset.HasState(kCheckedOutLocal))
+        if (asset.IsFolder())
         {
+			// Skip folders
             continue;
         }
 		
         string path = asset.GetPath().substr(GetProjectPath().size()+1);
-		VersionedAssetMap::const_iterator j = m_Outgoing.find(path);
-		if (j != m_Outgoing.end())
+		MapOfEntries::const_iterator j = m_SnapShotEntries.find(path);
+		if (j != m_SnapShotEntries.end())
 		{
-			GetConnection().Log().Debug() << "Outgoing UNDO-CHECKOUT " << path << Endl;
-			m_Outgoing.erase(j);
+			::DeleteRecursive(asset.GetPath());
+			if (!m_AES->Download(j->second, GetProjectPath()))
+			{
+				GetConnection().Log().Debug() << "RevertAssets, cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
+			}
+			else
+			{
+				asset.SetState(kNone);
+			}
 		}
-    }
-    
+	}
+	
 	return GetAssetsStatus(assetList, false);
-}
-
-bool AESPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
-{
-    GetConnection().Log().Debug() << "DownloadAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
 }
 
 bool AESPlugin::GetAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "GetAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return true;
+    }
+	
+	if (RefreshSnapShot())
+	{
+		GetConnection().Log().Debug() << "Latest snapshot revision is " << m_SnapShotRevision << Endl;
+		for (MapOfEntries::const_iterator i = m_SnapShotEntries.begin() ; i != m_SnapShotEntries.end() ; i++)
+		{
+			const AESEntry& entry = i->second;
+			if (!m_AES->Download(entry, GetProjectPath()))
+			{
+				GetConnection().Log().Debug() << "Failed to download '" << entry.GetPath() << "', reason: " << m_AES->GetLastMessage() << Endl;
+			}
+		}
+		
+		return GetAssetsStatus(assetList);
+	}
+
+	assetList.clear();
+	GetConnection().Log().Debug() << "Failed to refresh snapshot, reason: " << m_AES->GetLastMessage() << Endl;
+	
+	return true;
 }
 
 bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod method)
 {
     GetConnection().Log().Debug() << "ResolveAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
-}
-
-bool AESPlugin::LockAssets(VersionedAssetList& assetList)
-{
-    GetConnection().Log().Debug() << "LockAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
-}
-
-bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
-{
-    GetConnection().Log().Debug() << "UnlockAssets" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
     return true;
 }
@@ -430,42 +620,33 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
         if (!asset.IsFolder())
 		{
 			string path = asset.GetPath().substr(GetProjectPath().size()+1);
-			string remotePath = BuildRemotePath(asset);
 			if (asset.HasState(kAddedLocal))
 			{
-				GetConnection().Log().Debug() << "Add " << asset.GetPath() << " (" << path << ", " << remotePath << ")" << Endl;
-				entriesToAddOrMod.push_back(AESEntry(path, asset.GetPath(), remotePath, "", false, -1));
+				GetConnection().Log().Debug() << "Add " << path << Endl;
+				entriesToAddOrMod.push_back(AESEntry(path, kLatestRevison, "", asset.GetState()));
 			}
 			else if (asset.HasState(kDeletedLocal))
 			{
-				GetConnection().Log().Debug() << "Remove " << asset.GetPath() << " (" << path << ", " << remotePath << ")" << Endl;
-				entriesToDelete.push_back(AESEntry(path, asset.GetPath(), remotePath, "", false, -1));
+				GetConnection().Log().Debug() << "Remove " << path << Endl;
+				entriesToDelete.push_back(AESEntry(path, kLatestRevison, "", asset.GetState()));
 			}
 		}
     }
 	
-	if (!m_AES->ApplyChanges(entriesToAddOrMod, entriesToDelete, changeList.GetDescription()))
+	if (!m_AES->ApplyChanges(GetProjectPath(), entriesToAddOrMod, entriesToDelete, changeList.GetDescription()))
 	{
-		GetConnection().Log().Fatal() << "AES ApplyChanges failed" << Endl;
+		GetConnection().Log().Fatal() << "AES ApplyChanges failed, reason: " << m_AES->GetLastMessage() << " (" << m_AES->GetLastError() << ")" << Endl;
 		assetList.clear();
         return true;
 	}
 	
-	for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
+	RemoveAssetsFromChanges(assetList);
+	if (!RefreshSnapShot())
     {
-        VersionedAsset& asset = (*i);
-		if (!asset.IsFolder())
-		{
-			string path = asset.GetPath().substr(GetProjectPath().size()+1);
-			VersionedAssetMap::const_iterator j = m_Outgoing.find(path);
-			if (j != m_Outgoing.end())
-			{
-				GetConnection().Log().Debug() << "Remove " << path << " from outgoing change" << Endl;
-				m_Outgoing.erase(j);
-			}
-		}
-	}
-	
+        assetList.clear();
+        return true;
+    }
+
     return GetAssetsStatus(assetList, false);
 }
 
@@ -486,12 +667,6 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
         return true;
     }
     
-	if (!Refresh())
-    {
-        assetList.clear();
-        return true;
-    }
-	
     for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
     {
         VersionedAsset& asset = (*i);
@@ -504,22 +679,24 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 		string path = asset.GetPath().substr(GetProjectPath().size()+1);
 		GetConnection().Log().Debug() << "Looking for: " << path << Endl;
         
-		MapOfEntries::const_iterator j = m_CurrEntries.find(path);
-        if (j != m_CurrEntries.end())
-        {
-			const AESEntry& entry = j->second;
-            GetConnection().Log().Debug() << "Found AES entry " << entry.GetReference() << " (" << entry.GetSize() << ")" << Endl;
-            state |= kSynced;
-        }
-
-		VersionedAssetMap::const_iterator k = m_Outgoing.find(path);
-		if (k != m_Outgoing.end())
+		MapOfEntries::const_iterator j = m_ChangedEntries.find(path);
+        if (j != m_ChangedEntries.end())
 		{
-			const VersionedAsset& managedAsset = k->second;
-            GetConnection().Log().Debug() << "Found Outgoing entry " << managedAsset.GetPath() << Endl;
-			state |= managedAsset.GetState();
+			const AESEntry& entry = j->second;
+			GetConnection().Log().Debug() << "Found AES entry " << entry.GetPath() << " (" << entry.GetState() << ")" << Endl;
+			state = entry.GetState();
 		}
-        
+		else
+        {
+			j = m_SnapShotEntries.find(path);
+			if (j != m_SnapShotEntries.end())
+			{
+				const AESEntry& entry = j->second;
+				GetConnection().Log().Debug() << "Found AES entry " << entry.GetPath() << " (" << entry.GetState() << ")" << Endl;
+				state = entry.GetState();
+			}
+		}
+		
         asset.SetState(state);
     }
     
@@ -537,42 +714,11 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     }
     
     assetList.clear();
-    if (revision == kDefaultListRevision)
+    if (revision == kNewListRevision)
     {
-        for (VersionedAssetMap::const_iterator i = m_Outgoing.begin() ; i != m_Outgoing.end() ; i++)
-        {
-            const VersionedAsset& asset = i->second;
-            string path = asset.GetPath();
-            string remotePath = BuildRemotePath(asset);
-            GetConnection().Log().Debug() << "Asset: LocalPath = " << path << ", RemotePath: " << remotePath << Endl;
-            assetList.push_back(asset);
-        }
+		EntriesToAssets(m_ChangedEntries, assetList);
     }
     return true;
-}
-
-void EntriesToAssets(const AESEntries& entries, VersionedAssetList& assetList, bool setState = false)
-{
-    for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
-    {
-        const AESEntry& entry = (*i);
-        if (entry.IsDir())
-        {
-            EntriesToAssets(entry.GetChildren(), assetList);
-        }
-        else
-        {
-			int state = kSynced;
-			if (setState)
-			{
-				int size = entry.GetSize();
-				if (size > 0) state = kAddedLocal;
-				else if (size < 0) state = kDeletedRemote;
-			}
-			
-            assetList.push_back(VersionedAsset(entry.GetPath(), state));
-        }
-    }
 }
 
 bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList)
@@ -601,7 +747,8 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 	{
 		// First revision, no delta
 		GetConnection().Log().Debug() << "First revision" << Endl;
-		if (m_AES->GetRevision(revision, entries))
+		string rev = revision;
+		if (m_AES->GetRevision(rev, entries))
 		{
 			EntriesToAssets(entries, assetList);
 		}
@@ -614,6 +761,13 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 			EntriesToAssets(entries, assetList);
 		}
 	}
+
+    for (VersionedAssetList::const_iterator i = assetList.begin() ; i != assetList.end() ; i++)
+    {
+        const VersionedAsset& asset = (*i);
+		GetConnection().Log().Debug() << " - " << asset.GetPath() << Endl;
+	}
+	
     return true;
 }
 
@@ -629,8 +783,8 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
     
     changes.clear();
     Changelist defaultItem;
-    defaultItem.SetDescription(m_CurrRevision);
-    defaultItem.SetRevision(kDefaultListRevision);
+    defaultItem.SetDescription("Default");
+    defaultItem.SetRevision(kNewListRevision);
     changes.push_back(defaultItem);
 	
     return true;
@@ -651,19 +805,37 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
     vector<AESRevision> revisions;
     if (m_AES->GetRevisions(revisions))
     {
+		bool snapShotFound = false;
         for (vector<AESRevision>::const_iterator i = revisions.begin() ; i != revisions.end() ; i++)
         {
             const AESRevision& rev = (*i);
-			GetConnection().Log().Debug() << "GetAssetsIncomingChanges found revision" << rev.GetRevisionID() << Endl;
-            Changelist item;
-            item.SetCommitter(rev.GetComitterName());
-            item.SetDescription(rev.GetComment());
-            item.SetRevision(rev.GetRevisionID());
-            //item.SetTimestamp(ToTime(rev.GetTimeStamp()));
-            changes.push_back(item);
+			if (rev.GetRevisionID() == m_SnapShotRevision)
+			{
+				snapShotFound = true;
+			}
+
+			GetConnection().Log().Debug() << "GetAssetsIncomingChanges found revision " << rev.GetRevisionID() << (snapShotFound ? ", skipt it" : "") << Endl;
+			if (!snapShotFound)
+			{
+				Changelist item;
+				
+				string comment = rev.GetComment();
+				comment.append(" [Rev ");
+				comment.append(rev.GetRevisionID());
+				comment.append(" by ");
+				comment.append(rev.GetComitterEmail());
+				comment.append("]");
+				
+				item.SetCommitter(rev.GetComitterName());
+				item.SetDescription(comment);
+				item.SetRevision(rev.GetRevisionID());
+				item.SetTimestamp(ToTime(rev.GetTimeStamp()));
+				changes.push_back(item);
+			}
+			
 			m_Revisions.push_back(rev.GetRevisionID());
         }
-		//std::reverse(changes.begin(), changes.end());
+		std::reverse(changes.begin(), changes.end());
     }
 	else
 	{
@@ -700,4 +872,34 @@ bool AESPlugin::RevertChanges(const ChangelistRevision& revision, VersionedAsset
     GetConnection().Log().Debug() << "RevertChanges" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
     return true;
+}
+
+void AESPlugin::EntriesToAssets(const MapOfEntries& entries, VersionedAssetList& assetList, int state)
+{
+    for (MapOfEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
+    {
+        const AESEntry& entry = i->second;
+        if (!entry.IsDir())
+        {
+			string localPath = GetProjectPath() + "/" + entry.GetPath();
+            assetList.push_back(VersionedAsset(localPath, (state != -1) ? state : entry.GetState()));
+        }
+    }
+}
+
+void AESPlugin::EntriesToAssets(const AESEntries& entries, VersionedAssetList& assetList, int state)
+{
+    for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
+    {
+        const AESEntry& entry = (*i);
+        if (entry.IsDir())
+        {
+            EntriesToAssets(entry.GetChildren(), assetList, state);
+        }
+        else
+        {
+			string localPath = GetProjectPath() + "/" + entry.GetPath();
+            assetList.push_back(VersionedAsset(localPath, (state != -1) ? state : entry.GetState()));
+        }
+    }
 }

@@ -62,11 +62,17 @@ protected:
 
 private:
     void Initialize();
-	bool Refresh();
 	
-	bool SaveStateToCacheFile();
-	bool RestoreStateFromCacheFile();
+	bool RefreshSnapShot();
+	bool SaveSnapShotToFile(const std::string& path);
+	bool RestoreSnapShotFromFile(const std::string& path);
+	
+	void AddAssetsToChanges(const VersionedAssetList& assetList, int state);
+	void RemoveAssetsFromChanges(const VersionedAssetList& assetList, int state = kNone);
     
+	void EntriesToAssets(const MapOfEntries& entries, VersionedAssetList& assetList, int state = -1);
+	void EntriesToAssets(const AESEntries& entries, VersionedAssetList& assetList, int state = -1);
+
     bool m_IsConnected;
     
     std::string BuildRemotePath(const VersionedAsset& asset);
@@ -76,11 +82,10 @@ private:
     VersionControlPluginVersions m_Versions;
     VersionControlPluginOverlays m_Overlays;
     
-    typedef std::map<std::string, VersionedAsset> VersionedAssetMap;
-    VersionedAssetMap m_Outgoing;
+    ChangelistRevision m_SnapShotRevision;
+	MapOfEntries m_SnapShotEntries;
+	MapOfEntries m_ChangedEntries;
 
-    ChangelistRevision m_CurrRevision;
-	MapOfEntries m_CurrEntries;
 	ChangelistRevisions m_Revisions;
 
     AESClient* m_AES;

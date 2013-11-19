@@ -54,14 +54,14 @@ public:
     bool HasChild(const char* name) const;
     JSONValue *Child(const char* name);
     
-    std::string Stringify() const;
+    std::string Stringify(bool pretty=false, int indent=0) const;
     
-    inline operator const std::string&() const { return AsString(); }
-    inline operator bool() const { return AsBool(); }
-    inline operator double() const { return AsNumber(); }
-    inline operator int() const { return (int)AsNumber(); }
-    inline operator const JSONArray&() const { return AsArray(); }
-    inline operator const JSONObject&() const { return AsObject(); }
+    inline operator const std::string&() { return AsString(); }
+    inline operator bool() { return AsBool(); }
+    inline operator double() { return AsNumber(); }
+    inline operator int() { return (int)AsNumber(); }
+    inline operator const JSONArray&() { return AsArray(); }
+    inline operator const JSONObject&() { return AsObject(); }
     
 protected:
     static JSONValue *Parse(const char **data);
@@ -83,7 +83,7 @@ class JSON
 	
 public:
     static JSONValue* Parse(const char *data);
-    static std::string Stringify(const JSONValue *value);
+    static std::string Stringify(const JSONValue *value, bool pretty=false, int indent=0);
 protected:
     static bool SkipWhitespace(const char **data);
     static bool ExtractString(const char **data, std::string &str);
