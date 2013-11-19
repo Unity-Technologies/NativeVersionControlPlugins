@@ -1,5 +1,7 @@
 #include "AESClient.h"
 #include "JSON.h"
+#include "VersionedAsset.h"
+#include "FileSystem.h"
 
 using namespace std;
 
@@ -62,31 +64,32 @@ void DirectoryToEntries(const string& path, const JSONArray& children, AESEntrie
     for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
     {
         const JSONObject& info = (*i)->AsObject();
-        bool isDir = *(info.find("directory")->second);
-        string ref = *(info.find("url")->second);
-        string name = *(info.find("name")->second);
-        ref.resize(ref.find("?"));
+        bool isDir = *(info.at("directory"));
+        string revisionID = *(info.at("revisionID"));
+        string name = *(info.at("name"));
         
         if (isDir)
         {
-            const JSONArray subChildren = *(info.find("children")->second);
-            entries.push_back(AESEntry(name, path + name + "/", ref + "/", "", true, 0));
+            const JSONArray subChildren = *(info.at("children"));
+			entries.push_back(AESEntry(path + name + "/", revisionID, "", kAddedRemote, 0, true));
             DirectoryToEntries(path + name + "/", subChildren, entries.back().GetChildren());
         }
         else
         {
-			string hash = *(info.find("hash")->second);
-			double size = *(info.find("size")->second);
-            entries.push_back(AESEntry(name, path + name, ref, hash, false, (int)size));
+			//string storeID = *(info.at("storeID"));
+			string hash = (info.find("hash") != info.end()) ? *(info.at("hash")) : "";
+			int size = (int)(info.at("size")->AsNumber());
+			
+            entries.push_back(AESEntry(path + name, revisionID, hash, kAddedRemote, size, false));
         }
     }
 }
 
-bool AESClient::GetRevision(string revisionID, AESEntries& entries)
+bool AESClient::GetRevision(const string& revisionID, AESEntries& entries)
 {
     entries.clear();
 	string response = "";
-    string url = m_Server + m_Path + "/" + revisionID + "?info&level=-1";
+    string url = m_Server + m_Path + "/" + revisionID + "?level=-1";
 	
     if (!m_CURL.GetJSON(url, response))
     {
@@ -96,17 +99,20 @@ bool AESClient::GetRevision(string revisionID, AESEntries& entries)
     
     bool res = false;
     JSONValue* json = JSON::Parse(response.c_str());
-    if (json != NULL && json->IsObject())
+    if (json != NULL)
     {
-        const JSONObject& info = json->AsObject();
-        if (info.find("status") != info.end())
-        {
-            SetLastMessage(*(info.find("message")->second));
-            res = true;
-        }
-        else if (info.find("children") != info.end())
-        {
-            const JSONArray& children = *(info.find("children")->second);
+		if (json->IsObject())
+		{
+			const JSONObject& info = json->AsObject();
+			if (info.find("status") != info.end())
+			{
+				SetLastMessage(*(info.at("message")));
+				res = true;
+			}
+		}
+		else if (json->IsArray())
+		{
+			const JSONArray& children = json->AsArray();
             DirectoryToEntries("", children, entries);
             res = true;
         }
@@ -125,7 +131,7 @@ bool AESClient::GetRevision(string revisionID, AESEntries& entries)
     return res;
 }
 
-bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisionID, AESEntries& entries)
+bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID, AESEntries& entries)
 {
     entries.clear();
 	string response = "";
@@ -146,7 +152,7 @@ bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisio
 			const JSONObject& info = json->AsObject();
 			if (info.find("status") != info.end())
 			{
-				SetLastMessage(*(info.find("message")->second));
+				SetLastMessage(*(info.at("message")));
 				res = true;
 			}
 		}
@@ -156,22 +162,15 @@ bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisio
             for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
             {
 				const JSONObject& child = (*i)->AsObject();
-				string oldPath = *(child.find("oldPath")->second);
-				string newPath = *(child.find("newPath")->second);
-				string status = *(child.find("status")->second);
+				string oldPath = *(child.at("oldPath"));
+				string newPath = *(child.at("newPath"));
+				string status = *(child.at("status"));
 				
-				int size = 0;
-				if (status == "added") size = 1;
-				else if (status == "deleted") size = -1;
+				int state = 0;
+				if (status == "added") state = kAddedRemote;
+				else if (status == "deleted") state = kDeletedRemote;
 
-				string name = newPath;
-				size_t pos = name.find_last_of('/');
-				if (pos != string::npos)
-				{
-					name = name.substr(pos+1);
-				}
-				string ref = m_Server + m_Path + "/" + revisionID + "/" + newPath;
-				entries.push_back(AESEntry(name, newPath, ref, "", false, size));
+				entries.push_back(AESEntry(newPath, revisionID, "", state));
             }
             res = true;
 		}
@@ -183,6 +182,48 @@ bool AESClient::GetRevisionDelta(std::string revisionID, std::string compRevisio
 			SetLastMessage("GetRevisionDeltaInvalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
 		else
 			SetLastMessage("GetRevisionDeltaNot JSON: '" + response + "'");
+	}
+    
+    if (json)
+        delete json;
+    return res;
+}
+
+bool AESClient::GetLatestRevision(string& revision)
+{
+	revision.clear();
+	string response = "";
+    string url = m_Server + m_Path + "/current?info";
+    
+    if (!m_CURL.GetJSON(url, response))
+    {
+		SetLastMessage("GetLatestRevision failed");
+        return false;
+    }
+    
+    bool res = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL && json->IsObject())
+    {
+		const JSONObject& info = json->AsObject();
+		if (info.find("status") != info.end())
+		{
+			SetLastMessage(*(info.at("message")));
+			res = true;
+		}
+		else if (info.find("revisionID") != info.end())
+		{
+			revision = info.at("revisionID")->AsString();
+			res = true;
+		}
+	}
+	
+	if (!res)
+	{
+		if (json)
+			SetLastMessage("GetLatestRevision JSON received: '" + json->Stringify() + "' from '" + response + "'");
+		else
+			SetLastMessage("GetLatestRevision JSON: '" + response + "'");
 	}
     
     if (json)
@@ -209,34 +250,29 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
         const JSONObject& info = json->AsObject();
 		if (info.find("status") != info.end())
 		{
-			SetLastMessage(*(info.find("message")->second));
+			SetLastMessage(*(info.at("message")));
 			res = true;
 		}
         else if (info.find("children") != info.end())
         {
-            const JSONArray& children = *(info.find("children")->second);
+            const JSONArray& children = *(info.at("children"));
             for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
             {
                 const JSONObject& child = (*i)->AsObject();
-                /*
-                const JSONObject& author = *(child.find("author")->second);
-                string name = *(author.find("name")->second);
-                string email = *(author.find("email")->second);
+                const JSONObject& author = *(child.at("author"));
+                string name = *(author.at("name"));
+                string email = *(author.at("email"));
                 
-                time_t tSecs = (time_t)((double)*(child.find("time")->second));
-                time_t tOffset = (time_t)((double)*(child.find("timeZone")->second));
+                time_t tSecs = (time_t)((child.at("time"))->AsNumber());
+                time_t tOffset = (time_t)((child.at("timeZone"))->AsNumber());
                 tSecs += tOffset*60;
 
-                const JSONObject& refChildren = *(child.find("children")->second);
-                string ref = *(refChildren.find("ref")->second);
+                const JSONObject& refChildren = *(child.at("children"));
+                string ref = *(refChildren.at("ref"));
                 
-				string comment = *(child.find("comment")->second);
-				string revisionID = *(child.find("revisionID")->second);
+				string comment = *(child.at("comment"));
+				string revisionID = *(child.at("revisionID"));
                 revisions.push_back(AESRevision(name, email, comment, revisionID, ref, tSecs));
-				 */
-				string comment = *(child.find("comment")->second);
-				string revisionID = *(child.find("revisionID")->second);
-                revisions.push_back(AESRevision("me", "me@me.om", comment, revisionID, "", (time_t)0));
             }
             res = true;
         }
@@ -255,45 +291,42 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
     return res;
 }
 
-bool AESClient::Download(const AESEntry& entry, string path)
+bool AESClient::Download(const AESEntry& entry, const string& path)
 {
-    SetLastMessage("Downloading " + entry.GetReference() + " to " + path);
-    return true;
+	string remotePath = m_Server + m_Path + "/" + entry.GetRevisionID() + "/" + entry.GetPath();
+	string localPath = path + "/" + entry.GetPath();
+	string parentPath = localPath.substr(0, localPath.find_last_of('/'));
+	if (!EnsureDirectory(parentPath))
+	{
+		SetLastMessage("Unable to create directory " + parentPath);
+		return false;
+	}
+	
+	if (entry.IsDir())
+	{
+		return true;
+	}
+	
+	if (!m_CURL.Download(remotePath, localPath))
+	{
+		SetLastMessage("Unable to download " + remotePath + " to " + localPath + " (" + m_CURL.GetErrorMessage()+ ")");
+		return false;
+	}
+	return true;
 }
 
-bool AESClient::Download(const AESEntries& entries, string basePath)
-{
-    string lastMsg = GetLastMessage();
-    bool res = true;
-    for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() && res; i++)
-    {
-        const AESEntry& entry = (*i);
-        if (entry.IsDir())
-        {
-            string path = basePath + entry.GetName() + "/";
-            res = Download(entry.GetChildren(), path);
-        }
-        else
-        {
-            res = Download(entry, basePath);
-        }
-        SetLastMessage(lastMsg + "\n" + GetLastMessage());
-    }
-    return res;
-}
-
-void EntriesToFiles(const AESEntries& entries, map<string, string>& files)
+void EntriesToFiles(const string& basePath, const AESEntries& entries, map<string, string>& files)
 {
 	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
 	{
 		const AESEntry& entry = (*i);
 		if (entry.IsDir())
 		{
-			EntriesToFiles(entry.GetChildren(), files);
+			EntriesToFiles(basePath, entry.GetChildren(), files);
 		}
 		else
 		{
-			string path = entry.GetName();
+			string path = basePath + "/" + entry.GetPath();
 			path.resize(path.find_last_of('/'));
 			files.insert(make_pair(entry.GetPath(), path));
 		}
@@ -311,12 +344,12 @@ void EntriesToFiles(const AESEntries& entries, vector<string>& files)
 		}
 		else
 		{
-			files.push_back(entry.GetName());
+			files.push_back(entry.GetPath());
 		}
 	}
 }
 
-bool AESClient::ApplyChanges(const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const std::string& comment)
+bool AESClient::ApplyChanges(const string& basePath, const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const string& comment)
 {
 	string response = "";
     string url = m_Server + m_Path;
@@ -324,7 +357,7 @@ bool AESClient::ApplyChanges(const AESEntries& addOrUpdateEntries, const AESEntr
 	map<string, string> addOrUpdateFiles;
 	vector<string> deleteFiles;
 	
-	EntriesToFiles(addOrUpdateEntries, addOrUpdateFiles);
+	EntriesToFiles(basePath, addOrUpdateEntries, addOrUpdateFiles);
 	EntriesToFiles(deleteEntries, deleteFiles);
 	if (!m_CURL.ApplyChanges(url, NULL, addOrUpdateFiles, deleteFiles, comment, response))
 		return false;

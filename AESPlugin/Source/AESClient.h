@@ -16,48 +16,38 @@ class AESEntry
 public:
     AESEntry()
     {
-        m_Name = "";
         m_Path = "";
-        m_Reference = "";
-        m_Hash = "";
+		m_RevisionID = "current";
+		m_Hash = "";
+		m_State = 0;
+		m_Size = 0;
         m_IsDirectory = false;
-        m_Size = 0;
     }
 
-    AESEntry(const std::string& name, const std::string& path, const std::string& reference, const std::string& hash, bool isDirectory, int size)
+    AESEntry(const std::string& path, const std::string& revisionsID, const std::string hash, int state = 0, int size = 0, bool isDirectory = false)
     {
-        m_Name = name;
         m_Path = path;
-        m_Reference = reference;
-        m_Hash = hash;
+		m_RevisionID = revisionsID;
+		m_Hash = hash;
+		m_State = state;
+		m_Size = size;
         m_IsDirectory = isDirectory;
-        m_Size = size;
     }
-    
-    AESEntry(const std::string& name, const std::string& path, bool isDirectory = false)
-    {
-        m_Name = name;
-        m_Path = path;
-        m_Reference = "";
-        m_Hash = "";
-        m_IsDirectory = isDirectory;
-        m_Size = -1;
-	}
-	
-    const std::string GetName() const { return m_Name; }
-    void SetName(const std::string& name) { m_Name = name; }
     
     const std::string GetPath() const { return m_Path; }
     void SetPath(const std::string& path) { m_Path = path; }
-    
-    const std::string GetReference() const { return m_Reference; }
-    void SetReference(const std::string& reference) { m_Reference = reference; }
-    
+
+    const std::string GetRevisionID() const { return m_RevisionID; }
+	void SetRevisionID(const std::string& revisionsID) { m_RevisionID = revisionsID; }
+	
     const std::string GetHash() const { return m_Hash; }
-    void SetHash(const std::string& hash) { m_Hash = hash; }
-    
+	void SetHash(const std::string& hash) { m_Hash = hash; }
+	
     bool IsDir() const { return m_IsDirectory; }
     void SetDir(bool isDirectory) { m_IsDirectory = isDirectory; }
+    
+    int GetState() const { return m_State; }
+    void SetState(int state) { m_State = state; }
     
     int GetSize() const { return m_Size; }
     void SetSize(int size) { m_Size = size; }
@@ -65,14 +55,14 @@ public:
     void AddChild(AESEntry child) { m_Children.push_back(child); }
     const AESEntries& GetChildren() const { return m_Children; }
     AESEntries& GetChildren() { return m_Children; }
-    
+
 private:
-    std::string m_Name;
     std::string m_Path;
-    std::string m_Reference;
+    std::string m_RevisionID;
     std::string m_Hash;
+	int m_State;
+	int m_Size;
     bool m_IsDirectory;
-    int m_Size;
     AESEntries m_Children;
 };
 
@@ -139,17 +129,17 @@ public:
     bool Ping();
     bool Login(const std::string& userName, const std::string& password);
     
+    bool GetLatestRevision(std::string& revision);
     bool GetRevisions(std::vector<AESRevision>& revisions);
-    bool GetRevision(std::string revisionID, AESEntries& entries);
-    bool GetRevisionDelta(std::string revisionID, std::string compRevisionID, AESEntries& entries);
+    bool GetRevision(const std::string& revisionID, AESEntries& entries);
+    bool GetRevisionDelta(const std::string& revisionID, std::string compRevisionID, AESEntries& entries);
     
-    bool Download(const AESEntry& entry, std::string path);
-    bool Download(const AESEntries& entries, std::string basePath);
+    bool Download(const AESEntry& entry, const std::string& path);
 	
-	bool ApplyChanges(const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const std::string& comment);
+	bool ApplyChanges(const std::string& basePath, const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const std::string& comment);
 
 private:
-    void SetLastMessage(const std::string message) { m_lastMessage = message; }
+    void SetLastMessage(const std::string& message) { m_lastMessage = message; }
     
     std::string m_lastMessage;
     std::string m_Server;
