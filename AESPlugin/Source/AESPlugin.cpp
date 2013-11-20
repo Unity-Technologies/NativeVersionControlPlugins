@@ -1,3 +1,7 @@
+#if defined(_WINDOWS)
+#include "windows.h"
+#endif
+
 #include "AESPlugin.h"
 #include "FileSystem.h"
 #include "JSON.h"
@@ -6,14 +10,12 @@
 #include <algorithm> 
 #include <time.h>
 
-#if defined(_WINDOWS)
-#include "windows.h"
-#endif
-
 using namespace std;
 
 const char* kCacheFileName = "/Library/aesSnapshot.json";
 const char* kLatestRevison = "current";
+const char* kLocalRevison = "local";
+const char* kPluginName = "AssetExchangeServer";
 
 string ToTime(time_t timeInSeconds)
 {
@@ -22,11 +24,6 @@ string ToTime(time_t timeInSeconds)
     t = gmtime(&timeInSeconds);
     strftime(buffer, sizeof(buffer), "%c", t);
     return string(buffer);
-}
-
-int CompareHash(const string& file, const AESEntry& entry)
-{
-    return 0;
 }
 
 void FillMapOfEntries(const AESEntries& entries, MapOfEntries& map, int state = -1)
@@ -44,17 +41,13 @@ void FillMapOfEntries(const AESEntries& entries, MapOfEntries& map, int state = 
 			
 			(map[path]).SetState(s);
 		}
-        if (entry.IsDir())
-        {
-            FillMapOfEntries(entry.GetChildren(), map, state);
-        }
     }
 }
 
 enum AESFields { kAESURL, kAESRepository, kAESUserName, kAESPassword };
 
 AESPlugin::AESPlugin(int argc, char** argv) :
-    VersionControlPlugin("AssetExchangeServer", argc, argv),
+    VersionControlPlugin(kPluginName, argc, argv),
     m_IsConnected(false),
     m_AES(NULL)
 {
@@ -62,7 +55,7 @@ AESPlugin::AESPlugin(int argc, char** argv) :
 }
 
 AESPlugin::AESPlugin(const char* args) :
-    VersionControlPlugin("AssetExchangeServer", args),
+    VersionControlPlugin(kPluginName, args),
     m_IsConnected(false),
     m_AES(NULL)
 {
@@ -72,6 +65,16 @@ AESPlugin::AESPlugin(const char* args) :
 AESPlugin::~AESPlugin()
 {
     Disconnect();
+}
+
+const AESPlugin::TraitsFlags AESPlugin::GetSupportedTraitFlags()
+{
+	return (kRequireNetwork | kEnablesCheckout | kEnablesChangelists | kEnablesLocking | kEnablesGetLatestOnChangeSetSubset | kEnablesRevertUnchanged);
+}
+
+AESPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
+{
+	return (kAdd | kChanges | kDelete | kDownload | kGetLatest | kIncomingChangeAssets | kIncoming | kStatus | kSubmit | kCheckout | kLock | kUnlock);
 }
 
 void AESPlugin::Initialize()
@@ -245,7 +248,7 @@ bool AESPlugin::RestoreSnapShotFromFile(const string& path)
 				int state = (int)((entry.at("state"))->AsNumber());
 				int size = (entry.find("size") != entry.end()) ? (int)((entry.at("size"))->AsNumber()) : 0;
 				
-				m_ChangedEntries[path] = AESEntry(path, m_SnapShotRevision, hash, state, size, isDir);
+				m_ChangedEntries[path] = AESEntry(path, kLocalRevison, hash, state, size, isDir);
 			}
 		}
 		
@@ -355,13 +358,6 @@ bool AESPlugin::CheckConnectedAndLogged()
     }
     
     return true;
-}
-
-string AESPlugin::BuildRemotePath(const VersionedAsset& asset)
-{
-    string path = asset.GetPath().substr(GetProjectPath().size()+1);
-	string revision = m_SnapShotRevision.empty() ? kLatestRevison : m_SnapShotRevision;
-    return m_Fields[kAESURL].GetValue() + "/api/files/" + m_Fields[kAESRepository].GetValue() + '/' + revision + '/' + path;
 }
 
 void AESPlugin::AddAssetsToChanges(const VersionedAssetList& assetList, int state)
@@ -516,7 +512,7 @@ bool AESPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRev
 {
     GetConnection().Log().Debug() << "DownloadAssets" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    return false;
 }
 
 bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
@@ -592,14 +588,14 @@ bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod metho
 {
     GetConnection().Log().Debug() << "ResolveAssets" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    return false;
 }
 
 bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "SetRevision" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    return false;
 }
 
 bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList)
@@ -654,7 +650,7 @@ bool AESPlugin::SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode)
 {
     GetConnection().Log().Debug() << "SetAssetsFileMode" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    return false;
 }
 
 bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
@@ -824,6 +820,8 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
 				comment.append(rev.GetRevisionID());
 				comment.append(" by ");
 				comment.append(rev.GetComitterEmail());
+				comment.append(" on ");
+				comment.append(ToTime(rev.GetTimeStamp()));
 				comment.append("]");
 				
 				item.SetCommitter(rev.GetComitterName());
@@ -864,14 +862,14 @@ bool AESPlugin::DeleteRevision(const ChangelistRevision& revision)
 {
     GetConnection().Log().Debug() << "DeleteRevision" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    return false;
 }
 
 bool AESPlugin::RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "RevertChanges" << Endl;
 	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return true;
+    return false;
 }
 
 void AESPlugin::EntriesToAssets(const MapOfEntries& entries, VersionedAssetList& assetList, int state)
@@ -892,11 +890,7 @@ void AESPlugin::EntriesToAssets(const AESEntries& entries, VersionedAssetList& a
     for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
     {
         const AESEntry& entry = (*i);
-        if (entry.IsDir())
-        {
-            EntriesToAssets(entry.GetChildren(), assetList, state);
-        }
-        else
+        if (!entry.IsDir())
         {
 			string localPath = GetProjectPath() + "/" + entry.GetPath();
             assetList.push_back(VersionedAsset(localPath, (state != -1) ? state : entry.GetState()));

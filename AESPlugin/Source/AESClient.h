@@ -7,10 +7,6 @@
 #include <string>
 #include <vector>
 
-class AESEntry;
-typedef std::vector<AESEntry> AESEntries;
-typedef std::map<std::string, AESEntry> MapOfEntries;
-
 class AESEntry
 {
 public:
@@ -52,10 +48,6 @@ public:
     int GetSize() const { return m_Size; }
     void SetSize(int size) { m_Size = size; }
     
-    void AddChild(AESEntry child) { m_Children.push_back(child); }
-    const AESEntries& GetChildren() const { return m_Children; }
-    AESEntries& GetChildren() { return m_Children; }
-
 private:
     std::string m_Path;
     std::string m_RevisionID;
@@ -63,8 +55,10 @@ private:
 	int m_State;
 	int m_Size;
     bool m_IsDirectory;
-    AESEntries m_Children;
 };
+
+typedef std::vector<AESEntry> AESEntries;
+typedef std::map<std::string, AESEntry> MapOfEntries;
 
 class AESRevision
 {
@@ -124,7 +118,7 @@ public:
     
     inline const std::string GetLastError() { return m_CURL.GetErrorMessage(); }
     inline const std::string GetLastResponse() { return m_CURL.GetResponse(); }
-    inline const std::string GetLastMessage() { return m_lastMessage; }
+    inline const std::string GetLastMessage() { return m_lastMessage.empty() ? m_CURL.GetErrorMessage() : m_lastMessage; }
     
     bool Ping();
     bool Login(const std::string& userName, const std::string& password);
@@ -139,6 +133,7 @@ public:
 	bool ApplyChanges(const std::string& basePath, const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const std::string& comment);
 
 private:
+    void ClearLastMessage() { m_lastMessage.clear(); }
     void SetLastMessage(const std::string& message) { m_lastMessage = message; }
     
     std::string m_lastMessage;
