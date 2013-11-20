@@ -72,7 +72,7 @@ void DirectoryToEntries(const string& path, const JSONArray& children, AESEntrie
         {
             const JSONArray subChildren = *(info.at("children"));
 			entries.push_back(AESEntry(path + name + "/", revisionID, "", kAddedRemote, 0, true));
-            DirectoryToEntries(path + name + "/", subChildren, entries.back().GetChildren());
+            DirectoryToEntries(path + name + "/", subChildren, entries);
         }
         else
         {
@@ -87,6 +87,7 @@ void DirectoryToEntries(const string& path, const JSONArray& children, AESEntrie
 
 bool AESClient::GetRevision(const string& revisionID, AESEntries& entries)
 {
+	ClearLastMessage();
     entries.clear();
 	string response = "";
     string url = m_Server + m_Path + "/" + revisionID + "?level=-1";
@@ -133,6 +134,7 @@ bool AESClient::GetRevision(const string& revisionID, AESEntries& entries)
 
 bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID, AESEntries& entries)
 {
+	ClearLastMessage();
     entries.clear();
 	string response = "";
     string url = m_Server + m_Path + "/" + revisionID + "/delta?compareTo=" + compRevisionID;
@@ -191,6 +193,7 @@ bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID
 
 bool AESClient::GetLatestRevision(string& revision)
 {
+	ClearLastMessage();
 	revision.clear();
 	string response = "";
     string url = m_Server + m_Path + "/current?info";
@@ -233,6 +236,7 @@ bool AESClient::GetLatestRevision(string& revision)
 
 bool AESClient::GetRevisions(vector<AESRevision>& revisions)
 {
+	ClearLastMessage();
     revisions.clear();
 	string response = "";
     string url = m_Server + m_Path + "?info&level=2";
@@ -293,6 +297,7 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
 
 bool AESClient::Download(const AESEntry& entry, const string& path)
 {
+	ClearLastMessage();
 	string remotePath = m_Server + m_Path + "/" + entry.GetRevisionID() + "/" + entry.GetPath();
 	string localPath = path + "/" + entry.GetPath();
 	string parentPath = localPath.substr(0, localPath.find_last_of('/'));
@@ -320,11 +325,7 @@ void EntriesToFiles(const string& basePath, const AESEntries& entries, map<strin
 	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
 	{
 		const AESEntry& entry = (*i);
-		if (entry.IsDir())
-		{
-			EntriesToFiles(basePath, entry.GetChildren(), files);
-		}
-		else
+		if (!entry.IsDir())
 		{
 			string path = basePath + "/" + entry.GetPath();
 			path.resize(path.find_last_of('/'));
@@ -338,11 +339,7 @@ void EntriesToFiles(const AESEntries& entries, vector<string>& files)
 	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
 	{
 		const AESEntry& entry = (*i);
-		if (entry.IsDir())
-		{
-			EntriesToFiles(entry.GetChildren(), files);
-		}
-		else
+		if (!entry.IsDir())
 		{
 			files.push_back(entry.GetPath());
 		}

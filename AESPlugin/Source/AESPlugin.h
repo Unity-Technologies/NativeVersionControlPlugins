@@ -17,16 +17,10 @@ public:
     
     inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
     const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
-    inline const TraitsFlags GetSupportedTraitFlags()
-    {
-        return (kRequireNetwork | kEnablesCheckout | kEnablesChangelists | kEnablesLocking | kEnablesGetLatestOnChangeSetSubset | kEnablesRevertUnchanged);
-    }
+    const TraitsFlags GetSupportedTraitFlags();
     VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
     const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
-    inline CommandsFlags GetOnlineUICommands()
-    {
-        return (kAdd | kChanges | kDelete | kDownload | kGetLatest | kIncomingChangeAssets | kIncoming | kStatus | kSubmit | kCheckout | kLock | kUnlock);
-    }
+    CommandsFlags GetOnlineUICommands();
     inline CommandsFlags GetOfflineUICommands() { return kNone; }
 
     int Connect();
@@ -74,9 +68,7 @@ private:
 	void EntriesToAssets(const AESEntries& entries, VersionedAssetList& assetList, int state = -1);
 
     bool m_IsConnected;
-    
-    std::string BuildRemotePath(const VersionedAsset& asset);
-    
+        
     VersionControlPluginCfgFields m_Fields;
 
     VersionControlPluginVersions m_Versions;
