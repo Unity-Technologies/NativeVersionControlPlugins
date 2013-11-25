@@ -29,6 +29,8 @@ static string ParentDirectory(const string& path)
 #include "windows.h"
 #include "shlwapi.h"
 #include <direct.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 static inline void UTF8ToWide( const char* utf8, wchar_t* outBuffer, int outBufferSize )
 {
@@ -125,6 +127,21 @@ bool ChangeCWD(const std::string& path)
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	return _wchdir(widePath) != -1;	
+}
+
+size_t GetFileLength(const std::string& pathName)
+{
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName(pathName.c_str(), widePath, kDefaultPathBufferSize);
+	WIN32_FILE_ATTRIBUTE_DATA attrs;
+	if (GetFileAttributesExW(widePath, GetFileExInfoStandard, &attrs) == 0)
+	{
+		throw std::runtime_error("Error getting file length attribute");
+	}
+
+	if (attrs.nFileSizeHigh)
+		return UINT_MAX;
+	return attrs.nFileSizeLow;
 }
 
 static bool RemoveReadOnlyW(LPCWSTR path)
@@ -294,6 +311,16 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 	return false;
 }
 
+bool ReadAFile(const std::string& path, std::string& data)
+{
+	return false;
+}
+
+bool WriteAFile(const std::string& path, const std::string& data)
+{
+	return false;
+}
+
 #else // MACOS 
 
 #include <sys/stat.h>
@@ -403,6 +430,17 @@ bool ChangeCWD(const std::string& path)
 	return chdir(path.c_str()) != -1;
 }
 
+size_t GetFileLength(const std::string& pathName)
+{
+	struct stat statbuffer;
+	if( stat(pathName.c_str(), &statbuffer) != 0 )
+	{
+		throw std::runtime_error("Error getting file length");
+	}
+	
+	return statbuffer.st_size;
+}
+
 static bool fcopy(FILE *f1, FILE *f2)
 {
     char            buffer[BUFSIZ];
@@ -413,6 +451,7 @@ static bool fcopy(FILE *f1, FILE *f2)
         if (fwrite(buffer, sizeof(char), n, f2) != n)
 			return false;
     }
+    return true;
 }
 
 bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
@@ -448,4 +487,35 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 	int res = rename(fromPath.c_str(), toPath.c_str());
 	return !res;
 }
+
+bool ReadAFile(const std::string& path, std::string& data)
+{
+	FILE* fp;
+	if ((fp = fopen(path.c_str(), "r")) == 0)
+		return false;
+	
+	data.clear();
+	char buffer[BUFSIZ];
+    size_t n;
+	
+    while ((n = fread(buffer, sizeof(char), sizeof(buffer), fp)) > 0)
+    {
+		data.append(&buffer[0], n);
+    }
+	fclose(fp);
+	return true;
+}
+
+bool WriteAFile(const std::string& path, const std::string& data)
+{
+	FILE* fp;
+	if ((fp = fopen(path.c_str(), "w")) == 0)
+		return false;
+	
+	bool res = (fwrite(&data[0], sizeof(char), data.length(), fp) == data.length());
+	fflush(fp);
+	fclose(fp);
+	return res;
+}
+
 #endif

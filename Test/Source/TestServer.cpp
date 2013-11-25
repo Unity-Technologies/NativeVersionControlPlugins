@@ -1,5 +1,6 @@
 #include "ExternalProcess.h"
 #include "Utility.h"
+#include "CommandLine.h"
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -10,30 +11,45 @@ using namespace std;
 
 void printStatus(bool ok);
 int run(int argc, char* argv[]);
- 
+
+#ifdef WIN32
+int __stdcall WinMain(HINSTANCE instance, HINSTANCE prevInstance, char* cmdLine, int cmdShow)
+{
+    int argc = 0;
+    char** argv = CommandLineToArgv(cmdLine, &argc);
+#else
 int main(int argc, char* argv[])
 {
+#endif
 	try
 	{
 		return run(argc, argv);
 	}
 	catch (ExternalProcessException e)
 	{
+#ifdef WIN32
+		CommandLineFreeArgs(argv);
+#endif
 		std::cerr << e.what() << endl;
 		return 1;
 	}
 	catch (exception e)
 	{
+#ifdef WIN32
+		CommandLineFreeArgs(argv);
+#endif
 		std::cerr << e.what() << endl;
 		return 1;
 	}
 	catch (...)
 	{
+#ifdef WIN32
+		CommandLineFreeArgs(argv);
+#endif
 		std::cerr << "Caught unhandled exception"  << endl;
 		return 1;
 	}
 }
-
 
 static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent = "");
 

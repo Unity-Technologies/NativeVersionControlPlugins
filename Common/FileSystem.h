@@ -12,6 +12,9 @@ bool MoveAFile(const std::string& fromPath, const std::string& toPath);
 bool IsDirectory(const std::string& path);
 bool PathExists(const std::string& path);
 bool ChangeCWD(const std::string& path);
+bool ReadAFile(const std::string& path, std::string& data);
+bool WriteAFile(const std::string& path, const std::string& data);
+size_t GetFileLength(const std::string& path);
 
 #if WIN32
 #include "windows.h"

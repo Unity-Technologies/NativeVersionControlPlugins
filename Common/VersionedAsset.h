@@ -35,6 +35,7 @@ public:
 	void SetState(int newState);
 	void AddState(State state);
 	void RemoveState(State state);
+	bool HasState(State state) { return ((m_State & state) == state); }
 	
 	const std::string& GetPath() const;
 	void SetPath(const std::string& path);

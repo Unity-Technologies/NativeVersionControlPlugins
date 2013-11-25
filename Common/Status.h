@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <set>
+#include "Connection.h"
 
 enum VCSSeverity
 {
@@ -36,3 +37,6 @@ struct VCSStatusItemCmp
 typedef std::set<VCSStatusItem, VCSStatusItemCmp> VCSStatus;
 
 bool StatusContains(const VCSStatus& status, const std::string& needle);
+
+Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma);
+Connection& operator<<(Connection& p, const VCSStatus& st);
