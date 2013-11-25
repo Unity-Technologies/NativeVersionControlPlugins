@@ -1,0 +1,16 @@
+c:pluginConfig projectPath <absroot>
+--
+r1:end of response
+--
+c:pluginConfig aesURL http://localhost:3030
+--
+r1:end of response
+--
+c:pluginConfig aesUsername manu
+--
+r1:end of response
+--
+c:pluginConfig aesPassword rtxg62rt
+--
+r1:end of response
+--

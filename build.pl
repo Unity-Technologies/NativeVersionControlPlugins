@@ -7,15 +7,16 @@ use File::Path qw (rmtree mkpath);
 use lib 'Test';
 use VCSTest;
 
-my ($testoption,$test, $target, @configs);
+my ($testoption,$test, $target, $config, $prepare);
 GetOptions("test"=>\$test, "testoption=s"=>\$testoption,
-		   "target=s"=>\$target, "configs=s"=>\@configs);
-@configs = split(/,/,join(',',@configs));
+		   "target=s"=>\$target, "config=s"=>\$config, "prepare"=>\$prepare);
 
 sub BuildLinux ($);
 sub TestLinux ($);
+sub Prepare ($);
 
 $testoption = "nonverbose" unless ($testoption);
+$config = "Debug" unless ($config);
 
 if (not $target)
 {
@@ -30,12 +31,21 @@ if (not $target)
 }
 
 $ENV{'TARGET'} = $target;
+$ENV{'CONFIGURATION'} = $config;
 
 if ($target eq "mac")
 {
 	unless ($test)
 	{
-		BuildMac();	
+		unless ($prepare)
+		{
+			Prepare("Xcode");
+			BuildMac();	
+		}
+		else
+		{
+			Prepare("Xcode");
+		}
 	}
 	else
 	{
@@ -46,7 +56,14 @@ elsif ($target eq "win32")
 {
 	unless ($test)
 	{
-		BuildWin32();	
+		unless ($prepare)
+		{
+			BuildWin32();	
+		}
+		else
+		{
+			Prepare("Visual Studio 10");
+		}
 	}
 	else
 	{
@@ -57,7 +74,14 @@ elsif ($target eq "linux32")
 {
 	unless ($test)
 	{
-		BuildLinux ($target);
+		unless ($prepare)
+		{
+			BuildLinux ($target);
+		}
+		else
+		{
+			Prepare("Unix Makefiles");
+		}
 	}
 	else
 	{
@@ -68,7 +92,14 @@ elsif ($target eq "linux64")
 {
 	unless ($test)
 	{
-		BuildLinux ($target);
+		unless ($prepare)
+		{
+			BuildLinux ($target);
+		}
+		else
+		{
+			Prepare("Unix Makefiles");
+		}
 	}
 	else
 	{
@@ -82,8 +113,7 @@ else
 
 sub BuildMac
 {
-	system ("rm", "-rf", "Build");
-	system("make" , "-f", "Makefile.osx", "all") && die ("Failed to build version control plugins");
+	system ("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "-configuration", "$config", "-project", "Build/VersionControl.xcodeproj", "-target", "ALL_BUILD") && die ("Failed to build version control plugins");
 }
 
 sub TestMac
@@ -104,6 +134,7 @@ sub BuildWin32
   rmtree("Build");
   system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
   system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build SubversionPlugin.exe");
+  system("msbuilder.cmd", "VersionControl.sln", "PlasticSCMPlugin", "Any CPU") && die ("Failed to build PlasticSCMPlugin.exe");
   system("msbuilder.cmd", "VersionControl.sln", "TestServer", "Win32") && die ("Failed to build TestServer.exe");
 }
 
@@ -145,4 +176,16 @@ sub TestLinux ($)
 
 	# Teamcity artifacts looses their file attributes on transfer
 	chmod 0755, glob("Build/OSXi386/$platform/*");
+}
+
+sub Prepare ($)
+{
+	my $generator = shift;
+	
+	system ("rm", "-rf", "Build");
+	mkpath ("Build");
+	chdir ("Build") or die "$!";
+	system ("cmake", "-G", "$generator", "..");
+	system ("pwd");
+	chdir ("..")
 }
