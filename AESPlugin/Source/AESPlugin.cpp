@@ -13,6 +13,7 @@
 using namespace std;
 
 const char* kCacheFileName = "/Library/aesSnapshot.json";
+const char* kLogFileName = "./Library/aesPlugin.log";
 const char* kLatestRevison = "current";
 const char* kLocalRevison = "local";
 const char* kPluginName = "AssetExchangeServer";
@@ -65,6 +66,11 @@ AESPlugin::AESPlugin(const char* args) :
 AESPlugin::~AESPlugin()
 {
     Disconnect();
+}
+
+const char* AESPlugin::GetLogFileName()
+{
+	return kLogFileName;
 }
 
 const AESPlugin::TraitsFlags AESPlugin::GetSupportedTraitFlags()

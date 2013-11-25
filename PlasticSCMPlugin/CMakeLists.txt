@@ -6,8 +6,7 @@ CM_TARGET_BEGIN(
 )	
 	# Copy
 	# -----------------------------------------------
-	#CM_TARGET_ADD_COPY_FILES(${CMAKE_CURRENT_SOURCE_DIR}/PlasticSCMPlugin ${CM_ROOT_DIRECTORY}/${CONFIGURATION}/PlasticSCMPlugin)
-	CM_TARGET_ADD_COPY_FILES(${CMAKE_CURRENT_SOURCE_DIR}/PlasticSCMPlugin ${CM_ROOT_DIRECTORY}/Debug/PlasticSCMPlugin)
+	CM_TARGET_ADD_COPY_FILES(${CMAKE_CURRENT_SOURCE_DIR}/PlasticSCMPlugin ${CM_BIN_DIR}/PlasticSCMPlugin)
 	
 # End of target definition
 # -----------------------------------------------

@@ -9,8 +9,9 @@
 ################################################################################################
 # Root directory
 ################################################################################################
+SET( CM_CONFIGURATION $ENV{CONFIGURATION} )
 SET( CM_ROOT_DIRECTORY ${CMAKE_SOURCE_DIR}/Build )
-SET( CM_BIN_DIR 	${CM_ROOT_DIRECTORY}/${CMAKE_CFG_INTDIR} )
+SET( CM_BIN_DIR 	${CM_ROOT_DIRECTORY}/${CM_CONFIGURATION} )
 SET( CM_DISTRIB_DIR ${CM_ROOT_DIRECTORY}/Package )
 
 SET( CMAKE_BINARY_DIR ${CM_BIN_DIR} )
@@ -19,9 +20,10 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CM_BIN_DIR} )
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CM_ROOT_DIRECTORY} )
 
 MESSAGE( "==========================================")
-MESSAGE( "Root:       " ${CM_ROOT_DIRECTORY} )
-MESSAGE( "Bin:        " ${CM_BIN_DIR} )
-MESSAGE( "Distrib:    " ${CM_DISTRIB_DIR} )
+MESSAGE( "Root:       	" ${CM_ROOT_DIRECTORY} )
+MESSAGE( "Bin:        	" ${CM_BIN_DIR} )
+MESSAGE( "Distrib:		" ${CM_DISTRIB_DIR} )
+MESSAGE( "Configuration:" ${CM_CONFIGURATION} )
 MESSAGE( "==========================================")
 
 ################################################################################################

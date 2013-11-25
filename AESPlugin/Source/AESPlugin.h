@@ -15,7 +15,7 @@ public:
     AESPlugin(const char* args);
     ~AESPlugin();
     
-    inline const char* GetLogFileName() { return "./Library/aesPlugin.log"; }
+    const char* GetLogFileName();
     const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
     const TraitsFlags GetSupportedTraitFlags();
     VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
