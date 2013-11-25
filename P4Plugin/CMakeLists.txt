@@ -181,15 +181,14 @@ CM_TARGET_BEGIN(
 	ENDIF (APPLE)
 	
 	IF (WIN32)
-		#TODO: Check for $(CONFIGURATION) is Debug or Release
 		CM_TARGET_ADD_LIBRARIES(
 			shlwapi.lib
 			ws2_32.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libclient.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/librpc.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libsupp.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/ssleay32MTd.lib
-			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32Debug/libeay32MTd.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32${CM_CONFIGURATION}/libclient.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32${CM_CONFIGURATION}/librpc.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32${CM_CONFIGURATION}/libsupp.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32${CM_CONFIGURATION}/ssleay32MTd.lib
+			${CMAKE_CURRENT_SOURCE_DIR}/Source/r12.2/lib/win32${CM_CONFIGURATION}/libeay32MTd.lib
 		)
 	ENDIF (WIN32)
 	
