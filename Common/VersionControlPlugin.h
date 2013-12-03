@@ -169,6 +169,14 @@ public:
     // Main loop, read command from input and process it until EOF.
     int Run();
 
+    // Get plugin connection with Unity.
+    Connection& GetConnection() { return (*m_Connection); }
+	
+	virtual int Test() { return 0; }
+	
+    // Get ProjectPath
+    inline const std::string& GetProjectPath() const { return m_ProjectPath; }
+
 protected:
     
     // Constructors
@@ -182,12 +190,8 @@ protected:
     void NotifyOffline(const std::string& reason);
     void NotifyOnline();
     
-    // Get plugin connection with Unity.
-    Connection& GetConnection() { return (*m_Connection); }
-
-    // ProjectPath getter/setter
+    // Set ProjectPath
     inline void SetProjectPath(const std::string& path) { m_ProjectPath = path; }
-    inline const std::string& GetProjectPath() const { return m_ProjectPath; }
     
     // Plugin name
     inline const std::string& GetPluginName() const { return m_PluginName; }

@@ -115,28 +115,28 @@ bool IsDirectory(const string& path)
 	return PathIsDirectoryW(widePath) != FALSE; // Must be compared against FALSE and not TRUE!
 }
 
-bool PathExists(const std::string& path)
+bool PathExists(const string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	return PathFileExistsW(widePath) == TRUE;	
 }
 
-bool ChangeCWD(const std::string& path)
+bool ChangeCWD(const string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	return _wchdir(widePath) != -1;	
 }
 
-size_t GetFileLength(const std::string& pathName)
+size_t GetFileLength(const string& pathName)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(pathName.c_str(), widePath, kDefaultPathBufferSize);
 	WIN32_FILE_ATTRIBUTE_DATA attrs;
 	if (GetFileAttributesExW(widePath, GetFileExInfoStandard, &attrs) == 0)
 	{
-		throw std::runtime_error("Error getting file length attribute");
+		throw runtime_error("Error getting file length attribute");
 	}
 
 	if (attrs.nFileSizeHigh)
@@ -157,18 +157,18 @@ static bool RemoveReadOnlyW(LPCWSTR path)
 	return false;
 }
 
-static bool RemoveDirectoryRecursiveWide( const std::wstring& path )
+static bool RemoveDirectoryRecursiveWide( const wstring& path )
 {
 	if( path.empty() )
 		return false;
 
 	// base path
-	std::wstring basePath = path;
+	wstring basePath = path;
 	if( basePath[basePath.size()-1] != L'\\' )
 		basePath += L'\\';
 
 	// search pattern: anything inside the directory
-	std::wstring searchPat = basePath + L'*';
+	wstring searchPat = basePath + L'*';
 
 	// find the first file
 	WIN32_FIND_DATAW findData;
@@ -186,7 +186,7 @@ static bool RemoveDirectoryRecursiveWide( const std::wstring& path )
 			if( wcscmp(findData.cFileName,L".")==0 || wcscmp(findData.cFileName,L"..")==0 )
 				continue;
 
-			std::wstring filePath = basePath + findData.cFileName;
+			wstring filePath = basePath + findData.cFileName;
 			if( (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
 			{
 				// we have found a directory, recurse
@@ -228,7 +228,7 @@ static bool RemoveDirectoryRecursiveWide( const std::wstring& path )
 	return !hadFailures;
 }
 
-static bool RemoveDirectoryRecursive( const std::string& pathUtf8 )
+static bool RemoveDirectoryRecursive( const string& pathUtf8 )
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName( pathUtf8.c_str(), widePath, kDefaultPathBufferSize );
@@ -311,23 +311,40 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 	return false;
 }
 
-bool ReadAFile(const std::string& path, std::string& data)
+bool ReadAFile(const string& path, string& data)
 {
 	return false;
 }
 
-bool WriteAFile(const std::string& path, const std::string& data)
+bool WriteAFile(const string& path, const string& data)
 {
 	return false;
 }
 
-#else // MACOS 
+bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data)
+{
+	return false;
+}
+
+bool TouchAFile(const std::string& path, time_t ts)
+{
+	return false;
+}
+
+bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, time_t* ts)
+{
+	return false;
+}
+
+#else // MACOS
 
 #include <sys/stat.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <utime.h>
 
 bool IsReadOnly(const string& path)
 {
@@ -342,7 +359,7 @@ bool IsReadOnly(const string& path)
 		{
 			char buf[1024];
 			snprintf(buf, 1024, "Could not stat %s error : %s (%i)\n", path.c_str(), strerror(errno), errno);
-			throw std::runtime_error(buf);
+			throw runtime_error(buf);
 		}
 		return false;
 	}
@@ -350,7 +367,7 @@ bool IsReadOnly(const string& path)
 	return !(st.st_mode & S_IWUSR);
 }
 
-bool IsDirectory(const std::string& path)
+bool IsDirectory(const string& path)
 {
 	struct stat status;
 	if (stat(path.c_str(), &status) != 0)
@@ -369,7 +386,7 @@ bool EnsureDirectory(const string& path)
 	{
 		char buf[1024];
 		snprintf(buf, 1024, "EnsureDirectory error %s for: %s\n", strerror(errno), path.c_str());
-		throw std::runtime_error(buf);
+		throw runtime_error(buf);
 	}
 	return true;
 }
@@ -420,22 +437,22 @@ bool DeleteRecursive(const string& path)
 	return DeleteRecursiveHelper(path) == 0;
 }
 
-bool PathExists(const std::string& path)
+bool PathExists(const string& path)
 {
 	return access(path.c_str(), F_OK) == 0;
 }
 
-bool ChangeCWD(const std::string& path)
+bool ChangeCWD(const string& path)
 {
 	return chdir(path.c_str()) != -1;
 }
 
-size_t GetFileLength(const std::string& pathName)
+size_t GetFileLength(const string& pathName)
 {
 	struct stat statbuffer;
 	if( stat(pathName.c_str(), &statbuffer) != 0 )
 	{
-		throw std::runtime_error("Error getting file length");
+		throw runtime_error("Error getting file length");
 	}
 	
 	return statbuffer.st_size;
@@ -488,7 +505,7 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 	return !res;
 }
 
-bool ReadAFile(const std::string& path, std::string& data)
+bool ReadAFile(const string& path, string& data)
 {
 	FILE* fp;
 	if ((fp = fopen(path.c_str(), "r")) == 0)
@@ -506,7 +523,7 @@ bool ReadAFile(const std::string& path, std::string& data)
 	return true;
 }
 
-bool WriteAFile(const std::string& path, const std::string& data)
+bool WriteAFile(const string& path, const string& data)
 {
 	FILE* fp;
 	if ((fp = fopen(path.c_str(), "w")) == 0)
@@ -516,6 +533,82 @@ bool WriteAFile(const std::string& path, const std::string& data)
 	fflush(fp);
 	fclose(fp);
 	return res;
+}
+
+bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data)
+{
+	if (!IsDirectory(path))
+		return false;
+
+	DIR *dirp;
+	struct dirent *dp;
+	if ((dirp = opendir(path.c_str())) == NULL)
+		return false;
+    
+	while ((dp = readdir(dirp)))
+	{
+        if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
+            continue;
+        
+		string fullPath = path;
+		if (path[path.length()-1] != '/') fullPath.append("/");
+		fullPath.append(string(dp->d_name, dp->d_namlen));
+		
+		struct stat statbuffer;
+		stat(fullPath.c_str(), &statbuffer);
+
+		bool isDir = S_ISDIR(statbuffer.st_mode);
+		time_t ts = (time_t)statbuffer.st_mtime;
+		if (ts == 0) ts = (time_t)statbuffer.st_ctime;
+		if (ts == 0) ts = (time_t)statbuffer.st_atime;
+		if (cb(data, fullPath, (double)statbuffer.st_size, isDir, (time_t)ts) != 0)
+			break;
+
+        if (isDir && recurse)
+        {
+            if (!ScanDirectory(fullPath, recurse, cb, data))
+                return false;
+        }
+	}
+	closedir(dirp);
+    
+	return true;
+}
+
+bool TouchAFile(const std::string& path, time_t ts)
+{
+	if (IsDirectory(path))
+		return false;
+	
+	struct stat statbuffer;
+	if (stat(path.c_str(), &statbuffer) != 0)
+		return false;
+
+	struct utimbuf utimebuffer;
+	utimebuffer.actime = (time_t)statbuffer.st_atime;
+	utimebuffer.modtime = ts;
+	
+	if (utime(path.c_str(), &utimebuffer) != 0)
+		return false;
+	
+	return true;
+}
+
+bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, time_t* ts)
+{
+	struct stat statbuffer;
+	if (stat(path.c_str(), &statbuffer) != 0)
+		return false;
+
+	if (size) *size = (double)statbuffer.st_size;
+	if (isDirectory) *isDirectory = S_ISDIR(statbuffer.st_mode);
+	if (ts) {
+		*ts = (time_t)statbuffer.st_mtime;
+		if (*ts == 0) *ts = (time_t)statbuffer.st_ctime;
+		if (*ts == 0) *ts = (time_t)statbuffer.st_atime;
+	}
+	
+	return true;
 }
 
 #endif

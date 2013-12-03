@@ -2,6 +2,7 @@
 #include "JSON.h"
 #include "VersionedAsset.h"
 #include "FileSystem.h"
+#include <time.h>
 
 using namespace std;
 
@@ -59,33 +60,40 @@ bool AESClient::Login(const string& userName, const string& password)
     return true;
 }
 
-void DirectoryToEntries(const string& path, const JSONArray& children, AESEntries& entries)
+void DirectoryToEntries(const string& path, const JSONArray& children, TreeOfEntries& entries)
 {
     for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
     {
-        const JSONObject& info = (*i)->AsObject();
-        bool isDir = *(info.at("directory"));
-        string revisionID = *(info.at("revisionID"));
-        string name = *(info.at("name"));
-        
-        if (isDir)
+        const JSONObject& child = (*i)->AsObject();
+        bool isDir = *(child.at("directory"));
+        string revisionID = *(child.at("revisionID"));
+        string name = *(child.at("name"));
+		if (isDir)
         {
-            const JSONArray subChildren = *(info.at("children"));
-			entries.push_back(AESEntry(path + name + "/", revisionID, "", kAddedRemote, 0, true));
-            DirectoryToEntries(path + name + "/", subChildren, entries);
+            const JSONArray subChildren = *(child.at("children"));
+			string key = path + name + "/";
+			
+			entries.insert(key, AESEntry(revisionID, "", kAddedRemote, 0, true));
+            DirectoryToEntries(key, subChildren, entries);
         }
         else
         {
-			//string storeID = *(info.at("storeID"));
-			string hash = (info.find("hash") != info.end()) ? *(info.at("hash")) : "";
-			int size = (int)(info.at("size")->AsNumber());
+			struct tm t;
+
+			string hash = (child.find("hash") != child.end()) ? *(child.at("hash")) : "";
+			int size = (int)(child.at("size")->AsNumber());
+			string time = *(child.at("mtime"));
+			strptime(time.c_str(), "%Y-%m-%dT%H:%M:%S%z", &t);
+			time_t ts = mktime(&t);
 			
-            entries.push_back(AESEntry(path + name, revisionID, hash, kAddedRemote, size, false));
+			string key = path + name;
+            
+			entries.insert(key, AESEntry(revisionID, hash, kAddedRemote, size, false, ts));
         }
     }
 }
 
-bool AESClient::GetRevision(const string& revisionID, AESEntries& entries)
+bool AESClient::GetRevision(const string& revisionID, TreeOfEntries& entries)
 {
 	ClearLastMessage();
     entries.clear();
@@ -132,7 +140,7 @@ bool AESClient::GetRevision(const string& revisionID, AESEntries& entries)
     return res;
 }
 
-bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID, AESEntries& entries)
+bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID, TreeOfEntries& entries)
 {
 	ClearLastMessage();
     entries.clear();
@@ -168,11 +176,11 @@ bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID
 				string newPath = *(child.at("newPath"));
 				string status = *(child.at("status"));
 				
-				int state = 0;
+				int state = kNone;
 				if (status == "added") state = kAddedRemote;
 				else if (status == "deleted") state = kDeletedRemote;
 
-				entries.push_back(AESEntry(newPath, revisionID, "", state));
+				entries.insert(newPath, AESEntry(revisionID, "", state));
             }
             res = true;
 		}
@@ -181,9 +189,9 @@ bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID
 	if (!res)
 	{
 		if (json)
-			SetLastMessage("GetRevisionDeltaInvalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
+			SetLastMessage("GetRevisionDelta Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
 		else
-			SetLastMessage("GetRevisionDeltaNot JSON: '" + response + "'");
+			SetLastMessage("GetRevisionDelta Not JSON: '" + response + "'");
 	}
     
     if (json)
@@ -194,7 +202,6 @@ bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID
 bool AESClient::GetLatestRevision(string& revision)
 {
 	ClearLastMessage();
-	revision.clear();
 	string response = "";
     string url = m_Server + m_Path + "/current?info";
     
@@ -224,9 +231,9 @@ bool AESClient::GetLatestRevision(string& revision)
 	if (!res)
 	{
 		if (json)
-			SetLastMessage("GetLatestRevision JSON received: '" + json->Stringify() + "' from '" + response + "'");
+			SetLastMessage("GetLatestRevision Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
 		else
-			SetLastMessage("GetLatestRevision JSON: '" + response + "'");
+			SetLastMessage("GetLatestRevision Not JSON: '" + response + "'");
 	}
     
     if (json)
@@ -267,16 +274,17 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
                 string name = *(author.at("name"));
                 string email = *(author.at("email"));
                 
-                time_t tSecs = (time_t)((child.at("time"))->AsNumber());
-                time_t tOffset = (time_t)((child.at("timeZone"))->AsNumber());
-                tSecs += tOffset*60;
-
+				string time = *(child.at("time"));
+				struct tm t;
+				strptime(time.c_str(), "%Y-%m-%dT%H:%M:%S%z", &t);
+				time_t ts = mktime(&t);
+				
                 const JSONObject& refChildren = *(child.at("children"));
                 string ref = *(refChildren.at("ref"));
                 
 				string comment = *(child.at("comment"));
 				string revisionID = *(child.at("revisionID"));
-                revisions.push_back(AESRevision(name, email, comment, revisionID, ref, tSecs));
+                revisions.push_back(AESRevision(name, email, comment, revisionID, ref, ts));
             }
             res = true;
         }
@@ -285,9 +293,9 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
 	if (!res)
 	{
 		if (json)
-			SetLastMessage("GetRevisions JSON received: '" + json->Stringify() + "' from '" + response + "'");
+			SetLastMessage("GetRevisions Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
 		else
-			SetLastMessage("GetRevisions JSON: '" + response + "'");
+			SetLastMessage("GetRevisions Not JSON: '" + response + "'");
 	}
     
     if (json)
@@ -295,11 +303,11 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
     return res;
 }
 
-bool AESClient::Download(const AESEntry& entry, const string& path)
+bool AESClient::Download(AESEntry* entry, const string& path, const string& target)
 {
 	ClearLastMessage();
-	string remotePath = m_Server + m_Path + "/" + entry.GetRevisionID() + "/" + entry.GetPath();
-	string localPath = path + "/" + entry.GetPath();
+	string remotePath = m_Server + m_Path + "/" + entry->GetRevisionID() + "/" + path;
+	string localPath = target + "/" + path;
 	string parentPath = localPath.substr(0, localPath.find_last_of('/'));
 	if (!EnsureDirectory(parentPath))
 	{
@@ -307,9 +315,14 @@ bool AESClient::Download(const AESEntry& entry, const string& path)
 		return false;
 	}
 	
-	if (entry.IsDir())
+	if (entry->IsDir())
 	{
 		return true;
+	}
+	
+	if (PathExists(localPath))
+	{
+		DeleteRecursive(localPath);
 	}
 	
 	if (!m_CURL.Download(remotePath, localPath))
@@ -317,36 +330,50 @@ bool AESClient::Download(const AESEntry& entry, const string& path)
 		SetLastMessage("Unable to download " + remotePath + " to " + localPath + " (" + m_CURL.GetErrorMessage()+ ")");
 		return false;
 	}
+	else
+	{
+		if (!TouchAFile(localPath, entry->GetTimeStamp()))
+		{
+			SetLastMessage("Unable to set modification date of " + localPath);
+			return false;
+		}
+	}
+	
 	return true;
 }
 
-void EntriesToFiles(const string& basePath, const AESEntries& entries, map<string, string>& files)
+typedef struct
 {
-	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
+	char basePath[2048];
+	map<string, string>* files;
+} ConvertEntryToMapOfFilesCallBackData;
+
+static int ConvertEntryToMapOfFilesCallBack(void *data, const std::string& key, AESEntry *entry)
+{
+	ConvertEntryToMapOfFilesCallBackData* d = (ConvertEntryToMapOfFilesCallBackData*)data;
+	if (!entry->IsDir())
 	{
-		const AESEntry& entry = (*i);
-		if (!entry.IsDir())
-		{
-			string path = basePath + "/" + entry.GetPath();
-			path.resize(path.find_last_of('/'));
-			files.insert(make_pair(entry.GetPath(), path));
-		}
+		string basePath = string(d->basePath);
+		string path = basePath + "/" + key;
+		path.resize(path.find_last_of('/'));
+		
+		string dest = path.size() > 1 ? path.substr(basePath.size()+1) : "";
+		d->files->insert(make_pair(basePath + "/" + key, dest));
 	}
+	return 0;
 }
 
-void EntriesToFiles(const AESEntries& entries, vector<string>& files)
+static int ConvertEntryToListOfFilesCallBack(void *data, const std::string& key, AESEntry *entry)
 {
-	for (AESEntries::const_iterator i = entries.begin() ; i != entries.end() ; i++)
+	vector<string>* l = (vector<string>*)data;
+	if (!entry->IsDir())
 	{
-		const AESEntry& entry = (*i);
-		if (!entry.IsDir())
-		{
-			files.push_back(entry.GetPath());
-		}
+		l->push_back(key);
 	}
+	return 0;
 }
 
-bool AESClient::ApplyChanges(const string& basePath, const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const string& comment)
+bool AESClient::ApplyChanges(const string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const string& comment)
 {
 	string response = "";
     string url = m_Server + m_Path;
@@ -354,8 +381,12 @@ bool AESClient::ApplyChanges(const string& basePath, const AESEntries& addOrUpda
 	map<string, string> addOrUpdateFiles;
 	vector<string> deleteFiles;
 	
-	EntriesToFiles(basePath, addOrUpdateEntries, addOrUpdateFiles);
-	EntriesToFiles(deleteEntries, deleteFiles);
+	ConvertEntryToMapOfFilesCallBackData data;
+	strcpy(data.basePath, basePath.c_str());
+	data.files = &addOrUpdateFiles;
+	
+	addOrUpdateEntries.iterate(ConvertEntryToMapOfFilesCallBack, &data);
+	deleteEntries.iterate(ConvertEntryToListOfFilesCallBack, &deleteFiles);
 	if (!m_CURL.ApplyChanges(url, NULL, addOrUpdateFiles, deleteFiles, comment, response))
 		return false;
 	

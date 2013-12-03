@@ -128,6 +128,12 @@ int VersionControlPlugin::Run()
     {
         SetProjectPath(i->second);
     }
+	
+	i = m_arguments.find("-t");
+    if (i != m_arguments.end())
+    {
+		return Test();
+    }
     
     try
 	{

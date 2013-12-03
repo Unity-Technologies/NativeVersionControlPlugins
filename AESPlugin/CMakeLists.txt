@@ -16,6 +16,7 @@ CM_TARGET_BEGIN(
 	CM_TARGET_ADD_INCLUDES(../Common)
 	CM_TARGET_ADD_INCLUDES(./External/openSSL/include)
 	CM_TARGET_ADD_INCLUDES(./External/simpleJSON)
+	CM_TARGET_ADD_INCLUDES(./External/radixTree)
 	
 	IF (APPLE)
 		CM_TARGET_ADD_INCLUDES(./External/curl/macosx32/include)
@@ -89,6 +90,12 @@ CM_TARGET_BEGIN(
 		"Sources"
 		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSON.h
 		${CMAKE_CURRENT_SOURCE_DIR}/External/simpleJSON/JSON.cpp
+	)
+	
+	CM_TARGET_ADD_SOURCES( 
+		"Sources"
+		${CMAKE_CURRENT_SOURCE_DIR}/External/radixTree/RadixTree.h
+		${CMAKE_CURRENT_SOURCE_DIR}/External/radixTree/RadixTree.cpp
 	)
 	
 	CM_TARGET_ADD_SOURCES( 

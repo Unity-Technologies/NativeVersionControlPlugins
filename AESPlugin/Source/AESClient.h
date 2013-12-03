@@ -3,76 +3,62 @@
 
 #include "CurlInterface.h"
 #include "JSON.h"
+#include "RadixTree.h"
 
 #include <string>
 #include <vector>
+#include <stdlib.h>
+
+#define AES_REVISION_SIZE	64
+#define AES_HASH_SIZE		64
 
 class AESEntry
 {
 public:
-    AESEntry()
+    AESEntry(const std::string& revisionsID, const std::string& hash, int state = 0, uint64_t size = 0, bool isDirectory = false, time_t ts = 0L)
     {
-        m_Path = "";
-		m_RevisionID = "current";
-		m_Hash = "";
-		m_State = 0;
-		m_Size = 0;
-        m_IsDirectory = false;
-    }
-
-    AESEntry(const std::string& path, const std::string& revisionsID, const std::string hash, int state = 0, int size = 0, bool isDirectory = false)
-    {
-        m_Path = path;
-		m_RevisionID = revisionsID;
-		m_Hash = hash;
+		strncpy(m_RevisionID, revisionsID.c_str(), sizeof(m_RevisionID));
+		strncpy(m_Hash, hash.c_str(), sizeof(m_Hash));
 		m_State = state;
 		m_Size = size;
         m_IsDirectory = isDirectory;
+		m_TimeStamp = ts;
     }
     
-    const std::string GetPath() const { return m_Path; }
-    void SetPath(const std::string& path) { m_Path = path; }
-
-    const std::string GetRevisionID() const { return m_RevisionID; }
-	void SetRevisionID(const std::string& revisionsID) { m_RevisionID = revisionsID; }
-	
-    const std::string GetHash() const { return m_Hash; }
-	void SetHash(const std::string& hash) { m_Hash = hash; }
-	
-    bool IsDir() const { return m_IsDirectory; }
-    void SetDir(bool isDirectory) { m_IsDirectory = isDirectory; }
+    AESEntry(const AESEntry& other)
+    {
+		strncpy(m_RevisionID, other.GetRevisionID().c_str(), sizeof(m_RevisionID));
+		strncpy(m_Hash, other.GetHash().c_str(), sizeof(m_Hash));
+		m_State = other.GetState();
+		m_Size = other.GetSize();
+        m_IsDirectory = other.IsDir();
+		m_TimeStamp = other.GetTimeStamp();
+    }
     
+    const std::string GetRevisionID() const { return m_RevisionID; }
+    const std::string GetHash() const { return m_Hash; }
+    bool IsDir() const { return m_IsDirectory; }
     int GetState() const { return m_State; }
     void SetState(int state) { m_State = state; }
-    
-    int GetSize() const { return m_Size; }
-    void SetSize(int size) { m_Size = size; }
+    uint64_t GetSize() const { return m_Size; }
+    void SetSize(uint64_t size) { m_Size = size; }
+    time_t GetTimeStamp() const { return m_TimeStamp; }
+    void SetTimeStamp(time_t ts) { m_TimeStamp = ts; }
     
 private:
-    std::string m_Path;
-    std::string m_RevisionID;
-    std::string m_Hash;
+    char m_RevisionID[AES_REVISION_SIZE];
+    char m_Hash[AES_HASH_SIZE];
 	int m_State;
-	int m_Size;
+	uint64_t m_Size;
     bool m_IsDirectory;
+	time_t m_TimeStamp;
 };
 
-typedef std::vector<AESEntry> AESEntries;
-typedef std::map<std::string, AESEntry> MapOfEntries;
+typedef RadixTree<AESEntry> TreeOfEntries;
 
 class AESRevision
 {
 public:
-    AESRevision()
-    {
-        m_ComitterName = "";
-        m_ComitterEmail = "";
-        m_Comment = "";
-        m_RevisionID = "";
-        m_Reference = "";
-        m_TimeStamp = (time_t)0;
-    }
-    
     AESRevision(const std::string& comitterName, const std::string& comitterEmail, const std::string& comment, const std::string& revisionID, const std::string& reference, time_t timeStamp)
     {
         m_ComitterName = comitterName;
@@ -84,22 +70,11 @@ public:
     }
 
     const std::string GetComitterName() const { return m_ComitterName; }
-    void SetComitterName(const std::string& comitterName) { m_ComitterName = comitterName; }
-    
     const std::string GetComitterEmail() const { return m_ComitterEmail; }
-    void SetComitterEmail(const std::string& comitterEmail) { m_ComitterEmail = comitterEmail; }
-    
     const std::string GetComment() const { return m_Comment; }
-    void SetComment(const std::string& comment) { m_Comment = comment; }
-    
     const std::string GetRevisionID() const { return m_RevisionID; }
-    void SetRevisionID(const std::string& revisionID) { m_RevisionID= revisionID; }
-    
     const std::string GetReference() const { return m_Reference; }
-    void SetReference(const std::string& reference) { m_Reference = reference; }
-    
     time_t GetTimeStamp() const { return m_TimeStamp; }
-    void SetTimeStamp(time_t timeStamp) { m_TimeStamp = timeStamp; }
     
 private:
     std::string m_ComitterName;
@@ -125,12 +100,12 @@ public:
     
     bool GetLatestRevision(std::string& revision);
     bool GetRevisions(std::vector<AESRevision>& revisions);
-    bool GetRevision(const std::string& revisionID, AESEntries& entries);
-    bool GetRevisionDelta(const std::string& revisionID, std::string compRevisionID, AESEntries& entries);
+    bool GetRevision(const std::string& revisionID, TreeOfEntries& entries);
+    bool GetRevisionDelta(const std::string& revisionID, std::string compRevisionID, TreeOfEntries& entries);
     
-    bool Download(const AESEntry& entry, const std::string& path);
+    bool Download(AESEntry* entry, const std::string& path, const std::string& target);
 	
-	bool ApplyChanges(const std::string& basePath, const AESEntries& addOrUpdateEntries, const AESEntries& deleteEntries, const std::string& comment);
+	bool ApplyChanges(const std::string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const std::string& comment);
 
 private:
     void ClearLastMessage() { m_lastMessage.clear(); }

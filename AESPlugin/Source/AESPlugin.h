@@ -4,6 +4,7 @@
 #include "VersionControlPlugin.h"
 #include "Connection.h"
 #include "AESClient.h"
+#include "RadixTree.h"
 
 #include <string>
 
@@ -26,6 +27,8 @@ public:
     int Connect();
     void Disconnect();
     inline bool IsConnected() { return m_IsConnected; }
+
+	int Test();
 	
 protected:
     
@@ -57,26 +60,30 @@ protected:
 private:
     void Initialize();
 	
+	bool RefreshRemote();
+	bool RefreshLocal();
 	bool RefreshSnapShot();
+	
 	bool SaveSnapShotToFile(const std::string& path);
 	bool RestoreSnapShotFromFile(const std::string& path);
 	
 	void AddAssetsToChanges(const VersionedAssetList& assetList, int state);
 	void RemoveAssetsFromChanges(const VersionedAssetList& assetList, int state = kNone);
     
-	void EntriesToAssets(const MapOfEntries& entries, VersionedAssetList& assetList, int state = -1);
-	void EntriesToAssets(const AESEntries& entries, VersionedAssetList& assetList, int state = -1);
+	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList, int state);
 
     bool m_IsConnected;
-        
+	        
     VersionControlPluginCfgFields m_Fields;
 
     VersionControlPluginVersions m_Versions;
     VersionControlPluginOverlays m_Overlays;
     
+    ChangelistRevision m_LatestRevision;
     ChangelistRevision m_SnapShotRevision;
-	MapOfEntries m_SnapShotEntries;
-	MapOfEntries m_ChangedEntries;
+	TreeOfEntries m_SnapShotEntries;
+	TreeOfEntries m_LocalChangesEntries;
+	TreeOfEntries m_RemoteChangesEntries;
 
 	ChangelistRevisions m_Revisions;
 

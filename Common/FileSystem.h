@@ -16,6 +16,12 @@ bool ReadAFile(const std::string& path, std::string& data);
 bool WriteAFile(const std::string& path, const std::string& data);
 size_t GetFileLength(const std::string& path);
 
+typedef int (*FileCallBack)(void* data, const std::string& path, uint64_t size, bool isDirectory, time_t ts);
+bool ScanDirectory(const std::string& path, bool recurse, FileCallBack cb, void* data);
+
+bool TouchAFile(const std::string& path, time_t ts);
+bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, time_t* ts);
+
 #if WIN32
 #include "windows.h"
 const size_t kDefaultPathBufferSize = 1024;

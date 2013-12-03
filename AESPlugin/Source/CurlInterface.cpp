@@ -66,6 +66,8 @@ size_t CurlInterface::ReadFileCallback(void *data, size_t size, size_t elements,
 CurlInterface::CurlInterface(int timeout) : m_ResponseString(""), m_ResponseCode(0), m_Headers(NULL), m_Form(NULL), m_ConnectTimeout(timeout), m_File(NULL)
 {
 	m_CurlErrorBuffer[0] = '\0';
+	m_Cookies.clear();
+	m_ResponseHeaders.clear();
 }
 
 CurlInterface::~CurlInterface()
@@ -73,12 +75,14 @@ CurlInterface::~CurlInterface()
     if (m_Headers)
     {
         curl_slist_free_all(m_Headers);
+		m_Headers = NULL;
     }
     
     if (m_File)
     {
         fflush(m_File);
         fclose(m_File);
+		m_File = NULL;
     }
 }
 
@@ -141,10 +145,10 @@ bool CurlInterface::ApplyChanges(const string& url, map<string, string>* headers
 		string file = i->first;
 		string name = "file." + to_string(pos);
 		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_FILE, file.c_str(), CURLFORM_END));
-
-		string path = i->second;
+		
+		string dest = i->second;
 		name = "path." + to_string(pos);
-		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_COPYCONTENTS, path.c_str(), CURLFORM_END));
+		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_COPYCONTENTS, dest.c_str(), CURLFORM_END));
 		
 		pos++;
 	}
@@ -303,8 +307,15 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
     m_ResponseCode = 0;
     
     CHECKCURL(curl_easy_perform(handle));
-    
     curl_easy_cleanup(handle);
+
+	if ((method == kDOWNLOAD || method == kUPLOAD) && m_File != NULL)
+	{
+		fflush(m_File);
+		fclose(m_File);
+		m_File = NULL;
+	}
+	
 	if (method == kFORM && m_Form != NULL)
 	{
 		curl_formfree(m_Form);

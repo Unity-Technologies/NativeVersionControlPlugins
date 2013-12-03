@@ -40,7 +40,7 @@ LogStream::~LogStream()
 
 void LogStream::SetLogLevel(LogLevel l) 
 { 
-m_LogLevel = l; 
+	m_LogLevel = l; 
 }
 
 LogLevel LogStream::GetLogLevel() const 
