@@ -407,13 +407,14 @@ protected:
      * Parameters:
      *  - changeList: IN change list (revision, description, timestamp and commiter).
      *  - assetList: IN/OUT list of versioned asset.
+	 *  - saveOnly: save changes only.
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
      * On input, assetList contains assests to be submitted.
      * On output, assetList contains assests that have been submitted with appropriate status.
      */
-    virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList) = 0;
+    virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList, bool saveOnly = false) = 0;
     
     /*
      * Set assets file mode in VC.

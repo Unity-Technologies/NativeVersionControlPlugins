@@ -105,7 +105,7 @@ public:
     
     bool Download(AESEntry* entry, const std::string& path, const std::string& target);
 	
-	bool ApplyChanges(const std::string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const std::string& comment);
+	bool ApplyChanges(const std::string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const std::string& comment, int* succedeedEntries);
 
 private:
     void ClearLastMessage() { m_lastMessage.clear(); }

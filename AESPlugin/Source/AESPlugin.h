@@ -45,7 +45,7 @@ protected:
     bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList);
     bool LockAssets(VersionedAssetList& assetList);
     bool UnlockAssets(VersionedAssetList& assetList);
-    bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList);
+    bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList, bool saveOnly = false);
     bool SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode);
     bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false);
     bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList);

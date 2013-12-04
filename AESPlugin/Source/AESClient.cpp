@@ -373,10 +373,11 @@ static int ConvertEntryToListOfFilesCallBack(void *data, const std::string& key,
 	return 0;
 }
 
-bool AESClient::ApplyChanges(const string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const string& comment)
+bool AESClient::ApplyChanges(const string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const string& comment, int* succedeedEntries)
 {
 	string response = "";
     string url = m_Server + m_Path;
+	if (succedeedEntries) *succedeedEntries = 0;
 	
 	map<string, string> addOrUpdateFiles;
 	vector<string> deleteFiles;
@@ -394,8 +395,31 @@ bool AESClient::ApplyChanges(const string& basePath, TreeOfEntries& addOrUpdateE
     JSONValue* json = JSON::Parse(response.c_str());
     if (json != NULL && json->IsObject())
     {
-		string data = json->Stringify();
-		res = true;
+        const JSONObject& info = json->AsObject();
+		if (info.find("status") != info.end())
+		{
+			string status = *(info.at("status"));
+			if (status == "ok" && info.find("files") != info.end())
+			{
+				const JSONArray& files = *(info.at("files"));
+				for (vector<JSONValue*>::const_iterator i = files.begin() ; i != files.end() ; i++)
+				{
+					const JSONObject& file = (*i)->AsObject();
+					
+					bool deleted = file.at("delete")->AsBool();
+					string path = *(file.at("path"));
+					
+					if (!deleted)
+					{
+						string name = *(file.at("name"));
+						path += "/" + name;
+					}
+					
+					if (succedeedEntries) *succedeedEntries = *succedeedEntries + 1;
+				}
+			}
+			res = true;
+		}
 	}
 	
 	if (json)

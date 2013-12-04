@@ -788,7 +788,13 @@ bool VersionControlPlugin::HandleRevertChanges()
 bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
 {
     GetConnection().Log().Debug() << "HandleSubmit" << Endl;
-    
+	
+	bool saveOnly = false;
+    if (args.size() == 2 && args[1] == "saveOnly")
+    {
+        saveOnly = true;
+    }
+	
     bool wasOnline = PreHandleCommand();
     
     Changelist changelist;
@@ -797,7 +803,7 @@ bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
     
-    if (SubmitAssets(changelist, assetList))
+    if (SubmitAssets(changelist, assetList, saveOnly))
         SetOnline();
     else
         assetList.clear();
