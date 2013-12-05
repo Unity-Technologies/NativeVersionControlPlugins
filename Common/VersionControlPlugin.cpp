@@ -1040,6 +1040,8 @@ void VersionControlPlugin::NotifyOffline(const string& reason)
 		++i;
 	}
 	
+	GetConnection().Command(string("offline ") + reason, MAProtocol);
+	
     m_IsOnline = false;
 }
 
@@ -1048,7 +1050,7 @@ void VersionControlPlugin::NotifyOnline()
 	if (m_IsOnline)
 		return; // nothing to notify
     
-	GetConnection().Command("online");
+	GetConnection().Command("online", MAProtocol);
 
 	int i = 0;
     CommandsFlags flags = GetOnlineUICommands();

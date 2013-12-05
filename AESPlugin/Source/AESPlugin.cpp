@@ -24,6 +24,8 @@ const char* kLatestRevison = "current";
 const char* kLocalRevison = "local";
 const char* kPluginName = "AssetExchangeServer";
 
+const char* kMetaExtension = ".meta";
+
 string ToTime(time_t timeInSeconds)
 {
     struct tm* t;
@@ -35,7 +37,7 @@ string ToTime(time_t timeInSeconds)
 
 int updateStateForMeta(const string& path, int state)
 {
-	if (path.length() > 5 && path.substr(path.length() - 5, 5) == ".meta")
+	if (path.length() > 5 && path.substr(path.length() - 5, 5) == kMetaExtension)
 		state |= kMetaFile;
 	return state;
 }
@@ -64,6 +66,7 @@ AESPlugin::~AESPlugin()
 		delete m_AES;
 }
 
+/*
 static int PrintEntryCallBack(void *data, const std::string& key, AESEntry *entry)
 {
 	AESPlugin* plugin = (AESPlugin*)data;
@@ -75,6 +78,7 @@ static int PrintEntryCallBack(void *data, const std::string& key, AESEntry *entr
 	
 	return 1;
 }
+*/
 
 int AESPlugin::Test()
 {
@@ -82,6 +86,36 @@ int AESPlugin::Test()
 	
 	Connect();
 	Login();
+	
+	vector<AESRevision> revisions;
+	if (m_AES->GetRevisions(revisions))
+	{
+		for (vector<AESRevision>::const_iterator i = revisions.begin() ; i != revisions.end() ; i++)
+		{
+			GetConnection().Log().Debug() << "Found revision: " << (*i).GetRevisionID() << Endl;
+		}
+	}
+	else
+	{
+		GetConnection().Log().Debug() << "Failed to get revisions" << Endl;
+	}
+	
+	string latest = "";
+	if (m_AES->GetLatestRevision(latest))
+	{
+		AESEntry entry(latest, "");
+		if (!m_AES->Download(&entry, "Assets/OLD house.FBX", "/Users/Shared/Unity"))
+		{
+			GetConnection().Log().Debug() << "Failed to download file" << Endl;
+		}
+	}
+	else
+	{
+		GetConnection().Log().Debug() << "Failed to get latest revision" << Endl;
+	}
+	
+	GetConnection().Log().Debug() << Flush;
+	
 	Disconnect();
 	
 	return 0;
@@ -94,7 +128,7 @@ const char* AESPlugin::GetLogFileName()
 
 const AESPlugin::TraitsFlags AESPlugin::GetSupportedTraitFlags()
 {
-	return (kRequireNetwork | kEnablesCheckout | kEnablesChangelists | kEnablesLocking | kEnablesGetLatestOnChangeSetSubset | kEnablesRevertUnchanged);
+	return (kRequireNetwork | kEnablesAll);
 }
 
 AESPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
@@ -105,14 +139,15 @@ AESPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
 void AESPlugin::Initialize()
 {
     m_Fields.reserve(4);
-    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "URL", "URL", "The AES URL", "http://localhost:3030", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Repository", "Repository", "The AES Repository", "TestGitRepo3", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "URL", "URL", "The AES URL", "", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Repository", "Repository", "The AES Repository", "", VersionControlPluginCfgField::kRequiredField));
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Username", "Username", "The AES username", "", VersionControlPluginCfgField::kRequiredField));
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Password", "Password", "The AES password", "", VersionControlPluginCfgField::kPasswordField));
     
     m_Versions.insert(kUnity43);
     
 	m_Overlays[kLocal] = "default";
+	m_Overlays[kSynced] = "default";
 	m_Overlays[kOutOfSync] = "default";
 	m_Overlays[kCheckedOutLocal] = "default";
 	m_Overlays[kCheckedOutRemote] = "default";
@@ -280,13 +315,14 @@ bool AESPlugin::RefreshRemote()
 		return false;
 	
 	// Get latest revision from remote
-	m_LatestRevision.clear();
-	if (!m_AES->GetLatestRevision(m_LatestRevision))
+	string latestRevision;
+	if (!m_AES->GetLatestRevision(latestRevision))
 	{
 		GetConnection().Log().Debug() << "Cannot get latest revision from AES, reason: " << m_AES->GetLastMessage() << Endl;
 		return false;
 	}
 	
+	m_LatestRevision = latestRevision;
 	if (m_SnapShotRevision.empty())
 	{
 		// If not snapshot was taken, treats latest revision as remote changes
@@ -478,7 +514,7 @@ int AESPlugin::Login()
     
     if (!m_AES->Login(m_Fields[kAESUserName].GetValue(), m_Fields[kAESPassword].GetValue()))
     {
-        GetConnection().Log().Debug() << "Login failed, reason: " << m_AES->GetLastError() << Endl;
+        GetConnection().Log().Debug() << "Login failed, reason: " << m_AES->GetLastMessage() << Endl;
         return -1;
     }
 	
@@ -500,29 +536,6 @@ int AESPlugin::Login()
 		GetConnection().Log().Debug() << "Cannot refresh remote" << Endl;
 	}
 	
-	if (GetConnection().Log().GetLogLevel() == LOG_DEBUG)
-	{
-		GetConnection().Log().Debug() << "SnapShot Revision ID [" << m_SnapShotRevision << "]" << Endl;
-		GetConnection().Log().Debug() << "Latest Revision ID [" << m_LatestRevision << "]" << Endl;
-		
-		GetConnection().Log().Debug() << "Remote Changes:" << Endl;
-		if (m_RemoteChangesEntries.size() > 0)
-			m_RemoteChangesEntries.iterate(PrintEntryCallBack, (void*)this);
-		else
-			GetConnection().Log().Debug() << " - None" << Endl;
-		
-		GetConnection().Log().Debug() << "Local Changes:" << Endl;
-		if (m_LocalChangesEntries.size() > 0)
-			m_LocalChangesEntries.iterate(PrintEntryCallBack, (void*)this);
-		else
-			GetConnection().Log().Debug() << " - None" << Endl;
-		
-		GetConnection().Log().Debug() << "Snapshot:" << Endl;
-		if (m_SnapShotEntries.size() > 0)
-			m_SnapShotEntries.iterate(PrintEntryCallBack, (void*)this);
-		else
-			GetConnection().Log().Debug() << " - None" << Endl;
-	}
     return 0;
 }
 
@@ -533,13 +546,13 @@ bool AESPlugin::CheckConnectedAndLogged()
     {
         if (Connect() != 0)
         {
-            StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot connect to VC system"));
+            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot connect to VC system, reason: ") + m_AES->GetLastMessage()));
             return false;
         }
         
         if (Login() != 0)
         {
-            StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot log to to VC system"));
+            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot log to to VC system, reason: ") + m_AES->GetLastMessage()));
             return false;
         }
     }
@@ -816,6 +829,8 @@ bool AESPlugin::GetAssets(VersionedAssetList& assetList)
 	data.client = m_AES;
 	data.localChanges = &m_LocalChangesEntries;
 	data.snapshot = &m_SnapShotEntries;
+	
+	GetConnection().Log().Debug() << "GetAssets apply remote changes (RevisionID: " << m_LatestRevision << ")" << Endl;
 	m_RemoteChangesEntries.iterate(ApplyRemoteChangesCallBack, (void*)&data);
 	m_SnapShotRevision = m_LatestRevision;
 	m_RemoteChangesEntries.clear();
@@ -987,7 +1002,7 @@ bool AESPlugin::SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode)
 
 bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 {
-    GetConnection().Log().Debug() << "GetAssetsStatus" << Endl;
+    GetConnection().Log().Debug() << "GetAssetsStatus (" << (recursive ? "" : "Non-") << "Recursive)" << Endl;
     
     if (!CheckConnectedAndLogged())
     {
@@ -1031,36 +1046,29 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
         asset.SetState(state);
     }
     
-	if (GetConnection().Log().GetLogLevel() == LOG_DEBUG)
-	{
-		GetConnection().Log().Debug() << "SnapShot Revision ID [" << m_SnapShotRevision << "]" << Endl;
-		GetConnection().Log().Debug() << "Latest Revision ID [" << m_LatestRevision << "]" << Endl;
-		
-		GetConnection().Log().Debug() << "Remote Changes:" << Endl;
-		if (m_RemoteChangesEntries.size() > 0)
-			m_RemoteChangesEntries.iterate(PrintEntryCallBack, (void*)this);
-		else
-			GetConnection().Log().Debug() << " - None" << Endl;
-		
-		GetConnection().Log().Debug() << "Local Changes:" << Endl;
-		if (m_LocalChangesEntries.size() > 0)
-			m_LocalChangesEntries.iterate(PrintEntryCallBack, (void*)this);
-		else
-			GetConnection().Log().Debug() << " - None" << Endl;
-		
-		GetConnection().Log().Debug() << "Snapshot:" << Endl;
-		if (m_SnapShotEntries.size() > 0)
-			m_SnapShotEntries.iterate(PrintEntryCallBack, (void*)this);
-		else
-			GetConnection().Log().Debug() << " - None" << Endl;
-	}
-
     return true;
+}
+
+typedef struct
+{
+	AESPlugin* plugin;
+	TreeOfEntries* remoteChanges;
+} CheckConflictCallBackData;
+
+static int CheckConflictCallBack(void *data, const std::string& key, AESEntry *entry)
+{
+	CheckConflictCallBackData* d = (CheckConflictCallBackData*)data;
+	AESEntry* remoteEntry = d->remoteChanges->search(key);
+	if (remoteEntry != NULL)
+	{
+		entry->SetState(kConflicted);
+	}
+	return 0;
 }
 
 bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
-    GetConnection().Log().Debug() << "GetAssetsChangeStatus" << Endl;
+    GetConnection().Log().Debug() << "GetAssetsChangeStatus (" << revision << ")" << Endl;
     
     if (!CheckConnectedAndLogged())
     {
@@ -1071,7 +1079,10 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     assetList.clear();
     if (revision == kNewListRevision)
     {
-		m_LocalChangesEntries.iterate(PrintEntryCallBack, (void*)this);
+		CheckConflictCallBackData data;
+		data.plugin = this;
+		data.remoteChanges = &m_RemoteChangesEntries;
+		m_LocalChangesEntries.iterate(CheckConflictCallBack, (void*)&data);
 		EntriesToAssets(m_LocalChangesEntries, assetList, -1);
     }
     return true;
@@ -1180,13 +1191,8 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
 				Changelist item;
 				
 				string comment = rev.GetComment();
-				comment.append(" [");
-				comment.append(rev.GetRevisionID());
 				comment.append(" by ");
 				comment.append(rev.GetComitterEmail());
-				comment.append(" on ");
-				comment.append(ToTime(rev.GetTimeStamp()));
-				comment.append("]");
 				
 				item.SetCommitter(rev.GetComitterName());
 				item.SetDescription(comment);

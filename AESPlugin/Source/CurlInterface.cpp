@@ -1,47 +1,60 @@
 #include "CurlInterface.h"
 #include "Utility.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
 const char* USERAGENT = "UnityPlayer/AESPlugin (http://unity3d.com)";
 
-static string char2hex(char dec)
+/*
+static string DecodeEscapedURL(const string& url)
 {
-	char dig1 = (dec&0xF0)>>4;
-	char dig2 = (dec&0x0F);
-	if ( 0<= dig1 && dig1<= 9) dig1+=48;    //0,48 in ascii
-	if (10<= dig1 && dig1<=15) dig1+=65-10; //A,65 in ascii
-	if ( 0<= dig2 && dig2<= 9) dig2+=48;
-	if (10<= dig2 && dig2<=15) dig2+=65-10;
+	string urlCopy;
+	urlCopy.reserve(url.length());
 	
-    string r;
-	r.append( &dig1, 1);
-	r.append( &dig2, 1);
-	return r;
-}
-
-static string urlencode(const string &c)
-{
-    string escaped;
-	int max = c.length();
-	for(int i=0; i<max; i++)
+	for (unsigned int i = 0u; i < url.length(); i++)
 	{
-		if ( (48 <= c[i] && c[i] <= 57) ||//0-9
-			(65 <= c[i] && c[i] <= 90) ||//ABC...XYZ
-			(97 <= c[i] && c[i] <= 122) || //abc...xyz
-			(c[i]=='~' || c[i]=='-' || c[i]=='_' || c[i]=='.')
-			)
+		if (url[i] != '%')
 		{
-			escaped.append( &c[i], 1);
+			urlCopy += url[i];
+		}
+		else if (i + 2 < url.length())
+		{
+			char hex[2] = { url[i + 1], url[i + 2] };
+			urlCopy += static_cast<char>(strtol(hex, NULL, 16));
+			i += 2;
+		}
+	}
+	
+	return urlCopy;
+}
+*/
+
+static string EncodeEscapedURL(const string& url)
+{
+	string urlCopy;
+	urlCopy.reserve(url.length());
+	
+	char hex[3];
+	memset(hex, 0x00, sizeof(hex));
+	for (unsigned int i = 0u; i < url.length(); i++)
+	{
+		if ((url[i] >= '0' && url[i] <= '9') || (url[i] >= 'A' && url[i] <= 'Z') || (url[i] >= 'a' && url[i] <= 'z') ||
+			url[i] == '~' || url[i] == '-' || url[i] == '_' || url[i] == '.' || url[i] == '/' ||
+			url[i] == ':' || url[i] == '?' || url[i] == '=' || url[i] == '&')
+		{
+			urlCopy += url[i];
 		}
 		else
 		{
-			escaped.append("%");
-			escaped.append( char2hex(c[i]) );//converts char 255 to string "FF"
+			sprintf(hex, "%02X", (char)url[i]);
+			urlCopy.append("%");
+			urlCopy.append(hex);
 		}
 	}
-	return escaped;
+	
+	return urlCopy;
 }
 
 size_t CurlInterface::HeaderCallback(void *data, size_t size, size_t elements, void *callback)
@@ -155,14 +168,14 @@ bool CurlInterface::Post(const string& url, const string& postData, map<string, 
 bool CurlInterface::Upload(const string& url, const string& path)
 {
     string response = "";
-    string data = urlencode(path);
+    string data = path;
 	return DoCurl(kUPLOAD, url, &data, NULL, response);
 }
 
 bool CurlInterface::Download(const string& url, const string& path)
 {
     string response = "";
-    string data = urlencode(path);
+    string data = path;
 	return DoCurl(kDOWNLOAD, url, &data, NULL, response);
 }
 
@@ -245,8 +258,9 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
         return false;
     }
     
+	string encodedUrl = EncodeEscapedURL(url);
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, m_CurlErrorBuffer));
-    CHECKCURL(curl_easy_setopt(handle, CURLOPT_URL, url.c_str()));
+    CHECKCURL(curl_easy_setopt(handle, CURLOPT_URL, encodedUrl.c_str()));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_USERAGENT, USERAGENT));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, CurlInterface::HeaderCallback));
