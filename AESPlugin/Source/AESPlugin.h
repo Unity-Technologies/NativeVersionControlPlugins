@@ -20,7 +20,9 @@ public:
     const VersionControlPluginVersions& GetSupportedVersions() { return m_Versions; }
     const TraitsFlags GetSupportedTraitFlags();
     VersionControlPluginCfgFields& GetConfigFields() { return m_Fields; }
-    const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; };
+    const VersionControlPluginOverlays& GetOverlays() { return m_Overlays; }
+	const VersionControlPluginCustomCommands& GetCustomCommands() { return m_CustomCommands; }
+
     CommandsFlags GetOnlineUICommands();
     inline CommandsFlags GetOfflineUICommands() { return kNone; }
 
@@ -56,6 +58,7 @@ protected:
     bool UpdateRevision(const ChangelistRevision& revision, std::string& description);
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
+	bool PerformCustomCommand(const std::string& command);
 
 private:
     void Initialize();
@@ -70,7 +73,11 @@ private:
 	void AddAssetsToChanges(const VersionedAssetList& assetList, int state);
 	void RemoveAssetsFromChanges(const VersionedAssetList& assetList, int state = kNone);
     
-	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList, int state);
+	static int EntryToAssetCallBack(void *data, const std::string& key, AESEntry *entry);
+	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList);
+	
+	bool FetchAllAssets();
+	bool ReconcileAssets();
 
     bool m_IsConnected;
 	        
@@ -78,6 +85,7 @@ private:
 
     VersionControlPluginVersions m_Versions;
     VersionControlPluginOverlays m_Overlays;
+    VersionControlPluginCustomCommands m_CustomCommands;
     
     ChangelistRevision m_LatestRevision;
     ChangelistRevision m_SnapShotRevision;
@@ -88,6 +96,16 @@ private:
 	ChangelistRevisions m_Revisions;
 
     AESClient* m_AES;
+
+	static int ScanLocalChangeCallBack(void* data, const std::string& path, uint64_t size, bool isDirectory, time_t ts);
+	static int CleanupLocalCallBack(void* data, const std::string& path, uint64_t size, bool isDirectory, time_t ts);
+	
+	static int EntryToJSONCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int ApplySnapShotChangeCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int ApplyRemoteChangesCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int ApplyLocalChangesCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int CheckConflictCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int FetchAllCallBack(void *data, const std::string& key, AESEntry *entry);
 };
 
 

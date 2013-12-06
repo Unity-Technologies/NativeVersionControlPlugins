@@ -441,7 +441,16 @@ bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
     GetConnection().Log().Debug() << "HandleCustomCommand" << Endl;
     
     bool m_WasOnline = PreHandleCommand();
-    // TODO
+    
+	if (args.size() > 1)
+	{
+		string customCmd = args[1];
+		if (!PerformCustomCommand(customCmd))
+		{
+			GetConnection().Log().Notice() << "Unbale to perform custom command " << customCmd << Endl;
+		}
+	}
+	
     PostHandleCommand(m_WasOnline);
     
     return true;
@@ -904,7 +913,18 @@ bool VersionControlPlugin::HandleConfigTraits()
         }
     }
     
-    //TODO: CustomCommands
+    const VersionControlPluginCustomCommands& customCommands = GetCustomCommands();
+    if (customCommands.size() > 0)
+    {
+        GetConnection().DataLine("customCommands");
+        GetConnection().DataLine(customCommands.size());
+        for (VersionControlPluginCustomCommands::const_iterator i = customCommands.begin() ; i != customCommands.end() ; i++)
+        {
+            GetConnection().DataLine(i->GetName());
+            GetConnection().DataLine(i->GetLabel());
+            GetConnection().DataLine(i->GetContext());
+        }
+    }
 
     return true;
 }

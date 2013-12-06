@@ -102,6 +102,33 @@ ENUM_FLAGS(VersionControlPluginCfgField::FieldFlags);
 
 Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field);
 
+class VersionControlPluginCustomCommand
+{
+public:
+	VersionControlPluginCustomCommand()
+	{
+		m_Name = "";
+		m_Label = "";
+		m_Context = "";
+	}
+	
+	VersionControlPluginCustomCommand(const std::string& name, const std::string& label)
+	{
+		m_Name = name;
+		m_Label = label;
+		m_Context = "global";
+	}
+	
+	const std::string& GetName() const { return m_Name; }
+	const std::string& GetLabel() const { return m_Label; }
+	const std::string& GetContext() const { return m_Context; }
+
+private:
+	std::string m_Name;
+	std::string m_Label;
+	std::string m_Context;
+};
+
 /*
  * VersionControl Plugin abstract class
  */
@@ -112,6 +139,7 @@ public:
     typedef std::set<int> VersionControlPluginVersions;
     typedef std::vector<VersionControlPluginCfgField> VersionControlPluginCfgFields;
     typedef std::map<State, std::string> VersionControlPluginOverlays;
+    typedef std::vector<VersionControlPluginCustomCommand> VersionControlPluginCustomCommands;
     
     // Plugin configuration traits flags
     enum TraitsFlags {
@@ -228,6 +256,13 @@ protected:
      *  - list of plugin configuration fields.
      */
     virtual VersionControlPluginCfgFields& GetConfigFields() = 0;
+    
+    /*
+     * Get the plugin custom commands.
+     * Returns:
+     *  - list of plugin custom commands.
+     */
+    virtual const VersionControlPluginCustomCommands& GetCustomCommands() = 0;
     
     /*
      * Get the commands that should be enabled when plugin is online.
@@ -534,6 +569,16 @@ protected:
      * On output, assetList contains assests that have been reverted with appropriate status.
      */
     virtual bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+	
+	/**
+	 * Perform custom command
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - assetList: IN/OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 */
+	virtual bool PerformCustomCommand(const std::string& command) = 0;
 
 private:
     void InitializeArguments(int argc, char** argv);

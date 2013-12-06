@@ -600,12 +600,18 @@ bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, ti
 	if (stat(path.c_str(), &statbuffer) != 0)
 		return false;
 
-	if (size) *size = (double)statbuffer.st_size;
-	if (isDirectory) *isDirectory = S_ISDIR(statbuffer.st_mode);
+	bool isDir = S_ISDIR(statbuffer.st_mode);
+	if (isDirectory) *isDirectory = isDir;
+	if (size) *size = isDir ? 0 : (double)statbuffer.st_size;
 	if (ts) {
-		*ts = (time_t)statbuffer.st_mtime;
-		if (*ts == 0) *ts = (time_t)statbuffer.st_ctime;
-		if (*ts == 0) *ts = (time_t)statbuffer.st_atime;
+		if (isDir)
+			*ts = 0;
+		else
+		{
+			*ts = (time_t)statbuffer.st_mtime;
+			if (*ts == 0) *ts = (time_t)statbuffer.st_ctime;
+			if (*ts == 0) *ts = (time_t)statbuffer.st_atime;
+		}
 	}
 	
 	return true;
