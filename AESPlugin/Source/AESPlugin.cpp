@@ -18,16 +18,16 @@
 
 using namespace std;
 
-const char* kCacheFileName = "/Library/aesSnapshot.json";
-const char* kLogFileName = "./Library/aesPlugin.log";
-const char* kLatestRevison = "current";
-const char* kLocalRevison = "local";
-const char* kPluginName = "AssetExchangeServer";
+static const string kCacheFileName  = "/Library/aesSnapshot.json";
+static const string kLogFileName = "./Library/aesPlugin.log";
+static const string kLatestRevison = "current";
+static const string kLocalRevison = "local";
+static const string kPluginName = "AssetExchangeServer";
 
-const char* kMetaExtension = ".meta";
+static const string kMetaExtension = ".meta";
 
-const char* kFetchAllCommand = "fetchAll";
-const char* kReconcileCommand = "reconcile";
+static const string kFetchAllCommand = "fetchAll";
+static const string kReconcileCommand  = "reconcile";
 
 string ToTime(time_t timeInSeconds)
 {
@@ -65,6 +65,8 @@ AESPlugin::AESPlugin(const char* args) :
 
 AESPlugin::~AESPlugin()
 {
+	Disconnect();
+	
     if (m_AES != NULL)
 		delete m_AES;
 }
@@ -97,7 +99,7 @@ int AESPlugin::Test()
 	if (m_AES->GetLatestRevision(latest))
 	{
 		AESEntry entry(latest, "");
-		if (!m_AES->Download(&entry, "Assets/OLD house.FBX", "/Users/Shared/Unity"))
+		if (!m_AES->Download(&entry, "Assets/OLD house.FBX", "/Users/Shared/Unity/Assets/OLD house.FBX"))
 		{
 			GetConnection().Log().Debug() << "Failed to download file" << Endl;
 		}
@@ -116,7 +118,7 @@ int AESPlugin::Test()
 
 const char* AESPlugin::GetLogFileName()
 {
-	return kLogFileName;
+	return kLogFileName.c_str();
 }
 
 const AESPlugin::TraitsFlags AESPlugin::GetSupportedTraitFlags()
@@ -157,9 +159,9 @@ void AESPlugin::Initialize()
 
 bool IsPathAuthorized(const string& path)
 {
-	if (path.length() > 9 && path.substr(path.length() - 9, 9) == ".DS_Store") return false;
-	if (path.length() > 5 && path.substr(0, 5) == "Temp/") return false;
-	if (path.length() > 7 && path.substr(0, 7) == "Library/") return false;
+	if (path.length() >= 9 && path.substr(path.length() - 9, 9) == ".DS_Store") return false;
+	if (path.length() >= 5 && path.substr(0, 5) == "Temp/") return false;
+	if (path.length() >= 8 && path.substr(0, 8) == "Library/") return false;
 	return true;
 }
 
@@ -347,11 +349,6 @@ bool AESPlugin::SaveSnapShotToFile(const string& path)
 {
 	GetConnection().Log().Debug() << "SaveSnapShotToFile " << path << Endl;
 	
-	if (m_SnapShotRevision.empty())
-	{
-		return true;
-	}
-	
 	// Build JSON array from snapshot entries
 	JSONArray entries;
 	m_SnapShotEntries.iterate(EntryToJSONCallBack, (void*)&entries);
@@ -529,7 +526,7 @@ bool AESPlugin::CheckConnectedAndLogged()
     {
         if (Connect() != 0)
         {
-            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot connect to VC system, reason: ") + m_AES->GetLastMessage()));
+            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot connect to VC system, reason: ") + (m_AES ? m_AES->GetLastMessage() : "not connected to AES")));
             return false;
         }
         
@@ -700,8 +697,120 @@ bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
 bool AESPlugin::DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "DownloadAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return false;
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return false;
+    }
+
+	if (!EnsureDirectory(targetDir))
+	{
+		GetConnection().ErrorLine(string("Could not create temp dir: ") + targetDir);
+		assetList.clear();
+		return true;
+	}
+	
+	VersionedAssetList result;
+	int idx = 0;
+	for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++, ++idx)
+    {
+        VersionedAsset& asset = (*i);
+        if (asset.IsFolder())
+        {
+			// Skip folders
+            continue;
+        }
+		
+		string path = asset.GetPath().substr(GetProjectPath().size()+1);
+		for (ChangelistRevisions::const_iterator j = changes.begin() ; j != changes.end() ; j++)
+		{
+			const std::string& revision = *j;
+			if (revision == kDefaultListRevision || revision == "head")
+			{
+				AESEntry* entry = m_SnapShotEntries.search(path);
+				string target = targetDir + "/" + IntToString(idx) + "_" + m_SnapShotRevision;
+				if (entry != NULL)
+				{
+					if (!m_AES->Download(entry, path, target))
+					{
+						GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
+						assetList.clear();
+						return true;
+					}
+					
+					result.push_back(VersionedAsset(target, kNone, m_SnapShotRevision));
+				}
+			}
+			else if (revision == "mineAndConflictingAndBase")
+			{
+				AESEntry* entry = m_LocalChangesEntries.search(path);
+				if (entry == NULL)
+				{
+					GetConnection().Log().Notice() << "No 'mine' file " << path << Endl;
+					GetConnection().ErrorLine(string("No 'mine' file for ") + path);
+					continue;
+				}
+				else
+				{
+					string target = targetDir + "/" + IntToString(idx) + "_" + kLocalRevison;
+					if (!CopyAFile(asset.GetPath(), target, true))
+					{
+						GetConnection().Log().Debug() << "Cannot copy " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
+						assetList.clear();
+						return true;
+					}
+					
+					result.push_back(VersionedAsset(target, kNone, kLocalRevison));
+				}
+				
+				entry = m_RemoteChangesEntries.search(path);
+				if (entry == NULL)
+				{
+					GetConnection().Log().Notice() << "No 'theirs' file " << path << Endl;
+					GetConnection().ErrorLine(string("No 'theirs' file for ") + path);
+					continue;
+				}
+				else
+				{
+					string target = targetDir + "/" + IntToString(idx) + "_" + m_LatestRevision;
+					if (!m_AES->Download(entry, path, target))
+					{
+						GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
+						assetList.clear();
+						return true;
+					}
+					
+					result.push_back(VersionedAsset(target, kNone, m_LatestRevision));
+				}
+				
+				entry = m_SnapShotEntries.search(path);
+				if (entry == NULL)
+				{
+					GetConnection().Log().Notice() << "No 'base' file " << path << Endl;
+					GetConnection().ErrorLine(string("No 'base' file for ") + path);
+					continue;
+				}
+				else
+				{
+					string target = targetDir + "/" + IntToString(idx) + "_" + m_SnapShotRevision;
+					if (!m_AES->Download(entry, path, target))
+					{
+						GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
+						return true;
+					}
+					
+					result.push_back(VersionedAsset(target, kNone, m_SnapShotRevision));
+				}
+			}
+			else
+			{
+				GetConnection().Log().Debug() << "DownloadAssets, unknown revision " << revision << Endl;
+			}
+		}
+	}
+	
+	assetList.swap(result);
+	return true;
 }
 
 bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
@@ -729,7 +838,8 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
 		if (entry != NULL)
 		{
 			::DeleteRecursive(asset.GetPath());
-			if (!m_AES->Download(entry, path, GetProjectPath()))
+			string target = GetProjectPath() + "/" + path;
+			if (!m_AES->Download(entry, path, target))
 			{
 				GetConnection().Log().Debug() << "RevertAssets, cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
 			}
@@ -762,7 +872,8 @@ int AESPlugin::ApplyRemoteChangesCallBack(void *data, const std::string& key, AE
 		if ((entry->GetState() & kAddedRemote) == kAddedRemote)
 		{
 			// Download file
-			if (!plugin->m_AES->Download(entry, key, plugin->GetProjectPath()))
+			string target = plugin->GetProjectPath() + "/" + key;
+			if (!plugin->m_AES->Download(entry, key, target))
 			{
 				plugin->GetConnection().Log().Debug() << "Cannot download " << key << ", reason:" << plugin->m_AES->GetLastMessage() << Endl;
 				return 1;
@@ -818,8 +929,62 @@ bool AESPlugin::GetAssets(VersionedAssetList& assetList)
 bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod method)
 {
     GetConnection().Log().Debug() << "ResolveAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-    return false;
+
+    if (!CheckConnectedAndLogged())
+    {
+        assetList.clear();
+        return false;
+    }
+    
+	for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
+    {
+        VersionedAsset& asset = (*i);
+        if (asset.IsFolder())
+        {
+			// Skip folders
+            continue;
+        }
+		
+        string path = asset.GetPath().substr(GetProjectPath().size()+1);
+		if (method == VersionControlPlugin::kMine)
+		{
+			AESEntry* entry = m_LocalChangesEntries.search(path);
+			if (entry != NULL)
+			{
+				int state = entry->GetState();
+				state |= kCheckedOutLocal;
+				state &= ~kConflicted;
+				entry->SetState(state);
+			}
+		}
+		else if (method == VersionControlPlugin::kTheirs)
+		{
+			AESEntry* entry = m_RemoteChangesEntries.search(path);
+			if (entry != NULL)
+			{
+				string target = GetProjectPath()+ "/" + path;
+				if (!m_AES->Download(entry, path, target))
+				{
+					GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
+					assetList.clear();
+					return true;
+				}
+
+				uint64_t size = 0;
+				time_t ts = 0;
+				GetAFileInfo(target, &size, NULL, &ts);
+				m_LocalChangesEntries.insert(path, AESEntry(m_LatestRevision, entry->GetHash(), kSynced, size, false, ts));
+				m_RemoteChangesEntries.erase(path);
+			}
+		}
+		else if (method == VersionControlPlugin::kMerged)
+		{
+			GetConnection().Log().Debug() << "ResolveAssets, kMerged noy yet supported" << Endl;
+		}
+
+	}
+	
+	return GetAssetsStatus(assetList);
 }
 
 bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList)
@@ -998,11 +1163,24 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 		
 		if (localEntry == NULL)
 		{
-			state = (remoteEntry == NULL) ? ((snapShotEntry == NULL) ? kLocal : kSynced) : kOutOfSync;
+			int state = kLocal;
+			if (remoteEntry != NULL)
+			{
+				state = kOutOfSync;
+			}
+			else if (snapShotEntry != NULL && snapShotEntry->GetRevisionID() == snapShotEntry->GetRevisionID())
+			{
+				state = kSynced;
+			}
+
 		}
 		else if (localEntry != NULL)
 		{
-			state = (remoteEntry == NULL) ? localEntry->GetState() : kConflicted;
+			int state = localEntry->GetState();
+			if (remoteEntry != NULL && localEntry->GetRevisionID() != remoteEntry->GetRevisionID())
+			{
+				state = kConflicted;
+			}
 		}
 		
 		state = updateStateForMeta(path, state);
@@ -1017,7 +1195,7 @@ int AESPlugin::CheckConflictCallBack(void *data, const std::string& key, AESEntr
 {
 	AESPlugin* plugin = (AESPlugin*)data;
 	AESEntry* remoteEntry = plugin->m_RemoteChangesEntries.search(key);
-	if (remoteEntry != NULL)
+	if (remoteEntry != NULL && entry->GetRevisionID() != remoteEntry->GetRevisionID())
 	{
 		entry->SetState(kConflicted);
 	}
@@ -1038,7 +1216,7 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     if (revision == kNewListRevision)
     {
 		m_LocalChangesEntries.iterate(CheckConflictCallBack, (void*)this);
-		EntriesToAssets(m_LocalChangesEntries, assetList);
+		EntriesToAssets(m_LocalChangesEntries, assetList, kSynced);
     }
     return true;
 }
@@ -1212,7 +1390,8 @@ int AESPlugin::FetchAllCallBack(void *data, const std::string& key, AESEntry *en
 		::DeleteRecursive(localPath);
 		
 		// Download file
-		if (!plugin->m_AES->Download(entry, key, plugin->GetProjectPath()))
+		string target = plugin->GetProjectPath() + "/" + key;
+		if (!plugin->m_AES->Download(entry, key, target))
 		{
 			plugin->GetConnection().Log().Debug() << "Cannot download " << key << ", reason:" << plugin->m_AES->GetLastMessage() << Endl;
 			return 1;
@@ -1276,14 +1455,14 @@ bool AESPlugin::FetchAllAssets()
         return false;
     }
 	
+	m_LocalChangesEntries.clear();
+	m_SnapShotEntries.clear();
+	m_SnapShotRevision.clear();
+
 	if (!RefreshRemote())
 	{
 		GetConnection().Log().Debug() << "Cannot refresh remote" << Endl;
 	}
-	
-	m_LocalChangesEntries.clear();
-	m_SnapShotEntries.clear();
-	m_SnapShotRevision.clear();
 
 	GetConnection().Log().Debug() << "FetchAllAssets apply remote changes (RevisionID: " << m_LatestRevision << ")" << Endl;
 	
@@ -1301,8 +1480,22 @@ bool AESPlugin::FetchAllAssets()
 bool AESPlugin::ReconcileAssets()
 {
     GetConnection().Log().Debug() << "ReconcileAssets " << Endl;
-	GetConnection().Log().Debug() << "### NOT IMPLEMENTED ###" << Endl;
-	return false;
+    if (!CheckConnectedAndLogged())
+    {
+        return false;
+    }
+	
+	if (!RefreshRemote())
+	{
+		GetConnection().Log().Debug() << "Cannot refresh remote" << Endl;
+	}
+	
+	if (!RefreshLocal())
+	{
+		GetConnection().Log().Debug() << "Cannot refresh local" << Endl;
+	}
+	
+	return true;
 }
 
 bool AESPlugin::PerformCustomCommand(const string& command)
@@ -1328,12 +1521,13 @@ typedef struct
 {
 	AESPlugin* plugin;
 	VersionedAssetList* list;
+	int ignoredState;
 } EntryToAssetCallBackData;
 
 int AESPlugin::EntryToAssetCallBack(void *data, const std::string& key, AESEntry *entry)
 {
 	EntryToAssetCallBackData* d = (EntryToAssetCallBackData*)data;
-	if (!entry->IsDir())
+	if (!entry->IsDir() && (d->ignoredState == kNone || (entry->GetState() & d->ignoredState) != d->ignoredState))
 	{
 		string localPath = d->plugin->GetProjectPath() + "/" + key;
 		d->list->push_back(VersionedAsset(localPath, entry->GetState()));
@@ -1341,10 +1535,11 @@ int AESPlugin::EntryToAssetCallBack(void *data, const std::string& key, AESEntry
 	return 0;
 }
 
-void AESPlugin::EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList)
+void AESPlugin::EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList, int ignoredState)
 {
 	EntryToAssetCallBackData data;
 	data.plugin = this;
 	data.list = &assetList;
+	data.ignoredState = ignoredState;
 	entries.iterate(EntryToAssetCallBack, (void*)&data);
 }

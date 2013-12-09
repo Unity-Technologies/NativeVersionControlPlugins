@@ -20,7 +20,7 @@ enum State
 	kLockedRemote = 1 << 12,
 	kUpdating = 1 << 13,
 	kReadOnly = 1 << 14,
-	kMetaFile = 1 << 15,
+	kMetaFile = 1 << 15
 };
 
 class VersionedAsset

@@ -307,8 +307,7 @@ bool AESClient::Download(AESEntry* entry, const string& path, const string& targ
 {
 	ClearLastMessage();
 	string remotePath = m_Server + m_Path + "/" + entry->GetRevisionID() + "/" + path;
-	string localPath = target + "/" + path;
-	string parentPath = localPath.substr(0, localPath.find_last_of('/'));
+	string parentPath = target.substr(0, target.find_last_of('/'));
 	if (!EnsureDirectory(parentPath))
 	{
 		SetLastMessage("Unable to create directory " + parentPath);
@@ -320,21 +319,21 @@ bool AESClient::Download(AESEntry* entry, const string& path, const string& targ
 		return true;
 	}
 	
-	if (PathExists(localPath))
+	if (PathExists(target))
 	{
-		DeleteRecursive(localPath);
+		DeleteRecursive(target);
 	}
 	
-	if (!m_CURL.Download(remotePath, localPath))
+	if (!m_CURL.Download(remotePath, target))
 	{
-		SetLastMessage("Unable to download " + remotePath + " to " + localPath + " (" + m_CURL.GetErrorMessage()+ ")");
+		SetLastMessage("Unable to download " + remotePath + " to " + target + " (" + m_CURL.GetErrorMessage()+ ")");
 		return false;
 	}
 	else
 	{
-		if (!TouchAFile(localPath, entry->GetTimeStamp()))
+		if (!TouchAFile(target, entry->GetTimeStamp()))
 		{
-			SetLastMessage("Unable to set modification date of " + localPath);
+			SetLastMessage("Unable to set modification date of " + target);
 			return false;
 		}
 	}

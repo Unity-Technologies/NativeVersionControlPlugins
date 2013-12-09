@@ -74,7 +74,7 @@ private:
 	void RemoveAssetsFromChanges(const VersionedAssetList& assetList, int state = kNone);
     
 	static int EntryToAssetCallBack(void *data, const std::string& key, AESEntry *entry);
-	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList);
+	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList, int ignoredState = kNone);
 	
 	bool FetchAllAssets();
 	bool ReconcileAssets();

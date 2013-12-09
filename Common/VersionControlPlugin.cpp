@@ -173,7 +173,11 @@ int VersionControlPlugin::Run()
                 GetConnection().Log().Debug() << "Shutdown" << Endl;
 				Disconnect();
 				GetConnection().EndResponse();
+#ifdef NDEGUG
 				return 0; // ok
+#else
+				continue;
+#endif
 			}
 			
             if (!Dispatch(cmd, args))
