@@ -7,6 +7,7 @@
 #include "RadixTree.h"
 
 #include <string>
+#include <time.h>
 
 // AES main task
 class AESPlugin: public VersionControlPlugin
@@ -78,7 +79,11 @@ private:
 	
 	bool FetchAllAssets();
 	bool ReconcileAssets();
-
+	
+	void ResetTimer();
+	time_t GetTimerSoFar();
+    bool TimerTick();
+    
     bool m_IsConnected;
 	        
     VersionControlPluginCfgFields m_Fields;
@@ -94,6 +99,11 @@ private:
 	TreeOfEntries m_RemoteChangesEntries;
 
 	ChangelistRevisions m_Revisions;
+	
+	time_t m_LastRemoteChangesRefrehTime;
+	
+	time_t m_Timer;
+	time_t m_LastTimer;
 
     AESClient* m_AES;
 
@@ -106,6 +116,7 @@ private:
 	static int ApplyLocalChangesCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int CheckConflictCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int FetchAllCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int PrintAllCallBack(void *data, const std::string& key, AESEntry *entry);
 };
 
 

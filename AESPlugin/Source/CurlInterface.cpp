@@ -5,46 +5,21 @@
 
 using namespace std;
 
-const char* USERAGENT = "UnityPlayer/AESPlugin (http://unity3d.com)";
+const char* USERAGENT = "Unity/AESPlugin (http://unity3d.com)";
 
-/*
-static string DecodeEscapedURL(const string& url)
+static string EscapedURL(const string& url)
 {
-	string urlCopy;
-	urlCopy.reserve(url.length());
-	
-	for (unsigned int i = 0u; i < url.length(); i++)
-	{
-		if (url[i] != '%')
-		{
-			urlCopy += url[i];
-		}
-		else if (i + 2 < url.length())
-		{
-			char hex[2] = { url[i + 1], url[i + 2] };
-			urlCopy += static_cast<char>(strtol(hex, NULL, 16));
-			i += 2;
-		}
-	}
-	
-	return urlCopy;
-}
-*/
-
-static string EncodeEscapedURL(const string& url)
-{
+	string ignoredChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~-_./:?=&@";
 	string urlCopy;
 	urlCopy.reserve(url.length());
 	
 	char hex[3];
 	memset(hex, 0x00, sizeof(hex));
-	for (unsigned int i = 0u; i < url.length(); i++)
+	for (unsigned int i = 0; i < url.length(); i++)
 	{
-		if ((url[i] >= '0' && url[i] <= '9') || (url[i] >= 'A' && url[i] <= 'Z') || (url[i] >= 'a' && url[i] <= 'z') ||
-			url[i] == '~' || url[i] == '-' || url[i] == '_' || url[i] == '.' || url[i] == '/' ||
-			url[i] == ':' || url[i] == '?' || url[i] == '=' || url[i] == '&')
+		if (ignoredChars.find((char)url[i]) != string::npos)
 		{
-			urlCopy += url[i];
+			urlCopy += (char)url[i];
 		}
 		else
 		{
@@ -258,7 +233,9 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
         return false;
     }
     
-	string encodedUrl = EncodeEscapedURL(url);
+	string encodedUrl = EscapedURL(url);
+	SetErrorMessage(encodedUrl.c_str());
+	
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, m_CurlErrorBuffer));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_URL, encodedUrl.c_str()));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_USERAGENT, USERAGENT));

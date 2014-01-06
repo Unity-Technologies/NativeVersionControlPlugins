@@ -105,7 +105,7 @@ bool AESClient::GetRevision(const string& revisionID, TreeOfEntries& entries)
 		SetLastMessage("GetRevision failed");
         return false;
     }
-    
+	
     bool res = false;
     JSONValue* json = JSON::Parse(response.c_str());
     if (json != NULL)
