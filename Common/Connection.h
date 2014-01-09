@@ -29,6 +29,9 @@ class Connection
 {
 public:
 	Connection(const std::string& logPath);
+#ifndef NDEBUG
+	Connection(const std::string& logPath, const std::string& inputPath, const std::string& outputPath);
+#endif
 	~Connection();
 
 	// Connect to Unity
@@ -95,6 +98,12 @@ public:
 
 	Connection& operator<<(const std::vector<std::string>& v);
 
+
+#ifndef NDEBUG
+    inline std::ofstream& GetInput() { return m_Input; }
+    inline std::ofstream& GetOutput() { return m_Output; }
+#endif
+
 private:
 
 	Connection& WritePrefix(const char* prefix, MessageArea ma, LogWriter& log);
@@ -102,7 +111,11 @@ private:
 	template <typename T>
 	Connection& Write(const T& v, LogWriter& log)
 	{
+#ifndef NDEBUG
 		log << v;
+        m_Output << v;
+        m_Output.flush();
+#endif
 		m_Pipe->Write(v);
 		return *this;
 	}
@@ -134,6 +147,11 @@ private:
 
 	LogStream m_Log;
 	Pipe* m_Pipe;
+
+#ifndef NDEBUG
+    std::ofstream m_Input;
+    std::ofstream m_Output;
+#endif
 };
 
 

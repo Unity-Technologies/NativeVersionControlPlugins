@@ -44,6 +44,11 @@ static const char* gVersionControlPluginTraits[] =
     0
 };
 
+#ifndef NDEBUG
+static const char* kInputExtFileName = "Input.txt";
+static const char* kOutputExtFileName = "Output.txt";
+#endif
+
 Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field)
 {
     p.DataLine("vc" + field.GetPrefix() + field.GetName());
@@ -115,8 +120,12 @@ VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem item)
 int VersionControlPlugin::Run()
 {
 	VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
+#ifndef NDEBUG
+    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName(), "./" + GetPluginName() + kInputExtFileName, "./" + GetPluginName() + kOutputExtFileName);
+#else
     m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName());
-    
+#endif
+
     i = m_arguments.find("-v");
     if (i != m_arguments.end())
     {
@@ -159,7 +168,10 @@ int VersionControlPlugin::Run()
 		for ( ;; )
 		{
             GetConnection().Log().Debug() << "ReadCommand" << Endl;
-            
+#ifndef NDEBUG
+            GetConnection().GetInput() << "### ReadCommand ###" << endl;
+#endif
+
 			cmd = GetConnection().ReadCommand(args);
             
 			if (cmd == UCOM_Invalid)
@@ -961,6 +973,14 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
 bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& args)
 {
     GetConnection().Log().Debug() << "Dispatch " << UnityCommandToString(command) << Endl;
+#ifndef NDEBUG
+    GetConnection().GetOutput() << "### DispatchCommand ";
+    for (CommandArgs::const_iterator i = args.begin() ; i != args.end() ; i++)
+    {
+        GetConnection().GetOutput() << (*i) << " ";
+    }
+    GetConnection().GetOutput() << "###" << endl;
+#endif
     switch (command) {
         case UCOM_Add:
             return HandleAdd();

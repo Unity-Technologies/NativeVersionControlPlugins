@@ -12,7 +12,16 @@ const char* COMMAND_PREFIX = "c";
 const char* PROGRESS_PREFIX = "p";
 
 Connection::Connection(const string& logPath) 
-	: m_Log(logPath), m_Pipe(NULL) { }
+	: m_Log(logPath), m_Pipe(NULL)
+{
+}
+
+#ifndef NDEBUG
+Connection::Connection(const string& logPath, const string& inputPath, const string& outputPath)
+    : m_Log(logPath), m_Pipe(NULL), m_Input(inputPath), m_Output(outputPath)
+{
+}
+#endif
 
 Connection::~Connection()
 {
@@ -123,7 +132,7 @@ Connection& Connection::EndResponse()
 	return *this;
 }
 
-Connection& Connection::Command(const std::string& cmd, MessageArea ma)
+Connection& Connection::Command(const string& cmd, MessageArea ma)
 {
 	WritePrefixLine(COMMAND_PREFIX, ma, cmd, m_Log.Debug());
 	return *this;
@@ -132,11 +141,11 @@ Connection& Connection::Command(const std::string& cmd, MessageArea ma)
 
 static void DecodeString(string& target)
 {
-	std::string::size_type len = target.length();
-	std::string::size_type n1 = 0;
-	std::string::size_type n2 = 0;
+	string::size_type len = target.length();
+	string::size_type n1 = 0;
+	string::size_type n2 = 0;
 	
-	while ( n1 < len && (n2 = target.find('\\', n1)) != std::string::npos &&
+	while ( n1 < len && (n2 = target.find('\\', n1)) != string::npos &&
 			n2+1 < len )
 	{
 		char c = target[n2+1];
@@ -154,7 +163,7 @@ static void DecodeString(string& target)
 	}
 }
 
-std::string& Connection::ReadLine(std::string& target)
+string& Connection::ReadLine(string& target)
 {
 	m_Pipe->ReadLine(target);
 	DecodeString(target);
@@ -162,28 +171,36 @@ std::string& Connection::ReadLine(std::string& target)
 		m_Log.Debug() << "UNITY > [password data stripped]" << Endl;
 	else
 		m_Log.Debug() << "UNITY > " << target << Endl;
+#ifndef NDEBUG
+    m_Input << target << endl;
+    m_Input.flush();
+#endif
 	return target;
 }
 
-std::string& Connection::PeekLine(std::string& target)
+string& Connection::PeekLine(string& target)
 {
 	m_Pipe->PeekLine(target);
 	DecodeString(target);
+#ifndef NDEBUG
+    m_Input << target << endl;
+    m_Input.flush();
+#endif
 	return target;
 }
 
 // Params: -1 means not specified
-Connection& Connection::Progress(int pct, time_t timeSoFar, const std::string& message, MessageArea ma)
+Connection& Connection::Progress(int pct, time_t timeSoFar, const string& message, MessageArea ma)
 {
 	string msg = IntToString(pct) + " " + IntToString((int)timeSoFar) + " " + message;
 	WritePrefixLine(PROGRESS_PREFIX, ma, msg, m_Log.Notice());
 	return *this;
 }
 
-Connection& Connection::operator<<(const std::vector<std::string>& v)
+Connection& Connection::operator<<(const vector<string>& v)
 {
 	DataLine(v.size());
-	for (std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); ++i)
+	for (vector<string>::const_iterator i = v.begin(); i != v.end(); ++i)
 		WriteLine(*i, m_Log.Debug());
 	return *this;
 }
@@ -198,24 +215,32 @@ Connection& Connection::WritePrefix(const char* prefix, MessageArea ma, LogWrite
 
 
 // Encode newlines in strings
-	Connection& Connection::Write(const std::string& v, LogWriter& log)
+Connection& Connection::Write(const string& v, LogWriter& log)
 {
-	std::string tmp = Replace(v, "\\", "\\\\");
+	string tmp = Replace(v, "\\", "\\\\");
 	tmp = Replace(tmp, "\n", "\\n");
 	log << tmp;
 	m_Pipe->Write(tmp);
+#ifndef NDEBUG
+    m_Output << v;
+    m_Output.flush();
+#endif
 	return *this;
 }
 
 // Encode newlines in strings
 Connection& Connection::Write(const char* v, LogWriter& log)
 {
-	return Write(std::string(v), log);
+	return Write(string(v), log);
 }
 
 Connection& Connection::WriteEndl(LogWriter& log)
 {
 	log << "\n";
+#ifndef NDEBUG
+    m_Output << "\n";
+    m_Output.flush();
+#endif
 	m_Pipe->Write("\n");
 	return *this;
 }
