@@ -1,27 +1,31 @@
 c:pluginConfig pluginTraits
 --
-o1:3
+o1:2
 o8:requiresNetwork
-o8:enablesCheckout
 o8:enablesGetLatestOnChangeSetSubset
-o1:3
-o1:aesURL
+o1:4
+o1:vcAssetExchangeServerURL
 o8:URL
 o8:The AES URL
+o1:localhost:3030
+o1:1
+o1:vcAssetExchangeServerRepository
+o8:Repository
+o8:The AES Repository
 o1:
 o1:1
-o1:aesUsername
+o1:vcAssetExchangeServerUsername
 o8:Username
 o8:The AES username
-o1:
+o1:none
 o1:1
-o1:aesPassword
+o1:vcAssetExchangeServerPassword
 o8:Password
 o8:The AES password
-o1:
+o1:none
 o1:2
 o1:overlays
-o1:9
+o1:11
 o1:1
 o1:default
 o1:4
@@ -40,5 +44,14 @@ o1:512
 o1:default
 o1:1024
 o1:default
+o1:2048
+o1:default
+o1:4096
+o1:default
+o1:customCommands
+o1:1
+o1:fetchAll
+o1:Fetch latest revision
+o1:global
 r1:end of response
 --

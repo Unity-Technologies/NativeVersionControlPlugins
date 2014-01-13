@@ -2,15 +2,23 @@ c:pluginConfig projectPath <absroot>
 --
 r1:end of response
 --
-c:pluginConfig aesURL http://localhost:3030
+c:pluginConfig vcAssetExchangeServerRepository TestAES
 --
 r1:end of response
 --
-c:pluginConfig aesUsername manu
+c:pluginConfig vcAssetExchangeServerURL localhost:3030
 --
 r1:end of response
 --
-c:pluginConfig aesPassword rtxg62rt
+c:pluginConfig vcAssetExchangeServerUsername manu
+--
+r1:end of response
+--
+c:pluginConfig vcAssetExchangeServerPassword manu
+--
+r1:end of response
+--
+c:pluginConfig vcSharedLogLevel verbose
 --
 r1:end of response
 --

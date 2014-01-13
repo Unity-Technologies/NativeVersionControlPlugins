@@ -1,8 +1,0 @@
-<include ./Test/AES/02_Configure.txt>
-c:getLatest
-1
-./Test/tmp/testclient/
-0
-r1:end of response
---
-

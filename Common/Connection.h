@@ -30,7 +30,7 @@ class Connection
 public:
 	Connection(const std::string& logPath);
 #ifndef NDEBUG
-	Connection(const std::string& logPath, const std::string& inputPath, const std::string& outputPath);
+	Connection(const std::string& logPath, const std::string& recordPath);
 #endif
 	~Connection();
 
@@ -100,8 +100,7 @@ public:
 
 
 #ifndef NDEBUG
-    inline std::ofstream& GetInput() { return m_Input; }
-    inline std::ofstream& GetOutput() { return m_Output; }
+    inline std::ofstream& GetRecordStream() { return m_Record; }
 #endif
 
 private:
@@ -113,8 +112,8 @@ private:
 	{
 #ifndef NDEBUG
 		log << v;
-        m_Output << v;
-        m_Output.flush();
+        m_Record << v;
+        m_Record.flush();
 #endif
 		m_Pipe->Write(v);
 		return *this;
@@ -149,8 +148,7 @@ private:
 	Pipe* m_Pipe;
 
 #ifndef NDEBUG
-    std::ofstream m_Input;
-    std::ofstream m_Output;
+    std::ofstream m_Record;
 #endif
 };
 

@@ -45,8 +45,7 @@ static const char* gVersionControlPluginTraits[] =
 };
 
 #ifndef NDEBUG
-static const char* kInputExtFileName = "Input.txt";
-static const char* kOutputExtFileName = "Output.txt";
+static const char* kRecordExtFileName = "Record.txt";
 #endif
 
 Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field)
@@ -121,7 +120,7 @@ int VersionControlPlugin::Run()
 {
 	VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
 #ifndef NDEBUG
-    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName(), "./" + GetPluginName() + kInputExtFileName, "./" + GetPluginName() + kOutputExtFileName);
+    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName(), "./" + GetPluginName() + kRecordExtFileName);
 #else
     m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName());
 #endif
@@ -169,7 +168,7 @@ int VersionControlPlugin::Run()
 		{
             GetConnection().Log().Debug() << "ReadCommand" << Endl;
 #ifndef NDEBUG
-            GetConnection().GetInput() << "### ReadCommand ###" << endl;
+            GetConnection().GetRecordStream() << "### ReadCommand ###" << endl;
 #endif
 
 			cmd = GetConnection().ReadCommand(args);
@@ -185,7 +184,7 @@ int VersionControlPlugin::Run()
                 GetConnection().Log().Debug() << "Shutdown" << Endl;
 				Disconnect();
 				GetConnection().EndResponse();
-#ifdef NDEGUG
+#ifdef NDEBUG
 				return 0; // ok
 #else
 				continue;
@@ -974,12 +973,12 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
 {
     GetConnection().Log().Debug() << "Dispatch " << UnityCommandToString(command) << Endl;
 #ifndef NDEBUG
-    GetConnection().GetOutput() << "### DispatchCommand ";
+    GetConnection().GetRecordStream() << "### DispatchCommand ";
     for (CommandArgs::const_iterator i = args.begin() ; i != args.end() ; i++)
     {
-        GetConnection().GetOutput() << (*i) << " ";
+        GetConnection().GetRecordStream() << (*i) << " ";
     }
-    GetConnection().GetOutput() << "###" << endl;
+    GetConnection().GetRecordStream() << "###" << endl;
 #endif
     switch (command) {
         case UCOM_Add:

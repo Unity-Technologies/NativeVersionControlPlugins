@@ -17,8 +17,8 @@ Connection::Connection(const string& logPath)
 }
 
 #ifndef NDEBUG
-Connection::Connection(const string& logPath, const string& inputPath, const string& outputPath)
-    : m_Log(logPath), m_Pipe(NULL), m_Input(inputPath), m_Output(outputPath)
+Connection::Connection(const string& logPath, const string& recordPath)
+    : m_Log(logPath), m_Pipe(NULL), m_Record(recordPath)
 {
 }
 #endif
@@ -172,8 +172,8 @@ string& Connection::ReadLine(string& target)
 	else
 		m_Log.Debug() << "UNITY > " << target << Endl;
 #ifndef NDEBUG
-    m_Input << target << endl;
-    m_Input.flush();
+    m_Record << target << endl;
+    m_Record.flush();
 #endif
 	return target;
 }
@@ -183,8 +183,8 @@ string& Connection::PeekLine(string& target)
 	m_Pipe->PeekLine(target);
 	DecodeString(target);
 #ifndef NDEBUG
-    m_Input << target << endl;
-    m_Input.flush();
+    m_Record << target << endl;
+    m_Record.flush();
 #endif
 	return target;
 }
@@ -222,8 +222,8 @@ Connection& Connection::Write(const string& v, LogWriter& log)
 	log << tmp;
 	m_Pipe->Write(tmp);
 #ifndef NDEBUG
-    m_Output << v;
-    m_Output.flush();
+    m_Record << v;
+    m_Record.flush();
 #endif
 	return *this;
 }
@@ -238,8 +238,8 @@ Connection& Connection::WriteEndl(LogWriter& log)
 {
 	log << "\n";
 #ifndef NDEBUG
-    m_Output << "\n";
-    m_Output.flush();
+    m_Record << "\n";
+    m_Record.flush();
 #endif
 	m_Pipe->Write("\n");
 	return *this;

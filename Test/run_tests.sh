@@ -2,8 +2,9 @@
 
 SERVEREXEC=$1
 PLUGINEXEC=$2
-VERBOSE=$3
-TESTS=${*:4}
+ROOT=$3
+VERBOSE=$4
+TESTS=${*:5}
 PLUGINNAME=`basename $PLUGINEXEC`
 BASELINEDIR=Test/NewBaseline/$PLUGINNAME
 
@@ -22,11 +23,11 @@ run_tests()
 		NAME=`basename $i` ;
 		NEWBASELINE=$BASELINEDIR/$NAME ;
 		if [ "$VERBOSE" == "newbaseline" ] ; then
-			$SERVEREXEC $PLUGINEXEC "$i" $VERBOSE > "$NEWBASELINE" ;
+			$SERVEREXEC $PLUGINEXEC "$i" $VERBOSE $ROOT > "$NEWBASELINE" ;
 			echo "diff -Naur $i $NEWBASELINE" ;
 			diff -Naur "$i" "$NEWBASELINE" ;
 		else
-			$SERVEREXEC $PLUGINEXEC "$i" $VERBOSE;
+			$SERVEREXEC $PLUGINEXEC "$i" $VERBOSE $ROOT;
 		fi
 
 		if [ "$?" == "0" ] ; then
