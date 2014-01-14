@@ -3,10 +3,9 @@ use warnings;
 use Getopt::Long;
 use File::Path;
 use Cwd;
+my ($target, $test, $option, $pluginexec, $testserverexec, $clientroot, $exec, $args);
 
-my ($target, $option, $pid, @files);
-
-GetOptions("target=s"=>\$target);
+GetOptions("target=s"=>\$target, "test=s"=>\$test);
 
 if (not $target)
 {
@@ -20,8 +19,7 @@ if (not $target)
 	}
 }
 
-$ENV{'TARGET'} = $target;
-if ($ENV{'TARGET'} eq "win32")
+if ($target eq "win32")
 {
 	BEGIN 
 	{
@@ -30,7 +28,7 @@ if ($ENV{'TARGET'} eq "win32")
 	}
 }
 
-sub IntegrationTests
+sub IntegrationTests()
 {
 	$option = $_[0];
 
@@ -39,31 +37,43 @@ sub IntegrationTests
 	print "Running AES Integration Tests\n";
 	mkdir "TestAES";
 
-	$pid = SetupServer();
+	print "Starting AES server...\n";
+	my $pid = SetupServer();
+	
 	sleep(2);
 	RunTests($option);
+
+	sleep(2);
+	print "Stopping AES server...\n";
 	TeardownServer($pid);
+
+	sleep(2);
 }
 
 sub RunTests()
 {
 	$option = $_[0];
 
-	@files = <[0-9]*.txt>;
-
-	$total = 0;
-	$success = 0;
-
-	$pluginexec = $ENV{'PLUGIN'};
-	$testserver = $ENV{'TESTSERVER'};
-	$clientroot = $ENV{'CLIENTROOT'};
+	my @files;
 	
+	if ($test)
+	{
+		@files = ( $test );
+	}
+	else
+	{
+		@files = <[0-9]*.txt>;
+	}
+	
+	my $total = 0;
+	my $success = 0;
+
 	mkdir $clientroot;
 
 	foreach $i (@files) 
 	{
-		$output = `$testserver $pluginexec $i $option '$clientroot'`;
-		$res = $? >> 8;
+		my $output = `$testserverexec $pluginexec $i $option '$clientroot'`;
+		my $res = $? >> 8;
 		print $output;
 		if ($res == 0)
 		{
@@ -94,7 +104,7 @@ sub RunTests()
 
 sub SetupServer
 {
-	return SpawnSubProcess($ENV{'AESSERVER'}, '');
+	return SpawnSubProcess($exec, $args);
 }
 
 sub TeardownServer
@@ -102,12 +112,12 @@ sub TeardownServer
 	($handle) = @_;
 	print "Tearing down server $handle\n";
 	KillSubProcess($handle);
-	waitpid($handle,0);
+	waitpid($handle, 0);
 }
 
 sub ErrorReport
 {
-	if ($ENV{'TARGET'} eq "win32")
+	if ($target)
 	{
 		print Win32::FormatMessage( Win32::GetLastError() );
 	}
@@ -117,7 +127,7 @@ sub SpawnSubProcess
 {
 	($exec_, $args_) = @_;
 
-	if ($ENV{'TARGET'} eq "win32")
+	if ($target eq "win32")
 	{
 		$ProcessObj = 1;
 		Win32::Process::Create($ProcessObj,
@@ -138,29 +148,31 @@ sub SpawnSubProcess
 		}
 
 		# child
-		close STDOUT;
+		#close STDOUT;
 		close STDERR;
-		exec("$exec_ $args_") or die "Cannot exec $exec_";
+		exec("$exec_ $args_") or die "Cannot execute $exec_";
 	}
 }
 
 sub KillSubProcess
 {
 	($handle) = @_;
-	if ($ENV{'TARGET'} eq "win32")
+	
+	if ($target eq "win32")
 	{
 		$handle->Kill(0);
 	}
 	else
 	{
-		kill "KILL", $handle;
+		kill 'KILL', $handle;
 	}
 }
 
 # Make it general
-$ENV{'AESSERVER'} = "/Volumes/Work/Unity/unityAssetServices/start.sh";
-$ENV{'PLUGIN'} = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/AssetExchangeServerPlugin";
-$ENV{'TESTSERVER'} = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/TestServer";
-$ENV{'CLIENTROOT'} = "TestAES";
+$exec = "/Volumes/Work/Unity/unityAssetServices/start.sh";
+$args = "";
+$pluginexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/AssetExchangeServerPlugin";
+$testserverexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/TestServer";
+$clientroot = "TestAES";
 
 IntegrationTests();
