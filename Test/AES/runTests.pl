@@ -39,15 +39,15 @@ sub IntegrationTests()
 
 	print "Starting AES server...\n";
 	my $pid = SetupServer();
-	
 	sleep(2);
+	
 	RunTests($option);
 
-	sleep(2);
 	print "Stopping AES server...\n";
 	TeardownServer($pid);
-
 	sleep(2);
+	
+	CleanUp();
 }
 
 sub RunTests()
@@ -93,9 +93,19 @@ sub RunTests()
 	}
 	print "Done: $success of $total tests passed.\n";
 	
+}
+
+sub CleanUp
+{
 	rmdir $clientroot;
 	
 	@files = <AssetExchangeServer*>;
+	foreach $i (@files) 
+	{
+		unlink $i;
+	}
+	
+	@files = <storage/logs/*.log>;
 	foreach $i (@files) 
 	{
 		unlink $i;
@@ -149,7 +159,7 @@ sub SpawnSubProcess
 
 		# child
 		#close STDOUT;
-		close STDERR;
+		#close STDERR;
 		exec("$exec_ $args_") or die "Cannot execute $exec_";
 	}
 }
@@ -169,8 +179,8 @@ sub KillSubProcess
 }
 
 # Make it general
-$exec = "/Volumes/Work/Unity/unityAssetServices/start.sh";
-$args = "";
+$exec = "node";
+$args = "/Volumes/Work/Unity/unityAssetServices/app/aes-serve/main.js --config /Volumes/Work/Unity/unityVCPlugins/Test/AES/unityServer.json";
 $pluginexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/AssetExchangeServerPlugin";
 $testserverexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/TestServer";
 $clientroot = "TestAES";

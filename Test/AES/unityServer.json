@@ -1,0 +1,19 @@
+{
+    "general":{
+        "localStorage": "./storage",
+        "logFilter": ["error"],
+        "auth":"none",
+        "hostname":"localhost"
+    }, 
+    "http" : {
+	    "port": 3030
+    },
+    "https" : {
+        "port": -1
+    },
+    "cache": {
+        "enable-tcp":       false,
+        "server-directory": "./storage/cache",
+        "port":             8125
+    }
+}
