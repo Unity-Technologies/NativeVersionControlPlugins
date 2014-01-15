@@ -51,7 +51,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 		return;
 	}
 
-	//[BHVR/AC]: compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files 
+	// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
 	string cmd = "fstat ";
 	cmd += " " + paths;
 

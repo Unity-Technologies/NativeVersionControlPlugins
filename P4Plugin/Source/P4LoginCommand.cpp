@@ -55,7 +55,7 @@ public:
 			if (m_LoggedIn)
 				return;
 
-			//[BHVR/AC]: compatibility with old perforce servers. Sometime authenticate using P4PASSWORD could incur on additional login messages, like:
+			// Compatibility with old perforce servers. Sometime authenticate using P4PASSWORD could incur on additional login messages, like:
 			// User <username> was authenticated by password not ticket.
 			// This message is acceptable.
 			// ref: https://kb.perforce.com/UserTasks/ConfiguringP4/AvoidingTheP..rdInWindows

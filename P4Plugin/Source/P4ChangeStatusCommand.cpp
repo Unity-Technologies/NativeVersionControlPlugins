@@ -21,7 +21,7 @@ public:
 		ChangelistRevision cl;
 		Conn() >> cl;
 		
-		//[BHVR/AC]: compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files 
+		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
 		string cmd = "fstat -W -e ";
 		cmd += (cl == kDefaultListRevision ? string("default") : cl) + " //...";
 		
