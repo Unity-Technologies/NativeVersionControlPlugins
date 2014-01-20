@@ -2,9 +2,11 @@
 #define _JSON_H_
 
 // Incompatibilities
+#ifdef WIN32
 #undef isnan
 static inline bool isnan(double x) { return x != x; }
 static inline bool isinf(double x) { return !isnan(x) && isnan(x - x); }
+#endif
 
 #include <vector>
 #include <string>
