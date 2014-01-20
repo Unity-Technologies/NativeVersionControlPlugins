@@ -10,11 +10,14 @@
 #include <vector>
 #include <algorithm>
 
+#if defined(_WIN32)
+#define START_CLOCK()
+#define ELAPSED_CLOCK(x)
+#else
 #include <mach/vm_statistics.h>
 #include <mach/mach_types.h>
 #include <mach/mach_init.h>
 #include <mach/mach_host.h>
-
 
 #ifdef NDEBUG
 #define START_CLOCK()
@@ -22,6 +25,7 @@
 #else
 #define START_CLOCK() clock_t timer = clock();
 #define ELAPSED_CLOCK(x) timer = clock() - timer; GetConnection().Log().Debug() << x << " tooks " << (int)((double)timer / (double)(CLOCKS_PER_SEC) * 1000.0) << " ms" << Endl;
+#endif
 #endif
 
 using namespace std;

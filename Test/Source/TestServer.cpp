@@ -7,6 +7,7 @@
 #include <exception>
 #include <stdlib.h>
 #include <time.h>
+#include <algorithm>
 
 using namespace std;
 

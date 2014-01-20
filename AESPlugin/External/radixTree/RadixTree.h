@@ -42,8 +42,8 @@
 #define NODE48  3
 #define NODE256 4
 
-#define MAX_PREFIX_LEN	2048
-#define MAX_PATH		4096
+#define RADIX_MAX_PREFIX_LEN	2048
+#define RADIX_MAX_PATH		4096
 
 typedef int(*art_callback)(void *data, const char *key, uint32_t key_len, void *value);
 
@@ -56,7 +56,7 @@ typedef struct
     uint8_t type;
     uint8_t num_children;
     uint32_t partial_len;
-    char partial[MAX_PREFIX_LEN];
+    char partial[RADIX_MAX_PREFIX_LEN];
 } art_node;
 
 /**
@@ -107,7 +107,7 @@ typedef struct
 {
     void*			value;
     uint32_t		key_len;
-    unsigned char	key[MAX_PATH];		// max path
+    unsigned char	key[RADIX_MAX_PATH];		// max path
 } art_leaf;
 
 /**

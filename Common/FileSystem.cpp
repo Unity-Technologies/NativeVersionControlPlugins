@@ -313,27 +313,183 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 
 bool ReadAFile(const string& path, string& data)
 {
-	return false;
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
+
+	HANDLE handle = CreateFileW( widePath, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (handle == NULL)
+		return false;
+
+	data.clear();
+	DWORD bytesRead;
+    char buffer[kDefaultBufferSize];
+	BOOL success = ReadFile (handle, buffer, kDefaultBufferSize, &bytesRead, 0);
+	while (success == TRUE && bytesRead > 0)
+	{
+		data += string(buffer, bytesRead);
+		success = ReadFile (handle, buffer, kDefaultBufferSize, &bytesRead, 0);
+	}
+
+	CloseHandle( handle );
+	return (success == TRUE);
 }
 
 bool WriteAFile(const string& path, const string& data)
 {
-	return false;
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
+	
+	HANDLE handle = CreateFileW( widePath, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	if (handle == NULL)
+		return false;
+
+	DWORD bytesWritten;
+	BOOL success = WriteFile (handle, data.c_str(), data.length(), &bytesWritten, 0);
+	CloseHandle( handle );
+
+	return (success == TRUE && bytesWritten == data.length());
 }
 
+static void FileSizeFromFindData(const WIN32_FIND_DATAW& findData, uint64_t& size)
+{
+    ULARGE_INTEGER fileSize;
+    fileSize.HighPart = findData.nFileSizeHigh;
+    fileSize.LowPart = findData.nFileSizeLow;
+    size = (uint64_t)fileSize.QuadPart;
+}
+
+static const ULONGLONG kSecondsFromFileTimeToTimet = 11644473600;
+
+static void TimeFromFileTime(const FILETIME& fileTime, time_t& time)
+{
+    ULARGE_INTEGER fTime;
+    fTime.HighPart = fileTime.dwHighDateTime;
+    fTime.LowPart = fileTime.dwLowDateTime;
+
+    time = fTime.QuadPart / 10000000 - kSecondsFromFileTimeToTimet;
+}
 bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data)
 {
-	return false;
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
+
+	// base path
+	wstring basePath = widePath;
+	if( basePath[basePath.size()-1] != L'\\' )
+		basePath += L'\\';
+
+	// search pattern: anything inside the directory
+	wstring searchPat = basePath + L'*';
+
+	// find the first file
+	WIN32_FIND_DATAW findData;
+	HANDLE hFind = ::FindFirstFileW( searchPat.c_str(), &findData );
+	if( hFind == INVALID_HANDLE_VALUE )
+		return false;
+
+	bool bSearch = true;
+	while( bSearch )
+	{
+		if( ::FindNextFileW( hFind, &findData ) )
+		{
+			if( wcscmp(findData.cFileName,L".")==0 || wcscmp(findData.cFileName,L"..")==0 )
+				continue;
+
+			wstring filePath = basePath + findData.cFileName;
+			string fullPath( filePath.begin(), filePath.end() );
+
+			bool isDir = ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
+			time_t ts = 0;
+			TimeFromFileTime(findData.ftLastWriteTime, ts);
+			if (ts == 0) TimeFromFileTime(findData.ftCreationTime, ts);
+			if (ts == 0) TimeFromFileTime(findData.ftLastAccessTime, ts);
+			
+			uint64_t fileSize = 0;
+			FileSizeFromFindData(findData, fileSize);
+
+			if (cb(data, fullPath, fileSize, isDir, (time_t)ts) != 0)
+				break;
+
+			if( recurse && isDir )
+			{
+				// we have found a directory, recurse
+				if (!ScanDirectory(fullPath, recurse, cb, data))
+					return false;
+			}
+		}
+		else
+		{
+			if( ::GetLastError() == ERROR_NO_MORE_FILES )
+			{
+				bSearch = false; // no more files there
+			}
+			else
+			{
+				// some error occurred
+				::FindClose( hFind );
+				return false;
+			}
+		}
+	}
+	::FindClose( hFind );
+	return true;
+}
+
+static void TimetToFileTime( time_t t, LPFILETIME pft )
+{
+    LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
+    pft->dwLowDateTime = (DWORD) ll;
+    pft->dwHighDateTime = ll >>32;
 }
 
 bool TouchAFile(const std::string& path, time_t ts)
 {
-	return false;
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
+
+	WIN32_FIND_DATAW findData;
+	HANDLE handle = FindFirstFileW(widePath, &findData);
+    if (handle == INVALID_HANDLE_VALUE)
+        return false;
+
+	FILETIME fileTime;
+	TimetToFileTime(ts, &fileTime);
+	BOOL res = SetFileTime(handle, NULL, NULL, &fileTime);
+    FindClose(handle);
+
+	return (res == TRUE);
 }
 
 bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, time_t* ts)
 {
-	return false;
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
+
+	WIN32_FIND_DATAW findData;
+    HANDLE handle = FindFirstFileW(widePath, &findData);
+    if (handle == INVALID_HANDLE_VALUE)
+        return false;
+
+	bool isDir = ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
+	if (isDirectory) *isDirectory = isDir;
+	if (size) 
+	{
+		uint64_t fileSize = 0;
+		FileSizeFromFindData(findData, fileSize);
+		*size = fileSize;
+	}
+	
+	if (ts) 
+	{
+		time_t fileTs = 0;
+		TimeFromFileTime(findData.ftLastWriteTime, fileTs);
+		if (ts == 0) TimeFromFileTime(findData.ftCreationTime, fileTs);
+		if (ts == 0) TimeFromFileTime(findData.ftLastAccessTime, fileTs);
+		*ts = fileTs;
+	}
+
+    FindClose(handle);
+    return true;
 }
 
 #else // MACOS
