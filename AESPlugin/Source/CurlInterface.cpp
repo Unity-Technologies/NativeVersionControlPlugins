@@ -169,11 +169,11 @@ bool CurlInterface::ApplyChanges(const string& url, map<string, string>* headers
 	for (map<string, string>::const_iterator i = addOrModyFiles.begin() ; i != addOrModyFiles.end() ; i++)
 	{
 		string file = i->first;
-		string name = "file." + to_string(pos);
+		string name = "file." + to_string((long double)pos);
 		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_FILE, file.c_str(), CURLFORM_END));
 		
 		string dest = i->second;
-		name = "path." + to_string(pos);
+		name = "path." + to_string((long double)pos);
 		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_COPYCONTENTS, dest.c_str(), CURLFORM_END));
 		
 		pos++;
@@ -183,7 +183,7 @@ bool CurlInterface::ApplyChanges(const string& url, map<string, string>* headers
 	for (vector<string>::const_iterator i = deleteFiles.begin() ; i != deleteFiles.end() ; i++)
 	{
 		string file = (*i);
-		string name = "delete." + to_string(pos);
+		string name = "delete." + to_string((long double)pos);
 		CHECKCURLFORM(curl_formadd(&m_Form, &last, CURLFORM_COPYNAME, name.c_str(), CURLFORM_COPYCONTENTS, file.c_str(), CURLFORM_END));
 		pos++;
 	}

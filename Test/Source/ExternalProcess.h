@@ -23,7 +23,10 @@ struct AutoHandle
 
 #include <string>
 #include <vector>
+#if defined(_WIN32)
+#else
 #include <unistd.h>
+#endif
 
 enum ExternalProcessState {
 	EPSTATE_NotRunning,

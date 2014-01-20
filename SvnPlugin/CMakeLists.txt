@@ -17,6 +17,27 @@ CM_TARGET_BEGIN(
 	
 	# Defines
 	# -----------------------------------------------
+	IF (APPLE)
+		CM_TARGET_ADD_DEFINES(
+		)
+	ENDIF (APPLE)
+
+	IF (WIN32)
+		CM_TARGET_ADD_DEFINES(
+			-D_CRT_SECURE_NO_WARNINGS
+			-D_CRT_SECURE_NODEPRECATE
+			-D_CRT_NONSTDC_NO_DEPRECATE
+			-D_SCL_SECURE_NO_DEPRECATE
+			-D_SECURE_SCL=0
+			-D_WINDOWS
+			-DWIN32
+		)
+	ENDIF (WIN32)
+
+	IF (UNIX AND NOT APPLE)
+		CM_TARGET_ADD_DEFINES(
+		)
+	ENDIF (UNIX AND NOT APPLE)
 	
 	# Sources
 	# -----------------------------------------------
