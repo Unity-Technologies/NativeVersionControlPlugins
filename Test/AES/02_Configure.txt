@@ -1,3 +1,5 @@
+<once ./00_ProtocolNegotiation.txt>
+<once ./01_Traits.txt>
 c:pluginConfig projectPath <absroot>
 --
 r1:end of response

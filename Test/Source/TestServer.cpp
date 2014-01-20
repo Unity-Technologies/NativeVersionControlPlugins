@@ -9,6 +9,17 @@
 
 using namespace std;
 
+const static string restartline = "<restartplugin>";
+const static string includeline = "<include ";
+const static string onceline = "<once ";
+const static string commanddelim = "--";
+const static string expectdelim = "--";
+const static string matchtoken = "re:";
+const static string regextoken = "==:";
+const static string exittoken = "<exit>";
+const static string ignoretoken = "<ignore>";
+const static string genfiletoken = "<genfile ";
+
 void printStatus(bool ok);
 int run(int argc, char* argv[]);
 
@@ -30,7 +41,7 @@ int main(int argc, char* argv[])
 #ifdef WIN32
 		CommandLineFreeArgs(argv);
 #endif
-		std::cerr << e.what() << endl;
+		cerr << e.what() << endl;
 		return 1;
 	}
 	catch (exception e)
@@ -38,7 +49,7 @@ int main(int argc, char* argv[])
 #ifdef WIN32
 		CommandLineFreeArgs(argv);
 #endif
-		std::cerr << e.what() << endl;
+		cerr << e.what() << endl;
 		return 1;
 	}
 	catch (...)
@@ -46,18 +57,19 @@ int main(int argc, char* argv[])
 #ifdef WIN32
 		CommandLineFreeArgs(argv);
 #endif
-		std::cerr << "Caught unhandled exception"  << endl;
+		cerr << "Caught unhandled exception"  << endl;
 		return 1;
 	}
 }
 
 static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent = "");
 
-bool verbose;
-bool newbaseline;
-bool noresults;
-string root;
-string absroot;
+static bool verbose;
+static bool newbaseline;
+static bool noresults;
+static string root;
+static string absroot;
+static vector<string> incfiles;
 
 static void ConvertSeparatorsFromWindows( string& pathName )
 {
@@ -69,10 +81,10 @@ static void ConvertSeparatorsFromWindows( string& pathName )
 static void UnescapeString(string& target)
 {
 	string::size_type len = target.length();
-	std::string::size_type n1 = 0;
-	std::string::size_type n2 = 0;
+	string::size_type n1 = 0;
+	string::size_type n2 = 0;
 
-	while ( n1 < len && (n2 = target.find('\\', n1)) != std::string::npos &&
+	while ( n1 < len && (n2 = target.find('\\', n1)) != string::npos &&
 		n2+1 < len )
 	{
 		char c = target[n2+1];
@@ -211,26 +223,13 @@ int run(int argc, char* argv[])
 static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent)
 {
 	if (!noresults)
-		cout << indent << "Testing " << scriptPath << " " << flush;
-
-	if (verbose)
-		cout << endl;
+		cout << indent << "Testing " << scriptPath << " " << endl << flush;
 
 	ifstream testscript(scriptPath.c_str());
 
 	const int BUFSIZE = 4096;
 	char buf[BUFSIZE];
 	buf[0] = 0x00;
-
-	const string restartline = "<restartplugin>";
-	const string includeline = "<include ";
-	const string commanddelim = "--";
-	const string expectdelim = "--";
-	const string matchtoken = "re:";
-	const string regextoken = "==:";
-	const string exittoken = "<exit>";
-	const string ignoretoken = "<ignore>";
-	const string genfiletoken = "<genfile ";
 
 	bool ok = true;
 	while (testscript.good())
@@ -244,7 +243,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			replaceRootTagWithPath(command);
 
 			if (verbose || newbaseline)
-				cout << command << endl;
+				cout << indent << command << endl;
 
 			if (command.find(commanddelim) == 0)
 				break; // done command lines
@@ -255,31 +254,39 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			if (command.find(restartline) == 0)
 			{
 				if (verbose)
-					cout << "Restarting plugin";
+					cout << indent << "Restarting plugin";
 				vector<string> arguments;
 				p = ExternalProcess(p.GetApplicationPath(), arguments);
 				p.Launch();
 				goto restart;
 			}
 
-			if (command.find(includeline) == 0)
+			if (command.find(includeline) == 0 || command.find(onceline) == 0)
 			{
-				string incfile = command.substr(9, command.length() - 1 - 9);
-				if (!newbaseline)
-					cout << endl;
+				bool once = command.find(onceline) == 0;
+				string incfile = once ? command.substr(6, command.length() - 1 - 6) : command.substr(9, command.length() - 1 - 9) ;
+				if (once && find(incfiles.begin(), incfiles.end(), incfile) != incfiles.end())
+				{
+					if (verbose)
+						cout << indent << "Already included " << incfile << endl;
+					continue;
+				}
+
 				bool orig_newbaseline = newbaseline;
 				newbaseline = false;
-				string subIndent = indent + "  ";
+				string subIndent = indent + "        ";
 				int res = runScript(p, incfile, subIndent);
 				newbaseline = orig_newbaseline;
 				if (res)
 				{
 					if (verbose)
-						cout << "Error in include script " << incfile << endl;					
+						cout << indent << "Error in include script " << incfile << endl;
 					return res;
 				}
-				if (!newbaseline)
-					cout << subIndent;
+
+				if (once)
+					incfiles.push_back(incfile);
+
 				continue;
 			}
 
@@ -310,7 +317,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			string expect(buf);
 
 			if (verbose || newbaseline)
-				cout << expect << endl;
+				cout << indent << expect << endl;
 
 			if (expect.find(expectdelim) == 0)
 				break; // done expect lines
@@ -348,21 +355,21 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				{
 					ok = false;
 					printStatus(ok);
-					cerr << "Output fail: expected '" << expect << "'" << endl;
-					cerr << "             got      '" << msg << "'" << endl;
+					cout << "Output fail: expected '" << expect << "'" << endl;
+					cout << "             got      '" << msg << "'" << endl << flush;
 
 					// Read as much as possible from plugin and stop
 					p.SetReadTimeout(0.3);
 					try 
 					{
-						cerr << "             reading as much as possible from plugin:" << endl;
-						cerr << msg << endl;
+						cout << "             reading as much as possible from plugin:" << endl;
+						cout << "             " << msg << endl;
 						do {
 							string l = p.ReadLine();
 							UnescapeString(msg);
 							replaceRootPathWithTag(l);
 							EscapeNewline(msg);
-							cerr << l << endl;
+							cout << "             " << l << endl;
 						} while (true);
 
 					} catch (...)

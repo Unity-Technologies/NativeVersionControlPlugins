@@ -3,6 +3,7 @@ use warnings;
 use Getopt::Long;
 use File::Path;
 use Cwd;
+
 my ($target, $test, $option, $pluginexec, $testserverexec, $clientroot, $exec, $args);
 
 GetOptions("target=s"=>\$target, "test=s"=>\$test);
@@ -180,7 +181,7 @@ sub KillSubProcess
 
 # Make it general
 $exec = "node";
-$args = "/Volumes/Work/Unity/unityAssetServices/app/aes-serve/main.js --config /Volumes/Work/Unity/unityVCPlugins/Test/AES/unityServer.json";
+$args = "/Volumes/Work/Unity/unityAssetServices/app/aes-serve/main.js --configFile /Volumes/Work/Unity/unityVCPlugins/Test/AES/unityServer.json";
 $pluginexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/AssetExchangeServerPlugin";
 $testserverexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/TestServer";
 $clientroot = "TestAES";

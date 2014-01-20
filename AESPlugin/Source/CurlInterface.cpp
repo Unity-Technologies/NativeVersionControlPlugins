@@ -234,7 +234,6 @@ bool CurlInterface::DoCurl(CurlMethod method, const string& url, string* data, m
     }
     
 	string encodedUrl = EscapedURL(url);
-	SetErrorMessage(encodedUrl.c_str());
 	
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, m_CurlErrorBuffer));
     CHECKCURL(curl_easy_setopt(handle, CURLOPT_URL, encodedUrl.c_str()));

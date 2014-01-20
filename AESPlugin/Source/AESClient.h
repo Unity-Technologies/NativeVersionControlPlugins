@@ -92,9 +92,7 @@ public:
     AESClient(const std::string& url);
     ~AESClient();
     
-    inline const std::string GetLastError() { return m_CURL.GetErrorMessage(); }
-    inline const std::string GetLastResponse() { return m_CURL.GetResponse(); }
-    inline const std::string GetLastMessage() { return m_lastMessage.empty() ? m_CURL.GetErrorMessage() : m_lastMessage; }
+    const std::string GetLastMessage();
     
     bool Ping();
     bool Login(const std::string& userName, const std::string& password);

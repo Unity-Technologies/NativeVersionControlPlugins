@@ -1,3 +1,4 @@
+<once ./00_ProtocolNegotiation.txt>
 c:pluginConfig pluginTraits
 --
 o1:2

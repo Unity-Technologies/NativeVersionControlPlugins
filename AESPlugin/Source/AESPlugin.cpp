@@ -522,9 +522,9 @@ int AESPlugin::Connect()
     m_AES = new AESClient(m_Fields[kAESURL].GetValue() + "/api/files/" + m_Fields[kAESRepository].GetValue());
     if (!m_AES->Ping())
     {
-        GetConnection().Log().Debug() << "Connect failed, reason: " << m_AES->GetLastError() << Endl;
+        GetConnection().Log().Debug() << "Connect failed, reason: " << m_AES->GetLastMessage() << Endl;
         SetOnline();
-        NotifyOffline(m_AES->GetLastError());
+        NotifyOffline(m_AES->GetLastMessage());
         return -1;
     }
     
@@ -598,8 +598,20 @@ bool AESPlugin::CheckConnectedAndLogged()
             StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot log to to VC system, reason: ") + m_AES->GetLastMessage()));
             return false;
         }
-    }
-    
+
+		StatusAdd(VCSStatusItem(VCSSEV_OK, "Successfully connected to AES"));
+	}
+	else
+	{
+		if (!m_AES->Ping())
+		{
+            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Connection lost, reason: ") + m_AES->GetLastMessage()));
+			SetOnline();
+			NotifyOffline("Connection lost");
+			return false;
+		}
+	}
+
     return true;
 }
 
@@ -683,7 +695,7 @@ bool AESPlugin::AddAssets(VersionedAssetList& assetList)
     
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -696,7 +708,7 @@ bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
     GetConnection().Log().Debug() << "RemoveAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -709,7 +721,7 @@ bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAss
     GetConnection().Log().Debug() << "MoveAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        toAssetList.clear();
+        //toAssetList.clear();
         return false;
     }
     
@@ -731,7 +743,7 @@ bool AESPlugin::LockAssets(VersionedAssetList& assetList)
     GetConnection().Log().Debug() << "LockAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -744,7 +756,7 @@ bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
     GetConnection().Log().Debug() << "UnlockAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -757,15 +769,15 @@ bool AESPlugin::DownloadAssets(const string& targetDir, const ChangelistRevision
     GetConnection().Log().Debug() << "DownloadAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
 
 	if (!EnsureDirectory(targetDir))
 	{
 		GetConnection().ErrorLine(string("Could not create temp dir: ") + targetDir);
-		assetList.clear();
-		return true;
+		//assetList.clear();
+		return false;
 	}
 	
 	VersionedAssetList result;
@@ -792,8 +804,8 @@ bool AESPlugin::DownloadAssets(const string& targetDir, const ChangelistRevision
 					if (!m_AES->Download(entry, path, target))
 					{
 						GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
-						assetList.clear();
-						return true;
+						//assetList.clear();
+						return false;
 					}
 					
 					result.push_back(VersionedAsset(target, kNone, m_SnapShotRevision));
@@ -814,8 +826,8 @@ bool AESPlugin::DownloadAssets(const string& targetDir, const ChangelistRevision
 					if (!CopyAFile(asset.GetPath(), target, true))
 					{
 						GetConnection().Log().Debug() << "Cannot copy " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
-						assetList.clear();
-						return true;
+						//assetList.clear();
+						return false;
 					}
 					
 					result.push_back(VersionedAsset(target, kNone, kLocalRevison));
@@ -834,8 +846,8 @@ bool AESPlugin::DownloadAssets(const string& targetDir, const ChangelistRevision
 					if (!m_AES->Download(entry, path, target))
 					{
 						GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
-						assetList.clear();
-						return true;
+						//assetList.clear();
+						return false;
 					}
 					
 					result.push_back(VersionedAsset(target, kNone, m_LatestRevision));
@@ -876,7 +888,7 @@ bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
     GetConnection().Log().Debug() << "RevertAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -972,7 +984,7 @@ bool AESPlugin::GetAssets(VersionedAssetList& assetList)
     GetConnection().Log().Debug() << "GetAssets" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
 	
@@ -990,7 +1002,7 @@ bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod metho
 
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -1024,8 +1036,8 @@ bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod metho
 				if (!m_AES->Download(entry, path, target))
 				{
 					GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
-					assetList.clear();
-					return true;
+					//assetList.clear();
+					return false;
 				}
 
 				uint64_t size = 0;
@@ -1050,7 +1062,7 @@ bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetLi
     GetConnection().Log().Debug() << "SetRevision" << Endl;
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
 	
@@ -1100,14 +1112,15 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
     
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
-	
+
 	if (m_RemoteChangesEntries.size() > 0)
 	{
-		GetConnection().WarnLine("Merges still pending. Resolve before submitting.", MASystem);
-		assetList.clear();
+		StatusAdd(VCSStatusItem(VCSSEV_Error, "Incoming changes still pending. Pull changes before submitting again."));
+		GetConnection().WarnLine(IntToString(m_RemoteChangesEntries.size()) + " incoming change(s) not applied.", MAGeneral);
+		//assetList.clear();
         return false;
 	}
     
@@ -1151,8 +1164,8 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 	int succeededEntries;
 	if (!m_AES->ApplyChanges(GetProjectPath(), entriesToAddOrMod, entriesToDelete, changeList.GetDescription(), &succeededEntries))
 	{
-		GetConnection().Log().Fatal() << "AES ApplyChanges failed, reason: " << m_AES->GetLastMessage() << " (" << m_AES->GetLastError() << ")" << Endl;
-		assetList.clear();
+		GetConnection().Log().Fatal() << "AES ApplyChanges failed, reason: " << m_AES->GetLastMessage() << Endl;
+		//assetList.clear();
         return false;
 	}
 	else
@@ -1160,7 +1173,7 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 		if (succeededEntries != (entriesToAddOrMod.size() + entriesToDelete.size()))
 		{
 			GetConnection().Log().Debug() << "AES ApplyChanges failed, not all files were submitted" << Endl;
-			assetList.clear();
+			//assetList.clear();
 			return false;
 		}
 		GetConnection().Log().Debug() << "AES ApplyChanges success" << Endl;
@@ -1169,7 +1182,7 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 	if (!m_AES->GetLatestRevision(m_SnapShotRevision))
 	{
 		GetConnection().Log().Fatal() << "AES ApplyChanges cannot get latest revision, reason: " << m_AES->GetLastMessage() << Endl;
-		assetList.clear();
+		//assetList.clear();
         return false;
 	}
 	
@@ -1198,7 +1211,7 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
     
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
 	
@@ -1276,7 +1289,7 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
     
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -1295,7 +1308,7 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
     
     if (!CheckConnectedAndLogged())
     {
-        assetList.clear();
+        //assetList.clear();
         return false;
     }
     
@@ -1439,7 +1452,7 @@ bool AESPlugin::RevertChanges(const ChangelistRevision& revision, VersionedAsset
 {
     GetConnection().Log().Debug() << "RevertChanges" << Endl;
 	GetConnection().Log().Debug() << "### NOT SUPPORTED ###" << Endl;
-    assetList.clear();
+    //assetList.clear();
     return false;
 }
 

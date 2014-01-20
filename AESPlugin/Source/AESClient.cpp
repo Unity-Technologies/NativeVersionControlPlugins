@@ -2,6 +2,7 @@
 #include "JSON.h"
 #include "VersionedAsset.h"
 #include "FileSystem.h"
+#include "Utility.h"
 #include <time.h>
 
 using namespace std;
@@ -15,17 +16,57 @@ AESClient::~AESClient()
 {
 }
 
+const string AESClient::GetLastMessage()
+{
+	if (!m_lastMessage.empty())
+		return m_lastMessage;
+
+	if (!m_CURL.GetErrorMessage().empty())
+		return m_CURL.GetErrorMessage();
+
+	return "HTTP Error " + IntToString(m_CURL.GetResponseCode());
+}
+
 bool AESClient::Ping()
 {
-    string response = "";
-    if (!m_CURL.Get(m_Server, NULL, response))
+	ClearLastMessage();
+	string response = "";
+    string url = m_Server + m_Path + "/current?info";
+
+    if (!m_CURL.GetJSON(url, response))
     {
-        m_UserName = "";
-        m_Password = "";
+		if (!response.empty())
+		{
+			SetLastMessage(response);
+		}
         return false;
     }
-    
-    return !response.empty();
+
+    bool res = false;
+    bool isValid = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL && json->IsObject())
+    {
+		const JSONObject& info = json->AsObject();
+		if (info.find("status") != info.end())
+		{
+			SetLastMessage(*(info.at("message")));
+			isValid = true;
+		}
+		else if (info.find("revisionID") != info.end())
+		{
+			isValid = true;
+			res = true;
+		}
+	}
+
+	if (!isValid)
+		SetLastMessage("Invalid JSON");
+
+    if (json)
+        delete json;
+	
+    return res;
 }
 
 bool AESClient::Login(const string& userName, const string& password)
@@ -347,7 +388,7 @@ typedef struct
 	map<string, string>* files;
 } ConvertEntryToMapOfFilesCallBackData;
 
-static int ConvertEntryToMapOfFilesCallBack(void *data, const std::string& key, AESEntry *entry)
+static int ConvertEntryToMapOfFilesCallBack(void *data, const string& key, AESEntry *entry)
 {
 	ConvertEntryToMapOfFilesCallBackData* d = (ConvertEntryToMapOfFilesCallBackData*)data;
 	if (!entry->IsDir())
@@ -356,13 +397,13 @@ static int ConvertEntryToMapOfFilesCallBack(void *data, const std::string& key, 
 		string path = basePath + "/" + key;
 		path.resize(path.find_last_of('/'));
 		
-		string dest = path.size() > 1 ? path.substr(basePath.size()+1) : "";
+		string dest = path.size() > basePath.size() ? path.substr(basePath.size()+1) : "";
 		d->files->insert(make_pair(basePath + "/" + key, dest));
 	}
 	return 0;
 }
 
-static int ConvertEntryToListOfFilesCallBack(void *data, const std::string& key, AESEntry *entry)
+static int ConvertEntryToListOfFilesCallBack(void *data, const string& key, AESEntry *entry)
 {
 	vector<string>* l = (vector<string>*)data;
 	if (!entry->IsDir())
