@@ -1,6 +1,7 @@
 #include "ExternalProcess.h"
 #include "Utility.h"
 #include "CommandLine.h"
+#include "FileSystem.h"
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -19,6 +20,7 @@ const static string regextoken = "==:";
 const static string exittoken = "<exit>";
 const static string ignoretoken = "<ignore>";
 const static string genfiletoken = "<genfile ";
+const static string assertfiletoken = "<assertfile ";
 
 void printStatus(bool ok);
 int run(int argc, char* argv[]);
@@ -296,9 +298,9 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				string genfile = command.substr(9, command.length() - 1 - 9);
 				{
 					fstream f(genfile.c_str(), ios_base::trunc | ios_base::out);
-					f << "Random: " << rand() 
-					  << "\nTime: " << time(0) 
-					  << "\nRandom: " << rand() << endl;
+					f << "Random: " << rand()
+					<< "\nTime: " << time(0)
+					<< "\nRandom: " << rand() << endl;
 					f.flush();
 				}
 
@@ -345,7 +347,23 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			{
 				continue; // ignore this line for match
 			}
-			else 
+			else if (expect.find(assertfiletoken) == 0)
+			{
+				string file = expect.substr(12, expect.length() - 1 - 12);
+				bool res = PathExists(file);
+				if (verbose)
+					cout << indent << "Check if file '" << file << "' exists" << endl;
+
+				if (!res)
+				{
+					ok = false;
+					printStatus(ok);
+					cout << "File '" << file << "' doesn't exists!" << endl;
+					return 1;
+				}
+				continue;
+			}
+			else
 			{
 				// Optional match token
 				if (expect.find(matchtoken) == 0)

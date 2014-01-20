@@ -120,7 +120,7 @@ int VersionControlPlugin::Run()
 {
 	VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
 #ifndef NDEBUG
-    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName(), "./" + GetPluginName() + kRecordExtFileName);
+    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName(), "./Temp/" + GetPluginName() + kRecordExtFileName);
 #else
     m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName());
 #endif

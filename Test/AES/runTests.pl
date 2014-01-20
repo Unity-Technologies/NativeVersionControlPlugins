@@ -4,9 +4,14 @@ use Getopt::Long;
 use File::Path;
 use Cwd;
 
-my ($target, $test, $option, $pluginexec, $testserverexec, $clientroot, $exec, $args);
+my ($target, $test, $option, $pluginexec, $testserverexec, $clientroot, $exec, $aes, $args);
 
-GetOptions("target=s"=>\$target, "test=s"=>\$test);
+GetOptions("target=s"=>\$target, "test=s"=>\$test, "aes=s"=>\$aes);
+
+if (not $aes)
+{
+	die "AES server path must be specify with -aes option\n";
+}
 
 if (not $target)
 {
@@ -180,10 +185,17 @@ sub KillSubProcess
 }
 
 # Make it general
+my $path = Cwd::cwd();
+
 $exec = "node";
-$args = "/Volumes/Work/Unity/unityAssetServices/app/aes-serve/main.js --configFile /Volumes/Work/Unity/unityVCPlugins/Test/AES/unityServer.json";
-$pluginexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/AssetExchangeServerPlugin";
-$testserverexec = "/Volumes/Work/Unity/unityVCPlugins/Build/Debug/TestServer";
+$args = "$aes/app/aes-serve/main.js --configFile $path/unityServer.json";
+$pluginexec = "$path/../../Build/Debug/AssetExchangeServerPlugin";
+$testserverexec = "$path/../../Build/Debug/TestServer";
 $clientroot = "TestAES";
+
+print "AES Integration Tests using:\n";
+print "- AES: $args\n";
+print "- Plugin: $pluginexec\n";
+print "- TestServer: $testserverexec\n";
 
 IntegrationTests();
