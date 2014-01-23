@@ -21,7 +21,7 @@ Connection::Connection(const string& logPath)
 Connection::Connection(const string& logPath, const string& recordPath)
     : m_Log(logPath), m_Pipe(NULL), m_Record(recordPath)
 {
-	EnsureDirectory(recordPath.substr(0, recordPath.find_last_of('/')));
+	EnsureDirectory(recordPath.substr(0, recordPath.find_last_of("/")));
 }
 #endif
 

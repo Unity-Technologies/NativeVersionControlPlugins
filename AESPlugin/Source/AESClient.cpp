@@ -603,7 +603,7 @@ bool AESClient::Download(AESEntry* entry, const string& path, const string& targ
 {
 	ClearLastMessage();
 	string remotePath = m_Server + m_Path + "/" + entry->GetRevisionID() + "/" + path;
-	string parentPath = target.substr(0, target.find_last_of('/'));
+	string parentPath = target.substr(0, target.find_last_of("/"));
 	if (!EnsureDirectory(parentPath))
 	{
 		SetLastMessage("Unable to create directory " + parentPath);
@@ -650,7 +650,7 @@ static int ConvertEntryToMapOfFilesCallBack(void *data, const string& key, AESEn
 	{
 		string basePath = string(d->basePath);
 		string path = basePath + "/" + key;
-		path.resize(path.find_last_of('/'));
+		path.resize(path.find_last_of("/"));
 		
 		string dest = path.size() > basePath.size() ? path.substr(basePath.size()+1) : "";
 		d->files->insert(make_pair(basePath + "/" + key, dest));

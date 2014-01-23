@@ -30,8 +30,8 @@
 
 using namespace std;
 
-static const char* kCacheFileName  = "/Library/aesSnapshot.json";
-static const char* kLogFileName = "./Library/aesPlugin.log";
+static const char* kCacheFileName  = "Library/aesSnapshot.json";
+static const char* kLogFileName = "Library/aesPlugin.log";
 static const char* kLatestRevison = "current";
 static const char* kLocalRevison = "local";
 static const char* kPluginName = "AssetExchangeServer";

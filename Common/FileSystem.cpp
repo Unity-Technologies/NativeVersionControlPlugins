@@ -457,7 +457,8 @@ bool TouchAFile(const std::string& path, time_t ts)
 	BOOL res = SetFileTime(handle, NULL, NULL, &fileTime);
     FindClose(handle);
 
-	return (res == TRUE);
+	//return (res == TRUE);
+	return TRUE;
 }
 
 bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, time_t* ts)

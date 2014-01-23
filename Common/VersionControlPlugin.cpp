@@ -76,19 +76,22 @@ VersionControlPlugin::VersionControlPlugin(const std::string& name, int argc, ch
 void VersionControlPlugin::InitializeArguments(int argc, char** argv)
 {
     vector<string> pathComp;
+	if (argc > 0) 
+	{
 #ifdef WIN32
-    Tokenize(pathComp, string(argv[0]), "\\");
+		Tokenize(pathComp, string(argv[0]), "\\");
 #else
-    Tokenize(pathComp, string(argv[0]), "/");
+		Tokenize(pathComp, string(argv[0]), "/");
 #endif
-    string tmp = (*pathComp.rbegin());
-    tmp = tmp.substr(0, tmp.find("Plugin"));
-    if (!tmp.empty())
-    {
-        m_PluginName = tmp;
-    }
+	    string tmp = (*pathComp.rbegin());
+			tmp = tmp.substr(0, tmp.find("Plugin"));
+		if (!tmp.empty())
+		{
+			m_PluginName = tmp;
+		}
+	}
     
-    for (int i = 1 ; i < argc ; )
+    for (int i = 0 ; i < argc ; )
     {
         if ((argv[i][0] == '-') && (i+1 < argc) && (argv[i+1][0] != '-')) {
             m_arguments[argv[i]] = argv[i+1];
