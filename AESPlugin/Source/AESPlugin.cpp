@@ -30,7 +30,7 @@
 
 using namespace std;
 
-static const char* kCacheFileName  = "Library/aesSnapshot.json";
+static const char* kCacheFileName  = "/Library/aesSnapshot.json";
 static const char* kLogFileName = "Library/aesPlugin.log";
 static const char* kLatestRevison = "current";
 static const char* kLocalRevison = "local";
@@ -652,6 +652,7 @@ void AESPlugin::AddAssetsToChanges(const VersionedAssetList& assetList, int stat
 		
 		GetConnection().Log().Debug() << "AddAssetsToChanges " << path << Endl;
 		state |= asset.GetState();
+		state &= ~kSynced;
 		
 		// Add or update local change
 		uint64_t size = 0;
@@ -737,9 +738,14 @@ bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAss
 bool AESPlugin::CheckoutAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "CheckoutAssets" << Endl;
-	GetConnection().Log().Debug() << "### NOT SUPPORTED ###" << Endl;
-    assetList.clear();
-    return false;
+    if (!CheckConnectedAndLogged())
+    {
+        //assetList.clear();
+        return false;
+    }
+    
+	AddAssetsToChanges(assetList, kCheckedOutLocal);
+    return GetAssetsStatus(assetList, false);
 }
 
 bool AESPlugin::LockAssets(VersionedAssetList& assetList)

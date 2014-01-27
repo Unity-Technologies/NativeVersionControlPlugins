@@ -29,6 +29,7 @@ static string ParentDirectory(const string& path)
 #include "windows.h"
 #include "shlwapi.h"
 #include <direct.h>
+#include <algorithm>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -46,6 +47,11 @@ static inline void ConvertSeparatorsToWindows( wchar_t* pathName )
 			*pathName = '\\';
 		++pathName;
 	}
+}
+
+static inline void ConvertSeparatorsToLinux(string& pathName )
+{
+	replace(pathName.begin(), pathName.end(), '\\', '/');
 }
 
 void ConvertUnityPathName( const char* utf8, wchar_t* outBuffer, int outBufferSize )
@@ -407,6 +413,7 @@ bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data
 			uint64_t fileSize = 0;
 			FileSizeFromFindData(findData, fileSize);
 
+			ConvertSeparatorsToLinux(fullPath);
 			if (cb(data, fullPath, fileSize, isDir, (time_t)ts) != 0)
 				break;
 
@@ -439,7 +446,7 @@ static void TimetToFileTime( time_t t, LPFILETIME pft )
 {
     LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
     pft->dwLowDateTime = (DWORD) ll;
-    pft->dwHighDateTime = ll >>32;
+    pft->dwHighDateTime = ll >> 32;
 }
 
 bool TouchAFile(const std::string& path, time_t ts)
@@ -447,15 +454,14 @@ bool TouchAFile(const std::string& path, time_t ts)
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
 
-	WIN32_FIND_DATAW findData;
-	HANDLE handle = FindFirstFileW(widePath, &findData);
+	HANDLE handle = CreateFileW(widePath, GENERIC_READ | FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (handle == INVALID_HANDLE_VALUE)
         return false;
 
 	FILETIME fileTime;
 	TimetToFileTime(ts, &fileTime);
 	BOOL res = SetFileTime(handle, NULL, NULL, &fileTime);
-    FindClose(handle);
+    CloseHandle(handle);
 
 	//return (res == TRUE);
 	return TRUE;
@@ -484,8 +490,8 @@ bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, ti
 	{
 		time_t fileTs = 0;
 		TimeFromFileTime(findData.ftLastWriteTime, fileTs);
-		if (ts == 0) TimeFromFileTime(findData.ftCreationTime, fileTs);
-		if (ts == 0) TimeFromFileTime(findData.ftLastAccessTime, fileTs);
+		if (fileTs == 0) TimeFromFileTime(findData.ftCreationTime, fileTs);
+		if (fileTs == 0) TimeFromFileTime(findData.ftLastAccessTime, fileTs);
 		*ts = fileTs;
 	}
 
