@@ -45,10 +45,11 @@ static bool RemoveLineWithPrefix(string& m, const string& prefix)
 
 static void CleanupErrorMessage(string& m)
 {
-	if (RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c")) ;
-	else if (ReplaceLineWithPrefix(m, 
-								   "Merges still pending -- use 'resolve' to merge files.",
-								   "Merges still pending. Please resolve and resubmit.")) ;
+	RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c") ||
+	ReplaceLineWithPrefix(m, 
+						  "Merges still pending -- use 'resolve' to merge files.",
+						  "Merges still pending. Please resolve and resubmit.")
+						  ;
 }
 
 VCSStatus errorToVCSStatus(Error& e)
@@ -238,11 +239,14 @@ int P4Task::Run()
 			if (cmd == UCOM_Invalid)
 				return 1; // error
 			else if (cmd == UCOM_Shutdown)
+			{
+				m_Connection->EndResponse(); // good manner shutdown
 				return 0; // ok 
+			}
 			else if (!Dispatch(cmd, args))
 				return 0; // ok
 		}
-	} 
+	}
 	catch (exception& e)
 	{
 		m_Connection->Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
@@ -542,7 +546,8 @@ bool P4Task::IsConnected()
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
 	
-	m_Connection->Log().Info() << command << Endl;
+	if (m_Connection->Log().GetLogLevel() != LOG_DEBUG && command != "login -s")
+		m_Connection->Log().Info() << command << Endl;
 	m_Connection->VerboseLine(command);
 
 	// Force connection if this hasn't been set-up already.

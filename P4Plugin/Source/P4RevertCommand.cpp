@@ -50,6 +50,17 @@ public:
 
 		IncludeFolders(assetList);
 
+		// Set readonly and local flags
+		for (VersionedAssetList::iterator i = m_Result.begin(); i != m_Result.end(); ++i)
+		{
+			if (PathExists(i->GetPath()))
+			{
+				i->AddState(kLocal);
+				if (IsReadOnly(i->GetPath()))
+					i->AddState(kReadOnly);
+			}
+		}
+
 		Conn() << m_Result;
 		m_Result.clear();
 		Conn() << GetStatus();
@@ -167,7 +178,9 @@ public:
 		if (revertAsDeleted)
 			a.AddState(kDeletedLocal);
 		else if (abandoned)
-			a.SetState(kLocal);
+		{
+			; // no op
+		}
 		else
 			a.AddState(kSynced);
 

@@ -20,7 +20,7 @@ std::string Trim(const std::string& str, char c = ' ');
 bool EndsWith(const std::string& str, const std::string& lookFor);
 bool StartsWith(const std::string& str, const std::string& lookFor);
 //bool IsReadOnly(const std::string& path);
-
+std::string Quote(const std::string& str);
 
 template <typename T> 
 std::string ToString(const T& v)

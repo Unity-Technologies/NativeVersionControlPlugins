@@ -53,6 +53,22 @@ void VersionedAsset::SetPath(std::string const& path)
 		AddState(kMetaFile);
 }
 
+const std::string& VersionedAsset::GetMovedPath() const 
+{
+	return m_MovedPath; 
+}
+
+void VersionedAsset::SetMovedPath(std::string const& path) 
+{ 
+	m_MovedPath = path;
+}
+
+// Swap current path and moved path
+void VersionedAsset::SwapMovedPaths()
+{
+	m_Path.swap(m_MovedPath);
+}
+
 const std::string& VersionedAsset::GetRevision() const
 {
 	return m_Revision;
@@ -76,7 +92,8 @@ void VersionedAsset::SetChangeListID(const std::string& c)
 void VersionedAsset::Reset() 
 { 
 	m_State = kNone; 
-	SetPath(""); 
+	SetPath("");
+	m_MovedPath.clear();
 	m_Revision.clear();
 }
 

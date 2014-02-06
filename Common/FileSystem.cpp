@@ -29,6 +29,8 @@ static string ParentDirectory(const string& path)
 #include "windows.h"
 #include "shlwapi.h"
 #include <direct.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 static inline void UTF8ToWide( const char* utf8, wchar_t* outBuffer, int outBufferSize )
 {
@@ -125,6 +127,21 @@ bool ChangeCWD(const std::string& path)
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	return _wchdir(widePath) != -1;	
+}
+
+size_t GetFileLength(const std::string& pathName)
+{
+	wchar_t widePath[kDefaultPathBufferSize];
+	ConvertUnityPathName(pathName.c_str(), widePath, kDefaultPathBufferSize);
+	WIN32_FILE_ATTRIBUTE_DATA attrs;
+	if (GetFileAttributesExW(widePath, GetFileExInfoStandard, &attrs) == 0)
+	{
+		throw std::runtime_error("Error getting file length attribute");
+	}
+
+	if (attrs.nFileSizeHigh)
+		return UINT_MAX;
+	return attrs.nFileSizeLow;
 }
 
 static bool RemoveReadOnlyW(LPCWSTR path)
@@ -401,6 +418,17 @@ bool PathExists(const std::string& path)
 bool ChangeCWD(const std::string& path)
 {
 	return chdir(path.c_str()) != -1;
+}
+
+size_t GetFileLength(const std::string& pathName)
+{
+	struct stat statbuffer;
+	if( stat(pathName.c_str(), &statbuffer) != 0 )
+	{
+		throw std::runtime_error("Error getting file length");
+	}
+	
+	return statbuffer.st_size;
 }
 
 static bool fcopy(FILE *f1, FILE *f2)

@@ -1,5 +1,6 @@
 #include "Connection.h"
 #include "Utility.h"
+#include "FileSystem.h"
 
 using namespace std;
 
@@ -11,8 +12,22 @@ const char* INFO_PREFIX = "i";
 const char* COMMAND_PREFIX = "c";
 const char* PROGRESS_PREFIX = "p";
 
+const size_t MAX_LOG_FILE_SIZE = 2000000; 
+
 Connection::Connection(const string& logPath) 
-	: m_Log(logPath), m_Pipe(NULL) { }
+	: m_Log(NULL), m_Pipe(NULL) 
+{ 
+	// Rotate log file if too large
+	if (PathExists(logPath) && GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
+	{
+		string prevPath(logPath);
+		prevPath += "-prev";
+		if (PathExists(prevPath))
+			DeleteRecursive(prevPath);
+		MoveAFile(logPath, prevPath);
+	}
+	m_Log = new LogStream(logPath);
+}
 
 Connection::~Connection()
 {
@@ -81,7 +96,7 @@ UnityCommand Connection::ReadCommand(CommandArgs& args)
 
 LogStream& Connection::Log()
 {
-	return m_Log;
+	return *m_Log;
 }
 
 bool Connection::IsConnected() const
@@ -98,6 +113,7 @@ Pipe& Connection::GetPipe()
 
 void Connection::Flush()
 {
+	m_Log->Flush();
 	m_Pipe->Flush();
 }
 
@@ -111,21 +127,21 @@ Connection& Connection::BeginList()
 Connection& Connection::EndList()
 {
 	// d is list delimiter
-	WriteLine("d1:end of list", m_Log.Debug());
+	WriteLine("d1:end of list", m_Log->Debug());
 	return *this;
 }
 
 Connection& Connection::EndResponse()
 {
-	WriteLine("r1:end of response", m_Log.Debug());
-	m_Log.Debug() << "\n--------------------------\n";
-	m_Log.Flush();
+	WriteLine("r1:end of response", m_Log->Debug());
+	m_Log->Debug() << "\n--------------------------\n";
+	m_Log->Flush();
 	return *this;
 }
 
 Connection& Connection::Command(const std::string& cmd, MessageArea ma)
 {
-	WritePrefixLine(COMMAND_PREFIX, ma, cmd, m_Log.Debug());
+	WritePrefixLine(COMMAND_PREFIX, ma, cmd, m_Log->Debug());
 	return *this;
 }
 
@@ -159,9 +175,9 @@ std::string& Connection::ReadLine(std::string& target)
 	m_Pipe->ReadLine(target);
 	DecodeString(target);
 	if (StartsWith(target, "c:pluginConfig vcPerforcePassword"))
-		m_Log.Debug() << "UNITY > [password data stripped]" << Endl;
+		m_Log->Debug() << "UNITY > [password data stripped]" << Endl;
 	else
-		m_Log.Debug() << "UNITY > " << target << Endl;
+		m_Log->Debug() << "UNITY > " << target << Endl;
 	return target;
 }
 
@@ -176,7 +192,7 @@ std::string& Connection::PeekLine(std::string& target)
 Connection& Connection::Progress(int pct, time_t timeSoFar, const std::string& message, MessageArea ma)
 {
 	string msg = IntToString(pct) + " " + IntToString((int)timeSoFar) + " " + message;
-	WritePrefixLine(PROGRESS_PREFIX, ma, msg, m_Log.Notice());
+	WritePrefixLine(PROGRESS_PREFIX, ma, msg, m_Log->Notice());
 	return *this;
 }
 
@@ -184,7 +200,7 @@ Connection& Connection::operator<<(const std::vector<std::string>& v)
 {
 	DataLine(v.size());
 	for (std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); ++i)
-		WriteLine(*i, m_Log.Debug());
+		WriteLine(*i, m_Log->Debug());
 	return *this;
 }
 
@@ -198,7 +214,7 @@ Connection& Connection::WritePrefix(const char* prefix, MessageArea ma, LogWrite
 
 
 // Encode newlines in strings
-	Connection& Connection::Write(const std::string& v, LogWriter& log)
+Connection& Connection::Write(const std::string& v, LogWriter& log)
 {
 	std::string tmp = Replace(v, "\\", "\\\\");
 	tmp = Replace(tmp, "\n", "\\n");

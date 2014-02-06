@@ -234,7 +234,8 @@ void P4Command::OutputBinary( const char *data, int length)
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
 {
-	Conn().Log().Info() << "level " << (int) level << ": " << data << Endl;
+	if (Conn().Log().GetLogLevel() != LOG_DEBUG)
+		Conn().Log().Info() << "level " << (int) level << ": " << data << Endl;
 	std::stringstream ss;
 	ss << data << " (level " << (int) level << ")";	
 	Conn().InfoLine(ss.str());
@@ -252,6 +253,19 @@ void P4Command::RunAndSendStatus(P4Task& task, const VersionedAssetList& assetLi
 	bool recursive = false;
 	c->RunAndSend(task, assetList, recursive);
 	Conn() << c->GetStatus();
+}
+
+void P4Command::RunAndGetStatus(P4Task& task, const VersionedAssetList& assetList, VersionedAssetList& result)
+{
+	P4StatusCommand* c = dynamic_cast<P4StatusCommand*>(LookupCommand("status"));
+	if (!c)
+	{
+		Conn().ErrorLine("Cannot locate status command");
+		return; // Returning this is just to keep things running.
+	}
+	
+	bool recursive = false;
+	c->Run(task, assetList, recursive, result);
 }
 
 const char * kDelim = "_XUDELIMX_"; // magic delimiter
@@ -285,16 +299,28 @@ public:
 			// Each path has a postfix of kDelim that we have added in order to tokenize the 
 			// result into the three paths. Perforce doesn't check if files exists it just
 			// shows the mappings and therefore this will work.
-
-			string::size_type i = msg.find(kDelim); // depotPath end
-			string::size_type j = msg.find(kDelim, i+1); // workspacePath end
-			j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
-			string::size_type k = msg.find(kDelim, j); // clientPath end
-			if (i != string::npos && i > 2 && k != string::npos)
+			// Additionally, if the info line starts with a '-' this is just informational and should be ignored.
+			if (msg[0] == '-')
 			{
+				// Just informational line
 				propergate = false;
-				P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
-				mappings.push_back(m);
+			}
+			else if (msg[0] != '/')
+			{
+				; // do propegate to log
+			}
+			else
+			{
+				string::size_type i = msg.find(kDelim); // depotPath end
+				string::size_type j = msg.find(kDelim, i+1); // workspacePath end
+				j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
+				string::size_type k = msg.find(kDelim, j); // clientPath end
+				if (i != string::npos && i > 2 && k != string::npos)
+				{
+					propergate = false;
+					P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
+					mappings.push_back(m);
+				}
 			}
 		}	
 

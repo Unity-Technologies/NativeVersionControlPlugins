@@ -24,11 +24,11 @@ c:status recurse
 0
 --
 o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile.txt" 
 v1:login -s
 v1:'login' not necessary, no password set for this user.
 o1:./<root>/testfile.txt
-o1:1
+o1:0
 v1:./<root>/testfile.txt - no such file(s).
 d1:end of list
 c32:online
