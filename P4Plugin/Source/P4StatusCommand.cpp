@@ -57,9 +57,10 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 		// Conn().ErrorLine("No paths to stat", MASystem);
 		return;
 	}
-	
 
-	string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
+	// Server >=2008: string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
+	// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
+	string cmd = "fstat ";
 	cmd += " " + paths;
 
 	// We're sending along an asset list with an unknown size.

@@ -32,7 +32,8 @@ public:
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetProjectPath(), '/'), '\\') + "/...";
-		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" \"") + rootPathWildcard + "\"";
+		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
+		const std::string cmd = string("fstat \"") + rootPathWildcard + "\"";
 		
 		Conn().BeginList();
 		
