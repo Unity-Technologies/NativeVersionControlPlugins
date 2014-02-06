@@ -1,5 +1,4 @@
-#ifndef CURLINTERFACE_H
-#define CURLINTERFACE_H
+#pragma once
 
 #include "RESTInterface.h"
 #include "TransferInterface.h"
@@ -57,5 +56,3 @@ private:
     
     FILE* m_File;
 };
-
-#endif // CURLINTERFACE_H

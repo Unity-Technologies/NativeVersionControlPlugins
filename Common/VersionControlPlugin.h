@@ -30,7 +30,9 @@ public:
     {
         kNoneField = 0,
         kRequiredField = 1,
-        kPasswordField = 2
+        kPasswordField = 2,
+		kToggleField = 4,
+		kHiddenField = 8
     };
 
     VersionControlPluginCfgField()
@@ -55,6 +57,17 @@ public:
         m_Value = m_DefaultValue;
     }
     
+    VersionControlPluginCfgField(const std::string& prefix, const std::string& name, const std::string& label, const std::string& description, bool defaultValue, FieldFlags flags)
+	{
+        m_Prefix = prefix;
+        m_Name = name;
+        m_Label = label;
+        m_Description = description;
+        m_DefaultValue = (defaultValue ? "true" : "false");
+        m_Flags = flags;
+        m_Value = m_DefaultValue;
+	}
+
     VersionControlPluginCfgField(const VersionControlPluginCfgField& other)
     {
         m_Prefix = other.GetPrefix();
@@ -210,7 +223,11 @@ protected:
     // Constructors
     VersionControlPlugin(const std::string& name, int argc, char** argv);
     VersionControlPlugin(const std::string& name, const char* args);
-    
+
+	// Arguments
+	const std::string GetArg(const std::string& name);
+	bool HasArg(const std::string& name);
+
     // Online/Offline
     inline bool IsOnline() const { return m_IsOnline; }
     inline void SetOnline() { m_IsOnline = true; }
@@ -573,12 +590,12 @@ protected:
 	/**
 	 * Perform custom command
      * Parameters:
-     *  - revision: IN specific revision.
-     *  - assetList: IN/OUT list of versioned asset.
+     *  - command: IN specific command.
+     *  - CommandArgs: IN command arguments.
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
 	 */
-	virtual bool PerformCustomCommand(const std::string& command) = 0;
+	virtual bool PerformCustomCommand(const std::string& command, const CommandArgs& args) = 0;
 
 private:
     void InitializeArguments(int argc, char** argv);
@@ -623,7 +640,7 @@ private:
     std::string m_PluginName;
 	std::string m_ProjectPath;
     VCSStatus m_Status;
-    VersionControlPluginMapOfArguments m_arguments;
+    VersionControlPluginMapOfArguments m_Arguments;
     
     bool m_IsOnline;
     Connection* m_Connection;

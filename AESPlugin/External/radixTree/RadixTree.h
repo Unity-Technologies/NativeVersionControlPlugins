@@ -29,13 +29,12 @@
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
+
 #include <stdint.h>
 #include <memory>
 #include <string>
 #include <vector>
-
-#ifndef ART_H
-#define ART_H
 
 #define NODE4   1
 #define NODE16  2
@@ -384,5 +383,3 @@ template <class T> std::vector<std::string> RadixTree<T>::keys(const std::string
 	delete[] k;
 	return res;
 }
-
-#endif

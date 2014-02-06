@@ -11,9 +11,7 @@ enum LogLevel
 	LOG_FATAL,  // errors and exceptions
 };
 
-
 class LogStream;
-
 
 // A convenient way of disabling certain log levels
 // in a returned object.
@@ -58,6 +56,7 @@ public:
 	void SetLogLevel(LogLevel l);
 	LogLevel GetLogLevel() const;
 
+	LogWriter& Trace();
 	LogWriter& Debug();
 	LogWriter& Info();
 	LogWriter& Notice();
@@ -72,7 +71,6 @@ private:
 	LogWriter m_OnWriter;  // write logs to file
 	LogWriter m_OffWriter; // throw away logs
 };
-
 
 template<typename T>
 LogStream& LogStream::Write(const T& v)

@@ -44,6 +44,8 @@ static const char* gVersionControlPluginTraits[] =
     0
 };
 
+static const string Empty = "";
+
 #ifndef NDEBUG
 static const char* kRecordExtFileName = "Record.txt";
 #endif
@@ -73,6 +75,20 @@ VersionControlPlugin::VersionControlPlugin(const std::string& name, int argc, ch
     InitializeArguments(argc, argv);
 }
 
+inline const string VersionControlPlugin::GetArg(const std::string& name)
+{
+	VersionControlPluginMapOfArguments::const_iterator i = m_Arguments.find(name);
+	if (i == m_Arguments.end())
+		return "";
+
+	return i->second;
+}
+
+inline bool VersionControlPlugin::HasArg(const std::string& name)
+{
+	return (m_Arguments.find(name) != m_Arguments.end());
+}
+
 void VersionControlPlugin::InitializeArguments(int argc, char** argv)
 {
     vector<string> pathComp;
@@ -94,12 +110,12 @@ void VersionControlPlugin::InitializeArguments(int argc, char** argv)
     for (int i = 0 ; i < argc ; )
     {
         if ((argv[i][0] == '-') && (i+1 < argc) && (argv[i+1][0] != '-')) {
-            m_arguments[argv[i]] = argv[i+1];
+            m_Arguments[argv[i]] = argv[i+1];
             i += 2;
             continue;
         }
         
-        m_arguments[argv[i++]] = "";
+        m_Arguments[argv[i++]] = "";
     }
 }
 
@@ -115,33 +131,38 @@ void VersionControlPlugin::ClearStatus()
 
 VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem item)
 {
+	if (item.severity == VCSSEV_Error)
+		GetConnection().Log().Fatal() << item.message << Endl;
+	else if (item.severity == VCSSEV_Warn)
+		GetConnection().Log().Notice() << item.message << Endl;
+	else if (item.severity == VCSSEV_Info)
+		GetConnection().Log().Info() << item.message << Endl;
+	else
+		GetConnection().Log().Debug() << item.message << Endl;
+
     m_Status.insert(item);
     return m_Status;
 }
 
 int VersionControlPlugin::Run()
 {
-	VersionControlPluginMapOfArguments::const_iterator i = m_arguments.find("-l");
 #ifndef NDEBUG
-    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName(), "./Temp/" + GetPluginName() + kRecordExtFileName);
+    m_Connection = new Connection(HasArg("-l") ? GetArg("-l") : GetLogFileName(), "./Temp/" + GetPluginName() + kRecordExtFileName);
 #else
-    m_Connection = new Connection((i != m_arguments.end()) ? i->second : GetLogFileName());
+    m_Connection = new Connection(HasArg("-l") ? GetArg("-l") : GetLogFileName());
 #endif
 
-    i = m_arguments.find("-v");
-    if (i != m_arguments.end())
+    if (HasArg("-v"))
     {
         GetConnection().Log().SetLogLevel(LOG_DEBUG);
     }
 	
-	i = m_arguments.find("-p");
-    if (i != m_arguments.end())
+    if (HasArg("-p"))
     {
-        SetProjectPath(i->second);
+        SetProjectPath(GetArg("-p"));
     }
 	
-	i = m_arguments.find("-t");
-    if (i != m_arguments.end())
+    if (HasArg("-t"))
     {
 		return Test();
     }
@@ -151,10 +172,9 @@ int VersionControlPlugin::Run()
 		UnityCommand cmd;
 		vector<string> args;
 		
-        i = m_arguments.find("-c");
-        if (i != m_arguments.end())
+        if (HasArg("-c"))
         {
-            if (Tokenize(args, i->second) == 0)
+            if (Tokenize(args, GetArg("-c")) == 0)
             {
                 return 1; // error
             }
@@ -236,7 +256,7 @@ void VersionControlPlugin::PostHandleCommand(bool wasOnline)
 
 bool VersionControlPlugin::HandleAdd()
 {
-    GetConnection().Log().Debug() << "HandleAdd" << Endl;
+    GetConnection().Log().Trace() << "HandleAdd" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -259,7 +279,7 @@ bool VersionControlPlugin::HandleAdd()
 
 bool VersionControlPlugin::HandleChangeDescription()
 {
-    GetConnection().Log().Debug() << "HandleChangeDescription" << Endl;
+    GetConnection().Log().Trace() << "HandleChangeDescription" << Endl;
 
     bool wasOnline = PreHandleCommand();
     
@@ -280,7 +300,7 @@ bool VersionControlPlugin::HandleChangeDescription()
 
 bool VersionControlPlugin::HandleChangeMove()
 {
-    GetConnection().Log().Debug() << "HandleChangeMove" << Endl;
+    GetConnection().Log().Trace() << "HandleChangeMove" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -304,7 +324,7 @@ bool VersionControlPlugin::HandleChangeMove()
 
 bool VersionControlPlugin::HandleChanges()
 {
-    GetConnection().Log().Debug() << "HandleChanges" << Endl;
+    GetConnection().Log().Trace() << "HandleChanges" << Endl;
 
     bool wasOnline = PreHandleCommand();
     
@@ -323,7 +343,7 @@ bool VersionControlPlugin::HandleChanges()
 
 bool VersionControlPlugin::HandleChangeStatus()
 {
-    GetConnection().Log().Debug() << "HandleChangeStatus" << Endl;
+    GetConnection().Log().Trace() << "HandleChangeStatus" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -345,7 +365,7 @@ bool VersionControlPlugin::HandleChangeStatus()
 
 bool VersionControlPlugin::HandleCheckout()
 {
-    GetConnection().Log().Debug() << "HandleCheckout " << Endl;
+    GetConnection().Log().Trace() << "HandleCheckout " << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -366,12 +386,13 @@ bool VersionControlPlugin::HandleCheckout()
 
 bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleConfig" << Endl;
+    GetConnection().Log().Trace() << "HandleConfig" << Endl;
     
     if (args.size() < 2)
     {
         string msg = "Plugin got invalid config setting :";
-        for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i) {
+        for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i)
+		{
             msg += " ";
             msg += *i;
         }
@@ -456,16 +477,16 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleCustomCommand" << Endl;
+    GetConnection().Log().Trace() << "HandleCustomCommand" << Endl;
     
     bool m_WasOnline = PreHandleCommand();
     
 	if (args.size() > 1)
 	{
 		string customCmd = args[1];
-		if (!PerformCustomCommand(customCmd))
+		if (!PerformCustomCommand(customCmd, args))
 		{
-			GetConnection().Log().Notice() << "Unbale to perform custom command " << customCmd << Endl;
+			GetConnection().Log().Notice() << "Unable to perform custom command " << customCmd << Endl;
 		}
 	}
 	
@@ -476,7 +497,7 @@ bool VersionControlPlugin::HandleCustomCommand(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleDelete()
 {
-    GetConnection().Log().Debug() << "HandleDelete" << Endl;
+    GetConnection().Log().Trace() << "HandleDelete" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -497,7 +518,7 @@ bool VersionControlPlugin::HandleDelete()
 
 bool VersionControlPlugin::HandleDeleteChanges()
 {
-    GetConnection().Log().Debug() << "HandleDeleteChanges" << Endl;
+    GetConnection().Log().Trace() << "HandleDeleteChanges" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -526,7 +547,7 @@ bool VersionControlPlugin::HandleDeleteChanges()
 
 bool VersionControlPlugin::HandleDownload()
 {
-    GetConnection().Log().Debug() << "HandleDownload" << Endl;
+    GetConnection().Log().Trace() << "HandleDownload" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -552,7 +573,7 @@ bool VersionControlPlugin::HandleDownload()
 
 bool VersionControlPlugin::HandleExit()
 {
-    GetConnection().Log().Debug() << "HandleExit" << Endl;
+    GetConnection().Log().Trace() << "HandleExit" << Endl;
     
     bool wasOnline = PreHandleCommand();
     // TODO: no protocol documentation found
@@ -563,7 +584,7 @@ bool VersionControlPlugin::HandleExit()
 
 bool VersionControlPlugin::HandleFileMode(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleFileMode" << Endl;
+    GetConnection().Log().Trace() << "HandleFileMode" << Endl;
     
     FileMode mode = kUnused;
     if (args.size() == 3)
@@ -601,7 +622,7 @@ bool VersionControlPlugin::HandleFileMode(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleGetlatest()
 {
-    GetConnection().Log().Debug() << "HandleGetlatest" << Endl;
+    GetConnection().Log().Trace() << "HandleGetlatest" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -622,7 +643,7 @@ bool VersionControlPlugin::HandleGetlatest()
 
 bool VersionControlPlugin::HandleIncoming()
 {
-    GetConnection().Log().Debug() << "HandleIncoming" << Endl;
+    GetConnection().Log().Trace() << "HandleIncoming" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -641,7 +662,7 @@ bool VersionControlPlugin::HandleIncoming()
 
 bool VersionControlPlugin::HandleIncomingChangeAssets()
 {
-    GetConnection().Log().Debug() << "HandleIncomingChangeAssets" << Endl;
+    GetConnection().Log().Trace() << "HandleIncomingChangeAssets" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -663,7 +684,7 @@ bool VersionControlPlugin::HandleIncomingChangeAssets()
 
 bool VersionControlPlugin::HandleLock()
 {
-    GetConnection().Log().Debug() << "HandleLock" << Endl;
+    GetConnection().Log().Trace() << "HandleLock" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -684,7 +705,7 @@ bool VersionControlPlugin::HandleLock()
 
 bool VersionControlPlugin::HandleLogin()
 {
-    GetConnection().Log().Debug() << "HandleLogin" << Endl;
+    GetConnection().Log().Trace() << "HandleLogin" << Endl;
     
     bool m_WasOnline = PreHandleCommand();
     if (Login())
@@ -697,7 +718,7 @@ bool VersionControlPlugin::HandleLogin()
 
 bool VersionControlPlugin::HandleMove(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleMove" << Endl;
+    GetConnection().Log().Trace() << "HandleMove" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -718,7 +739,7 @@ bool VersionControlPlugin::HandleMove(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleQueryConfigParameters()
 {
-    GetConnection().Log().Debug() << "HandleQueryConfigParameters" << Endl;
+    GetConnection().Log().Trace() << "HandleQueryConfigParameters" << Endl;
     
     VersionControlPluginCfgFields& fields = GetConfigFields();
     for (VersionControlPluginCfgFields::iterator i = fields.begin() ; i != fields.end() ; i++)
@@ -733,7 +754,7 @@ bool VersionControlPlugin::HandleQueryConfigParameters()
 
 bool VersionControlPlugin::HandleResolve(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleResolve" << Endl;
+    GetConnection().Log().Trace() << "HandleResolve" << Endl;
     
     ResolveMethod method = kMine;
     if (args.size() == 2)
@@ -771,7 +792,7 @@ bool VersionControlPlugin::HandleResolve(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleRevert()
 {
-    GetConnection().Log().Debug() << "HandleRevert" << Endl;
+    GetConnection().Log().Trace() << "HandleRevert" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -792,7 +813,7 @@ bool VersionControlPlugin::HandleRevert()
 
 bool VersionControlPlugin::HandleRevertChanges()
 {
-    GetConnection().Log().Debug() << "HandleRevertChanges" << Endl;
+    GetConnection().Log().Trace() << "HandleRevertChanges" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -814,7 +835,7 @@ bool VersionControlPlugin::HandleRevertChanges()
 
 bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleSubmit" << Endl;
+    GetConnection().Log().Trace() << "HandleSubmit" << Endl;
 	
 	bool saveOnly = false;
     if (args.size() == 2 && args[1] == "saveOnly")
@@ -844,7 +865,7 @@ bool VersionControlPlugin::HandleSubmit(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "HandleStatus" << Endl;
+    GetConnection().Log().Trace() << "HandleStatus" << Endl;
     
     bool recursive = false;
     if (args.size() == 2 && args[1] == "recursive")
@@ -871,7 +892,7 @@ bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
 
 bool VersionControlPlugin::HandleUnlock()
 {
-    GetConnection().Log().Debug() << "HandleUnlock" << Endl;
+    GetConnection().Log().Trace() << "HandleUnlock" << Endl;
     
     bool wasOnline = PreHandleCommand();
     
@@ -968,13 +989,13 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
         }
     }
     
-    GetConnection().Log().Info() << "Unable to set " << key << " to " << value << Endl;
-    return false;
+    GetConnection().Log().Info() << "Unknown config " << key << ", skip it" << Endl;
+    return true;
 }
 
 bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "Dispatch " << UnityCommandToString(command) << Endl;
+    GetConnection().Log().Trace() << "Dispatch " << UnityCommandToString(command) << Endl;
 #ifndef NDEBUG
     GetConnection().GetRecordStream() << "### DispatchCommand ";
     for (CommandArgs::const_iterator i = args.begin() ; i != args.end() ; i++)

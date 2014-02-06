@@ -1,5 +1,4 @@
-#ifndef RESTINTERFACE_H
-#define RESTINTERFACE_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -14,5 +13,3 @@ public:
 	virtual bool Post(const std::string& url, const std::string& postData, std::map<std::string, std::string>* headers, std::string& response) = 0;
 	virtual bool Get(const std::string& url, std::map<std::string, std::string>* headers, std::string& response) = 0;
 };
-
-#endif // RESTINTERFACE_H

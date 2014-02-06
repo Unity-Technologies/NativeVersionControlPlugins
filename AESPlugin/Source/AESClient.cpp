@@ -356,6 +356,58 @@ bool AESClient::Login(const string& userName, const string& password)
     return true;
 }
 
+bool AESClient::GetAvailableRepositories(vector<string>& repositories)
+{
+	ClearLastMessage();
+    repositories.clear();
+	string response = "";
+    string url = m_Server + m_Path + "/files?level=1";
+
+    if (!m_CURL.GetJSON(url, response))
+    {
+		SetLastMessage("GetAvailableRepositories failed for URL " + url);
+        return false;
+    }
+
+    bool res = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL)
+    {
+		if (json->IsObject())
+		{
+			const JSONObject& info = json->AsObject();
+			if (info.find("status") != info.end())
+			{
+				SetLastMessage(*(info.at("message")));
+				res = true;
+			}
+		}
+		else if (json->IsArray())
+		{
+			const JSONArray& children = json->AsArray();
+			for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)
+			{
+				const JSONObject& child = (*i)->AsObject();
+				string name = *(child.at("name"));
+				repositories.push_back(name);
+			}
+            res = true;
+        }
+    }
+
+	if (!res)
+	{
+		if (json)
+			SetLastMessage("GetAvailableRepositories Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
+		else
+			SetLastMessage("GetAvailableRepositories Not JSON: '" + response + "'");
+	}
+
+    if (json)
+        delete json;
+    return res;
+}
+
 void DirectoryToEntries(const string& path, const JSONArray& children, TreeOfEntries& entries)
 {
     for (vector<JSONValue*>::const_iterator i = children.begin() ; i != children.end() ; i++)

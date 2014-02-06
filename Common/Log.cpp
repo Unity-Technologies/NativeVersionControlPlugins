@@ -48,12 +48,21 @@ LogLevel LogStream::GetLogLevel() const
 	return m_LogLevel; 
 }
 
-LogWriter& LogStream::Debug() 
-{ 
-	return m_LogLevel <= LOG_DEBUG ? m_OnWriter : m_OffWriter; 
+LogWriter& LogStream::Trace()
+{
+#ifdef NDEBUG
+	return m_OffWriter;
+#else
+	return m_OnWriter;
+#endif
 }
 
-LogWriter& LogStream::Info() 
+LogWriter& LogStream::Debug()
+{
+	return m_LogLevel <= LOG_DEBUG ? m_OnWriter : m_OffWriter;
+}
+
+LogWriter& LogStream::Info()
 { 
 	return m_LogLevel <= LOG_INFO ? m_OnWriter : m_OffWriter; 
 }

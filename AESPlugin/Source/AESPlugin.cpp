@@ -49,6 +49,13 @@ string ToTime(time_t timeInSeconds)
     return string(buffer);
 }
 
+string ToTimeLong(time_t timeInSeconds)
+{
+    char buffer[80];
+    snprintf(buffer, sizeof(buffer), "%ld", (long)timeInSeconds);
+    return string(buffer);
+}
+
 int UpdateStateForMeta(const string& path, int state)
 {
 	if (path.length() > 5 && path.substr(path.length() - 5, 5) == kMetaExtension)
@@ -56,7 +63,7 @@ int UpdateStateForMeta(const string& path, int state)
 	return state;
 }
 
-enum AESFields { kAESURL, kAESRepository, kAESUserName, kAESPassword };
+enum AESFields { kAESURL, kAESPort, kAESRepository, kAESUserName, kAESPassword, kAESCreateToggle, kAESAvailableRepositories };
 
 AESPlugin::AESPlugin(int argc, char** argv) :
     VersionControlPlugin(kPluginName, argc, argv),
@@ -116,7 +123,7 @@ int AESPlugin::PrintAllCallBack(void *data, const string& key, AESEntry *entry)
 {
 	AESPlugin* plugin = (AESPlugin*)data;
 	string localPath = plugin->GetProjectPath() + "/" + key;
-	plugin->GetConnection().Log().Debug() << " - Found '" << key << "'" << Endl;
+	plugin->GetConnection().Log().Trace() << " - Found '" << key << "'" << Endl;
 	return 0;
 }
 
@@ -125,27 +132,17 @@ int AESPlugin::Test()
 {
 	GetConnection().Log().Debug() << "Test" << Endl;
 	
-	m_Fields[kAESURL].SetValue("localhost:3030");
-	m_Fields[kAESRepository].SetValue("TestAESFailure");
-	m_Fields[kAESUserName].SetValue("manu");
-	m_Fields[kAESPassword].SetValue("none");
+	m_Fields[kAESURL].SetValue("localhost");
+	m_Fields[kAESPort].SetValue("3030");
+	m_Fields[kAESRepository].SetValue("");
+	m_Fields[kAESUserName].SetValue("");
+	m_Fields[kAESPassword].SetValue("");
 	
 	if (Connect() != 0)
 	{
 		return -1;
 	}
-	
-	Login();
-	
-	GetConnection().Log().Debug() << "Local:" << Endl;
-	m_LocalChangesEntries.iterate(PrintAllCallBack, (void*)this);
-	
-	GetConnection().Log().Debug() << "Snapshot:" << Endl;
-	m_SnapShotEntries.iterate(PrintAllCallBack, (void*)this);
-	
-	GetConnection().Log().Debug() << "Remote:" << Endl;
-	m_RemoteChangesEntries.iterate(PrintAllCallBack, (void*)this);
-	
+		
 	Disconnect();
 	
 	return 0;
@@ -168,12 +165,15 @@ AESPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
 
 void AESPlugin::Initialize()
 {
-    m_Fields.reserve(4);
-    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "URL", "URL", "The AES URL", "localhost:3030", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.reserve(7);
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "URL", "URL", "The AES URL", "localhost", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Port", "Port", "The AES Port", "3030", VersionControlPluginCfgField::kRequiredField));
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Repository", "Repository", "The AES Repository", "", VersionControlPluginCfgField::kRequiredField));
-    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Username", "Username", "The AES username", "none", VersionControlPluginCfgField::kRequiredField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Username", "Username", "The AES username", "none", VersionControlPluginCfgField::kNoneField));
     m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Password", "Password", "The AES password", "none", VersionControlPluginCfgField::kPasswordField));
-    
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "Create", "Create Repository", "Create the AES repository if not exists", false, VersionControlPluginCfgField::kToggleField));
+    m_Fields.push_back(VersionControlPluginCfgField(GetPluginName(), "AvailableRepositories", "Available AES Repositories", "The available AES repositories", "", VersionControlPluginCfgField::kHiddenField));
+
     m_Versions.insert(kUnity43);
     
 	m_Overlays[kLocal] = "default";
@@ -265,7 +265,7 @@ bool AESPlugin::RefreshSnapShot()
 	{
 		if (!RestoreSnapShotFromFile(aesCache))
 		{
-			GetConnection().Log().Debug() << "Cannot refresh snapshot from AES cache file" << Endl;
+			StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot refresh snapshot from AES cache file"));
 			return false;
 		}
 	}
@@ -512,18 +512,55 @@ int AESPlugin::Connect()
         NotifyOffline("Missing value for URL");
         return -1;
 	}
-    
+
+	string port = m_Fields[kAESPort].GetValue();
+	if (port.empty())
+	{
+        GetConnection().Log().Debug() << "No value set for port" << Endl;
+        SetOnline();
+        NotifyOffline("Missing value for port");
+        return -1;
+	}
+
 	string repo = m_Fields[kAESRepository].GetValue();
 	if (repo.empty())
 	{
-        GetConnection().Log().Debug() << "No value set for repository" << Endl;
+        GetConnection().Log().Debug() << "No repository specified, returns all available repositories" << Endl;
+
+		if (m_AES != NULL)
+			delete m_AES;
+
+		vector<string> repositories;
+		m_AES = new AESClient(url + ":" + port + "/api");
+
+		if (!m_AES->GetAvailableRepositories(repositories))
+		{
+			GetConnection().Log().Debug() << "Connect failed, reason: " << m_AES->GetLastMessage() << Endl;
+			SetOnline();
+			NotifyOffline(m_AES->GetLastMessage());
+
+			delete m_AES;
+			return -1;
+		}
+
+		for (vector<string>::const_iterator i = repositories.begin() ; i != repositories.end() ; i++)
+		{
+			GetConnection().DataLine((*i), MARemote);
+		}
+
         SetOnline();
-        NotifyOffline("Missing value for repository");
-        return -1;
+        NotifyOffline("No repository specified");
+
+		delete m_AES;
+		m_AES = NULL;
+
+		return -1;
 	}
-    
-	
-    m_AES = new AESClient(m_Fields[kAESURL].GetValue() + "/api/files/" + m_Fields[kAESRepository].GetValue());
+
+	if (m_AES != NULL)
+		delete m_AES;
+
+    m_AES = new AESClient(url + ":" + port + "/api/files/" + repo);
     if (!m_AES->Ping())
     {
         GetConnection().Log().Debug() << "Connect failed, reason: " << m_AES->GetLastMessage() << Endl;
@@ -593,13 +630,13 @@ bool AESPlugin::CheckConnectedAndLogged()
     {
         if (Connect() != 0)
         {
-            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot connect to VC system, reason: ") + (m_AES ? m_AES->GetLastMessage() : "not connected to AES")));
+            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot connect to AES, reason: ") + (m_AES ? m_AES->GetLastMessage() : "not connected to AES")));
             return false;
         }
         
         if (Login() != 0)
         {
-            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot log to to VC system, reason: ") + m_AES->GetLastMessage()));
+            StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot log to to AES, reason: ") + m_AES->GetLastMessage()));
             return false;
         }
 
@@ -1050,10 +1087,6 @@ bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod metho
 					return false;
 				}
 
-				uint64_t size = 0;
-				time_t ts = 0;
-				GetAFileInfo(target, &size, NULL, &ts);
-				m_LocalChangesEntries.insert(path, AESEntry(m_LatestRevision, entry->GetHash(), kSynced, size, false, ts));
 				m_RemoteChangesEntries.erase(path);
 			}
 		}
@@ -1210,7 +1243,7 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 bool AESPlugin::SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode)
 {
     GetConnection().Log().Debug() << "SetAssetsFileMode" << Endl;
-	GetConnection().Log().Debug() << "### NOT SUPPORTED ###" << Endl;
+	GetConnection().Log().Trace() << "### NOT SUPPORTED ###" << Endl;
     assetList.clear();
     return false;
 }
@@ -1327,7 +1360,7 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 	ChangelistRevisions::const_iterator i = find(m_Revisions.begin(), m_Revisions.end(), revision);
 	if (i == m_Revisions.end())
 	{
-		GetConnection().Log().Debug() << "Cannot find revision " << revision << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot find revision ") + revision));
 		return false;
 	}
 	
@@ -1343,6 +1376,10 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 		{
 			EntriesToAssets(entries, assetList);
 		}
+		else
+		{
+			StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
+		}
 	}
 	else
 	{
@@ -1353,7 +1390,7 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 		}
 		else
 		{
-			GetConnection().Log().Debug() << "Compare revision failed, reason: " << m_AES->GetLastMessage() << Endl;
+			StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
 		}
 	}
 
@@ -1411,7 +1448,9 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
 				string comment = rev.GetComment();
 				comment.append(" by ");
 				comment.append(rev.GetComitterEmail());
-				
+				comment.append(" on ");
+				comment.append(ToTimeLong(rev.GetTimeStamp()));
+
 				item.SetCommitter(rev.GetComitterName());
 				item.SetDescription(comment);
 				item.SetRevision(rev.GetRevisionID());
@@ -1425,7 +1464,7 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
     }
 	else
 	{
-		GetConnection().Log().Debug() << "GetAssetsIncomingChanges failed, reason: " << m_AES->GetLastMessage() << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
 	}
 
     return true;
@@ -1454,14 +1493,14 @@ bool AESPlugin::UpdateRevision(const ChangelistRevision& revision, string& descr
 bool AESPlugin::DeleteRevision(const ChangelistRevision& revision)
 {
     GetConnection().Log().Debug() << "DeleteRevision" << Endl;
-	GetConnection().Log().Debug() << "### NOT SUPPORTED ###" << Endl;
+	GetConnection().Log().Trace() << "### NOT SUPPORTED ###" << Endl;
     return false;
 }
 
 bool AESPlugin::RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "RevertChanges" << Endl;
-	GetConnection().Log().Debug() << "### NOT SUPPORTED ###" << Endl;
+	GetConnection().Log().Trace() << "### NOT SUPPORTED ###" << Endl;
     //assetList.clear();
     return false;
 }
@@ -1558,7 +1597,8 @@ bool AESPlugin::FetchAllAssets()
 
 	if (!RefreshRemote())
 	{
-		GetConnection().Log().Debug() << "Cannot refresh remote" << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot refresh remote"));
+		return true;
 	}
 
 	GetConnection().Log().Debug() << "FetchAllAssets apply remote changes (RevisionID: " << m_LatestRevision << ")" << Endl;
@@ -1582,22 +1622,27 @@ bool AESPlugin::FetchAllAssets()
 	ScanDirectory(GetProjectPath()+"/Assets/", true, CleanupLocalCallBack, (void*)this);
 	ScanDirectory(GetProjectPath()+"/ProjectSettings/", true, CleanupLocalCallBack, (void*)this);
 
-	GetConnection().Log().Debug() << "Local:" << Endl;
+	GetConnection().Log().Trace() << "Local:" << Endl;
 	m_LocalChangesEntries.iterate(PrintAllCallBack, (void*)this);
 	
-	GetConnection().Log().Debug() << "Snapshot:" << Endl;
+	GetConnection().Log().Trace() << "Snapshot:" << Endl;
 	m_SnapShotEntries.iterate(PrintAllCallBack, (void*)this);
 	
-	GetConnection().Log().Debug() << "Remote:" << Endl;
+	GetConnection().Log().Trace() << "Remote:" << Endl;
 	m_RemoteChangesEntries.iterate(PrintAllCallBack, (void*)this);
 	
 	return true;
 }
 
-bool AESPlugin::PerformCustomCommand(const string& command)
+bool AESPlugin::PerformCustomCommand(const string& command, const CommandArgs& args)
 {
-    GetConnection().Log().Debug() << "PerformCustomCommand " << Endl;
-	
+    GetConnection().Log().Debug() << "PerformCustomCommand with parameters: ";
+	for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i)
+	{
+		GetConnection().Log().Debug() << (*i) << " ";
+	}
+	GetConnection().Log().Debug() << Endl;
+
 	if (command == kFetchAllCommand)
 	{
 		return FetchAllAssets();

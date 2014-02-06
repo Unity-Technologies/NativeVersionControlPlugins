@@ -374,6 +374,7 @@ static void TimeFromFileTime(const FILETIME& fileTime, time_t& time)
 
     time = fTime.QuadPart / 10000000 - kSecondsFromFileTimeToTimet;
 }
+
 bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
@@ -442,9 +443,11 @@ bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data
 	return true;
 }
 
+static const ULONGLONG kSecondsFromTimetToFileTime = 116444736000000000;
+
 static void TimetToFileTime( time_t t, LPFILETIME pft )
 {
-    LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
+    LONGLONG ll = Int32x32To64(t, 10000000) + kSecondsFromTimetToFileTime;
     pft->dwLowDateTime = (DWORD) ll;
     pft->dwHighDateTime = ll >> 32;
 }
@@ -454,17 +457,16 @@ bool TouchAFile(const std::string& path, time_t ts)
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
 
-	HANDLE handle = CreateFileW(widePath, GENERIC_READ | FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, 0, NULL);
+	HANDLE handle = ::CreateFileW(widePath, GENERIC_READ | FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (handle == INVALID_HANDLE_VALUE)
         return false;
 
 	FILETIME fileTime;
 	TimetToFileTime(ts, &fileTime);
-	BOOL res = SetFileTime(handle, NULL, NULL, &fileTime);
-    CloseHandle(handle);
+	BOOL res = ::SetFileTime(handle, NULL, NULL, &fileTime);
+    ::CloseHandle(handle);
 
-	//return (res == TRUE);
-	return TRUE;
+	return (res == TRUE);
 }
 
 bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, time_t* ts)
@@ -473,7 +475,7 @@ bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, ti
 	ConvertUnityPathName( path.c_str(), widePath, kDefaultPathBufferSize );
 
 	WIN32_FIND_DATAW findData;
-    HANDLE handle = FindFirstFileW(widePath, &findData);
+    HANDLE handle = ::FindFirstFileW(widePath, &findData);
     if (handle == INVALID_HANDLE_VALUE)
         return false;
 
@@ -495,7 +497,7 @@ bool GetAFileInfo(const std::string& path, uint64_t* size, bool* isDirectory, ti
 		*ts = fileTs;
 	}
 
-    FindClose(handle);
+    ::FindClose(handle);
     return true;
 }
 

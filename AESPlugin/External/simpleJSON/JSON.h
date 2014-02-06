@@ -1,5 +1,4 @@
-#ifndef _JSON_H_
-#define _JSON_H_
+#pragma once
 
 // Incompatibilities
 #ifdef WIN32
@@ -92,5 +91,3 @@ protected:
 private:
     JSON();
 };
-
-#endif

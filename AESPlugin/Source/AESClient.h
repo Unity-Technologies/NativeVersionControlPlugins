@@ -1,5 +1,4 @@
-#ifndef AESCLIENT_H
-#define AESCLIENT_H
+#pragma once
 
 #include "CurlInterface.h"
 #include "JSON.h"
@@ -96,6 +95,8 @@ public:
     
     bool Ping();
     bool Login(const std::string& userName, const std::string& password);
+
+	bool GetAvailableRepositories(std::vector<std::string>& repositories);
     
     bool GetLatestRevision(std::string& revision);
     bool GetRevisions(std::vector<AESRevision>& revisions);
@@ -117,5 +118,3 @@ private:
     std::string m_Password;
     CurlInterface m_CURL;
 };
-
-#endif // AESCLIENT_H

@@ -1,5 +1,4 @@
-#ifndef AESPLUGIN_H
-#define AESPLUGIN_H
+#pragma once
 
 #include "VersionControlPlugin.h"
 #include "Connection.h"
@@ -59,7 +58,7 @@ protected:
     bool UpdateRevision(const ChangelistRevision& revision, std::string& description);
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
-	bool PerformCustomCommand(const std::string& command);
+	bool PerformCustomCommand(const std::string& command, const CommandArgs& args);
 
 private:
     void Initialize();
@@ -118,6 +117,3 @@ private:
 	static int FetchAllCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int PrintAllCallBack(void *data, const std::string& key, AESEntry *entry);
 };
-
-
-#endif // AESPLUGIN_H
