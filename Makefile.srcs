@@ -125,5 +125,5 @@ AESPLUGIN_INCLS = ./AESPlugin/External/simpleJSON/JSON.h \
 		./AESPlugin/Source/RESTInterface.h \
 		./AESPlugin/Source/CurlInterface.h
 
-AESPLUGIN_LINK = -lstdc++ -lz
+AESPLUGIN_LINK = -lz
 AESPLUGIN_INCLUDE = -I./Common -I./AESPlugin/External/openSSL/include -I./AESPlugin/External/simpleJSON -I./AESPlugin/External/radixTree -I./AESPlugin/External/curl/macosx32/include -I./AESPlugin/Source

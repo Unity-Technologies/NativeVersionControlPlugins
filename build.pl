@@ -16,7 +16,7 @@ sub TestLinux ($);
 sub Prepare ($);
 
 $testoption = "nonverbose" unless ($testoption);
-$config = "Debug" unless ($config);
+$config = "Release" unless ($config);
 
 if (not $target)
 {
@@ -39,7 +39,7 @@ if ($target eq "mac")
 	{
 		unless ($prepare)
 		{
-			Prepare("Xcode");
+			#Prepare("Xcode");
 			BuildMac();	
 		}
 		else
@@ -114,6 +114,20 @@ else
 sub BuildMac
 {
 	#system ("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "-configuration", "$config", "-project", "Build/VersionControl.xcodeproj", "-target", "ALL_BUILD") && die ("Failed to build version control plugins");
+	my $cflags = '';
+	my $cxxflags = '';
+	my $ldflags = '';
+
+	if ($config eq 'Release') {
+		$cflags = '';
+		$cxxflags = '-DNBEDUG';
+		$ldflags = '-m32';
+	}
+
+	$ENV{'CFLAGS'} = $cflags;
+	$ENV{'CXXFLAGS'} = $cxxflags;
+	$ENV{'LDFLAGS'} = $ldflags;
+
 	system ('make', '-f', 'Makefile.osx', 'clean');
 	system ('make', '-f', 'Makefile.osx') && die ("Failed to build macosx");
 }

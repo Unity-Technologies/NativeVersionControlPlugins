@@ -5,7 +5,7 @@ CXX = g++
 AR = ar
 
 # CXXFLAGS = -O3 -arch i386 -g
-CXXFLAGS = -arch i386 -g
+CXXFLAGS += -arch i386 -g
 LIBRARIES = -lstdc++
 PLATFORM = OSXi386
 
@@ -65,17 +65,16 @@ AESPlugin/Source/%.o : AESPlugin/Source/%.cpp $(COMMON_INCLS) $(AESPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(AESPLUGIN_INCLUDE) -c $< -o $@
 
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
-	$(CXX) -g -arch i386 -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) -arch i386 -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
+	$(CXX) $(CXXFLAGS) -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
 
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
-	$(CXX) -arch i386 -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
+	$(CXX) $(CXXFLAGS) -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
 
-			
 $(AESPLUGIN_TARGET): $(COMMON_MODULES) $(AESPLUGIN_MODULES)
-	$(CXX) -arch i386 -o $@ -framework Cocoa $^ ./AESPlugin/External/curl/macosx32/lib/libcurl.a ./AESPlugin/External/openSSL/macosx32/lib/libcrypto.a ./AESPlugin/External/openSSL/macosx32/lib/libssl.a -L./AESPlugin/External/openSSL/macosx32 $(AESPLUGIN_LINK)
+	$(CXX) $(CXXFLAGS) -o $@ -framework Cocoa $^ ./AESPlugin/External/curl/macosx32/lib/libcurl.a ./AESPlugin/External/openSSL/macosx32/lib/libcrypto.a ./AESPlugin/External/openSSL/macosx32/lib/libssl.a -L./AESPlugin/External/openSSL/macosx32 $(AESPLUGIN_LINK)
 
 clean:
 	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(AESPLUGIN_MODULES) $(TESTSERVER_MODULES)
