@@ -1,5 +1,8 @@
 #include "Utility.h"
 #include <sstream>
+#include <iterator>
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
@@ -139,6 +142,14 @@ bool StartsWith(const string& str, const string& lookFor)
 	for ( ; i2 != lookFor.end(); i2++, i1++)
 		if (*i1 != *i2) return false;
 	return true;
+}
+
+std::string Quote(const std::string& str)
+{
+	string s = "\"";
+	s += str;
+	s += "\"";
+	return s;
 }
 
 #if defined(_WINDOWS)

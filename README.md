@@ -8,11 +8,11 @@ Note that only Perforce support is shipped for Unity 4.2 and no shipping date fo
 
 #### Overview
 
-A plugin is an executable located in a designated directory that Unity can start and kill at will. At startup Unity will scan the directory and start each executable in order to identify the plugin and its settings. When a version control system has been enabled in unity it will start the associated plugin executable and send it commands using stdin/stdout (MacOS) or Named Pipes (Windows). 
+A plugin is an executable located in a designated directory that Unity can start and kill at will. At startup Unity will scan the directory and start each executable in order to identify the plugin and its settings. When a version control system has been enabled in unity it will start the associated plugin executable and send it commands using stdin/stdout (MacOS) or Named Pipes (Windows).
 
 The Perforce and Subversion plugins work in very different ways with Subversion being the simplest.
 
-The Subversion plugin is calling the svn executable and parses the output. This result is in turn sent to Unity. 
+The Subversion plugin is calling the svn executable and parses the output. This result is in turn sent to Unity.
 
 The Perforce plugin is using the perforce provided libraries and its callback style API. Furthermore is streams results from the perforce server directly to Unity.
 

@@ -42,7 +42,6 @@ public:
 	void OutputInfo( char level, const char *data )
     {
 		string d(data);
-		Conn().Log().Debug() << "OutputInfo: " << d << Endl;
 		Conn().VerboseLine(d);
 
 		m_LoggedIn = d == "'login' not necessary, no password set for this user.";
@@ -52,6 +51,14 @@ public:
 		if (m_CheckingForLoggedIn)
 		{
 			m_LoggedIn = StartsWith(d, "User ") && d.find(" ticket expires in ") != string::npos;
+			if (m_LoggedIn)
+				return;
+
+			// Compatibility with old perforce servers. Sometime authenticate using P4PASSWORD could incur on additional login messages, like:
+			// User <username> was authenticated by password not ticket.
+			// This message is acceptable.
+			// ref: https://kb.perforce.com/UserTasks/ConfiguringP4/AvoidingTheP..rdInWindows
+			m_LoggedIn = StartsWith(d, "User ") && EndsWith(d, " was authenticated by password not ticket.");
 		}
 		else
 		{

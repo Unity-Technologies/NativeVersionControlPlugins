@@ -32,7 +32,8 @@ public:
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
 		string rootPathWildcard = TrimEnd(TrimEnd(task.GetProjectPath(), '/'), '\\') + "/...";
-		const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" \"") + rootPathWildcard + "\"";
+		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
+		const std::string cmd = string("fstat \"") + rootPathWildcard + "\"";
 		
 		Conn().BeginList();
 		
@@ -124,7 +125,7 @@ public:
 				headChange = atoi(val.Text());
 			else if (key == "headRev")
 				headRev = atoi(val.Text());
-			else if (key == "haveRev")
+			else if (key == "haveRev" && value != "none")
 				haveRev = atoi(val.Text());
 			else 
 				Conn().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << Endl;

@@ -21,7 +21,8 @@ public:
 		ChangelistRevision cl;
 		Conn() >> cl;
 		
-		string cmd = "fstat -T \"depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" -W -e ";
+		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
+		string cmd = "fstat -W -e ";
 		cmd += (cl == kDefaultListRevision ? string("default") : cl) + " //...";
 		
 		// We're sending along an asset list with an unknown size.

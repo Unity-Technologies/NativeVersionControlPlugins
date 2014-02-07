@@ -5,7 +5,8 @@
 
 using namespace std;
 
-P4StatusBaseCommand::P4StatusBaseCommand(const char* name) : P4Command(name)
+P4StatusBaseCommand::P4StatusBaseCommand(const char* name, bool streamResultToConnection) 
+	: P4Command(name), m_StreamResultToConnection(streamResultToConnection)
 {
 }
 
@@ -38,7 +39,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		string key(var.Text());
 		string value(val.Text());
-		// Conn().Log().Debug() << key << " # " << value << endl;
+		// Conn().Log().Debug() << key << " # " << value << Endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
 		{
@@ -49,10 +50,10 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		else if (key == "clientFile")
 		{
 			current.SetPath(Replace(value, "\\", "/"));
-			if (IsReadOnly(current.GetPath()))
-				current.AddState(kReadOnly);
-			else
-				current.RemoveState(kReadOnly);
+		}
+		else if (key == "movedFile")
+		{
+			current.SetMovedPath(Replace(value, "\\", "/"));
 		}
 		else if (key == "depotFile")
 		{
@@ -96,22 +97,29 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		}
 	}
 	
+	if (PathExists(current.GetPath()))
+	{
+		current.AddState(kLocal);
+		if (IsReadOnly(current.GetPath()))
+			current.AddState(kReadOnly);
+	}
+
 	if (!isStateSet)
 	{
-		int baseState = current.GetState() & ( kCheckedOutRemote | kLockedLocal | kLockedRemote | kConflicted | kReadOnly | kMetaFile );
-		int newState = ActionToState(action, headAction, haveRev, headRev) | baseState;
-		
-		current.SetState(newState);
-
-		// Make sure it is actually present locally
-		if ( (newState & kLocal) && 
-			 !PathExists(current.GetPath()) )
-			current.RemoveState(kLocal);
+		int actionState = ActionToState(action, headAction, haveRev, headRev);
+		/*
+		Conn().Log().Debug() << current.GetPath() << ": action '" << action << "', headAction '" << headAction 
+							 << "', haveRev '" << haveRev << "', headRev '" << headRev << "' " << actionState << " " << current.GetState() << Endl;
+		*/
+		current.AddState((State)actionState);
 	}
 
 	Conn().VerboseLine(current.GetPath());
 	
-	Conn() << current;
+	if (m_StreamResultToConnection)
+		Conn() << current;
+	else
+		m_StatusResult.push_back(current);
 }
 
 void P4StatusBaseCommand::HandleError( Error *err )
@@ -140,7 +148,18 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		}
 		else if (AddUnknown(asset, value))
 		{
-			Conn() << asset;
+
+			if (PathExists(asset.GetPath()))
+			{
+				asset.AddState(kLocal);
+				if (IsReadOnly(asset.GetPath()))
+					asset.AddState(kReadOnly);
+			}
+
+			if (m_StreamResultToConnection)
+				Conn() << asset;
+			else
+				m_StatusResult.push_back(asset);
 			Conn().VerboseLine(value);
 			return; // just ignore errors for unknown files and return them anyway
 		} 
@@ -154,16 +173,7 @@ bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& valu
 	const string notFound = " - no such file(s).";
 
 	current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
-	int baseState = current.GetState() & ( kConflicted | kReadOnly | kMetaFile );
-	current.SetState(kLocal | baseState);
-	current.RemoveState(kLockedLocal);
-	current.RemoveState(kLockedRemote);
-	if (IsReadOnly(current.GetPath()))
-		current.AddState(kReadOnly);
-	else
-		current.RemoveState(kReadOnly);
-
 	if (EndsWith(current.GetPath(), "*")) 
 		return false; // skip invalid files
-	return true; 
+	return true;
 }

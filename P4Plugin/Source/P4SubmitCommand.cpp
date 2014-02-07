@@ -3,6 +3,7 @@
 #include "P4Task.h"
 #include "P4Utility.h"
 #include <sstream>
+#include <time.h>
 
 using namespace std;
 
@@ -39,6 +40,9 @@ public:
 	P4SubmitCommand(const char* name) : P4Command(name) {}
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
+		m_StartTickTime = time(0);
+		m_ProjectPath = task.GetProjectPath();
+
 		ClearStatus();
 		m_Spec.clear();
 		
@@ -52,6 +56,10 @@ public:
 		VersionedAssetList assetList;
 		Conn() >> assetList;
 		bool hasFiles = !assetList.empty();
+
+		// Handle the case where a user forgot to provide moved file counterpart e.g. 
+		// only listed the destination file and not the source or visa versa. (special case)
+		AddMovedAssets(task, assetList);
 		
 		// Run a view mapping job to get the right depot relative paths for the spec file
 		string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
@@ -116,6 +124,40 @@ public:
 		m_Spec.clear();
 		return true;
 	}
+
+	void AddMovedAssets(P4Task& task, VersionedAssetList& assetList)
+	{
+		// Get status for asset list to know what is moved and to ensure
+		// that we have correct clientFile paths (absolute paths)
+		RunAndGetStatus(task, assetList, assetList);
+
+		// Since the movedFile tag is in 'depot' format we need to get
+		// mapping from client file format to depot format so that we
+		// can compare moved_from with moved_to paths.
+		const vector<Mapping>& initialMappings = GetMappings(task, assetList);
+		set<string> initialDepotFiles;
+
+		for (vector<Mapping>::const_iterator i = initialMappings.begin(); i != initialMappings.end(); ++i)
+			initialDepotFiles.insert(i->depotPath);
+
+		// Include all moved-counterparts for files that was moved
+		// locally (either source or dest file) but where the counterparts in not
+		// int the initial list. This can happen if a user forgot to add either the
+		// to or from file when submitting.
+		VersionedAssetList result;
+		result.reserve(assetList.size());
+		for (VersionedAssetList::iterator i = assetList.begin(); i != assetList.end(); ++i)
+		{
+			result.push_back(*i);
+			if (i->HasState(kMovedLocal) && initialDepotFiles.find(i->GetMovedPath()) == initialDepotFiles.end())
+			{
+				// synthesize an asset. It is ok the path is depot format because it will be mapped later on.
+				result.push_back(VersionedAsset(i->GetMovedPath()));
+				Conn().InfoLine(string("Included missing move counterpart: ") + i->GetMovedPath());
+			}
+		}
+		assetList.swap(result);
+	}
 	
 	// Default handler of P4
 	virtual void InputData( StrBuf *buf, Error *err ) 
@@ -124,7 +166,19 @@ public:
 		Conn().Log().Debug() << m_Spec << Endl;
 		buf->Set(m_Spec.c_str());
 	}
-	
+
+	virtual void OutputInfo( char level, const char *data )
+	{
+		P4Command::OutputInfo(level, data);	
+
+		string d(data);
+		string::size_type i = d.find(m_ProjectPath);
+		if (i != string::npos)
+			d.replace(i, m_ProjectPath.length(), "");
+
+		Conn().Progress(-1, time(0) - m_StartTickTime, d);
+	}
+
 	virtual void HandleError( Error *err )
 	{
 		if ( err == 0 )
@@ -147,5 +201,7 @@ public:
 		P4Command::HandleError(err);
 	}
 	
+	time_t m_StartTickTime;
+	string m_ProjectPath;
 	
 } cSubmit("submit");

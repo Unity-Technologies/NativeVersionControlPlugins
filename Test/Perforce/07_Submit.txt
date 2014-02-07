@@ -6,39 +6,12 @@ This is a submit
 ./Test/tmp/testclient/testfile2.txt
 0
 --
-v1:where "./<root>/testfile2.txt_XUDELIMX_" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
 v1:login -s
 i1:Enabling unicode mode
 v1:login -s
 v1:'login' not necessary, no password set for this user.
-v1:submit -i
-v1:login -s
-v1:'login' not necessary, no password set for this user.
-i1:Change 1 created with 1 open file(s). (level 48)
-i1:Submitting change 1. (level 48)
-i1:Locking 1 files ... (level 48)
-i1:add //depot/testfile2.txt#1 (level 48)
-i1:Change 1 submitted. (level 48)
-o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
-v1:login -s
-v1:'login' not necessary, no password set for this user.
-d1:end of list
-r1:end of response
---
-c:status recurse
-1
-./Test/tmp/testclient/testfile2.txt
-0
---
-o1:-1
-v1:fstat -T "depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
-v1:login -s
-v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
-o1:<absroot>/testfile2.txt
-o1:16386
-d1:end of list
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription
@@ -60,5 +33,47 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
+v1:where "<absroot>/testfile2.txt_XUDELIMX_" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:where "<absroot>/testfile2.txt_XUDELIMX_" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:submit -i
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+i1:Change 1 created with 1 open file(s). (level 48)
+p1:-1 0 Change 1 created with 1 open file(s).
+i1:Submitting change 1. (level 48)
+p1:-1 0 Submitting change 1.
+i1:Locking 1 files ... (level 48)
+p1:-1 0 Locking 1 files ...
+i1:add //depot/testfile2.txt#1 (level 48)
+p1:-1 0 add //depot/testfile2.txt#1
+i1:Change 1 submitted. (level 48)
+p1:-1 0 Change 1 submitted.
+o1:-1
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "<absroot>/testfile2.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/testfile2.txt
+o1:<absroot>/testfile2.txt
+o1:16387
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Test/tmp/testclient/testfile2.txt
+0
+--
+o1:-1
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:login -s
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/testfile2.txt
+o1:<absroot>/testfile2.txt
+o1:16387
+d1:end of list
 r1:end of response
 --

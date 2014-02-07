@@ -38,28 +38,29 @@ public:
 		
 		// Split into two steps. 1st make everything editable and 2nd do the move.
 		// this makes changes more atomic.
+		string editPaths;
+
 		while (b != assetList.end())
 		{
 			e += 2;
 			const VersionedAsset& src = *b;
+   			bool editable = (src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal)) != 0;
 			
-			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
-			
-			Conn().Log().Debug() << "Ensure editable source " << paths << Endl;
-			
-			string err;
-			bool editable = (src.GetState() & (kCheckedOutLocal | kAddedLocal | kLockedLocal)) != 0;
-			
-			if (!editable)
+			if (editable)
 			{
-				string srcPath = ResolvePaths(b, b+1, kPathWild | kPathRecursive);
-				Conn().Log().Info() << "edit " << srcPath << Endl;
-				if (!task.CommandRun("edit " + srcPath, this))
-				{
-					break;
-				}
+				Conn().Log().Debug() << "Already editable source " << src.GetPath() << Endl;
+			}
+			else
+			{
+				editPaths += " ";
+				editPaths += ResolvePaths(b, b+1, kPathWild | kPathRecursive);
 			}
 			b = e;
+		}
+
+		if (!editPaths.empty())
+		{
+			task.CommandRun("edit " + editPaths, this);
 		}
 
 		b = assetList.begin();
@@ -78,7 +79,6 @@ public:
 			
 			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
-			Conn().Log().Info() << "move " << noLocalFileMoveFlag << paths << Endl;
 			if (!task.CommandRun("move " + noLocalFileMoveFlag + paths, this))
 			{
 				break;
