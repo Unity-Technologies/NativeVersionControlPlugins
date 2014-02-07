@@ -120,8 +120,8 @@ sub BuildMac
 
 	if ($config eq 'Release') 
 	{
-		$cflags += ' -DNDEBUG';
-		$cxxflags += ' -DNDEBUG';
+		$cflags .= ' -DNDEBUG';
+		$cxxflags .= ' -DNDEBUG';
 	}
 
 	$ENV{'CFLAGS'} = $cflags;
@@ -180,8 +180,8 @@ sub BuildLinux ($)
 
 	if ($config eq 'Release') 
 	{
-		$cflags += ' -DNDEBUG';
-		$cxxflags += ' -DNDEBUG';
+		$cflags .= ' -DNDEBUG';
+		$cxxflags .= ' -DNDEBUG';
 	}
 
 	$ENV{'CFLAGS'} = $cflags;
