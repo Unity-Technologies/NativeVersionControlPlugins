@@ -717,7 +717,7 @@ bool ScanDirectory(const string& path, bool recurse, FileCallBack cb, void *data
         
 		string fullPath = path;
 		if (path[path.length()-1] != '/') fullPath.append("/");
-		fullPath.append(string(dp->d_name, dp->d_namlen));
+		fullPath.append(string(dp->d_name));
 		
 		struct stat statbuffer;
 		stat(fullPath.c_str(), &statbuffer);
