@@ -118,10 +118,10 @@ sub BuildMac
 	my $cxxflags = '';
 	my $ldflags = '';
 
-	if ($config eq 'Release') {
-		$cflags = '';
-		$cxxflags = '-DNDEBUG';
-		$ldflags = '';
+	if ($config eq 'Release') 
+	{
+		$cflags += ' -DNDEBUG';
+		$cxxflags += ' -DNDEBUG';
 	}
 
 	$ENV{'CFLAGS'} = $cflags;
@@ -171,10 +171,17 @@ sub BuildLinux ($)
 	my $cxxflags = "$cflags -Wno-ctor-dtor-private";
 	my $ldflags = '';
 
-	if ($platform eq 'linux32') {
+	if ($platform eq 'linux32') 
+	{
 		$cflags = "$cflags -m32";
 		$cxxflags = "$cxxflags -m32";
 		$ldflags = '-m32';
+	}
+
+	if ($config eq 'Release') 
+	{
+		$cflags += ' -DNDEBUG';
+		$cxxflags += ' -DNDEBUG';
 	}
 
 	$ENV{'CFLAGS'} = $cflags;
