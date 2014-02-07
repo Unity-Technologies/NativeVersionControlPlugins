@@ -113,7 +113,9 @@ else
 
 sub BuildMac
 {
-	system ("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "-configuration", "$config", "-project", "Build/VersionControl.xcodeproj", "-target", "ALL_BUILD") && die ("Failed to build version control plugins");
+	#system ("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "-configuration", "$config", "-project", "Build/VersionControl.xcodeproj", "-target", "ALL_BUILD") && die ("Failed to build version control plugins");
+	system ('make', '-f', 'Makefile.osx', 'clean');
+	system ('make', '-f', 'Makefile.osx') && die ("Failed to build macosx");
 }
 
 sub TestMac

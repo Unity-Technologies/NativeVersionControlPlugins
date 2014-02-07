@@ -1,30 +1,34 @@
 COMMON_SRCS = ./Common/Changes.cpp \
-	      ./Common/CommandLine.cpp \
-	      ./Common/FileSystem.cpp \
-	      ./Common/Pipe.cpp \
-	      ./Common/Utility.cpp \
-	      ./Common/VersionedAsset.cpp \
-	      ./Common/Status.cpp \
-	      ./Common/Connection.cpp \
-	      ./Common/Command.cpp \
-		  ./Common/Log.cpp \
-		  ./Common/POpen.cpp
+		./Common/Command.cpp \
+		./Common/CommandLine.cpp \
+        ./Common/Connection.cpp \
+		./Common/FileSystem.cpp \
+        ./Common/Log.cpp \
+		./Common/Pipe.cpp \
+        ./Common/POpen.cpp \
+		./Common/Status.cpp \
+		./Common/Utility.cpp \
+        ./Common/VersionControlPlugin.cpp \
+        ./Common/VersionedAsset.cpp
 
 COMMON_INCLS = ./Common/Changes.h \
-	       ./Common/CommandLine.h \
-	       ./Common/FileSystem.h \
-	       ./Common/Pipe.h \
-	       ./Common/Utility.h \
-	       ./Common/VersionedAsset.h \
-	       ./Common/Status.h \
-		   ./Common/Connection.h \
-	       ./Common/Command.h \
-		   ./Common/Dispatch.h \
-		   ./Common/Log.h \
-		   ./Common/POpen.h
+        ./Common/Command.h \
+		./Common/CommandLine.h \
+        ./Common/Connection.h \
+        ./Common/Dispatch.h \
+		./Common/FileSystem.h \
+        ./Common/Log.h \
+		./Common/Pipe.h \
+        ./Common/POpen.h \
+		./Common/Status.h \
+		./Common/Utility.h \
+        ./Common/VersionControlPlugin.h \
+        ./Common/VersionedAsset.h
+
 
 TESTSERVER_SRCS = ./Test/Source/ExternalProcess_Posix.cpp \
-				./Test/Source/TestServer.cpp 
+		./Test/Source/TestServer.cpp 
+		
 TESTSERVER_INCLS = ./Test/Source/ExternalProcess.h
 TESTSERVER_INCLUDE = -I./Common
 
@@ -105,3 +109,21 @@ SVNPLUGIN_INCLS = ./SvnPlugin/Source/AllSvnCommands.h \
 SVNPLUGIN_LINK = 
 SVNPLUGIN_INCLUDE = -I./Common -I./SvnPlugin/Source
 
+AESPLUGIN_SRCS = ./AESPlugin/External/simpleJSON/JSON.cpp \
+		./AESPlugin/External/radixTree/RadixTree.cpp \
+		./AESPlugin/Source/AESClient.cpp \
+		./AESPlugin/Source/AESPlugin.cpp \
+		./AESPlugin/Source/RESTInterface.cpp \
+		./AESPlugin/Source/CurlInterface.cpp \
+		./AESPlugin/Source/AESMain_OSX.cpp
+
+AESPLUGIN_INCLS = ./AESPlugin/External/simpleJSON/JSON.h \
+		./AESPlugin/External/radixTree/RadixTree.h \
+		./AESPlugin/Source/AESClient.h \
+		./AESPlugin/Source/AESPlugin.h \
+		./AESPlugin/Source/TransferInterface.h \
+		./AESPlugin/Source/RESTInterface.h \
+		./AESPlugin/Source/CurlInterface.h
+
+AESPLUGIN_LINK = -lstdc++ -lz
+AESPLUGIN_INCLUDE = -I./Common -I./AESPlugin/External/openSSL/include -I./AESPlugin/External/simpleJSON -I./AESPlugin/External/radixTree -I./AESPlugin/External/curl/macosx32/include -I./AESPlugin/Source

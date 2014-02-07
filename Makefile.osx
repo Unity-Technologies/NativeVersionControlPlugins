@@ -24,9 +24,13 @@ SVNPLUGIN_MODULES = $(SVNPLUGIN_SRCS:.c=.o)
 SVNPLUGIN_MODULES := $(SVNPLUGIN_MODULES:.cpp=.o)
 SVNPLUGIN_TARGET = SubversionPlugin
 
+AESPLUGIN_MODULES = $(AESPLUGIN_SRCS:.c=.o)
+AESPLUGIN_MODULES := $(AESPLUGIN_MODULES:.cpp=.o)
+AESPLUGIN_TARGET = AssetExchangeServerPlugin
+
 default: all
 
-all: P4Plugin SvnPlugin testserver
+all: P4Plugin SvnPlugin AESPlugin testserver
 
 testserver: $(TESTSERVER_TARGET)
 	@mkdir -p Build/$(PLATFORM)
@@ -38,6 +42,10 @@ P4Plugin: $(P4PLUGIN_TARGET)
 SvnPlugin: $(SVNPLUGIN_TARGET)
 	@mkdir -p Build/$(PLATFORM)
 	cp $(SVNPLUGIN_TARGET) Build/$(PLATFORM)
+
+AESPlugin: $(AESPLUGIN_TARGET)
+	@mkdir -p Build/$(PLATFORM)
+	cp $(AESPLUGIN_TARGET) Build/$(PLATFORM)
 
 Common: $(COMMON_MODULES)
 
@@ -53,6 +61,9 @@ P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
 
+AESPlugin/Source/%.o : AESPlugin/Source/%.cpp $(COMMON_INCLS) $(AESPLUGIN_INCLS)
+	$(CXX) $(CXXFLAGS) $(AESPLUGIN_INCLUDE) -c $< -o $@
+
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g -arch i386 -o $@ $^
 
@@ -62,5 +73,9 @@ $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
 	$(CXX) -arch i386 -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
 
+			
+$(AESPLUGIN_TARGET): $(COMMON_MODULES) $(AESPLUGIN_MODULES)
+	$(CXX) -arch i386 -o $@ -framework Cocoa $^ ./AESPlugin/External/curl/macosx32/lib/libcurl.a ./AESPlugin/External/openSSL/macosx32/lib/libcrypto.a ./AESPlugin/External/openSSL/macosx32/lib/libssl.a -L./AESPlugin/External/openSSL/macosx32 $(AESPLUGIN_LINK)
+
 clean:
-	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(TESTSERVER_MODULES)
+	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(AESPLUGIN_MODULES) $(TESTSERVER_MODULES)
