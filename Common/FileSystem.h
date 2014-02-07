@@ -16,7 +16,7 @@ bool ReadAFile(const std::string& path, std::string& data);
 bool WriteAFile(const std::string& path, const std::string& data);
 size_t GetFileLength(const std::string& path);
 
-#if WIN32
+#if WIN32 || LINUX
 #include <stdint.h>
 #endif
 typedef int (*FileCallBack)(void* data, const std::string& path, uint64_t size, bool isDirectory, time_t ts);
