@@ -120,8 +120,8 @@ sub BuildMac
 
 	if ($config eq 'Release') {
 		$cflags = '';
-		$cxxflags = '-DNBEDUG';
-		$ldflags = '-m32';
+		$cxxflags = '-DNDEBUG';
+		$ldflags = '';
 	}
 
 	$ENV{'CFLAGS'} = $cflags;
