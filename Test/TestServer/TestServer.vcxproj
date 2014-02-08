@@ -88,7 +88,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\CommandLine.pp" />
+    <ClCompile Include="..\..\Common\CommandLine.cpp" />
     <ClCompile Include="..\..\Common\FileSystem.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\Source\ExternalProcess_WIN.cpp" />
