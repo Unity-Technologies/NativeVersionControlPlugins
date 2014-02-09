@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\Changes.cpp" />
+    <ClCompile Include="..\Common\Command.cpp" />
+    <ClCompile Include="..\Common\CommandLine.cpp" />
+    <ClCompile Include="..\Common\Connection.cpp" />
+    <ClCompile Include="..\Common\FileSystem.cpp" />
+    <ClCompile Include="..\Common\Log.cpp" />
+    <ClCompile Include="..\Common\Pipe.cpp" />
+    <ClCompile Include="..\Common\POpen.cpp" />
+    <ClCompile Include="..\Common\Status.cpp" />
+    <ClCompile Include="..\Common\Utility.cpp" />
+    <ClCompile Include="..\Common\VersionControlPlugin.cpp" />
+    <ClCompile Include="..\Common\VersionedAsset.cpp" />
+    <ClCompile Include="External\radixTree\RadixTree.cpp" />
+    <ClCompile Include="External\simpleJSON\JSON.cpp" />
+    <ClCompile Include="Source\AESClient.cpp" />
+    <ClCompile Include="Source\AESMain_WIN.cpp" />
+    <ClCompile Include="Source\AESPlugin.cpp" />
+    <ClCompile Include="Source\CurlInterface.cpp" />
+    <ClCompile Include="Source\RESTInterface.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\Changes.h" />
+    <ClInclude Include="..\Common\Command.h" />
+    <ClInclude Include="..\Common\CommandLine.h" />
+    <ClInclude Include="..\Common\Connection.h" />
+    <ClInclude Include="..\Common\Dispatch.h" />
+    <ClInclude Include="..\Common\FileSystem.h" />
+    <ClInclude Include="..\Common\Log.h" />
+    <ClInclude Include="..\Common\Pipe.h" />
+    <ClInclude Include="..\Common\POpen.h" />
+    <ClInclude Include="..\Common\Status.h" />
+    <ClInclude Include="..\Common\Utility.h" />
+    <ClInclude Include="..\Common\VersionControlPlugin.h" />
+    <ClInclude Include="..\Common\VersionedAsset.h" />
+    <ClInclude Include="External\curl\win32\include\curl\curl.h" />
+    <ClInclude Include="External\curl\win32\include\curl\curlbuild.h" />
+    <ClInclude Include="External\curl\win32\include\curl\curlrules.h" />
+    <ClInclude Include="External\curl\win32\include\curl\curlver.h" />
+    <ClInclude Include="External\curl\win32\include\curl\easy.h" />
+    <ClInclude Include="External\curl\win32\include\curl\mprintf.h" />
+    <ClInclude Include="External\curl\win32\include\curl\multi.h" />
+    <ClInclude Include="External\curl\win32\include\curl\stdcheaders.h" />
+    <ClInclude Include="External\curl\win32\include\curl\typecheck-gcc.h" />
+    <ClInclude Include="External\openSSL\include\openssl\aes.h" />
+    <ClInclude Include="External\openSSL\include\openssl\asn1.h" />
+    <ClInclude Include="External\openSSL\include\openssl\asn1t.h" />
+    <ClInclude Include="External\openSSL\include\openssl\asn1_mac.h" />
+    <ClInclude Include="External\openSSL\include\openssl\bio.h" />
+    <ClInclude Include="External\openSSL\include\openssl\blowfish.h" />
+    <ClInclude Include="External\openSSL\include\openssl\bn.h" />
+    <ClInclude Include="External\openSSL\include\openssl\buffer.h" />
+    <ClInclude Include="External\openSSL\include\openssl\camellia.h" />
+    <ClInclude Include="External\openSSL\include\openssl\cast.h" />
+    <ClInclude Include="External\openSSL\include\openssl\cms.h" />
+    <ClInclude Include="External\openSSL\include\openssl\comp.h" />
+    <ClInclude Include="External\openSSL\include\openssl\conf.h" />
+    <ClInclude Include="External\openSSL\include\openssl\conf_api.h" />
+    <ClInclude Include="External\openSSL\include\openssl\crypto.h" />
+    <ClInclude Include="External\openSSL\include\openssl\des.h" />
+    <ClInclude Include="External\openSSL\include\openssl\des_old.h" />
+    <ClInclude Include="External\openSSL\include\openssl\dh.h" />
+    <ClInclude Include="External\openSSL\include\openssl\dsa.h" />
+    <ClInclude Include="External\openSSL\include\openssl\dso.h" />
+    <ClInclude Include="External\openSSL\include\openssl\dtls1.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ebcdic.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ec.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ecdh.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ecdsa.h" />
+    <ClInclude Include="External\openSSL\include\openssl\engine.h" />
+    <ClInclude Include="External\openSSL\include\openssl\err.h" />
+    <ClInclude Include="External\openSSL\include\openssl\evp.h" />
+    <ClInclude Include="External\openSSL\include\openssl\e_os2.h" />
+    <ClInclude Include="External\openSSL\include\openssl\hmac.h" />
+    <ClInclude Include="External\openSSL\include\openssl\idea.h" />
+    <ClInclude Include="External\openSSL\include\openssl\krb5_asn.h" />
+    <ClInclude Include="External\openSSL\include\openssl\kssl.h" />
+    <ClInclude Include="External\openSSL\include\openssl\lhash.h" />
+    <ClInclude Include="External\openSSL\include\openssl\md4.h" />
+    <ClInclude Include="External\openSSL\include\openssl\md5.h" />
+    <ClInclude Include="External\openSSL\include\openssl\mdc2.h" />
+    <ClInclude Include="External\openSSL\include\openssl\modes.h" />
+    <ClInclude Include="External\openSSL\include\openssl\objects.h" />
+    <ClInclude Include="External\openSSL\include\openssl\obj_mac.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ocsp.h" />
+    <ClInclude Include="External\openSSL\include\openssl\opensslconf.h" />
+    <ClInclude Include="External\openSSL\include\openssl\opensslv.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ossl_typ.h" />
+    <ClInclude Include="External\openSSL\include\openssl\pem.h" />
+    <ClInclude Include="External\openSSL\include\openssl\pem2.h" />
+    <ClInclude Include="External\openSSL\include\openssl\pkcs12.h" />
+    <ClInclude Include="External\openSSL\include\openssl\pkcs7.h" />
+    <ClInclude Include="External\openSSL\include\openssl\pqueue.h" />
+    <ClInclude Include="External\openSSL\include\openssl\rand.h" />
+    <ClInclude Include="External\openSSL\include\openssl\rc2.h" />
+    <ClInclude Include="External\openSSL\include\openssl\rc4.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ripemd.h" />
+    <ClInclude Include="External\openSSL\include\openssl\rsa.h" />
+    <ClInclude Include="External\openSSL\include\openssl\safestack.h" />
+    <ClInclude Include="External\openSSL\include\openssl\seed.h" />
+    <ClInclude Include="External\openSSL\include\openssl\sha.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ssl.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ssl2.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ssl23.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ssl3.h" />
+    <ClInclude Include="External\openSSL\include\openssl\stack.h" />
+    <ClInclude Include="External\openSSL\include\openssl\symhacks.h" />
+    <ClInclude Include="External\openSSL\include\openssl\tls1.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ts.h" />
+    <ClInclude Include="External\openSSL\include\openssl\txt_db.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ui.h" />
+    <ClInclude Include="External\openSSL\include\openssl\ui_compat.h" />
+    <ClInclude Include="External\openSSL\include\openssl\whrlpool.h" />
+    <ClInclude Include="External\openSSL\include\openssl\x509.h" />
+    <ClInclude Include="External\openSSL\include\openssl\x509v3.h" />
+    <ClInclude Include="External\openSSL\include\openssl\x509_vfy.h" />
+    <ClInclude Include="External\radixTree\RadixTree.h" />
+    <ClInclude Include="External\simpleJSON\JSON.h" />
+    <ClInclude Include="Source\AESClient.h" />
+    <ClInclude Include="Source\AESPlugin.h" />
+    <ClInclude Include="Source\CurlInterface.h" />
+    <ClInclude Include="Source\RESTInterface.h" />
+    <ClInclude Include="Source\TransferInterface.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{34C02942-3BD8-4DEF-9E54-7E02CE4C25F1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>AESPlugin</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>AssetExchangeServerPlugin</TargetName>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>AssetExchangeServerPlugin</TargetName>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NODEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_SECURE_SCL=0;WIN32;_DEBUG;_WINDOWS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Common;$(ProjectDir)Source\;$(ProjectDir)External\openSSL\include;$(ProjectDir)External\curl\win32\include;$(ProjectDir)External\simpleJSON;$(ProjectDir)External\radixTree;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)External\curl\win32\lib\;$(ProjectDir)External\openSSL\win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;shlwapi.lib;libcurl_a_X86.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NODEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_SECURE_SCL=0;WIN32;NDEBUG;_WINDOWS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Common;$(ProjectDir)Source\;$(ProjectDir)External\openSSL\include;$(ProjectDir)External\curl\win32\include;$(ProjectDir)External\simpleJSON;$(ProjectDir)External\radixTree;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)External\curl\win32\lib\;$(ProjectDir)External\openSSL\win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;shlwapi.lib;libcurl_a_X86.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

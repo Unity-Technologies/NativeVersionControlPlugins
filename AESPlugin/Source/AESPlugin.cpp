@@ -52,7 +52,7 @@ string ToTime(time_t timeInSeconds)
 string ToTimeLong(time_t timeInSeconds)
 {
     char buffer[80];
-    snprintf(buffer, sizeof(buffer), "%ld", (long)timeInSeconds);
+    sprintf(buffer, "%ld", (long)timeInSeconds);
     return string(buffer);
 }
 
