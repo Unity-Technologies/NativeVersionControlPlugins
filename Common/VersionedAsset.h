@@ -37,12 +37,16 @@ public:
 	void SetState(int newState);
 	void AddState(State state);
 	void RemoveState(State state);
-	bool HasState(State state) { return ((m_State & state) == state); }
+	bool HasState(int state) const { return (m_State & state) != 0; }
 
 	const std::string& GetPath() const;
 	void SetPath(const std::string& path);
 	const std::string& GetMovedPath() const;
 	void SetMovedPath(const std::string& path);
+
+	// Swap current path and moved path
+	void SwapMovedPaths();
+
 	const std::string& GetRevision() const;
 	void SetRevision(const std::string& r);
 	const std::string& GetChangeListID() const;
@@ -50,7 +54,7 @@ public:
 
 	void Reset();
 	bool IsFolder() const;
-	bool IsMeta() const { return ((m_State & kMetaFile) == kMetaFile); }
+	bool IsMeta() const { return (m_State & kMetaFile) != 0; }
 
 	bool operator<(const VersionedAsset& other) const;
 
@@ -68,6 +72,8 @@ private:
 #include <set>
 typedef std::vector<VersionedAsset> VersionedAssetList;
 typedef std::set<VersionedAsset> VersionedAssetSet;
+
+
 
 std::vector<std::string> Paths(const VersionedAssetList& assets);
 

@@ -124,7 +124,7 @@ public:
 				headChange = atoi(val.Text());
 			else if (key == "headRev")
 				headRev = atoi(val.Text());
-			else if (key == "haveRev")
+			else if (key == "haveRev" && value != "none")
 				haveRev = atoi(val.Text());
 			else 
 				Conn().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << Endl;

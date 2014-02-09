@@ -10,11 +10,21 @@ class P4ChangeMoveCommand : public P4FileSetBaseCommand
 public:
 	P4ChangeMoveCommand() : P4FileSetBaseCommand("changeMove") {}
 	
+	virtual void ReadConnection() 
+	{
+		Conn() >> m_ChangeRevision;
+	}
+
 	virtual string SetupCommand(const CommandArgs& args)
 	{
-		ChangelistRevision cr;
-		Conn() >> cr;
 		string cmd("reopen -c ");
-		return cmd += (cr == kDefaultListRevision ? string("default") : cr);
+		if (m_ChangeRevision == kDefaultListRevision)
+			return cmd + "default";
+		else
+			return cmd + m_ChangeRevision;
 	}
+
+private:
+	ChangelistRevision m_ChangeRevision;
+
 } cChangeMove;
