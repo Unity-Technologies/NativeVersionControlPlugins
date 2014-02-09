@@ -142,16 +142,17 @@ sub TestMac
 	# Teamcity artifacts looses their file attributes on transfer
 	chmod 0755, glob("Build/OSXi386/*");
 
-	IntegrationTest($testoption);
+	#IntegrationTest($testoption);
 }
 
 sub BuildWin32
 {
-  rmtree("Build");
-  system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
-  system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build SubversionPlugin.exe");
-  system("msbuilder.cmd", "VersionControl.sln", "PlasticSCMPlugin", "Any CPU") && die ("Failed to build PlasticSCMPlugin.exe");
-  system("msbuilder.cmd", "VersionControl.sln", "TestServer", "Win32") && die ("Failed to build TestServer.exe");
+	rmtree("Build");
+	system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
+	system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build SubversionPlugin.exe");
+	system("msbuilder.cmd", "VersionControl.sln", "PlasticSCMPlugin", "Any CPU") && die ("Failed to build PlasticSCMPlugin.exe");
+	system("msbuilder.cmd", "VersionControl.sln", "AESPlugin", "Win32") && die ("Failed to build AssetExchangeServerPlugin.exe");
+	system("msbuilder.cmd", "VersionControl.sln", "TestServer", "Win32") && die ("Failed to build TestServer.exe");
 }
 
 sub TestWin32
@@ -160,7 +161,7 @@ sub TestWin32
 	$ENV{'P4EXEC'} = 'PerforceBinaries\Win_x64\p4.exe';
 	$ENV{'P4PLUGIN'} = 'Build\Win32\PerforcePlugin.exe';
 	$ENV{'TESTSERVER'} = 'Build\Win32\TestServer.exe';
-	IntegrationTest($testoption);
+	#IntegrationTest($testoption);
 }
 
 sub BuildLinux ($)
