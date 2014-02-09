@@ -33,7 +33,17 @@ Connection::Connection(const string& logPath)
 Connection::Connection(const string& logPath, const string& recordPath)
     : m_Log(NULL), m_Pipe(NULL), m_Record(recordPath)
 {
+	// Rotate log file if too large
+	if (PathExists(logPath) && GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
+	{
+		string prevPath(logPath);
+		prevPath += "-prev";
+		if (PathExists(prevPath))
+			DeleteRecursive(prevPath);
+		MoveAFile(logPath, prevPath);
+	}
 	m_Log = new LogStream(logPath);
+
 	EnsureDirectory(recordPath.substr(0, recordPath.find_last_of("/")));
 }
 #endif
