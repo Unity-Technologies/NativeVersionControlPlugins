@@ -107,6 +107,8 @@ public:
 	
 	bool ApplyChanges(const std::string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const std::string& comment, int* succedeedEntries);
 
+	bool CreateRepository(const std::string& name, const std::string& type);
+
 private:
     void ClearLastMessage() { m_lastMessage.clear(); }
     void SetLastMessage(const std::string& message) { m_lastMessage = message; }

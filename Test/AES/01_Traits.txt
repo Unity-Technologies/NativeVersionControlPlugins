@@ -4,27 +4,42 @@ c:pluginConfig pluginTraits
 o1:2
 o8:requiresNetwork
 o8:enablesGetLatestOnChangeSetSubset
-o1:4
+o1:7
 o1:vcAssetExchangeServerURL
 o8:URL
 o8:The AES URL
-o1:localhost:3030
+o1:true
+o1:1
+o1:vcAssetExchangeServerPort
+o8:Port
+o8:The AES Port
+o1:true
 o1:1
 o1:vcAssetExchangeServerRepository
 o8:Repository
 o8:The AES Repository
-o1:
+o1:true
 o1:1
 o1:vcAssetExchangeServerUsername
 o8:Username
 o8:The AES username
-o1:none
-o1:1
+o1:true
+o1:0
 o1:vcAssetExchangeServerPassword
 o8:Password
 o8:The AES password
-o1:none
+o1:true
 o1:2
+o1:vcAssetExchangeServerCreate
+o8:Create Repository
+o8:Create the AES repository if not exists
+o1:false
+o1:4
+o1:vcAssetExchangeServerAvailableRepositories
+o8:Available AES Repositories
+o8:The available AES repositories
+o1:true
+o1:8
 o1:overlays
 o1:11
 o1:1
@@ -50,9 +65,12 @@ o1:default
 o1:4096
 o1:default
 o1:customCommands
-o1:1
+o1:2
 o1:fetchAll
 o1:Fetch latest revision
+o1:global
+o1:currentRevision
+o1:Get current revision
 o1:global
 r1:end of response
 --

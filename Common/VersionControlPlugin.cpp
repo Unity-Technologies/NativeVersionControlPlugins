@@ -893,24 +893,23 @@ bool VersionControlPlugin::HandleStatus(const CommandArgs& args)
 bool VersionControlPlugin::HandleUnlock()
 {
     GetConnection().Log().Trace() << "HandleUnlock" << Endl;
-    
+
     bool wasOnline = PreHandleCommand();
-    
+
     VersionedAssetList assetList;
 	GetConnection() >> assetList;
-    
+
     if (UnlockAssets(assetList))
         SetOnline();
     else
         assetList.clear();
-    
+
     GetConnection() << assetList;
-    
+
     PostHandleCommand(wasOnline);
-    
+
     return true;
 }
-
 bool VersionControlPlugin::HandleConfigTraits()
 {
     vector<string> flagsList;
@@ -990,6 +989,52 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
     }
     
     GetConnection().Log().Info() << "Unknown config " << key << ", skip it" << Endl;
+    return true;
+}
+
+
+bool VersionControlPlugin::HandleUpdateToRevision()
+{
+    GetConnection().Log().Trace() << "HandleUpdateToRevision" << Endl;
+
+    bool wasOnline = PreHandleCommand();
+
+	ChangelistRevision revision;
+	GetConnection().ReadLine(revision);
+
+    VersionedAssetList ignoredAssetList;
+	GetConnection() >> ignoredAssetList;
+
+    VersionedAssetList assetList;
+
+    if (UpdateToRevision(revision, ignoredAssetList, assetList))
+        SetOnline();
+    else
+        assetList.clear();
+
+    GetConnection() << assetList;
+
+    PostHandleCommand(wasOnline);
+
+    return true;
+}
+
+bool VersionControlPlugin::HandleCurrentRevision()
+{
+    GetConnection().Log().Trace() << "HandleCurrentRevision" << Endl;
+
+    bool wasOnline = PreHandleCommand();
+
+	ChangelistRevision currentRevision;
+    if (GetCurrentRevision(currentRevision))
+	{
+		GetConnection().DataLine(string("current: ") + currentRevision, MARemote);
+
+        SetOnline();
+	}
+
+    PostHandleCommand(wasOnline);
+
     return true;
 }
 
@@ -1082,7 +1127,13 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
             
         case UCOM_Unlock:
             return HandleUnlock();
-            
+
+        case UCOM_UpdateToRevision:
+            return HandleUpdateToRevision();
+
+        case UCOM_CurrentRevision:
+            return HandleCurrentRevision();
+
         default:
             GetConnection().Log().Debug() << "Command " << UnityCommandToString(command) << " not handled" << Endl;
             GetConnection().EndResponse();

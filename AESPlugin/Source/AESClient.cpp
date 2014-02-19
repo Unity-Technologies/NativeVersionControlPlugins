@@ -773,3 +773,50 @@ bool AESClient::ApplyChanges(const string& basePath, TreeOfEntries& addOrUpdateE
         delete json;
 	return res;
 }
+
+bool AESClient::CreateRepository(const string& name, const string& type)
+{
+	string response = "";
+    string url = m_Server + m_Path + "/files";
+
+	string data = "name=";
+	data.append(name);
+	data.append("&type=");
+	data.append(type);
+
+	if (!m_CURL.Post(url, data, NULL, response))
+	{
+		SetLastMessage("CreateRepository failed");
+        return false;
+    }
+
+	bool success = false;
+    bool res = false;
+    JSONValue* json = JSON::Parse(response.c_str());
+    if (json != NULL && json->IsObject())
+    {
+        const JSONObject& info = json->AsObject();
+		if (info.find("status") != info.end())
+		{
+			string status = *(info.at("status"));
+			success = (status == "ok");
+			if (!success)
+				SetLastMessage(*(info.at("message")));
+
+			res = true;
+		}
+    }
+
+	if (!res)
+	{
+		if (json)
+			SetLastMessage("CreateRepository Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
+		else
+			SetLastMessage("CreateRepository Not JSON: '" + response + "'");
+	}
+
+    if (json)
+        delete json;
+
+    return (res && success);
+}

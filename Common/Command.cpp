@@ -35,6 +35,8 @@ static const CmdInfo infos[] = {
 	{ UCOM_Unlock, "unlock" }, //
 	{ UCOM_FileMode, "filemode" }, //
 	{ UCOM_CustomCommand, "customCommand" }, //
+	{ UCOM_UpdateToRevision, "updateToRevision" }, //
+	{ UCOM_CurrentRevision, "current" }, //
 	{ UCOM_Invalid, 0 } // delimiter
 };
 

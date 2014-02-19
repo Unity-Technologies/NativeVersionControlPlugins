@@ -8,7 +8,11 @@ c:pluginConfig vcAssetExchangeServerRepository TestAES
 --
 r1:end of response
 --
-c:pluginConfig vcAssetExchangeServerURL localhost:3030
+c:pluginConfig vcAssetExchangeServerURL localhost
+--
+r1:end of response
+--
+c:pluginConfig vcAssetExchangeServerPort 3030
 --
 r1:end of response
 --

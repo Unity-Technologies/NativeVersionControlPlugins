@@ -597,6 +597,26 @@ protected:
 	 */
 	virtual bool PerformCustomCommand(const std::string& command, const CommandArgs& args) = 0;
 
+	/**
+	 * Update to a specifc revision
+     * Parameters:
+     *  - revisionID: IN specific revision.
+     *  - ignoredAssetList: IN list of versioned asset to be ignored.
+     *  - assetList: OUT list of versioned asset updated.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 */
+	virtual bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList) = 0;
+
+	/**
+	 * Get current revision
+     * Parameters:
+     *  - revisionID: OUT current revision.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 */
+	virtual bool GetCurrentRevision(ChangelistRevision& revision) = 0;
+
 private:
     void InitializeArguments(int argc, char** argv);
     
@@ -631,6 +651,8 @@ private:
     bool HandleStatus(const CommandArgs& args);
     bool HandleSubmit(const CommandArgs& args);
     bool HandleUnlock();
+    bool HandleUpdateToRevision();
+	bool HandleCurrentRevision();
 
     bool HandleVersionedAssetsCommand(UnityCommand cmd);
     bool Dispatch(UnityCommand command, const CommandArgs& args);

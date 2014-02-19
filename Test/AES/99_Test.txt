@@ -1,0 +1,14 @@
+<once ./00_ProtocolNegotiation.txt>
+<once ./01_Traits.txt>
+<once ./02_Configure.txt>
+c:updateToRevision
+9999
+1
+<absroot>ProjectSettings/AudioManager.asset
+0
+--
+o1:1
+o1:<absroot>ProjectSettings/AudioManager.asset
+o1:1
+r1:end of response
+--

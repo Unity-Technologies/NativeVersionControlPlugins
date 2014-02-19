@@ -58,6 +58,8 @@ protected:
     bool UpdateRevision(const ChangelistRevision& revision, std::string& description);
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
+	bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList);
+	bool GetCurrentRevision(ChangelistRevision& revisionID);
 	bool PerformCustomCommand(const std::string& command, const CommandArgs& args);
 
 private:
@@ -77,8 +79,7 @@ private:
 	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList, int ignoredState = kNone);
 	
 	bool FetchAllAssets();
-	bool ReconcileAssets();
-	
+
 	void ResetTimer();
 	time_t GetTimerSoFar();
     bool TimerTick();
@@ -115,5 +116,6 @@ private:
 	static int ApplyLocalChangesCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int CheckConflictCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int FetchAllCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int UpdateToRevisionCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int PrintAllCallBack(void *data, const std::string& key, AESEntry *entry);
 };
