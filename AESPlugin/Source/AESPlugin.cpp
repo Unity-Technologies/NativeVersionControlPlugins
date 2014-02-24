@@ -5,6 +5,7 @@
 #include "AESPlugin.h"
 #include "FileSystem.h"
 #include "JSON.h"
+#include "openssl/md4.h"
 
 #include <set>
 #include <vector>
@@ -30,9 +31,10 @@
 
 using namespace std;
 
-static const char* kAESPluginVersion  = "1.0.0";
+static const char* kAESPluginVersion  = "1.0.3";
 
-static const char* kCacheFileName  = "/Library/aesSnapshot.json";
+static const char* kCacheFileName  = "/Library/aesSnapshot_";
+static const char* kCacheFileNameExt  = ".txt";
 static const char* kLogFileName = "Library/aesPlugin.log";
 static const char* kLatestRevison = "current";
 static const char* kLocalRevison = "local";
@@ -41,6 +43,8 @@ static const char* kPluginName = "AssetExchangeServer";
 static const char* kMetaExtension = ".meta";
 
 static const char* kFetchAllCommand = "fetchAll";
+
+static const char kHexChars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 string ToTime(time_t timeInSeconds)
 {
@@ -63,6 +67,38 @@ int UpdateStateForMeta(const string& path, int state)
 	if (path.length() > 5 && path.substr(path.length() - 5, 5) == kMetaExtension)
 		state |= kMetaFile;
 	return state;
+}
+
+bool GetAFileHash(const string& path, string& md4)
+{
+	unsigned char digest[MD4_DIGEST_LENGTH];
+	FILE* fp;
+	if ((fp = fopen(path.c_str(), "rb")) == 0)
+		return false;
+
+	char buffer[BUFSIZ];
+    size_t n;
+	MD4_CTX ctx;
+
+	MD4_Init(&ctx);
+    while ((n = fread(buffer, sizeof(char), sizeof(buffer), fp)) > 0)
+    {
+		MD4_Update(&ctx, buffer, n);
+    }
+	MD4_Final(digest, &ctx);
+	fclose(fp);
+
+	md4.clear();
+	char tmp[MD4_DIGEST_LENGTH*2+1];
+    for (int i = 0, j = 0; i < MD4_DIGEST_LENGTH; i++, j+=2)
+	{
+		tmp[j] = kHexChars[(digest[i] & 0xF0) >> 4];
+		tmp[j+1] = kHexChars[(digest[i] & 0x0F) >> 0];
+	}
+	tmp[MD4_DIGEST_LENGTH*2] = '\0';
+	md4 = tmp;
+
+	return true;
 }
 
 enum AESFields { kAESURL, kAESPort, kAESRepository, kAESUserName, kAESPassword, kAESCreateToggle, kAESAvailableRepositories };
@@ -215,40 +251,93 @@ int AESPlugin::ScanLocalChangeCallBack(void* data, const string& path, uint64_t 
 	string p = path.substr(plugin->GetProjectPath().size()+1);
 	if (isDirectory)
 	{
-		// Directory are kept in tree with a last backslash
-		p.append("/");
+		return 0;
+	}
+
+	if (!ShouldIgnoreFile(p))
+	{
+		return 0;
 	}
 	
+	string md4 = "00000000000000000000000000000000";
+	GetAFileHash(path, md4);
+	plugin->GetConnection().Log() << "MD4 Hash for " << p << " is '" << md4 << "'" << Endl;
+
 	// search in local changes
-	AESEntry* entry = plugin->m_LocalChangesEntries.search(p);
-	if (entry == NULL)
+	AESEntry* localEntry = plugin->m_LocalChangesEntries.search(p);
+	if (localEntry == NULL)
 	{
 		// Not found, search in snapshot
-		entry = plugin->m_SnapShotEntries.search(p);
-		if (entry != NULL)
+		AESEntry* snapShotEntry = plugin->m_SnapShotEntries.search(p);
+		if (snapShotEntry != NULL)
 		{
-			// Found, compare TS
-			if (!isDirectory && (entry->GetTimeStamp() != ts || entry->GetSize() != size))
+			// Found, compare Hash
+			if (snapShotEntry->GetHash() != md4)
 			{
-				// Local file has been modified, add it to local changes
-				plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, entry->GetHash(), UpdateStateForMeta(p, kCheckedOutLocal), (int)size, isDirectory, ts));
+				// Local file hash been modified, add it to local changes
+				plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kCheckedOutLocal), (int)size, isDirectory, ts));
 			}
 		}
 		else
 		{
-			if (!ShouldIgnoreFile(p) && !isDirectory)
+			// Not found, search in remote changes
+			AESEntry* remoteEntry = plugin->m_RemoteChangesEntries.search(p);
+			if (remoteEntry != NULL)
+			{
+				// Found, compare Hash
+				if (remoteEntry->GetHash() != md4)
+				{
+					// Local file hash been modified, add it to local changes
+					plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kCheckedOutLocal | kConflicted), (int)size, isDirectory, ts));
+				}
+			}
+			else
 			{
 				// Local file/path is new
-				plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, "", UpdateStateForMeta(p, kAddedLocal), (int)size, isDirectory, ts));
+				plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kAddedLocal), (int)size, isDirectory, ts));
 			}
 		}
 	}
 	else
 	{
+		if (localEntry->GetHash() != md4)
+		{
+			// Found, search in snapshot
+			AESEntry* snapShotEntry = plugin->m_SnapShotEntries.search(p);
+			if (snapShotEntry != NULL)
+			{
+				// Found, compare Hash
+				if (snapShotEntry->GetHash() != md4)
+				{
+					// Local file hash been modified, update it to local changes
+					localEntry->SetState(UpdateStateForMeta(p, kCheckedOutLocal));
+				}
+			}
+			else
+			{
+				// Not found, search in remote changes
+				AESEntry* remoteEntry = plugin->m_RemoteChangesEntries.search(p);
+				if (remoteEntry != NULL)
+				{
+					// Found, compare Hash
+					if (remoteEntry->GetHash() != md4)
+					{
+						// Local file hash been modified, update it to local changes
+						localEntry->SetState(UpdateStateForMeta(p, kCheckedOutLocal | kConflicted));
+					}
+				}
+				else
+				{
+					// Local file/path is updated
+					localEntry->SetState(UpdateStateForMeta(p, kAddedLocal));
+				}
+			}
+		}
 
 		// Update entry
-		entry->SetSize(size);
-		entry->SetTimeStamp(ts);
+		localEntry->SetHash(md4);
+		localEntry->SetSize(size);
+		localEntry->SetTimeStamp(ts);
 	}
 	return 0;
 }
@@ -265,13 +354,20 @@ bool AESPlugin::RefreshSnapShot()
 	m_SnapShotEntries.clear();
 	m_LocalChangesEntries.clear();
 
-	string aesCache = GetProjectPath() + kCacheFileName;
-	if (PathExists(aesCache))
+	string repo = m_Fields[kAESRepository].GetValue();
+	if (!repo.empty())
 	{
-		if (!RestoreSnapShotFromFile(aesCache))
+		string aesCache = GetProjectPath();
+		aesCache.append(kCacheFileName);
+		aesCache.append(repo);
+		aesCache.append(kCacheFileNameExt);
+		if (PathExists(aesCache))
 		{
-			StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot refresh snapshot from AES cache file"));
-			return false;
+			if (!RestoreSnapShotFromFile(aesCache))
+			{
+				StatusAdd(VCSStatusItem(VCSSEV_Error, "Cannot refresh snapshot from AES cache file"));
+				return false;
+			}
 		}
 	}
 	
@@ -302,8 +398,8 @@ bool AESPlugin::RefreshLocal()
 	// Scan "Assets" and "ProjectSettings" directories for local changes
     ResetTimer();
     GetConnection().Progress(-1, 0, "secs. while scanning local changes...");
-	ScanDirectory(GetProjectPath()+"/Assets/", true, ScanLocalChangeCallBack, (void*)this);
-	ScanDirectory(GetProjectPath()+"/ProjectSettings/", true, ScanLocalChangeCallBack, (void*)this);
+	ScanDirectory(GetProjectPath()+"/Assets", true, ScanLocalChangeCallBack, (void*)this);
+	ScanDirectory(GetProjectPath()+"/ProjectSettings", true, ScanLocalChangeCallBack, (void*)this);
 	
 	// Scan removed entries
 	vector<string> paths = m_LocalChangesEntries.keys("");
@@ -396,7 +492,7 @@ int AESPlugin::EntryToJSONCallBack(void *data, const string& key, AESEntry *entr
 	JSONArray* array = (JSONArray*)data;
 	JSONObject elt;
 	elt["path"] = new JSONValue(key);
-	if (!entry->GetHash().empty()) elt["hash"] = new JSONValue(entry->GetHash());
+	elt["hash"] = new JSONValue(entry->GetHash());
 	elt["directory"] = new JSONValue(entry->IsDir());
 	elt["state"] = new JSONValue((double)entry->GetState());
 	if (entry->GetSize() > 0) elt["size"] = new JSONValue((double)entry->GetSize());
@@ -444,6 +540,7 @@ bool AESPlugin::RestoreSnapShotFromFile(const string& path)
 	}
 	
 	m_SnapShotRevision.clear();
+	m_SnapShotRevision = kLatestRevison;
 	m_SnapShotEntries.clear();
 	m_LocalChangesEntries.clear();
 	
@@ -466,7 +563,7 @@ bool AESPlugin::RestoreSnapShotFromFile(const string& path)
 				const JSONObject& entry = (*i)->AsObject();
 
 				string path = *(entry.at("path"));
-				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "";
+				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "00000000000000000000000000000000";
 				bool isDir = *(entry.at("directory"));
 				int state = (int)((entry.at("state"))->AsNumber());
 				uint64_t size = (entry.find("size") != entry.end()) ? (uint64_t)((entry.at("size"))->AsNumber()) : 0;
@@ -485,7 +582,7 @@ bool AESPlugin::RestoreSnapShotFromFile(const string& path)
 				const JSONObject& entry = (*i)->AsObject();
 
 				string path = *(entry.at("path"));
-				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "";
+				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "00000000000000000000000000000000";
 				bool isDir = *(entry.at("directory"));
 				int state = (int)((entry.at("state"))->AsNumber());
 				int size = (entry.find("size") != entry.end()) ? (int)((entry.at("size"))->AsNumber()) : 0;
@@ -599,7 +696,7 @@ int AESPlugin::Connect()
 			return -1;
 		}
     }
-    
+
     m_IsConnected = true;
     return 0;
 }
@@ -612,11 +709,18 @@ void AESPlugin::Disconnect()
 
     SetOffline();
 
-	string aesCache = GetProjectPath() + kCacheFileName;
-	if (!SaveSnapShotToFile(aesCache))
-    {
-        GetConnection().Log().Debug() << "Cannot save snapshot to AES cache file" << Endl;
-    }
+	string repo = m_Fields[kAESRepository].GetValue();
+	if (!repo.empty())
+	{
+		string aesCache = GetProjectPath();
+		aesCache.append(kCacheFileName);
+		aesCache.append(repo);
+		aesCache.append(kCacheFileNameExt);
+		if (!SaveSnapShotToFile(aesCache))
+		{
+			GetConnection().Log().Debug() << "Cannot save snapshot to AES cache file" << Endl;
+		}
+	}
     
     m_IsConnected = false;
 }
@@ -639,24 +743,24 @@ int AESPlugin::Login()
 		GetConnection().Log().Debug() << "Cannot refresh snapshot" << Endl;
 	}
 	
-	// Apply local changes
-	if (!RefreshLocal())
-	{
-		GetConnection().Log().Debug() << "Cannot refresh local" << Endl;
-	}
-	
 	// Get remote changes
 	if (!RefreshRemote())
 	{
 		GetConnection().Log().Debug() << "Cannot refresh remote" << Endl;
 	}
 	
+	// Apply local changes
+	if (!RefreshLocal())
+	{
+		GetConnection().Log().Debug() << "Cannot refresh local" << Endl;
+	}
+
     return 0;
 }
 
-bool AESPlugin::CheckConnectedAndLogged()
+bool AESPlugin::EnsureConnected()
 {
-    GetConnection().Log().Debug() << "CheckConnectedAndLogged" << Endl;
+    GetConnection().Log().Debug() << "EnsureConnected" << Endl;
     if (!IsConnected())
     {
         if (Connect() != 0)
@@ -702,6 +806,12 @@ void AESPlugin::AddAssetsToChanges(const VersionedAssetList& assetList, int stat
 		
         string path = asset.GetPath().substr(GetProjectPath().size()+1);
 		AESEntry* entry = m_LocalChangesEntries.search(path);
+		if (entry == NULL && state == kSynced)
+		{
+			// Not in changes
+			continue;
+		}
+
 		if (entry != NULL && (entry->GetState() & state) == state)
 		{
 			// Already in changes
@@ -716,17 +826,43 @@ void AESPlugin::AddAssetsToChanges(const VersionedAssetList& assetList, int stat
 			continue;
 		}
 
-		state = UpdateStateForMeta(path, state);
-		
+		string md4 = "00000000000000000000000000000000";
+		GetAFileHash(asset.GetPath(), md4);
+
+		if (state == kAddedLocal)
+		{
+			AESEntry* entry = m_SnapShotEntries.search(path);
+			if (entry != NULL && entry->GetHash() == md4)
+			{
+				// Ignore local change
+				GetConnection().Log().Debug() << "AddAssetsToChanges ignore local change for " << path << " already in snapshot" << Endl;
+				continue;
+			}
+
+			entry = m_RemoteChangesEntries.search(path);
+			if (entry != NULL && entry->GetHash() == md4)
+			{
+				// Ignore local change
+				GetConnection().Log().Debug() << "AddAssetsToChanges ignore local change for " << path << " already in remote" << Endl;
+				continue;
+			}
+		}
+
 		GetConnection().Log().Debug() << "AddAssetsToChanges " << path << Endl;
-		state |= asset.GetState();
-		state &= ~kSynced;
+
+		state = UpdateStateForMeta(path, state);
+		if (state != kSynced)
+		{
+			state |= asset.GetState();
+			state &= ~kSynced;
+		}
 		
 		// Add or update local change
 		uint64_t size = 0;
 		time_t ts = 0;
 		GetAFileInfo(asset.GetPath(), &size, NULL, &ts);
-		m_LocalChangesEntries.insert(path, AESEntry(kLatestRevison, "", state, size, false, ts));
+
+		m_LocalChangesEntries.insert(path, AESEntry(kLatestRevison, md4, state, size, false, ts));
 	}
 }
 
@@ -766,7 +902,7 @@ bool AESPlugin::AddAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "AddAssets" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -779,7 +915,7 @@ bool AESPlugin::AddAssets(VersionedAssetList& assetList)
 bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "RemoveAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -792,7 +928,7 @@ bool AESPlugin::RemoveAssets(VersionedAssetList& assetList)
 bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList)
 {
     GetConnection().Log().Debug() << "MoveAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //toAssetList.clear();
         return false;
@@ -806,7 +942,7 @@ bool AESPlugin::MoveAssets(const VersionedAssetList& fromAssetList, VersionedAss
 bool AESPlugin::CheckoutAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "CheckoutAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -819,7 +955,7 @@ bool AESPlugin::CheckoutAssets(VersionedAssetList& assetList)
 bool AESPlugin::LockAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "LockAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -832,7 +968,7 @@ bool AESPlugin::LockAssets(VersionedAssetList& assetList)
 bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "UnlockAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -845,7 +981,7 @@ bool AESPlugin::UnlockAssets(VersionedAssetList& assetList)
 bool AESPlugin::DownloadAssets(const string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "DownloadAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -964,7 +1100,7 @@ bool AESPlugin::DownloadAssets(const string& targetDir, const ChangelistRevision
 bool AESPlugin::RevertAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "RevertAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -1008,10 +1144,18 @@ int AESPlugin::ApplyRemoteChangesCallBack(void *data, const string& key, AESEntr
 	if (localEntry != NULL)
 	{
 		// Potential conflict
-		if (localEntry->GetSize() != entry->GetSize() || localEntry->GetTimeStamp() != entry->GetTimeStamp())
+		plugin->GetConnection().Log().Debug() << "Potential conflict for " << key << Endl;
+		if (localEntry->GetHash() != entry->GetHash())
 		{
-			plugin->GetConnection().Log().Debug() << "Conflict for " << key << Endl;
-			localEntry->SetState(kConflicted);
+			int state = kConflicted;
+			state = UpdateStateForMeta(key, state);
+			localEntry->SetState(state);
+		}
+		else
+		{
+			int state = kSynced;
+			state = UpdateStateForMeta(key, state);
+			localEntry->SetState(state);
 		}
 	}
 	else
@@ -1060,7 +1204,7 @@ int AESPlugin::ApplyRemoteChangesCallBack(void *data, const string& key, AESEntr
 bool AESPlugin::GetAssets(VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "GetAssets" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -1078,18 +1222,20 @@ bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod metho
 {
     GetConnection().Log().Debug() << "ResolveAssets" << Endl;
 
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
     }
 
-	for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
+	VersionedAssetList::iterator i = assetList.begin();
+	while (i != assetList.end())
     {
         VersionedAsset& asset = (*i);
         if (asset.IsFolder())
         {
-			// Skip folders
+            // Skip folders
+            i = assetList.erase(i);
             continue;
         }
 		
@@ -1098,48 +1244,61 @@ bool AESPlugin::ResolveAssets(VersionedAssetList& assetList, ResolveMethod metho
 		{
 			case VersionControlPlugin::kMine:
 				{
+					m_RemoteChangesEntries.erase(path);
 					AESEntry* entry = m_LocalChangesEntries.search(path);
 					if (entry != NULL)
 					{
+						GetConnection().Log().Debug() << path << " found in local change, use mine" << Endl;
 						int state = entry->GetState();
 						state |= kCheckedOutLocal;
 						state &= ~kConflicted;
+						state = UpdateStateForMeta(path, state);
 						entry->SetState(state);
+
+						asset.SetState(state);
 					}
 				}
 				break;
 
 			case VersionControlPlugin::kTheirs:
 				{
+					m_LocalChangesEntries.erase(path);
 					AESEntry* entry = m_RemoteChangesEntries.search(path);
 					if (entry != NULL)
 					{
 						string target = GetProjectPath()+ "/" + path;
 						if (!m_AES->Download(entry, path, target))
 						{
-							GetConnection().Log().Debug() << "Cannot download " << path << ", reason:" << m_AES->GetLastMessage() << Endl;
-							//assetList.clear();
-							return false;
+							StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
+							assetList.clear();
+							return true;
 						}
 
+						m_SnapShotEntries.insert(path, AESEntry(entry->GetRevisionID(), entry->GetHash(), entry->GetState(), entry->GetSize(), entry->IsDir(), entry->GetTimeStamp()));
+						m_LocalChangesEntries.erase(path);
 						m_RemoteChangesEntries.erase(path);
+
+						int state = UpdateStateForMeta(path, kSynced);
+						asset.SetState(state);
 					}
 				}
 				break;
 
 			case VersionControlPlugin::kMerged:
-				GetConnection().Log().Debug() << "ResolveAssets, kMerged not yet supported" << Endl;
+				StatusAdd(VCSStatusItem(VCSSEV_Error, "ResolveAssets, merged not yet supported"));
 				break;
 		}
+
+		i++;
 	}
 	
-	return GetAssetsStatus(assetList, false);
+	return true;
 }
 
 bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "SetRevision" << Endl;
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -1160,8 +1319,12 @@ bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetLi
 			{
 				uint64_t size = 0;
 				time_t ts = 0;
-				GetAFileInfo(asset.GetPath(), &size, NULL, &ts);
-				m_LocalChangesEntries.insert(path, AESEntry(kLatestRevison, "", asset.GetState() | kCheckedOutLocal));
+				bool isDir = false;
+				GetAFileInfo(asset.GetPath(), &size, &isDir, &ts);
+
+				string md4 = "00000000000000000000000000000000";
+				GetAFileHash(asset.GetPath(), md4);
+				m_LocalChangesEntries.insert(path, AESEntry(kLatestRevison, md4, asset.GetState() | kCheckedOutLocal, size, isDir, ts));
 			}
 		}
 	}
@@ -1169,18 +1332,24 @@ bool AESPlugin::SetRevision(const ChangelistRevision& revision, VersionedAssetLi
     return GetAssetsStatus(assetList);
 }
 
+
+typedef struct {
+	AESPlugin* plugin;
+	string revisionID;
+} ApplyLocalChangesCallBackData;
+
 int AESPlugin::ApplyLocalChangesCallBack(void *data, const string& key, AESEntry *entry)
 {
-	AESPlugin* plugin = (AESPlugin*)data;
-	if ((entry->GetState() & kSynced) == kSynced)
+	ApplyLocalChangesCallBackData* d = (ApplyLocalChangesCallBackData*)data;
+	if ((entry->GetState() & kSynced) == kSynced || (entry->GetState() & kAddedLocal) == kAddedLocal || (entry->GetState() & kCheckedOutLocal) == kCheckedOutLocal)
 	{
-		plugin->GetConnection().Log().Debug() << "Add/Update in snapshot " << key << Endl;
-		plugin->m_SnapShotEntries.insert(key, AESEntry(plugin->m_SnapShotRevision, entry->GetHash(), entry->GetState(), entry->GetSize(), false, entry->GetTimeStamp()));
+		d->plugin->GetConnection().Log().Debug() << "Add/Update in snapshot " << key << Endl;
+		d->plugin->m_SnapShotEntries.insert(key, AESEntry(d->revisionID, entry->GetHash(), UpdateStateForMeta(key, kSynced), entry->GetSize(), entry->IsDir(), entry->GetTimeStamp()));
 	}
 	else if ((entry->GetState() & kDeletedLocal) == kDeletedLocal)
 	{
-		plugin->GetConnection().Log().Debug() << "Delete in snapshot " << key << Endl;
-		plugin->m_SnapShotEntries.erase(key);
+		d->plugin->GetConnection().Log().Debug() << "Delete in snapshot " << key << Endl;
+		d->plugin->m_SnapShotEntries.erase(key);
 	}
 	return 0;
 }
@@ -1189,20 +1358,20 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 {
     GetConnection().Log().Debug() << "SubmitAssets" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
     }
 
-	if (m_RemoteChangesEntries.size() > 0)
+	if (!saveOnly && m_RemoteChangesEntries.size() > 0)
 	{
 		StatusAdd(VCSStatusItem(VCSSEV_Error, "Incoming changes still pending. Pull changes before submitting again."));
 		GetConnection().WarnLine(IntToString(m_RemoteChangesEntries.size()) + " incoming change(s) not applied.", MAGeneral);
 		//assetList.clear();
         return false;
 	}
-    
+
 	TreeOfEntries entriesToAddOrMod;
 	TreeOfEntries entriesToDelete;
     for (VersionedAssetList::iterator i = assetList.begin() ; i != assetList.end() ; i++)
@@ -1217,12 +1386,16 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 		string path = asset.GetPath().substr(GetProjectPath().size()+1);
 		uint64_t size = 0;
 		time_t ts = 0;
-		GetAFileInfo(asset.GetPath(), &size, NULL, &ts);
+		bool isDir = false;
+		GetAFileInfo(asset.GetPath(), &size, &isDir, &ts);
+
+		string md4;
+		GetAFileHash(asset.GetPath(), md4);
 		
 		AESEntry* entry = m_LocalChangesEntries.search(path);
 		if (entry == NULL)
 		{
-			entry = m_LocalChangesEntries.insert(path, AESEntry(kLocalRevison, "", asset.GetState(), size, false, ts));
+			entry = m_LocalChangesEntries.insert(path, AESEntry(kLocalRevison, md4, asset.GetState(), size, isDir, ts));
 		}
 		
 		int state  = entry->GetState();
@@ -1230,46 +1403,56 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 		{
 			GetConnection().Log().Debug() << "Add/Update " << path << Endl;
 			state = UpdateStateForMeta(path, kSynced);
-			entriesToAddOrMod.insert(path, AESEntry(kLocalRevison, "", state, size, false, ts));
+			entriesToAddOrMod.insert(path, AESEntry(kLocalRevison, md4, state, size, false, ts));
 		}
 		else if ((state & kDeletedLocal) == kDeletedLocal)
 		{
 			GetConnection().Log().Debug() << "Remove " << path << Endl;
 			state = UpdateStateForMeta(path, kDeletedLocal);
-			entriesToDelete.insert(path, AESEntry(kLocalRevison, "", state));
+			entriesToDelete.insert(path, AESEntry(kLocalRevison, md4, state));
 		}
     }
 	
 	int succeededEntries;
 	if (!m_AES->ApplyChanges(GetProjectPath(), entriesToAddOrMod, entriesToDelete, changeList.GetDescription(), &succeededEntries))
 	{
-		GetConnection().Log().Fatal() << "AES ApplyChanges failed, reason: " << m_AES->GetLastMessage() << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
 		//assetList.clear();
-        return false;
+        return true;
 	}
 	else
 	{
 		if (succeededEntries != (entriesToAddOrMod.size() + entriesToDelete.size()))
 		{
-			GetConnection().Log().Debug() << "AES ApplyChanges failed, not all files were submitted" << Endl;
+			StatusAdd(VCSStatusItem(VCSSEV_Error, "AES ApplyChanges failed, not all files were submitted"));
 			//assetList.clear();
-			return false;
+			return true;
 		}
 		GetConnection().Log().Debug() << "AES ApplyChanges success" << Endl;
 	}
-	
+
+	string latestRevision;
 	if (!m_AES->GetLatestRevision(m_SnapShotRevision))
 	{
-		GetConnection().Log().Fatal() << "AES ApplyChanges cannot get latest revision, reason: " << m_AES->GetLastMessage() << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
 		//assetList.clear();
-        return false;
+		return true;
 	}
-	
-	entriesToAddOrMod.iterate(ApplyLocalChangesCallBack, (void*)this);
-	entriesToDelete.iterate(ApplyLocalChangesCallBack, (void*)this);
-	
+
+	ApplyLocalChangesCallBackData data;
+	data.plugin = this;
+	data.revisionID = latestRevision;
+
+	entriesToAddOrMod.iterate(ApplyLocalChangesCallBack, (void*)&data);
+	entriesToDelete.iterate(ApplyLocalChangesCallBack, (void*)&data);
+
+	if (!saveOnly)
+	{
+		m_SnapShotRevision = latestRevision;
+	}
+
 	RemoveAssetsFromChanges(assetList);
-    
+
     // Make sure refresh remote will be performed
     m_LastRemoteChangesRefrehTime = 0;
     
@@ -1288,7 +1471,7 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 {
     GetConnection().Log().Debug() << "GetAssetsStatus (" << (recursive ? "" : "Non-") << "Recursive)" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -1298,7 +1481,7 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 	{
 		GetConnection().Log().Debug() << "Cannot refresh remote" << Endl;
 	}
-    
+
     VersionedAssetList::iterator i = assetList.begin();
     while (i != assetList.end())
     {
@@ -1309,7 +1492,7 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
             ResetTimer();
             GetConnection().Progress(-1, 0, "secs. while scanning local changes...");
 			ScanDirectory(asset.GetPath(), false, ScanLocalChangeCallBack, (void*)this);
-            
+
             // Skip folders
             i = assetList.erase(i);
             continue;
@@ -1320,7 +1503,9 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 		AESEntry* localEntry = m_LocalChangesEntries.search(path);
 		AESEntry* remoteEntry = m_RemoteChangesEntries.search(path);
 		AESEntry* snapShotEntry = m_SnapShotEntries.search(path);
-		
+
+		GetConnection().Log().Debug() << "Status for '" << path << "', found local: " << ((localEntry != NULL) ? "Y": "N") << ", found remote: " << ((remoteEntry != NULL) ? "Y": "N") << ", found snapshot: " << ((snapShotEntry != NULL) ? "Y": "N") << Endl;
+
 		if (localEntry == NULL)
 		{
 			state = kLocal;
@@ -1336,9 +1521,17 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 		else
 		{
 			state = localEntry->GetState();
-			if (remoteEntry != NULL && localEntry->GetRevisionID() != remoteEntry->GetRevisionID())
+			if (remoteEntry != NULL)
 			{
-				state = kConflicted;
+				state = kSynced;
+				if (localEntry->GetRevisionID() != kLocalRevison && localEntry->GetRevisionID() != remoteEntry->GetRevisionID())
+				{
+					state = kConflicted;
+				}
+				else if (localEntry->GetHash() != remoteEntry->GetHash())
+				{
+					state = kConflicted;
+				}
 			}
 		}
 		
@@ -1355,9 +1548,22 @@ int AESPlugin::CheckConflictCallBack(void *data, const string& key, AESEntry *en
 {
 	AESPlugin* plugin = (AESPlugin*)data;
 	AESEntry* remoteEntry = plugin->m_RemoteChangesEntries.search(key);
-	if (remoteEntry != NULL && entry->GetRevisionID() != remoteEntry->GetRevisionID())
+	if (remoteEntry != NULL)
 	{
-		entry->SetState(kConflicted);
+		plugin->GetConnection().Log().Debug() << "CheckConflict for " << key
+			<< ", revision = " << entry->GetRevisionID()
+			<< ", remoteRevision = " << remoteEntry->GetRevisionID()
+			<< ", hash = " << entry->GetHash()
+			<< ", remoteHash = " << remoteEntry->GetHash()
+			<< Endl;
+		if (entry->GetRevisionID() != kLocalRevison && entry->GetRevisionID() != remoteEntry->GetRevisionID())
+		{
+			entry->SetState(kConflicted);
+		}
+		else if (entry->GetHash() != remoteEntry->GetHash())
+		{
+			entry->SetState(kConflicted);
+		}
 	}
 	return 0;
 }
@@ -1366,7 +1572,7 @@ bool AESPlugin::GetAssetsChangeStatus(const ChangelistRevision& revision, Versio
 {
     GetConnection().Log().Debug() << "GetAssetsChangeStatus (" << revision << ")" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -1385,7 +1591,7 @@ bool AESPlugin::GetIncomingAssetsChangeStatus(const ChangelistRevision& revision
 {
     GetConnection().Log().Debug() << "GetIncomingAssetsChangeStatus" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         //assetList.clear();
         return false;
@@ -1437,7 +1643,7 @@ bool AESPlugin::GetAssetsChanges(Changes& changes)
 {
     GetConnection().Log().Debug() << "GetAssetsChanges" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         changes.clear();
         return false;
@@ -1456,7 +1662,7 @@ bool AESPlugin::GetAssetsIncomingChanges(Changes& changes)
 {
     GetConnection().Log().Debug() << "GetAssetsIncomingChanges" << Endl;
     
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         changes.clear();
         return false;
@@ -1510,7 +1716,7 @@ bool AESPlugin::UpdateRevision(const ChangelistRevision& revision, string& descr
 {
     GetConnection().Log().Debug() << "UpdateRevision" << Endl;
 
-	if (!CheckConnectedAndLogged())
+	if (!EnsureConnected())
 	{
 		return false;
 	}
@@ -1581,10 +1787,6 @@ int AESPlugin::FetchAllCallBack(void *data, const string& key, AESEntry *entry)
 	{
 		string localPath = d->plugin->GetProjectPath() + "/" + key;
 		::EnsureDirectory(localPath);
-        /*
-		d->plugin->GetConnection().Log().Debug() << "Add directory from remote change: " << localPath << Endl;
-		d->plugin->m_SnapShotEntries.insert(key, AESEntry(entry->GetRevisionID(), entry->GetHash(), kSynced, 0, true, 0));
-        */
 	}
 	
 	d->iter = d->iter+1;
@@ -1650,6 +1852,9 @@ int AESPlugin::UpdateToRevisionCallBack(void *data, const string& key, AESEntry 
 
 			// Remove from local changes
 			d->plugin->m_LocalChangesEntries.erase(key);
+
+			// Remove from remote changes
+			d->plugin->m_RemoteChangesEntries.erase(key);
 		}
 
 		// Update Snapshot
@@ -1672,7 +1877,7 @@ bool AESPlugin::UpdateToRevision(const ChangelistRevision& revision, const Versi
 {
     GetConnection().Log().Debug() << "UpdateToRevision " << Endl;
 
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         return false;
     }
@@ -1783,7 +1988,7 @@ bool AESPlugin::GetCurrentRevision(ChangelistRevision& revision)
 {
     GetConnection().Log().Debug() << "GetCurrentRevision" << Endl;
 
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         return false;
     }
@@ -1797,11 +2002,16 @@ bool AESPlugin::GetCurrentRevision(ChangelistRevision& revision)
 	return true;
 }
 
+void AESPlugin::GetCurrentVersion(string& version)
+{
+	version = kAESPluginVersion;
+}
+
 bool AESPlugin::FetchAllAssets()
 {
     GetConnection().Log().Debug() << "FetchAllAssets" << Endl;
 	
-    if (!CheckConnectedAndLogged())
+    if (!EnsureConnected())
     {
         return false;
     }
@@ -1838,15 +2048,6 @@ bool AESPlugin::FetchAllAssets()
 	ScanDirectory(GetProjectPath()+"/Assets/", true, CleanupLocalCallBack, (void*)this);
 	ScanDirectory(GetProjectPath()+"/ProjectSettings/", true, CleanupLocalCallBack, (void*)this);
 
-	GetConnection().Log().Trace() << "Local:" << Endl;
-	m_LocalChangesEntries.iterate(PrintAllCallBack, (void*)this);
-	
-	GetConnection().Log().Trace() << "Snapshot:" << Endl;
-	m_SnapShotEntries.iterate(PrintAllCallBack, (void*)this);
-	
-	GetConnection().Log().Trace() << "Remote:" << Endl;
-	m_RemoteChangesEntries.iterate(PrintAllCallBack, (void*)this);
-	
 	return true;
 }
 
@@ -1882,8 +2083,19 @@ int AESPlugin::EntryToAssetCallBack(void *data, const string& key, AESEntry *ent
 	if (!entry->IsDir() && (d->ignoredState == kNone || (entry->GetState() & d->ignoredState) != d->ignoredState))
 	{
 		string localPath = d->plugin->GetProjectPath() + "/" + key;
-		// TODO: check in localChanges if potential conflict
-		d->list->push_back(VersionedAsset(localPath, entry->GetState()));
+		int state = entry->GetState();
+		/*
+		AESEntry* localEntry = d->plugin->m_LocalChangesEntries.search(key);
+		if (localEntry != NULL)
+		{
+			if (entry->GetHash() != localEntry->GetHash())
+			{
+				state &= ~kSynced;
+				state |= kOutOfSync;
+			}
+		}
+		*/
+		d->list->push_back(VersionedAsset(localPath, state));
 	}
 	return 0;
 }

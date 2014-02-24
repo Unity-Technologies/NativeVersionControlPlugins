@@ -62,7 +62,7 @@ Connection& operator<<(Connection& p, const VersionControlPluginCfgField& field)
 
 VersionControlPlugin::VersionControlPluginOverlays VersionControlPlugin::s_emptyOverlays;
 
-VersionControlPlugin::VersionControlPlugin(const std::string& name, const char* args) : m_PluginName(name),  m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
+VersionControlPlugin::VersionControlPlugin(const std::string& name, const char* args) : m_PluginName(name),  m_ProjectPath(""), m_IsOnline(false), m_IsDirty(false), m_Connection(NULL)
 {
     int argc = 0;
     char** argv = CommandLineToArgv(args, &argc);
@@ -70,7 +70,7 @@ VersionControlPlugin::VersionControlPlugin(const std::string& name, const char* 
     CommandLineFreeArgs(argv);
 }
 
-VersionControlPlugin::VersionControlPlugin(const std::string& name, int argc, char** argv) : m_PluginName(name), m_ProjectPath(""), m_IsOnline(false), m_Connection(NULL)
+VersionControlPlugin::VersionControlPlugin(const std::string& name, int argc, char** argv) : m_PluginName(name), m_ProjectPath(""), m_IsOnline(false), m_IsDirty(false), m_Connection(NULL)
 {
     InitializeArguments(argc, argv);
 }
@@ -144,6 +144,14 @@ VCSStatus& VersionControlPlugin::StatusAdd(VCSStatusItem item)
     return m_Status;
 }
 
+void VersionControlPlugin::SetProjectPath(const string& path)
+{
+	if (path != m_ProjectPath)
+		SetDirty();
+
+	m_ProjectPath = path;
+}
+
 int VersionControlPlugin::Run()
 {
 #ifndef NDEBUG
@@ -199,12 +207,18 @@ int VersionControlPlugin::Run()
 			if (cmd == UCOM_Invalid)
             {
                 GetConnection().Log().Debug() << "Invalid command" << Endl;
+#ifndef NDEBUG
+				GetConnection().GetRecordStream() << "### Invalid command ###" << endl;
+#endif
 				return 1; // error
 			}
             
             if (cmd == UCOM_Shutdown)
 			{
                 GetConnection().Log().Debug() << "Shutdown" << Endl;
+#ifndef NDEBUG
+				GetConnection().GetRecordStream() << "### Shutdown ###" << endl;
+#endif
 				Disconnect();
 				GetConnection().EndResponse();
 #ifdef NDEBUG
@@ -221,6 +235,9 @@ int VersionControlPlugin::Run()
 	catch (exception& e)
 	{
 		GetConnection().Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
+#ifndef NDEBUG
+		GetConnection().GetRecordStream() << "### Unhandled exception: " << e.what() << " ###" << endl;
+#endif
 	}
     
 	return 1; // error
@@ -426,7 +443,10 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
             level = LOG_NOTICE;
         else if (value == "fatal")
             level = LOG_FATAL;
-        
+
+		if (GetConnection().Log().GetLogLevel() != level)
+			SetDirty();
+
         GetConnection().Log().SetLogLevel(level);
         GetConnection().EndResponse();
         return true;
@@ -458,8 +478,22 @@ bool VersionControlPlugin::HandleConfig(const CommandArgs& args)
     
     if (key == "end")
     {
-        Disconnect();
-        GetConnection().EndResponse();
+		PreHandleCommand();
+		if (IsDirty())
+		{
+			Disconnect();
+		}
+
+		if (EnsureConnected())
+		{
+			SetOnline();
+			PostHandleCommand(false);
+		}
+		else
+		{
+			SetOffline();
+			PostHandleCommand(true);
+		}
         return true;
     }
     
@@ -982,7 +1016,11 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
         VersionControlPluginCfgField& field = (*i);
         if (field.GetName() == key)
         {
-            field.SetValue(TrimEnd(value));
+			value = TrimEnd(value);
+			if (field.GetValue() != value)
+				SetDirty();
+
+            field.SetValue(value);
             GetConnection().Log().Info() << key << " set to " << value << Endl;
             return true;
         }
@@ -1028,7 +1066,7 @@ bool VersionControlPlugin::HandleCurrentRevision()
 	ChangelistRevision currentRevision;
     if (GetCurrentRevision(currentRevision))
 	{
-		GetConnection().DataLine(string("current: ") + currentRevision, MARemote);
+		GetConnection().DataLine(string("current:") + currentRevision, MARemote);
 
         SetOnline();
 	}
@@ -1036,6 +1074,23 @@ bool VersionControlPlugin::HandleCurrentRevision()
     PostHandleCommand(wasOnline);
 
     return true;
+}
+
+bool VersionControlPlugin::HandleCurrentVersion()
+{
+    GetConnection().Log().Trace() << "HandleCurrentVersion" << Endl;
+
+    bool wasOnline = PreHandleCommand();
+
+	string currentVersion;
+    GetCurrentVersion(currentVersion);
+
+	GetConnection().DataLine(string("version:") + currentVersion, MARemote);
+
+	SetOnline();
+    PostHandleCommand(wasOnline);
+
+	return true;
 }
 
 bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& args)
@@ -1133,6 +1188,9 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
 
         case UCOM_CurrentRevision:
             return HandleCurrentRevision();
+
+        case UCOM_CurrentVersion:
+            return HandleCurrentVersion();
 
         default:
             GetConnection().Log().Debug() << "Command " << UnityCommandToString(command) << " not handled" << Endl;

@@ -35,6 +35,7 @@ enum UnityCommand
 	UCOM_CustomCommand,
 	UCOM_UpdateToRevision,
 	UCOM_CurrentRevision,
+	UCOM_CurrentVersion,
 };
 
 // Command string as received from unity pipe

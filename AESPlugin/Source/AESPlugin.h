@@ -29,14 +29,13 @@ public:
     int Connect();
     void Disconnect();
     inline bool IsConnected() { return m_IsConnected; }
+    bool EnsureConnected();
+    int Login();
 
 	int Test();
 	
 protected:
-    
-    int Login();
-    bool CheckConnectedAndLogged();
-    
+
     bool AddAssets(VersionedAssetList& assetList);
     bool CheckoutAssets(VersionedAssetList& assetList);
     bool DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList);
@@ -60,6 +59,7 @@ protected:
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
 	bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList);
 	bool GetCurrentRevision(ChangelistRevision& revisionID);
+	void GetCurrentVersion(std::string& version);
 	bool PerformCustomCommand(const std::string& command, const CommandArgs& args);
 
 private:

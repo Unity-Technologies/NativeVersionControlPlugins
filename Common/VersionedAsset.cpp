@@ -1,5 +1,6 @@
 #include "VersionedAsset.h"
 #include "Connection.h"
+#include "Utility.h"
 #include <algorithm>
 #include <functional>
 
@@ -11,8 +12,8 @@ VersionedAsset::VersionedAsset() : m_State(kNone)
 }
 
 VersionedAsset::VersionedAsset(const std::string& path) : m_State(kNone) 
-{ 
-	SetPath(path); 
+{
+	SetPath(path);
 }
 
 VersionedAsset::VersionedAsset(const std::string& path, int state, const std::string& revision)
@@ -26,7 +27,49 @@ int VersionedAsset::GetState() const
 	return m_State; 
 }
 
-void VersionedAsset::SetState(int newState) 
+const string VersionedAsset::GetStateAsString() const
+{
+	string res = "";
+	if ((m_State & kLocal) == kLocal)
+		res.append("kLocal ");
+	if ((m_State & kSynced) == kSynced)
+		res.append("kSynced ");
+	if ((m_State & kOutOfSync) == kOutOfSync)
+		res.append("kOutOfSync ");
+	if ((m_State & kMissing) == kMissing)
+		res.append("kMissing ");
+	if ((m_State & kCheckedOutLocal) == kCheckedOutLocal)
+		res.append("kCheckedOutLocal ");
+	if ((m_State & kCheckedOutRemote) == kCheckedOutRemote)
+		res.append("kCheckedOutRemote ");
+	if ((m_State & kDeletedLocal) == kDeletedLocal)
+		res.append("kDeletedLocal ");
+	if ((m_State & kDeletedRemote) == kDeletedRemote)
+		res.append("kDeletedRemote ");
+	if ((m_State & kAddedLocal) == kAddedLocal)
+		res.append("kAddedLocal ");
+	if ((m_State & kAddedRemote) == kAddedRemote)
+		res.append("kAddedRemote ");
+	if ((m_State & kConflicted) == kConflicted)
+		res.append("kConflicted ");
+	if ((m_State & kLockedLocal) == kLockedLocal)
+		res.append("kLockedLocal ");
+	if ((m_State & kLockedRemote) == kLockedRemote)
+		res.append("kLockedRemote ");
+	if ((m_State & kUpdating) == kUpdating)
+		res.append("kUpdating ");
+	if ((m_State & kReadOnly) == kReadOnly)
+		res.append("kReadOnly ");
+	if ((m_State & kMetaFile) == kMetaFile)
+		res.append("kMetaFile ");
+	if ((m_State & kMovedLocal) == kMovedLocal)
+		res.append("kMovedLocal ");
+	if ((m_State & kMovedRemote) == kMovedRemote)
+		res.append("kMovedRemote ");
+	return res;
+}
+
+void VersionedAsset::SetState(int newState)
 { 
 	m_State = newState; 
 }
@@ -47,9 +90,10 @@ const std::string& VersionedAsset::GetPath() const
 }
 
 void VersionedAsset::SetPath(std::string const& path) 
-{ 
-	m_Path = path;
-	if (path.length() > 5 && path.substr(path.length() - 5, 5) == ".meta") 
+{
+	string npath = Replace(path, "//", "/");
+	m_Path = npath;
+	if (npath.length() > 5 && npath.substr(npath.length() - 5, 5) == ".meta")
 		AddState(kMetaFile);
 }
 
@@ -60,7 +104,8 @@ const std::string& VersionedAsset::GetMovedPath() const
 
 void VersionedAsset::SetMovedPath(std::string const& path) 
 { 
-	m_MovedPath = path;
+	string npath = Replace(path, "//", "/");
+	m_MovedPath = npath;
 }
 
 // Swap current path and moved path

@@ -236,7 +236,7 @@ protected:
     void NotifyOnline();
     
     // Set ProjectPath
-    inline void SetProjectPath(const std::string& path) { m_ProjectPath = path; }
+    void SetProjectPath(const std::string& path);
     
     // Plugin name
     inline const std::string& GetPluginName() const { return m_PluginName; }
@@ -245,7 +245,11 @@ protected:
 	const VCSStatus& GetStatus() const;
 	void ClearStatus();
     VCSStatus& StatusAdd(VCSStatusItem item);
-    
+
+	inline void SetDirty() { m_IsDirty = true; }
+	inline void ResetDirty() { m_IsDirty = false; }
+	inline bool IsDirty() { return m_IsDirty; }
+
     /*
      * Get the log file name.
      * Returns:
@@ -323,6 +327,13 @@ protected:
      */
     virtual bool IsConnected() { return true; }
     
+    /*
+     * Ensure plugin is connected to underlying VC system.
+     * Returns:
+     * - true if connected, false otherwise.
+     */
+    virtual bool EnsureConnected() = 0;
+
     /*
      * Login to underlying VC system.
      * Returns:
@@ -617,6 +628,13 @@ protected:
 	 */
 	virtual bool GetCurrentRevision(ChangelistRevision& revision) = 0;
 
+	/**
+	 * Get current version
+     * Parameters:
+     *  - version: OUT current version.
+	 */
+	virtual void GetCurrentVersion(std::string& version) = 0;
+
 private:
     void InitializeArguments(int argc, char** argv);
     
@@ -653,6 +671,7 @@ private:
     bool HandleUnlock();
     bool HandleUpdateToRevision();
 	bool HandleCurrentRevision();
+	bool HandleCurrentVersion();
 
     bool HandleVersionedAssetsCommand(UnityCommand cmd);
     bool Dispatch(UnityCommand command, const CommandArgs& args);
@@ -665,6 +684,7 @@ private:
     VersionControlPluginMapOfArguments m_Arguments;
     
     bool m_IsOnline;
+	bool m_IsDirty;
     Connection* m_Connection;
     
     static VersionControlPluginOverlays s_emptyOverlays;

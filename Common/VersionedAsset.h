@@ -34,6 +34,7 @@ public:
 	VersionedAsset(const std::string& path, int state, const std::string& revision = "");
 
 	int GetState() const;
+	const std::string GetStateAsString() const;
 	void SetState(int newState);
 	void AddState(State state);
 	void RemoveState(State state);

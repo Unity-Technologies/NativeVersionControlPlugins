@@ -68,6 +68,9 @@ string Join(const vector<string>::const_iterator i1,
 string Replace(const string& str, const string& lookFor, const string& replaceWith)
 {
 	string result(str);
+	if (str.empty())
+		return result;
+
 	size_t lflen = lookFor.length();
 	size_t rwlen = replaceWith.length();
 	
@@ -78,7 +81,14 @@ string Replace(const string& str, const string& lookFor, const string& replaceWi
 		i2 = result.find(lookFor, i1);
 		if (i2 == string::npos)
 			return result;
-		result.replace(i2, lflen, replaceWith);
+
+		if (lflen == rwlen)
+			result.replace(i2, lflen, replaceWith);
+		else
+		{
+			result.erase(i2, lflen);
+			result.insert(i2, replaceWith);
+		}
 		i1 = i2 + rwlen;
 	}
 	while (true) ;
