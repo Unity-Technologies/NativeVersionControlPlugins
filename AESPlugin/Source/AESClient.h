@@ -36,14 +36,23 @@ public:
     
     const std::string GetRevisionID() const { return m_RevisionID; }
     void SetRevisionID(const std::string& revisionsID) { strncpy(m_RevisionID, revisionsID.c_str(), sizeof(m_RevisionID)); }
-    const std::string GetHash() const { return m_Hash; }
+
+	const std::string GetHash() const { return m_Hash; }
     void SetHash(const std::string& hash) { strncpy(m_Hash, hash.c_str(), sizeof(m_Hash)); }
-    bool IsDir() const { return m_IsDirectory; }
-    int GetState() const { return m_State; }
-    void SetState(int state) { m_State = state; }
+
+	bool IsDir() const { return m_IsDirectory; }
+
+	int GetState() const { return m_State; }
+	const std::string GetStateAsString() const;
+	void SetState(int state) { m_State = state; }
+	bool HasState(int state) const { return (m_State & state) == state; }
+	void AddState(int state) { m_State |= state; }
+	void RemoveState(int state) { m_State &= ~state; }
+
     uint64_t GetSize() const { return m_Size; }
     void SetSize(uint64_t size) { m_Size = size; }
-    time_t GetTimeStamp() const { return m_TimeStamp; }
+
+	time_t GetTimeStamp() const { return m_TimeStamp; }
     void SetTimeStamp(time_t ts) { m_TimeStamp = ts; }
     
 private:

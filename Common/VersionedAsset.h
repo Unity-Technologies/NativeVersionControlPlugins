@@ -2,6 +2,25 @@
 #include <string>
 #include <iostream>
 
+/*
+ kNone             0
+ kLocal            1
+ kSynced           2
+ kOutOfSync        4
+ kMissing          8
+ kCheckedOutLocal  16
+ kCheckedOutRemote 32
+ kDeletedLocal     64
+ kDeletedRemote    128
+ kAddedLocal       256
+ kAddedRemote      512
+ kConflicted       1024
+ kLockedLocal      2048
+ kLockedRemote     4096
+ kUpdating         8192
+ kReadOnly         16384
+ kMetaFile         32768
+ */
 enum State
 {
 	kNone = 0,
@@ -23,6 +42,8 @@ enum State
 	kMetaFile = 1 << 15,
 	kMovedLocal = 1 << 16, // only used plugin side for perforce.
 	kMovedRemote = 1 << 17, // only used plugin side for perforce.
+	kMarkUseMine = 1 << 18, // only used by AES plugin
+	kMarkUseTheirs = 1 << 19, // only used by AES plugin
 };
 
 class VersionedAsset

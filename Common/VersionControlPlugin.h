@@ -207,6 +207,12 @@ public:
         kText = 1 << 1
     };
     
+    // Plugin mark method
+    enum MarkMethod {
+        kUseMine = 1 << 0,
+        kUseTheirs = 1 << 1,
+    };
+
     // Main loop, read command from input and process it until EOF.
     int Run();
 
@@ -635,6 +641,19 @@ protected:
 	 */
 	virtual void GetCurrentVersion(std::string& version) = 0;
 
+    /*
+     * Mask assets from VC.
+     * Parameters:
+     *  - assetList: IN/OUT list of versioned asset.
+     *  - method: IN mark method.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+     *
+     * On input, assetList contains assests to be resolved.
+     * On output, assetList contains assests that have been marked with appropriate status.
+     */
+    virtual bool MarkAssets(VersionedAssetList& assetList, MarkMethod method = kUseMine) = 0;
+
 private:
     void InitializeArguments(int argc, char** argv);
     
@@ -672,6 +691,7 @@ private:
     bool HandleUpdateToRevision();
 	bool HandleCurrentRevision();
 	bool HandleCurrentVersion();
+	bool HandleMark(const CommandArgs& args);
 
     bool HandleVersionedAssetsCommand(UnityCommand cmd);
     bool Dispatch(UnityCommand command, const CommandArgs& args);

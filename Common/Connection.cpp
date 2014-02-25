@@ -16,7 +16,7 @@ const size_t MAX_LOG_FILE_SIZE = 2000000;
 
 Connection::Connection(const string& logPath) 
 	: m_Log(NULL), m_Pipe(NULL) 
-{ 
+{
 	// Rotate log file if too large
 	if (PathExists(logPath) && GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
 	{

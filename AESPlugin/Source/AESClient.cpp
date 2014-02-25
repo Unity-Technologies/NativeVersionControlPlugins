@@ -262,6 +262,48 @@ char * strptime(const char *s, const char *format, struct tm *tm)
 
 using namespace std;
 
+const string AESEntry::GetStateAsString() const
+{
+	string res = "";
+	if ((m_State & kLocal) == kLocal)
+		res.append("kLocal ");
+	if ((m_State & kSynced) == kSynced)
+		res.append("kSynced ");
+	if ((m_State & kOutOfSync) == kOutOfSync)
+		res.append("kOutOfSync ");
+	if ((m_State & kMissing) == kMissing)
+		res.append("kMissing ");
+	if ((m_State & kCheckedOutLocal) == kCheckedOutLocal)
+		res.append("kCheckedOutLocal ");
+	if ((m_State & kCheckedOutRemote) == kCheckedOutRemote)
+		res.append("kCheckedOutRemote ");
+	if ((m_State & kDeletedLocal) == kDeletedLocal)
+		res.append("kDeletedLocal ");
+	if ((m_State & kDeletedRemote) == kDeletedRemote)
+		res.append("kDeletedRemote ");
+	if ((m_State & kAddedLocal) == kAddedLocal)
+		res.append("kAddedLocal ");
+	if ((m_State & kAddedRemote) == kAddedRemote)
+		res.append("kAddedRemote ");
+	if ((m_State & kConflicted) == kConflicted)
+		res.append("kConflicted ");
+	if ((m_State & kLockedLocal) == kLockedLocal)
+		res.append("kLockedLocal ");
+	if ((m_State & kLockedRemote) == kLockedRemote)
+		res.append("kLockedRemote ");
+	if ((m_State & kUpdating) == kUpdating)
+		res.append("kUpdating ");
+	if ((m_State & kReadOnly) == kReadOnly)
+		res.append("kReadOnly ");
+	if ((m_State & kMetaFile) == kMetaFile)
+		res.append("kMetaFile ");
+	if ((m_State & kMovedLocal) == kMovedLocal)
+		res.append("kMovedLocal ");
+	if ((m_State & kMovedRemote) == kMovedRemote)
+		res.append("kMovedRemote ");
+	return res;
+}
+
 AESClient::AESClient(const string& url)
 {
     m_CURL.ParseUrl(url, &m_Server, &m_Path);

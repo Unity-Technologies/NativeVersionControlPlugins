@@ -60,6 +60,7 @@ protected:
 	bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList);
 	bool GetCurrentRevision(ChangelistRevision& revisionID);
 	void GetCurrentVersion(std::string& version);
+    bool MarkAssets(VersionedAssetList& assetList, MarkMethod method = kUseMine);
 	bool PerformCustomCommand(const std::string& command, const CommandArgs& args);
 
 private:
@@ -71,14 +72,9 @@ private:
 	
 	bool SaveSnapShotToFile(const std::string& path);
 	bool RestoreSnapShotFromFile(const std::string& path);
-	
-	void AddAssetsToChanges(const VersionedAssetList& assetList, int state);
-	void RemoveAssetsFromChanges(const VersionedAssetList& assetList, int state = kNone);
-    
+	   
 	static int EntryToAssetCallBack(void *data, const std::string& key, AESEntry *entry);
 	void EntriesToAssets(TreeOfEntries& entries, VersionedAssetList& assetList, int ignoredState = kNone);
-	
-	bool FetchAllAssets();
 
 	void ResetTimer();
 	time_t GetTimerSoFar();
@@ -99,23 +95,19 @@ private:
 	TreeOfEntries m_RemoteChangesEntries;
 
 	ChangelistRevisions m_Revisions;
-	
-	time_t m_LastRemoteChangesRefrehTime;
-	
+		
 	time_t m_Timer;
 	time_t m_LastTimer;
 
     AESClient* m_AES;
 
 	static int ScanLocalChangeCallBack(void* data, const std::string& path, uint64_t size, bool isDirectory, time_t ts);
-	static int CleanupLocalCallBack(void* data, const std::string& path, uint64_t size, bool isDirectory, time_t ts);
-	
+
 	static int EntryToJSONCallBack(void *data, const std::string& key, AESEntry *entry);
-	static int ApplySnapShotChangeCallBack(void *data, const std::string& key, AESEntry *entry);
+
+	static int SnapshotRemovedCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int ApplyRemoteChangesCallBack(void *data, const std::string& key, AESEntry *entry);
-	static int ApplyLocalChangesCallBack(void *data, const std::string& key, AESEntry *entry);
-	static int CheckConflictCallBack(void *data, const std::string& key, AESEntry *entry);
-	static int FetchAllCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int ApplySubmitChangesCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int UpdateToRevisionCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int PrintAllCallBack(void *data, const std::string& key, AESEntry *entry);
 };

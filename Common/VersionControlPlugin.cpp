@@ -1093,6 +1093,40 @@ bool VersionControlPlugin::HandleCurrentVersion()
 	return true;
 }
 
+bool VersionControlPlugin::HandleMark(const CommandArgs& args)
+{
+    GetConnection().Log().Trace() << "HandleMark" << Endl;
+
+    MarkMethod method = kUseMine;
+    if (args.size() == 2)
+    {
+        if (args[1] == "mine")
+        {
+            method = kUseMine;
+        }
+        else if (args[1] == "theirs")
+        {
+            method = kUseTheirs;
+        }
+    }
+
+    bool wasOnline = PreHandleCommand();
+
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+
+    if (MarkAssets(assetList, method))
+        SetOnline();
+    else
+        assetList.clear();
+
+    GetConnection() << assetList;
+
+    PostHandleCommand(wasOnline);
+
+    return true;
+}
+
 bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& args)
 {
     GetConnection().Log().Trace() << "Dispatch " << UnityCommandToString(command) << Endl;
@@ -1191,6 +1225,9 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
 
         case UCOM_CurrentVersion:
             return HandleCurrentVersion();
+
+        case UCOM_Mark:
+            return HandleMark(args);
 
         default:
             GetConnection().Log().Debug() << "Command " << UnityCommandToString(command) << " not handled" << Endl;
