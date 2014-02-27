@@ -69,6 +69,16 @@ typedef RadixTree<AESEntry> TreeOfEntries;
 class AESRevision
 {
 public:
+	AESRevision()
+	{
+        m_ComitterName = "";
+        m_ComitterEmail = "";
+        m_Comment = "";
+        m_RevisionID = "";
+        m_Reference = "";
+        m_TimeStamp = (time_t)0;
+	}
+
     AESRevision(const std::string& comitterName, const std::string& comitterEmail, const std::string& comment, const std::string& revisionID, const std::string& reference, time_t timeStamp)
     {
         m_ComitterName = comitterName;
@@ -80,12 +90,22 @@ public:
     }
 
     const std::string GetComitterName() const { return m_ComitterName; }
+	void SetComitterName(const std::string& comitterName) { m_ComitterName = comitterName; };
+
     const std::string GetComitterEmail() const { return m_ComitterEmail; }
-    const std::string GetComment() const { return m_Comment; }
-    const std::string GetRevisionID() const { return m_RevisionID; }
-    const std::string GetReference() const { return m_Reference; }
-    time_t GetTimeStamp() const { return m_TimeStamp; }
-    
+	void SetComitterEmail(const std::string& comitterEmail) { m_ComitterEmail = comitterEmail; };
+
+	const std::string GetComment() const { return m_Comment; }
+	void SetComment(const std::string& comment) { m_Comment = comment; };
+
+	const std::string GetRevisionID() const { return m_RevisionID; }
+	void SetRevisionID(const std::string& revisionID) { m_RevisionID = revisionID; };
+
+	const std::string GetReference() const { return m_Reference; }
+
+	time_t GetTimeStamp() const { return m_TimeStamp; }
+	void SetTimeStamp(time_t  timeStamp) { m_TimeStamp = timeStamp; };
+
 private:
     std::string m_ComitterName;
     std::string m_ComitterEmail;
@@ -108,7 +128,8 @@ public:
 
 	bool GetAvailableRepositories(std::vector<std::string>& repositories);
     
-    bool GetLatestRevision(std::string& revision);
+    bool GetRevision(const std::string& revisionID, AESRevision& revision);
+    bool GetLatestRevision(AESRevision& revision);
     bool GetRevisions(std::vector<AESRevision>& revisions);
     bool GetRevision(const std::string& revisionID, TreeOfEntries& entries);
     bool GetRevisionDelta(const std::string& revisionID, std::string compRevisionID, TreeOfEntries& entries);

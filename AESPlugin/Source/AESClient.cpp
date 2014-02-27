@@ -262,6 +262,33 @@ char * strptime(const char *s, const char *format, struct tm *tm)
 
 using namespace std;
 
+time_t strtotime_t(const string& str)
+{
+	struct tm t;
+	size_t tzPos = str.rfind("+");
+	if (tzPos == string::npos)
+		tzPos = str.rfind("-");
+
+	time_t tzOffset = (time_t)0;
+	if (tzPos == string::npos)
+		strptime(str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
+	else
+	{
+		string s = str.substr(0, tzPos);
+		strptime(s.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
+
+		string tzStr = str.substr(tzPos);
+		int h = 0;
+		int m = 0;
+		sscanf(tzStr.c_str(), "%d:%d", &h, &m);
+		tzOffset = (time_t)(h*3600+m*60);
+	}
+
+	time_t ts = mktime(&t);
+	ts -= tzOffset;
+	return ts;
+}
+
 const string AESEntry::GetStateAsString() const
 {
 	string res = "";
@@ -468,13 +495,10 @@ void DirectoryToEntries(const string& path, const JSONArray& children, TreeOfEnt
         }
         else
         {
-			struct tm t;
-
 			string hash = (child.find("hash") != child.end()) ? *(child.at("hash")) : "";
 			int size = (int)(child.at("size")->AsNumber());
 			string time = *(child.at("mtime"));
-			strptime(time.c_str(), "%Y-%m-%dT%H:%M:%S%z", &t);
-			time_t ts = mktime(&t);
+			time_t ts = strtotime_t(time);
 			
 			string key = path + name;
             
@@ -589,18 +613,18 @@ bool AESClient::GetRevisionDelta(const string& revisionID, string compRevisionID
     return res;
 }
 
-bool AESClient::GetLatestRevision(string& revision)
+bool AESClient::GetRevision(const string& revisionID, AESRevision& revision)
 {
 	ClearLastMessage();
 	string response = "";
-    string url = m_Server + m_Path + "/current?info";
-    
+    string url = m_Server + m_Path + "/" + revisionID + "?info";
+
     if (!m_CURL.GetJSON(url, response))
     {
-		SetLastMessage("GetLatestRevision failed");
+		SetLastMessage("GetRevision failed");
         return false;
     }
-    
+
     bool res = false;
     JSONValue* json = JSON::Parse(response.c_str());
     if (json != NULL && json->IsObject())
@@ -611,24 +635,45 @@ bool AESClient::GetLatestRevision(string& revision)
 			SetLastMessage(*(info.at("message")));
 			res = true;
 		}
-		else if (info.find("revisionID") != info.end())
+		else if (info.find("revInfo") != info.end())
 		{
-			revision = info.at("revisionID")->AsString();
+			const JSONObject& revInfo = *(info.at("revInfo"));
+			const JSONObject& author = *(revInfo.at("author"));
+			string name = *(author.at("name"));
+			string email = *(author.at("email"));
+
+			string time = *(revInfo.at("time"));
+			time_t ts = strtotime_t(time);
+
+			string comment = *(revInfo.at("comment"));
+			string revisionID = *(revInfo.at("id"));
+
+			revision.SetComitterName(name);
+			revision.SetComitterEmail(email);
+			revision.SetTimeStamp(ts);
+			revision.SetComment(comment);
+			revision.SetRevisionID(revisionID);
+
 			res = true;
 		}
 	}
-	
+
 	if (!res)
 	{
 		if (json)
-			SetLastMessage("GetLatestRevision Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
+			SetLastMessage("GetRevision Invalid JSON received: '" + json->Stringify() + "' from '" + response + "'");
 		else
-			SetLastMessage("GetLatestRevision Not JSON: '" + response + "'");
+			SetLastMessage("GetRevision Not JSON: '" + response + "'");
 	}
-    
+
     if (json)
         delete json;
     return res;
+}
+
+bool AESClient::GetLatestRevision(AESRevision& revision)
+{
+	return GetRevision("current", revision);
 }
 
 bool AESClient::GetRevisions(vector<AESRevision>& revisions)
@@ -665,10 +710,8 @@ bool AESClient::GetRevisions(vector<AESRevision>& revisions)
                 string email = *(author.at("email"));
                 
 				string time = *(child.at("time"));
-				struct tm t;
-				strptime(time.c_str(), "%Y-%m-%dT%H:%M:%S%z", &t);
-				time_t ts = mktime(&t);
-				
+				time_t ts = strtotime_t(time);
+
                 const JSONObject& refChildren = *(child.at("children"));
                 string ref = *(refChildren.at("ref"));
                 

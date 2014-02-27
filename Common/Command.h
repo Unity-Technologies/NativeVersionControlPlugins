@@ -35,6 +35,7 @@ enum UnityCommand
 	UCOM_CustomCommand,
 	UCOM_UpdateToRevision,
 	UCOM_CurrentRevision,
+	UCOM_LatestRevision,
 	UCOM_CurrentVersion,
 	UCOM_Mark,
 };

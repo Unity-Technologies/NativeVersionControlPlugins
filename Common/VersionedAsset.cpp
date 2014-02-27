@@ -66,6 +66,10 @@ const string VersionedAsset::GetStateAsString() const
 		res.append("kMovedLocal ");
 	if ((m_State & kMovedRemote) == kMovedRemote)
 		res.append("kMovedRemote ");
+	if ((m_State & kMarkUseMine) == kMarkUseMine)
+		res.append("kMarkUseMine ");
+	if ((m_State & kMarkUseTheirs) == kMarkUseTheirs)
+		res.append("kMarkUseTheirs ");
 	return res;
 }
 

@@ -628,11 +628,20 @@ protected:
 	/**
 	 * Get current revision
      * Parameters:
-     *  - revisionID: OUT current revision.
+     *  - revision: OUT current revision.
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
 	 */
-	virtual bool GetCurrentRevision(ChangelistRevision& revision) = 0;
+	virtual bool GetCurrentRevision(std::string& revision) = 0;
+
+	/**
+	 * Get latest revision
+     * Parameters:
+     *  - revision: OUT latest revision.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 */
+	virtual bool GetLatestRevision(std::string& revision) = 0;
 
 	/**
 	 * Get current version
@@ -690,6 +699,7 @@ private:
     bool HandleUnlock();
     bool HandleUpdateToRevision();
 	bool HandleCurrentRevision();
+	bool HandleLatestRevision();
 	bool HandleCurrentVersion();
 	bool HandleMark(const CommandArgs& args);
 

@@ -58,7 +58,8 @@ protected:
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
 	bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList);
-	bool GetCurrentRevision(ChangelistRevision& revisionID);
+	bool GetCurrentRevision(std::string& revisionID);
+	bool GetLatestRevision(std::string& revisionID);
 	void GetCurrentVersion(std::string& version);
     bool MarkAssets(VersionedAssetList& assetList, MarkMethod method = kUseMine);
 	bool PerformCustomCommand(const std::string& command, const CommandArgs& args);
@@ -88,7 +89,7 @@ private:
     VersionControlPluginOverlays m_Overlays;
     VersionControlPluginCustomCommands m_CustomCommands;
     
-    ChangelistRevision m_LatestRevision;
+    AESRevision m_LatestRevision;
     ChangelistRevision m_SnapShotRevision;
 	TreeOfEntries m_SnapShotEntries;
 	TreeOfEntries m_LocalChangesEntries;
@@ -108,6 +109,7 @@ private:
 	static int SnapshotRemovedCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int ApplyRemoteChangesCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int ApplySubmitChangesCallBack(void *data, const std::string& key, AESEntry *entry);
-	static int UpdateToRevisionCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int UpdateToRevisionCheckCallBack(void *data, const std::string& key, AESEntry *entry);
+	static int UpdateToRevisionDownloadCallBack(void *data, const std::string& key, AESEntry *entry);
 	static int PrintAllCallBack(void *data, const std::string& key, AESEntry *entry);
 };

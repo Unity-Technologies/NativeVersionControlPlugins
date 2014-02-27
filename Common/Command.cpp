@@ -37,6 +37,7 @@ static const CmdInfo infos[] = {
 	{ UCOM_CustomCommand, "customCommand" }, //
 	{ UCOM_UpdateToRevision, "updateToRevision" }, //
 	{ UCOM_CurrentRevision, "current" }, //
+	{ UCOM_LatestRevision, "latest" }, //
 	{ UCOM_CurrentVersion, "version" }, //
 	{ UCOM_Mark, "mark" }, //
 	{ UCOM_Invalid, 0 } // delimiter

@@ -1063,10 +1063,29 @@ bool VersionControlPlugin::HandleCurrentRevision()
 
     bool wasOnline = PreHandleCommand();
 
-	ChangelistRevision currentRevision;
+	string currentRevision;
     if (GetCurrentRevision(currentRevision))
 	{
 		GetConnection().DataLine(string("current:") + currentRevision, MARemote);
+
+        SetOnline();
+	}
+
+    PostHandleCommand(wasOnline);
+
+    return true;
+}
+
+bool VersionControlPlugin::HandleLatestRevision()
+{
+    GetConnection().Log().Trace() << "HandleLatestRevision" << Endl;
+
+    bool wasOnline = PreHandleCommand();
+
+	string latestRevision;
+    if (GetLatestRevision(latestRevision))
+	{
+		GetConnection().DataLine(string("latest:") + latestRevision, MARemote);
 
         SetOnline();
 	}
@@ -1222,6 +1241,9 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
 
         case UCOM_CurrentRevision:
             return HandleCurrentRevision();
+
+        case UCOM_LatestRevision:
+            return HandleLatestRevision();
 
         case UCOM_CurrentVersion:
             return HandleCurrentVersion();
