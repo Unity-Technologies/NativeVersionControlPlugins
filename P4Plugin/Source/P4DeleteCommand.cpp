@@ -75,7 +75,7 @@ public:
 			return true;
 		}
 		
-		string cmd = "delete -v ";
+		string cmd = "delete ";
 		cmd += " " + paths;
 		
 		task.CommandRun(cmd, this);
