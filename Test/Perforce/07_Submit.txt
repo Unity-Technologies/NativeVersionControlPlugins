@@ -53,7 +53,7 @@ p1:-1 0 add //depot/testfile2.txt#1
 i1:Change 1 submitted. (level 48)
 p1:-1 0 Change 1 submitted.
 o1:-1
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "<absroot>/testfile2.txt" 
+v1:fstat  "<absroot>/testfile2.txt" 
 v1:login -s
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
@@ -68,7 +68,7 @@ c:status recurse
 0
 --
 o1:-1
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:fstat  "./<root>/testfile2.txt" 
 v1:login -s
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
