@@ -67,6 +67,56 @@ int UpdateStateForMeta(const string& path, int state)
 	return state;
 }
 
+#ifdef WIN32
+const size_t kPathBufferSize = 1024;
+const size_t kBufferSize = 1024 * 4;
+
+bool GetAFileHash(const string& path, string& md4)
+{
+	unsigned char digest[MD4_DIGEST_LENGTH];
+	wchar_t widePath[kPathBufferSize];
+
+	if (MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, widePath, kPathBufferSize) == 0)
+		widePath[0] = 0;
+	while (*widePath != '\0')
+	{
+		if (*widePath == '/') *widePath = '\\';
+		++widePath;
+	}
+
+	HANDLE handle = CreateFileW(widePath, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (handle == NULL)
+		return false;
+
+	char buffer[kBufferSize];
+    size_t n;
+	MD4_CTX ctx;
+
+	MD4_Init(&ctx);
+	BOOL res = ReadFile(handle, buffer, kDefaultBufferSize, &bytesRead, 0);
+	while (res == TRUE && bytesRead > 0)
+	{
+		MD4_Update(&ctx, buffer, bytesRead);
+		res = ReadFile(handle, buffer, kDefaultBufferSize, &bytesRead, 0);
+    }
+	if (res == TRUE) MD4_Final(digest, &ctx);
+	CloseHandle(handle);
+	if (res != TRUE)
+		return false;
+
+	md4.clear();
+	char tmp[MD4_DIGEST_LENGTH*2+1];
+    for (int i = 0, j = 0; i < MD4_DIGEST_LENGTH; i++, j+=2)
+	{
+		tmp[j] = kHexChars[(digest[i] & 0xF0) >> 4];
+		tmp[j+1] = kHexChars[(digest[i] & 0x0F) >> 0];
+	}
+	tmp[MD4_DIGEST_LENGTH*2] = '\0';
+	md4 = tmp;
+
+	return true;
+}
+#else
 bool GetAFileHash(const string& path, string& md4)
 {
 	unsigned char digest[MD4_DIGEST_LENGTH];
@@ -98,6 +148,7 @@ bool GetAFileHash(const string& path, string& md4)
 
 	return true;
 }
+#endif
 
 enum AESFields { kAESURL, kAESPort, kAESRepository, kAESUserName, kAESPassword, kAESCreateToggle, kAESAvailableRepositories };
 
