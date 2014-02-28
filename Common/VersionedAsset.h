@@ -1,26 +1,9 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <vector>
+#include <set>
 
-/*
- kNone             0
- kLocal            1
- kSynced           2
- kOutOfSync        4
- kMissing          8
- kCheckedOutLocal  16
- kCheckedOutRemote 32
- kDeletedLocal     64
- kDeletedRemote    128
- kAddedLocal       256
- kAddedRemote      512
- kConflicted       1024
- kLockedLocal      2048
- kLockedRemote     4096
- kUpdating         8192
- kReadOnly         16384
- kMetaFile         32768
- */
 enum State
 {
 	kNone = 0,
@@ -88,14 +71,8 @@ private:
 	std::string m_ChangeListID; // Some VCS doesn't support this so it is optional
 };
 
-
-
-#include <vector>
-#include <set>
 typedef std::vector<VersionedAsset> VersionedAssetList;
 typedef std::set<VersionedAsset> VersionedAssetSet;
-
-
 
 std::vector<std::string> Paths(const VersionedAssetList& assets);
 

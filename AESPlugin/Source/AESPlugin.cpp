@@ -250,12 +250,12 @@ int AESPlugin::Test()
 	if (!GetCurrentRevision(revision))
 		return -1;
 	string currRevisionID = revision.substr(0, revision.find(" "));
-	printf("Current revision is [%s]\n", currRevisionID.c_str());
+	printf("Current revision is [%s]: %s\n", currRevisionID.c_str(), revision.c_str());
 
 	if (!GetLatestRevision(revision))
 		return -1;
 	string lastRevisionID = revision.substr(0, revision.find(" "));
-	printf("Latest revision is [%s]\n", lastRevisionID.c_str());
+	printf("Latest revision is [%s]: %s\n", lastRevisionID.c_str(), revision.c_str());
 
 	/*
 	VersionedAssetList list;
@@ -2016,11 +2016,12 @@ bool AESPlugin::GetCurrentRevision(string& revisionID)
 	revisionID = m_SnapShotRevision;
 	if (revisionID == kLocalRevison)
 	{
+		string userName = m_Fields[kAESUserName].GetValue();
 		revisionID = kDefaultListRevision;
 		revisionID.append(" local by ");
-		revisionID.append(m_Fields[kAESUserName].GetValue());
+		revisionID.append(userName.empty() ? "nobody" : userName);
 		revisionID.append(" on ");
-		revisionID.append("0");
+		revisionID.append(ToTimeLong(0));
 
 		return true;
 	}
