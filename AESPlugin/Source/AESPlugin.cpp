@@ -76,12 +76,16 @@ bool GetAFileHash(const string& path, string& md4)
 	unsigned char digest[MD4_DIGEST_LENGTH];
 	wchar_t widePath[kPathBufferSize];
 
+	// UTF8ToWide
 	if (MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, widePath, kPathBufferSize) == 0)
 		widePath[0] = 0;
-	while (*widePath != '\0')
+
+	// ConvertSeparatorsToWindows
+	wchar_t* widePathPtr = &widePath[0];
+	while (*widePathPtr != '\0')
 	{
-		if (*widePath == '/') *widePath = '\\';
-		++widePath;
+		if (*widePathPtr == '/') *widePathPtr = '\\';
+		++widePathPtr;
 	}
 
 	HANDLE handle = CreateFileW(widePath, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
@@ -89,7 +93,7 @@ bool GetAFileHash(const string& path, string& md4)
 		return false;
 
 	char buffer[kBufferSize];
-    size_t n;
+    DWORD bytesRead;
 	MD4_CTX ctx;
 
 	MD4_Init(&ctx);
