@@ -751,7 +751,7 @@ int AESPlugin::Connect()
         NotifyOffline("Missing value for port");
         return -1;
 	}
-	if (atoi(port.c_str()) <= 0)
+	if (port.find_first_not_of("0123456789") != std::string::npos)
 	{
         GetConnection().Log().Debug() << "Invalid value set for port" << Endl;
         SetOnline();
