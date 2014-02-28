@@ -31,7 +31,7 @@
 
 using namespace std;
 
-static const char* kAESPluginVersion  = "1.0.10";
+static const char* kAESPluginVersion  = "1.0.11";
 
 static const char* kCacheFileName  = "/Library/aesSnapshot_";
 static const char* kCacheFileNameExt  = ".txt";
@@ -737,6 +737,12 @@ int AESPlugin::Connect()
         return -1;
 	}
 
+	char endchar = url[url.length()-1];
+	if (endchar == '/')
+	{
+		url = url.substr(0, url.length()-1);
+	}
+
 	string port = m_Fields[kAESPort].GetValue();
 	if (port.empty())
 	{
@@ -744,6 +750,13 @@ int AESPlugin::Connect()
         SetOnline();
         NotifyOffline("Missing value for port");
         return -1;
+	}
+	if (atoi(port.c_str()) <= 0)
+	{
+        GetConnection().Log().Debug() << "Invalid value set for port" << Endl;
+        SetOnline();
+        NotifyOffline("Invalid value for port");
+		return -1;
 	}
 
 	string repo = m_Fields[kAESRepository].GetValue();
@@ -1705,10 +1718,7 @@ int AESPlugin::UpdateToRevisionCheckCallBack(void *data, const string& key, AESE
 	{
 		if (localEntry->GetHash() != entry->GetHash() && !(localEntry->HasState(kMarkUseMine) || localEntry->HasState(kMarkUseTheirs)))
 		{
-			d->plugin->GetConnection().Log().Debug() << "Asset '" << key << "' no decision made for it."
-				<< "LocalHash: " << localEntry->GetHash()
-				<< ", RemoteHash: " << entry->GetHash()
-				<< Endl;
+			d->plugin->GetConnection().Log().Debug() << "Asset '" << key << "' no decision made for it." << Endl;
 			return -1;
 		}
 	}
@@ -1759,10 +1769,7 @@ int AESPlugin::UpdateToRevisionDownloadCallBack(void *data, const string& key, A
 			{
 				if (localEntry->GetHash() != entry->GetHash())
 				{
-					d->plugin->GetConnection().Log().Debug() << "Asset '" << key << "' no decision made for it."
-						<< "LocalHash: " << localEntry->GetHash()
-						<< ", RemoteHash: " << entry->GetHash()
-					<< Endl;
+					d->plugin->GetConnection().Log().Debug() << "Asset '" << key << "' no decision made for it." << Endl;
 					return -1;
 				}
 				else

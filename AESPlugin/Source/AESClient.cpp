@@ -270,7 +270,7 @@ time_t strtotime_t(const string& str)
 		tzPos = str.rfind("-");
 
 	time_t tzOffset = (time_t)0;
-	if (tzPos == string::npos)
+	if (tzPos == string::npos || tzPos < 10)
 		strptime(str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
 	else
 	{
@@ -328,6 +328,10 @@ const string AESEntry::GetStateAsString() const
 		res.append("kMovedLocal ");
 	if ((m_State & kMovedRemote) == kMovedRemote)
 		res.append("kMovedRemote ");
+	if ((m_State & kMarkUseMine) == kMarkUseMine)
+		res.append("kMarkUseMine ");
+	if ((m_State & kMarkUseTheirs) == kMarkUseTheirs)
+		res.append("kMarkUseTheirs ");
 	return res;
 }
 
