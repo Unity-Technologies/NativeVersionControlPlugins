@@ -35,9 +35,9 @@ static const char* gVersionControlPluginTraits[] =
 {
     "requiresNetwork",
     "enablesCheckout",
-    "enablesVersioningFolders",
     "enablesLocking",
     "enablesRevertUnchanged",
+    "enablesVersioningFolders",
     "enablesChangelists",
     "enablesGetLatestOnChangeSetSubset",
     "enablesConflictHandlingByPlugin",
@@ -956,7 +956,7 @@ bool VersionControlPlugin::HandleConfigTraits()
         {
             flagsList.push_back(gVersionControlPluginTraits[i]);
         }
-		++i;
+		i++;
 	}
 
     GetConnection().DataLine(flagsList.size());
@@ -1067,7 +1067,6 @@ bool VersionControlPlugin::HandleCurrentRevision()
     if (GetCurrentRevision(currentRevision))
 	{
 		GetConnection().DataLine(string("current:") + currentRevision, MARemote);
-
         SetOnline();
 	}
 
@@ -1086,7 +1085,6 @@ bool VersionControlPlugin::HandleLatestRevision()
     if (GetLatestRevision(latestRevision))
 	{
 		GetConnection().DataLine(string("latest:") + latestRevision, MARemote);
-
         SetOnline();
 	}
 

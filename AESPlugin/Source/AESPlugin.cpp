@@ -31,7 +31,7 @@
 
 using namespace std;
 
-static const char* kAESPluginVersion  = "1.0.11";
+static const char* kAESPluginVersion  = "1.0.13";
 
 static const char* kCacheFileName  = "/Library/aesSnapshot_";
 static const char* kCacheFileNameExt  = ".txt";
@@ -42,7 +42,9 @@ static const char* kPluginName = "AssetExchangeServer";
 
 static const char* kMetaExtension = ".meta";
 
-static const char kHexChars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+static const char* kNullHash = "00000000000000000000000000000000";
+
+static const char* kHexChars = "0123456789abcdef";
 
 string ToTime(time_t timeInSeconds)
 {
@@ -60,9 +62,14 @@ string ToTimeLong(time_t timeInSeconds)
     return string(buffer);
 }
 
+bool IsMeta(const string& path)
+{
+	return (path.length() > 5) && (path.substr(path.length() - 5, 5) == kMetaExtension);
+}
+
 int UpdateStateForMeta(const string& path, int state)
 {
-	if (path.length() > 5 && path.substr(path.length() - 5, 5) == kMetaExtension)
+	if (IsMeta(path))
 		state |= kMetaFile;
 	return state;
 }
@@ -234,7 +241,7 @@ int AESPlugin::Test()
 {
 	GetConnection().Log().Debug() << "Test" << Endl;
 
-	m_Fields[kAESURL].SetValue("http://localhost");
+	m_Fields[kAESURL].SetValue("localhost");
 	m_Fields[kAESPort].SetValue("3030");
 	m_Fields[kAESRepository].SetValue("EmptyRepo");
 	m_Fields[kAESUserName].SetValue("");
@@ -257,12 +264,12 @@ int AESPlugin::Test()
 	string lastRevisionID = revision.substr(0, revision.find(" "));
 	printf("Latest revision is [%s]: %s\n", lastRevisionID.c_str(), revision.c_str());
 
-	/*
 	VersionedAssetList list;
 	if (!GetAssetsChangeStatus(kNewListRevision, list))
 		return -1;
 	PrintAssets("Outgoing changes", list);
 
+	/*
 	if (!MarkAssets(list, kUseTheirs))
 		return -1;
 	PrintAssets("Mark theirs", list);
@@ -310,7 +317,7 @@ const char* AESPlugin::GetLogFileName()
 
 const AESPlugin::TraitsFlags AESPlugin::GetSupportedTraitFlags()
 {
-	return (kRequireNetwork | kEnablesCheckout | kEnablesGetLatestOnChangeSetSubset);
+	return (kRequireNetwork | kEnablesCheckout | kEnablesGetLatestOnChangeSetSubset | kEnablesVersioningFolders);
 }
 
 AESPlugin::CommandsFlags AESPlugin::GetOnlineUICommands()
@@ -373,8 +380,8 @@ int AESPlugin::ScanLocalChangeCallBack(void* data, const string& path, uint64_t 
 	{
 		return 0;
 	}
-	
-	string md4 = "00000000000000000000000000000000";
+
+	string md4 = kNullHash;
 	GetAFileHash(path, md4);
 
 	// search in local changes
@@ -448,7 +455,7 @@ int AESPlugin::SnapshotRemovedCallBack(void *data, const string& key, AESEntry *
 	string localPath = plugin->GetProjectPath() + "/" + key;
 	if (!PathExists(localPath))
 	{
-		plugin->m_LocalChangesEntries.insert(key, AESEntry(entry->GetRevisionID(), "00000000000000000000000000000000", UpdateStateForMeta(key, kDeletedLocal), 0, entry->IsDir(), 0));
+		plugin->m_LocalChangesEntries.insert(key, AESEntry(entry->GetRevisionID(), kNullHash, UpdateStateForMeta(key, kDeletedLocal), 0, entry->IsDir(), 0));
 	}
 	return 0;
 }
@@ -482,7 +489,7 @@ bool AESPlugin::RefreshLocal()
 			}
 			else
 			{
-				m_LocalChangesEntries.insert(path, AESEntry(entry->GetRevisionID(), "00000000000000000000000000000000", UpdateStateForMeta(path, kDeletedLocal), 0, entry->IsDir(), 0));
+				m_LocalChangesEntries.insert(path, AESEntry(entry->GetRevisionID(), kNullHash, UpdateStateForMeta(path, kDeletedLocal), 0, entry->IsDir(), 0));
 			}
 		}
 	}
@@ -649,7 +656,7 @@ bool AESPlugin::RestoreSnapShotFromFile(const string& path)
 				const JSONObject& entry = (*i)->AsObject();
 
 				string path = *(entry.at("path"));
-				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "00000000000000000000000000000000";
+				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : kNullHash;
 				bool isDir = *(entry.at("directory"));
 				int state = (int)((entry.at("state"))->AsNumber());
 				uint64_t size = (entry.find("size") != entry.end()) ? (uint64_t)((entry.at("size"))->AsNumber()) : 0;
@@ -668,7 +675,7 @@ bool AESPlugin::RestoreSnapShotFromFile(const string& path)
 				const JSONObject& entry = (*i)->AsObject();
 
 				string path = *(entry.at("path"));
-				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : "00000000000000000000000000000000";
+				string hash = (entry.find("hash") != entry.end()) ? *(entry.at("hash")) : kNullHash;
 				bool isDir = *(entry.at("directory"));
 				int state = (int)((entry.at("state"))->AsNumber());
 				int size = (entry.find("size") != entry.end()) ? (int)((entry.at("size"))->AsNumber()) : 0;
@@ -751,7 +758,7 @@ int AESPlugin::Connect()
         NotifyOffline("Missing value for port");
         return -1;
 	}
-	if (port.find_first_not_of("0123456789") != std::string::npos)
+	if (port.find_first_not_of("0123456789") != string::npos)
 	{
         GetConnection().Log().Debug() << "Invalid value set for port" << Endl;
         SetOnline();
@@ -948,7 +955,7 @@ bool AESPlugin::AddAssets(VersionedAssetList& assetList)
 
 		uint64_t size = 0;
 		time_t ts = 0;
-		string md4 = "00000000000000000000000000000000";
+		string md4 = kNullHash;
 
 		GetAFileInfo(asset.GetPath(), &size, NULL, &ts);
 		GetAFileHash(asset.GetPath(), md4);
@@ -1434,23 +1441,20 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 		AESEntry* localEntry = m_LocalChangesEntries.search(path);
 		AESEntry* remoteEntry = m_RemoteChangesEntries.search(path);
 
-		if (asset.IsFolder())
-		{
-			// Look for .meta file instead.
-			path = path.substr(0, path.size()-1);
-			path.append(kMetaExtension);
-
-			GetConnection().Log().Debug() << "GetAssetsStatus folder, look for .meta file instead " << path << Endl;
-			localEntry = m_LocalChangesEntries.search(path);
-			remoteEntry = m_RemoteChangesEntries.search(path);
-		}
-
 		if (localEntry == NULL)
 		{
 			state = kLocal;
 			if (remoteEntry != NULL)
 			{
-				state = remoteEntry->GetState() | kOutOfSync;
+				state |= remoteEntry->GetState();
+				if (remoteEntry->GetState() == kDeletedRemote)
+				{
+					state |= kSynced;
+				}
+				else
+				{
+					state |= kOutOfSync;
+				}
 			}
 		}
 		else
@@ -1791,7 +1795,7 @@ int AESPlugin::UpdateToRevisionDownloadCallBack(void *data, const string& key, A
 		}
 
 		// Delete file
-		::DeleteRecursive(localPath);
+		DeleteRecursive(localPath);
 
 		// Download file
 		string targetPath = d->plugin->GetProjectPath() + "/" + key;
@@ -2013,8 +2017,7 @@ bool AESPlugin::GetCurrentRevision(string& revisionID)
         return false;
     }
 
-	revisionID = m_SnapShotRevision;
-	if (revisionID == kLocalRevison)
+	if (m_SnapShotRevision == kLocalRevison)
 	{
 		string userName = m_Fields[kAESUserName].GetValue();
 		revisionID = kDefaultListRevision;
@@ -2029,7 +2032,7 @@ bool AESPlugin::GetCurrentRevision(string& revisionID)
 	AESRevision revision;
 	if (!m_AES->GetRevision(m_SnapShotRevision, revision))
 	{
-		GetConnection().Log().Debug() << "Cannot get revision from AES, reason: " << m_AES->GetLastMessage() << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot get revision info, reason: ") + m_AES->GetLastMessage()));
 		return false;
 	}
 
@@ -2053,20 +2056,19 @@ bool AESPlugin::GetLatestRevision(string& revisionID)
         return false;
     }
 
-	AESRevision latestRevision;
-	if (!m_AES->GetLatestRevision(latestRevision))
+	if (!RefreshRemote())
 	{
-		GetConnection().Log().Debug() << "Cannot get latest revision from AES, reason: " << m_AES->GetLastMessage() << Endl;
+		StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot refresh remote, reason: ") + m_AES->GetLastMessage()));
 		return false;
 	}
 
-	revisionID = latestRevision.GetRevisionID();
+	revisionID = m_LatestRevision.GetRevisionID();
 	revisionID.append(" ");
-	revisionID.append(latestRevision.GetComment());
+	revisionID.append(m_LatestRevision.GetComment());
 	revisionID.append(" by ");
-	revisionID.append(latestRevision.GetComitterEmail());
+	revisionID.append(m_LatestRevision.GetComitterEmail());
 	revisionID.append(" on ");
-	revisionID.append(ToTimeLong(latestRevision.GetTimeStamp()));
+	revisionID.append(ToTimeLong(m_LatestRevision.GetTimeStamp()));
 
 	return true;
 }
