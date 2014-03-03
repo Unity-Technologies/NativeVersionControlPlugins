@@ -40,6 +40,8 @@ static const CmdInfo infos[] = {
 	{ UCOM_LatestRevision, "latest" }, //
 	{ UCOM_CurrentVersion, "version" }, //
 	{ UCOM_Mark, "mark" }, //
+	{ UCOM_ListRevision, "list" }, //
+	{ UCOM_ApplyRevision, "apply" }, //
 	{ UCOM_Invalid, 0 } // delimiter
 };
 

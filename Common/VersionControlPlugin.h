@@ -354,8 +354,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be added.
-     * On output, assetList contains assests that have been added with appropriate status.
+     * On input, assetList contains assets to be added.
+     * On output, assetList contains assets that have been added with appropriate status.
      */
     virtual bool AddAssets(VersionedAssetList& assetList) = 0;
     
@@ -366,8 +366,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be checked out.
-     * On output, assetList contains assests that have been checked out with appropriate status.
+     * On input, assetList contains assets to be checked out.
+     * On output, assetList contains assets that have been checked out with appropriate status.
      */
     virtual bool CheckoutAssets(VersionedAssetList& assetList) = 0;
     
@@ -380,8 +380,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to download.
-     * On output, assetList contains assests that have been downloaded from VC with appropriate status.
+     * On input, assetList contains assets to download.
+     * On output, assetList contains assets that have been downloaded from VC with appropriate status.
      */
     virtual bool DownloadAssets(const std::string& targetDir, const ChangelistRevisions& changes, VersionedAssetList& assetList) = 0;
     
@@ -392,8 +392,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to get.
-     * On output, assetList contains assests that have been get from VC with appropriate status.
+     * On input, assetList contains assets to get.
+     * On output, assetList contains assets that have been get from VC with appropriate status.
      */
     virtual bool GetAssets(VersionedAssetList& assetList) = 0;
     
@@ -404,8 +404,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be reverted.
-     * On output, assetList contains assests that have been reverted with appropriate status.
+     * On input, assetList contains assets to be reverted.
+     * On output, assetList contains assets that have been reverted with appropriate status.
      */
     virtual bool RevertAssets(VersionedAssetList& assetList) = 0;
     
@@ -417,8 +417,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be resolved.
-     * On output, assetList contains assests that have been resolved with appropriate status.
+     * On input, assetList contains assets to be resolved.
+     * On output, assetList contains assets that have been resolved with appropriate status.
      */
     virtual bool ResolveAssets(VersionedAssetList& assetList, ResolveMethod method = kMine) = 0;
     
@@ -429,8 +429,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be removed.
-     * On output, assetList contains assests that have been removed with appropriate status.
+     * On input, assetList contains assets to be removed.
+     * On output, assetList contains assets that have been removed with appropriate status.
      */
     virtual bool RemoveAssets(VersionedAssetList& assetList) = 0;
     
@@ -442,8 +442,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, fromAssetList contains assests to be moved and toAssetList the corresponding asset.
-     * On output, toAssetList contains assests that have been moved with appropriate status.
+     * On input, fromAssetList contains assets to be moved and toAssetList the corresponding asset.
+     * On output, toAssetList contains assets that have been moved with appropriate status.
      */
     virtual bool MoveAssets(const VersionedAssetList& fromAssetList, VersionedAssetList& toAssetList) = 0;
     
@@ -454,8 +454,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be locked.
-     * On output, assetList contains assests that have been locked with appropriate status.
+     * On input, assetList contains assets to be locked.
+     * On output, assetList contains assets that have been locked with appropriate status.
      */
     virtual bool LockAssets(VersionedAssetList& assetList) = 0;
     
@@ -466,8 +466,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be unlocked.
-     * On output, assetList contains assests that have been unlocked with appropriate status.
+     * On input, assetList contains assets to be unlocked.
+     * On output, assetList contains assets that have been unlocked with appropriate status.
      */
     virtual bool UnlockAssets(VersionedAssetList& assetList) = 0;
     
@@ -480,8 +480,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be submitted.
-     * On output, assetList contains assests that have been submitted with appropriate status.
+     * On input, assetList contains assets to be submitted.
+     * On output, assetList contains assets that have been submitted with appropriate status.
      */
     virtual bool SubmitAssets(const Changelist& changeList, VersionedAssetList& assetList, bool saveOnly = false) = 0;
     
@@ -493,8 +493,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests for which file mode needs to be changes.
-     * On output, assetList contains assests with file mode changed.
+     * On input, assetList contains assets for which file mode needs to be changes.
+     * On output, assetList contains assets with file mode changed.
      */
     virtual bool SetAssetsFileMode(VersionedAssetList& assetList, FileMode mode) = 0;
     
@@ -506,8 +506,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests for which status is asked.
-     * On output, assetList contains assests with appropriate status.
+     * On input, assetList contains assets for which status is asked.
+     * On output, assetList contains assets with appropriate status.
      */
     virtual bool GetAssetsStatus(VersionedAssetList& assetList, bool recursive = false) = 0;
     
@@ -519,8 +519,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests for which status is asked.
-     * On output, assetList contains assests with appropriate status.
+     * On input, assetList contains assets for which status is asked.
+     * On output, assetList contains assets with appropriate status.
      */
     virtual bool GetAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
     
@@ -532,8 +532,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests for which status is asked.
-     * On output, assetList contains assests with appropriate status.
+     * On input, assetList contains assets for which status is asked.
+     * On output, assetList contains assets with appropriate status.
      */
     virtual bool GetIncomingAssetsChangeStatus(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
     
@@ -567,8 +567,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests for which revision should be set.
-     * On output, assetList contains assests with appropriate status.
+     * On input, assetList contains assets for which revision should be set.
+     * On output, assetList contains assets with appropriate status.
      */
     virtual bool SetRevision(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
     
@@ -592,15 +592,15 @@ protected:
     virtual bool DeleteRevision(const ChangelistRevision& revision) = 0;
     
     /*
-     * Revert assests to a specific revision from VC.
+     * Revert assets to a specific revision from VC.
      * Parameters:
      *  - revision: IN specific revision.
      *  - assetList: IN/OUT list of versioned asset.
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be reverted.
-     * On output, assetList contains assests that have been reverted with appropriate status.
+     * On input, assetList contains assets to be reverted.
+     * On output, assetList contains assets that have been reverted with appropriate status.
      */
     virtual bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
 	
@@ -615,6 +615,16 @@ protected:
 	virtual bool PerformCustomCommand(const std::string& command, const CommandArgs& args) = 0;
 
 	/**
+	 * List a specifc revision
+     * Parameters:
+     *  - revisionID: IN specific revision.
+     *  - assetList: OUT list of versioned asset.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 */
+	virtual bool ListRevision(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
+
+	/**
 	 * Update to a specifc revision
      * Parameters:
      *  - revisionID: IN specific revision.
@@ -622,8 +632,23 @@ protected:
      *  - assetList: OUT list of versioned asset updated.
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+
+     * On output, assetList contains assets updated with appropriate status.
 	 */
 	virtual bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList) = 0;
+
+	/**
+	 * Apply revision specific changes
+     * Parameters:
+     *  - revisionID: IN specific revision.
+     *  - assetList: IN/OUT versioned asset to be fetched.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 *
+     * On input, assetList contains assets changes to be applied.
+     * On output, assetList contains assets changes applied with appropriate status.
+	 */
+	virtual bool ApplyRevisionChanges(const ChangelistRevision& revision, VersionedAssetList& assetList) = 0;
 
 	/**
 	 * Get current revision
@@ -658,8 +683,8 @@ protected:
      * Returns:
      *  - True if operation succeeded, false otherwise (VCStatus contains errors).
      *
-     * On input, assetList contains assests to be resolved.
-     * On output, assetList contains assests that have been marked with appropriate status.
+     * On input, assetList contains assets to be resolved.
+     * On output, assetList contains assets that have been marked with appropriate status.
      */
     virtual bool MarkAssets(VersionedAssetList& assetList, MarkMethod method = kUseMine) = 0;
 
@@ -697,7 +722,9 @@ private:
     bool HandleStatus(const CommandArgs& args);
     bool HandleSubmit(const CommandArgs& args);
     bool HandleUnlock();
+    bool HandleListRevision();
     bool HandleUpdateToRevision();
+    bool HandleApplyRevisionChanges();
 	bool HandleCurrentRevision();
 	bool HandleLatestRevision();
 	bool HandleCurrentVersion();

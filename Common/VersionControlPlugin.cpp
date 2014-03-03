@@ -1030,6 +1030,27 @@ bool VersionControlPlugin::HandleSetConfigParameters(const CommandArgs& args)
     return true;
 }
 
+bool VersionControlPlugin::HandleListRevision()
+{
+    GetConnection().Log().Trace() << "HandleListRevision" << Endl;
+
+    bool wasOnline = PreHandleCommand();
+
+	ChangelistRevision revision;
+	GetConnection().ReadLine(revision);
+
+    VersionedAssetList assetList;
+    if (ListRevision(revision, assetList))
+        SetOnline();
+    else
+        assetList.clear();
+
+    GetConnection() << assetList;
+
+    PostHandleCommand(wasOnline);
+
+    return true;
+}
 
 bool VersionControlPlugin::HandleUpdateToRevision()
 {
@@ -1046,6 +1067,30 @@ bool VersionControlPlugin::HandleUpdateToRevision()
     VersionedAssetList assetList;
 
     if (UpdateToRevision(revision, ignoredAssetList, assetList))
+        SetOnline();
+    else
+        assetList.clear();
+
+    GetConnection() << assetList;
+
+    PostHandleCommand(wasOnline);
+
+    return true;
+}
+
+bool VersionControlPlugin::HandleApplyRevisionChanges()
+{
+    GetConnection().Log().Trace() << "HandleApplyRevisionChanges" << Endl;
+
+    bool wasOnline = PreHandleCommand();
+
+	ChangelistRevision revision;
+	GetConnection().ReadLine(revision);
+
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+
+    if (ApplyRevisionChanges(revision, assetList))
         SetOnline();
     else
         assetList.clear();
@@ -1234,8 +1279,14 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
         case UCOM_Unlock:
             return HandleUnlock();
 
+        case UCOM_ListRevision:
+            return HandleListRevision();
+
         case UCOM_UpdateToRevision:
             return HandleUpdateToRevision();
+
+        case UCOM_ApplyRevision:
+            return HandleApplyRevisionChanges();
 
         case UCOM_CurrentRevision:
             return HandleCurrentRevision();

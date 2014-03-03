@@ -57,7 +57,9 @@ protected:
     bool UpdateRevision(const ChangelistRevision& revision, std::string& description);
     bool DeleteRevision(const ChangelistRevision& revision);
     bool RevertChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
+	bool ListRevision(const ChangelistRevision& revision, VersionedAssetList& assetList);
 	bool UpdateToRevision(const ChangelistRevision& revision, const VersionedAssetList& ignoredAssetList, VersionedAssetList& assetList);
+	bool ApplyRevisionChanges(const ChangelistRevision& revision, VersionedAssetList& assetList);
 	bool GetCurrentRevision(std::string& revisionID);
 	bool GetLatestRevision(std::string& revisionID);
 	void GetCurrentVersion(std::string& version);
