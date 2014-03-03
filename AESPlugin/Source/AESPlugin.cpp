@@ -31,7 +31,7 @@
 
 using namespace std;
 
-static const char* kAESPluginVersion  = "1.0.13";
+static const char* kAESPluginVersion  = "1.0.14";
 
 static const char* kCacheFileName  = "/Library/aesSnapshot_";
 static const char* kCacheFileNameExt  = ".txt";
@@ -265,28 +265,32 @@ int AESPlugin::Test()
 	printf("Latest revision is [%s]: %s\n", lastRevisionID.c_str(), revision.c_str());
 
 	VersionedAssetList list;
-	/*
 	if (!ListRevision(lastRevisionID, list))
 		return -1;
 	PrintAssets("Lastest revision assets", list);
-	*/
 
-	Changes changes;
-	if (!GetAssetsIncomingChanges(changes))
-		return -1;
-
-	/*
-	for (Changes::const_iterator i = changes.begin() ; i != changes.end() ; i++)
+	VersionedAssetList::iterator i = list.begin();
+	while (i != list.end())
 	{
-		if (!GetIncomingAssetsChangeStatus((*i).GetRevision(), list))
-			return -1;
-		PrintAssets(string("Incoming changes for ")+ (*i).GetRevision(), list);
-	}
-	*/
+		if ((*i).IsFolder() || (*i).HasState(kConflicted))
+		{
+			i = list.erase(i);
+			continue;
+		}
 
-	if (!GetIncomingAssetsChangeStatus("9a66a37d6382c8f4f8466414a9711d50c8680b62", list))
+		string path = (*i).GetPath();
+		if (path.find("Effects") == string::npos)
+		{
+			i = list.erase(i);
+			continue;
+		}
+
+		i++;
+	}
+
+	if (!ApplyRevisionChanges(lastRevisionID, list))
 		return -1;
-	PrintAssets("Incoming changes for 9a66a37d6382c8f4f8466414a9711d50c8680b62", list);
+	PrintAssets("Updated assets", list);
 
 	Disconnect();
 	
@@ -1439,6 +1443,10 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 					state |= kOutOfSync;
 				}
 			}
+			else
+			{
+				state = UpdateStateForMeta(path, kDeletedLocal | kDeletedRemote | kSynced);
+			}
 		}
 		else
 		{
@@ -1726,8 +1734,128 @@ bool AESPlugin::ListRevision(const ChangelistRevision& revision, VersionedAssetL
 bool AESPlugin::ApplyRevisionChanges(const ChangelistRevision& revision, VersionedAssetList& assetList)
 {
     GetConnection().Log().Debug() << "ApplyRevisionChanges" << Endl;
-	StatusAdd(VCSStatusItem(VCSSEV_Error, "### NOT IMPLEMENTED ###"));
-    return true;
+
+	if (!EnsureConnected())
+    {
+        return false;
+    }
+
+	string searchedRevision = revision;
+	if (searchedRevision == kLatestRevison)
+    {
+		searchedRevision = m_LatestRevision.GetRevisionID();
+	}
+
+    TreeOfEntries entries;
+	if (m_SnapShotRevision == kLocalRevison)
+	{
+		// First revision, no delta
+		GetConnection().Log().Debug() << "First revision" << Endl;
+		if (!m_AES->GetRevision(searchedRevision, entries))
+		{
+			StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
+			return true;
+		}
+	}
+	else
+	{
+		GetConnection().Log().Debug() << "Compare revision " << searchedRevision << " with " << m_SnapShotRevision << Endl;
+		if (!m_AES->GetRevisionDelta(searchedRevision, m_SnapShotRevision, entries))
+		{
+			StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
+			return true;
+		}
+	}
+
+	TreeOfEntries searchEntries;
+	TreeOfEntries updatedEntries;
+	for (VersionedAssetList::const_iterator i = assetList.begin() ; i != assetList.end() ; i++)
+	{
+		const VersionedAsset& asset = (*i);
+		if (asset.IsFolder())
+		{
+			// Skip folders
+			continue;
+		}
+
+		string path = asset.GetPath().substr(GetProjectPath().size()+1);
+		AESEntry* entry = entries.search(path);
+		if (entry == NULL)
+		{
+			StatusAdd(VCSStatusItem(VCSSEV_Error, string("Asset not found in revision ") + path));
+			return true;
+		}
+
+		bool applyChange = true;
+		AESEntry* localEntry = m_LocalChangesEntries.search(path);
+		if (localEntry != NULL)
+		{
+			if (localEntry->HasState(kMarkUseMine))
+			{
+				GetConnection().Log().Debug() << "Asset '" << path << "' is marked as mine." << Endl;
+				applyChange = false;
+			}
+			else if (localEntry->HasState(kMarkUseTheirs))
+			{
+				GetConnection().Log().Debug() << "Asset '" << path << "' is marked as theirs." << Endl;
+			}
+			else
+			{
+				if (localEntry->GetHash() != entry->GetHash())
+				{
+					GetConnection().Log().Debug() << "Asset '" << path << "' no decision made for it." << Endl;
+					StatusAdd(VCSStatusItem(VCSSEV_Error, string("Asset still in conflict ") + path));
+					return true;
+				}
+
+				GetConnection().Log().Debug() << "Asset '" << path << "' is in synced, skip it." << Endl;
+				applyChange = false;
+			}
+		}
+
+		if (applyChange)
+		{
+			string localPath = asset.GetPath();
+			if (entry->HasState(kAddedRemote) || entry->HasState(kCheckedOutRemote))
+			{
+				DeleteRecursive(localPath);
+				if (!m_AES->Download(entry, path, localPath))
+				{
+					StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot download asset, reason: ") + m_AES->GetLastMessage()));
+					return true;
+				}
+
+				// Update Snapshot
+				uint64_t size = 0;
+				time_t ts = 0;
+				GetAFileInfo(localPath, &size, NULL, &ts);
+
+				GetConnection().Log().Debug() << "Add file from remote change: " << localPath << " (Size: " << size << ", TS: " << ToTime(ts) << ")" << Endl;
+				m_SnapShotEntries.insert(path, AESEntry(entry->GetRevisionID(), entry->GetHash(), UpdateStateForMeta(path, kSynced), size, false, ts));
+				m_LocalChangesEntries.insert(path, AESEntry(entry->GetRevisionID(), entry->GetHash(), UpdateStateForMeta(path, kSynced), size, false, ts));
+				updatedEntries.insert(path, AESEntry(entry->GetRevisionID(), entry->GetHash(), UpdateStateForMeta(path, kSynced), size, false, ts));
+			}
+			else if (entry->HasState(kDeletedRemote))
+			{
+				DeleteRecursive(localPath);
+
+				GetConnection().Log().Debug() << "Delete file from remote change: " << localPath << Endl;
+				m_SnapShotEntries.erase(path);
+				m_LocalChangesEntries.erase(path);
+				updatedEntries.insert(path, AESEntry(entry->GetRevisionID(), entry->GetHash(), UpdateStateForMeta(path, kSynced), 0, false, 0));
+			}
+		}
+	}
+
+	// Apply local changes
+	if (!RefreshLocal())
+	{
+		GetConnection().Log().Debug() << "Cannot refresh local" << Endl;
+	}
+
+	assetList.clear();
+	EntriesToAssets(updatedEntries, assetList);
+    return GetAssetsStatus(assetList, false);
 }
 
 typedef struct {
