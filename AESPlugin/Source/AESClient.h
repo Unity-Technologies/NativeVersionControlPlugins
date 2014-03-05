@@ -135,7 +135,8 @@ public:
     bool GetRevisionDelta(const std::string& revisionID, std::string compRevisionID, TreeOfEntries& entries);
     
     bool Download(AESEntry* entry, const std::string& path, const std::string& target);
-	
+	bool DownloadThumbnail(const std::string& revisionID, const std::string& path, const std::string& target, int size);
+
 	bool ApplyChanges(const std::string& basePath, TreeOfEntries& addOrUpdateEntries, TreeOfEntries& deleteEntries, const std::string& comment, int* succedeedEntries);
 
 	bool CreateRepository(const std::string& name, const std::string& type);

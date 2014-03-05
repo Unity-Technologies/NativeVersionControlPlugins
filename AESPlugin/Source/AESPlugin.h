@@ -64,6 +64,7 @@ protected:
 	bool GetLatestRevision(std::string& revisionID);
 	void GetCurrentVersion(std::string& version);
     bool MarkAssets(VersionedAssetList& assetList, MarkMethod method = kUseMine);
+	bool GetAssetsThumbnail(const ChangelistRevision& revision, VersionedAssetList& assetList, int size);
 	bool PerformCustomCommand(const std::string& command, const CommandArgs& args);
 
 private:

@@ -40,6 +40,7 @@ enum UnityCommand
 	UCOM_Mark,
 	UCOM_ListRevision,
 	UCOM_ApplyRevision,
+	UCOM_Thumbnail,
 };
 
 // Command string as received from unity pipe

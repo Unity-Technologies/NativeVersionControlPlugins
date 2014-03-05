@@ -26,6 +26,7 @@ Connection::Connection(const string& logPath)
 			DeleteRecursive(prevPath);
 		MoveAFile(logPath, prevPath);
 	}
+	EnsureDirectory(ParentDirectory(logPath));
 	m_Log = new LogStream(logPath);
 }
 
@@ -42,9 +43,11 @@ Connection::Connection(const string& logPath, const string& recordPath)
 			DeleteRecursive(prevPath);
 		MoveAFile(logPath, prevPath);
 	}
+
+	EnsureDirectory(ParentDirectory(logPath));
 	m_Log = new LogStream(logPath);
 
-	EnsureDirectory(recordPath.substr(0, recordPath.find_last_of("/")));
+	EnsureDirectory(ParentDirectory(recordPath));
 }
 #endif
 

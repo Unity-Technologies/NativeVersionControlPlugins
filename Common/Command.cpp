@@ -42,6 +42,7 @@ static const CmdInfo infos[] = {
 	{ UCOM_Mark, "mark" }, //
 	{ UCOM_ListRevision, "list" }, //
 	{ UCOM_ApplyRevision, "apply" }, //
+	{ UCOM_Thumbnail, "thumbnail" }, //
 	{ UCOM_Invalid, 0 } // delimiter
 };
 

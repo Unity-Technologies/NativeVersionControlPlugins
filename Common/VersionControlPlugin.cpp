@@ -1189,6 +1189,32 @@ bool VersionControlPlugin::HandleMark(const CommandArgs& args)
     return true;
 }
 
+bool VersionControlPlugin::HandleThumbnail(const CommandArgs& args)
+{
+    GetConnection().Log().Trace() << "HandleThumbnail" << Endl;
+
+    int size = 512;
+    if (args.size() == 2)
+    {
+        size = atoi(args[1].c_str());
+    }
+
+    bool wasOnline = PreHandleCommand();
+
+	ChangelistRevision revision;
+	GetConnection().ReadLine(revision);
+
+    VersionedAssetList assetList;
+	GetConnection() >> assetList;
+
+    if (GetAssetsThumbnail(revision, assetList, size))
+        SetOnline();
+
+    PostHandleCommand(wasOnline);
+
+    return true;
+}
+
 bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& args)
 {
     GetConnection().Log().Trace() << "Dispatch " << UnityCommandToString(command) << Endl;
@@ -1299,6 +1325,9 @@ bool VersionControlPlugin::Dispatch(UnityCommand command, const CommandArgs& arg
 
         case UCOM_Mark:
             return HandleMark(args);
+
+        case UCOM_Thumbnail:
+            return HandleThumbnail(args);
 
         default:
             GetConnection().Log().Debug() << "Command " << UnityCommandToString(command) << " not handled" << Endl;

@@ -688,6 +688,17 @@ protected:
      */
     virtual bool MarkAssets(VersionedAssetList& assetList, MarkMethod method = kUseMine) = 0;
 
+	/*
+	 * Get assets thumnbail from VC.
+     * Parameters:
+     *  - revision: IN specific revision.
+     *  - assetList: IN list of versioned asset.
+     *  - size: IN specific size.
+     * Returns:
+     *  - True if operation succeeded, false otherwise (VCStatus contains errors).
+	 */
+	virtual bool GetAssetsThumbnail(const ChangelistRevision& revision, VersionedAssetList& assetList, int size) = 0;
+
 private:
     void InitializeArguments(int argc, char** argv);
     
@@ -729,6 +740,7 @@ private:
 	bool HandleLatestRevision();
 	bool HandleCurrentVersion();
 	bool HandleMark(const CommandArgs& args);
+	bool HandleThumbnail(const CommandArgs& args);
 
     bool HandleVersionedAssetsCommand(UnityCommand cmd);
     bool Dispatch(UnityCommand command, const CommandArgs& args);

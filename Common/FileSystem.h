@@ -3,7 +3,7 @@
  */
 #pragma once
 #include <string>
-
+std::string ParentDirectory(const std::string& path);
 bool IsReadOnly(const std::string& path);
 bool EnsureDirectory(const std::string& path);
 bool DeleteRecursive(const std::string& path);

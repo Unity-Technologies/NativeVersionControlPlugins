@@ -750,17 +750,17 @@ bool AESClient::Download(AESEntry* entry, const string& path, const string& targ
 		SetLastMessage("Unable to create directory " + parentPath);
 		return false;
 	}
-	
+
 	if (entry->IsDir())
 	{
 		return true;
 	}
-	
+
 	if (PathExists(target))
 	{
 		DeleteRecursive(target);
 	}
-	
+
 	if (!m_CURL.Download(remotePath, target))
 	{
 		SetLastMessage("Unable to download " + remotePath + " to " + target + " (" + m_CURL.GetErrorMessage()+ ")");
@@ -774,7 +774,32 @@ bool AESClient::Download(AESEntry* entry, const string& path, const string& targ
 			return false;
 		}
 	}
-	
+
+	return true;
+}
+
+bool AESClient::DownloadThumbnail(const string& revisionID, const string& path, const string& target, int size)
+{
+	ClearLastMessage();
+	string remotePath = m_Server + m_Path + "/" + revisionID + "/" + path + "?preview=" + IntToString(size);
+	string parentPath = target.substr(0, target.find_last_of("/"));
+	if (!EnsureDirectory(parentPath))
+	{
+		SetLastMessage("Unable to create directory " + parentPath);
+		return false;
+	}
+
+	if (PathExists(target))
+	{
+		DeleteRecursive(target);
+	}
+
+	if (!m_CURL.Download(remotePath, target))
+	{
+		SetLastMessage("Unable to download " + remotePath + " to " + target + " (" + m_CURL.GetErrorMessage()+ ")");
+		return false;
+	}
+
 	return true;
 }
 

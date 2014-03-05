@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static string ParentDirectory(const string& path)
+string ParentDirectory(const string& path)
 {
 	if (path.empty()) return path;
 

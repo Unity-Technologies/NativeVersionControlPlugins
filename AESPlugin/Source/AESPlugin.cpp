@@ -31,11 +31,13 @@
 
 using namespace std;
 
-static const char* kAESPluginVersion  = "1.0.14";
+static const char* kAESPluginVersion  = "1.0.17";
 
-static const char* kCacheFileName  = "/Library/aesSnapshot_";
+static const char* kPreviewCache = "/Library/AES/";
+static const char* kPreviewExt = "_thumbnail.png";
+static const char* kCacheFileName  = "/Library/AES/aesSnapshot_";
 static const char* kCacheFileNameExt  = ".txt";
-static const char* kLogFileName = "Library/aesPlugin.log";
+static const char* kLogFileName = "Library/AES/aesPlugin.log";
 static const char* kLatestRevison = "current";
 static const char* kLocalRevison = "local";
 static const char* kPluginName = "AssetExchangeServer";
@@ -218,7 +220,7 @@ int AESPlugin::PrintAllCallBack(void *data, const string& key, AESEntry *entry)
 {
 	AESPlugin* plugin = (AESPlugin*)data;
 	string localPath = plugin->GetProjectPath() + "/" + key;
-	printf(" - %s (%s)\n", key.c_str(), entry->GetStateAsString().c_str());
+	printf(" - %s (%s) [%s]\n", key.c_str(), entry->GetStateAsString().c_str(), (entry->IsDir() ? "Dir" : "File"));
 	return 0;
 }
 
@@ -243,7 +245,7 @@ int AESPlugin::Test()
 
 	m_Fields[kAESURL].SetValue("localhost");
 	m_Fields[kAESPort].SetValue("3030");
-	m_Fields[kAESRepository].SetValue("AngryBots");
+	m_Fields[kAESRepository].SetValue("Pong");
 	m_Fields[kAESUserName].SetValue("");
 	m_Fields[kAESPassword].SetValue("");
 	m_Fields[kAESCreateToggle].SetValue("false");
@@ -265,6 +267,29 @@ int AESPlugin::Test()
 	printf("Latest revision is [%s]: %s\n", lastRevisionID.c_str(), revision.c_str());
 
 	VersionedAssetList list;
+	if (!GetAssetsChangeStatus(kNewListRevision, list))
+		return -1;
+	PrintAssets("Outgoing assets", list);
+
+	/*
+	list.clear();
+	list.push_back(VersionedAsset("/Volumes/Work/UnityProjects/TestAES/Assets/0vABdWqf.txt"));
+	list.push_back(VersionedAsset("/Volumes/Work/UnityProjects/TestAES/Assets/0vABdWqf.txt.meta"));
+
+	Changelist change;
+	change.SetCommitter("admin@localhost");
+	change.SetDescription("Test002");
+	if (!SubmitAssets(change, list, true))
+		return -1;
+	PrintAssets("Submitted assets", list);
+	*/
+
+	/*
+	list.clear();
+	list.push_back(VersionedAsset("/Volumes/Work/UnityProjects/AngryBots/Assets/Textures/WallPanel_E.png"));
+	if (!GetAssetsThumbnail(lastRevisionID, list, 512))
+		return -1;
+
 	if (!ListRevision(lastRevisionID, list))
 		return -1;
 	PrintAssets("Lastest revision assets", list);
@@ -288,9 +313,18 @@ int AESPlugin::Test()
 		i++;
 	}
 
+	list.clear();
+	list.push_back(VersionedAsset("/Volumes/Work/UnityProjects/TestAES/Assets/BreakingBad.jpg"));
+	list.push_back(VersionedAsset("/Volumes/Work/UnityProjects/TestAES/Assets/BreakingBad.jpg.meta"));
+
 	if (!ApplyRevisionChanges(lastRevisionID, list))
 		return -1;
 	PrintAssets("Updated assets", list);
+
+	if (!UpdateToRevision(lastRevisionID, ignoredList, list))
+		return -1;
+	PrintAssets("Updated assets", list);
+	*/
 
 	Disconnect();
 	
@@ -383,18 +417,18 @@ int AESPlugin::ScanLocalChangeCallBack(void* data, const string& path, uint64_t 
 			if (snapShotEntry->GetHash() != md4)
 			{
 				// Local file has been modified, add it to local changes
-				plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kAddedLocal | kCheckedOutLocal), (int)size, isDirectory, ts));
+				plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kLocal | kCheckedOutLocal), (int)size, isDirectory, ts));
 			}
 			else
 			{
 				// Local file is synced
-				plugin->m_LocalChangesEntries.insert(p, AESEntry(snapShotEntry->GetRevisionID(), md4, UpdateStateForMeta(p, kSynced), (int)size, isDirectory, ts));
+				plugin->m_LocalChangesEntries.insert(p, AESEntry(snapShotEntry->GetRevisionID(), md4, UpdateStateForMeta(p, kLocal | kSynced), (int)size, isDirectory, ts));
 			}
 		}
 		else
 		{
 			// Local file is new, add it to local changes
-			plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kAddedLocal), (int)size, isDirectory, ts));
+			plugin->m_LocalChangesEntries.insert(p, AESEntry(kLocalRevison, md4, UpdateStateForMeta(p, kLocal | kAddedLocal), (int)size, isDirectory, ts));
 		}
 	}
 	else
@@ -413,18 +447,18 @@ int AESPlugin::ScanLocalChangeCallBack(void* data, const string& path, uint64_t 
 			else
 			{
 				// Local file is up to date
-				localEntry->RemoveState(kCheckedOutLocal);
+				//localEntry->RemoveState(kCheckedOutLocal);
 				localEntry->AddState(kSynced);
 			}
 		}
 		else
 		{
 			// Local file/path is updated
-			if (localEntry->GetHash() == md4)
-				localEntry->RemoveState(kCheckedOutLocal);
-
-			localEntry->RemoveState(kSynced);
-			localEntry->AddState(kAddedLocal);
+			if (localEntry->GetHash() != md4)
+			{
+				localEntry->AddState(kCheckedOutLocal);
+				localEntry->RemoveState(kSynced);
+			}
 		}
 
 		// Update entry
@@ -1260,17 +1294,17 @@ typedef struct {
 int AESPlugin::ApplySubmitChangesCallBack(void *data, const string& key, AESEntry *entry)
 {
 	ApplySubmitChangesCallBackData* d = (ApplySubmitChangesCallBackData*)data;
-	if ((entry->GetState() & kSynced) == kSynced || (entry->GetState() & kAddedLocal) == kAddedLocal || (entry->GetState() & kCheckedOutLocal) == kCheckedOutLocal)
+	if (entry->HasState(kSynced) || entry->HasState(kAddedLocal) || entry->HasState(kCheckedOutLocal))
 	{
 		d->plugin->GetConnection().Log().Debug() << "Add/Update in snapshot " << key << Endl;
 		d->plugin->m_SnapShotEntries.insert(key, AESEntry(d->revisionID, entry->GetHash(), UpdateStateForMeta(key, kSynced), entry->GetSize(), entry->IsDir(), entry->GetTimeStamp()));
 		AESEntry* localEntry = d->plugin->m_LocalChangesEntries.search(key);
 		if (localEntry != NULL)
 		{
-			localEntry->SetState(UpdateStateForMeta(key, kSynced));
+			localEntry->SetState(UpdateStateForMeta(key, kLocal | kSynced));
 		}
 	}
-	else if ((entry->GetState() & kDeletedLocal) == kDeletedLocal)
+	else if (entry->HasState(kDeletedLocal))
 	{
 		d->plugin->GetConnection().Log().Debug() << "Delete in snapshot " << key << Endl;
 		d->plugin->m_SnapShotEntries.erase(key);
@@ -1346,17 +1380,15 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 		GetConnection().Log().Debug() << "AES ApplyChanges success" << Endl;
 	}
 
-	AESRevision latestRevision;
-	if (!m_AES->GetLatestRevision(latestRevision))
+	if (!RefreshRemote())
 	{
-		StatusAdd(VCSStatusItem(VCSSEV_Error, m_AES->GetLastMessage()));
-		//assetList.clear();
+		StatusAdd(VCSStatusItem(VCSSEV_Error, string("Cannot refresh remote, reason: ") + m_AES->GetLastMessage()));
 		return true;
 	}
 
 	ApplySubmitChangesCallBackData data;
 	data.plugin = this;
-	data.revisionID = latestRevision.GetRevisionID();
+	data.revisionID = m_LatestRevision.GetRevisionID();
 
 	int res = entriesToAddOrMod.iterate(ApplySubmitChangesCallBack, (void*)&data);
 	if (res != 0)
@@ -1380,7 +1412,7 @@ bool AESPlugin::SubmitAssets(const Changelist& changeList, VersionedAssetList& a
 
 	if (!saveOnly)
 	{
-		m_SnapShotRevision = latestRevision.GetRevisionID();
+		m_SnapShotRevision = m_LatestRevision.GetRevisionID();
 	}
 
     return GetAssetsStatus(assetList, false);
@@ -1423,14 +1455,14 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
             continue;
 		}
 
-        int state = kNone;
+        int state = kLocal;
 		string path = asset.GetPath().substr(GetProjectPath().size()+1);
 		AESEntry* localEntry = m_LocalChangesEntries.search(path);
 		AESEntry* remoteEntry = m_RemoteChangesEntries.search(path);
 
 		if (localEntry == NULL)
 		{
-			state = kLocal;
+			state = kNone;
 			if (remoteEntry != NULL)
 			{
 				state |= remoteEntry->GetState();
@@ -1450,7 +1482,7 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 		}
 		else
 		{
-			state = localEntry->GetState();
+			state |= localEntry->GetState();
 			if (remoteEntry != NULL)
 			{
 				state |= remoteEntry->GetState();
@@ -1460,6 +1492,8 @@ bool AESPlugin::GetAssetsStatus(VersionedAssetList& assetList, bool recursive)
 				}
 				else
 				{
+					state &= ~kAddedRemote;
+					state &= ~kDeletedRemote;
 					state |= kSynced;
 				}
 			}
@@ -1900,8 +1934,9 @@ int AESPlugin::UpdateToRevisionCheckCallBack(void *data, const string& key, AESE
 int AESPlugin::UpdateToRevisionDownloadCallBack(void *data, const string& key, AESEntry *entry)
 {
 	UpdateToRevisionCallBackData* d = (UpdateToRevisionCallBackData*) data;
-	if (!entry->IsDir())
+	if (entry->IsDir())
 	{
+		d->plugin->GetConnection().Log().Debug() << "Asset '" << key << "' is a folder." << Endl;
 		d->iter = d->iter+1;
 		return 0;
 	}
@@ -2071,6 +2106,8 @@ bool AESPlugin::UpdateToRevision(const ChangelistRevision& revision, const Versi
 		{
 			if (entries.size() > 0)
 			{
+				START_CLOCK()
+
 				UpdateToRevisionCallBackData data;
 				data.plugin = this;
 				data.size = entries.size();
@@ -2085,6 +2122,7 @@ bool AESPlugin::UpdateToRevision(const ChangelistRevision& revision, const Versi
 					return true;
 				}
 
+
 				data.iter = 0;
 				res = entries.iterate(UpdateToRevisionDownloadCallBack, (void*)&data);
 				if (res != 0)
@@ -2092,6 +2130,8 @@ bool AESPlugin::UpdateToRevision(const ChangelistRevision& revision, const Versi
 					StatusAdd(VCSStatusItem(VCSSEV_Error, "Unable to update to revision, download failed."));
 					return true;
 				}
+
+				ELAPSED_CLOCK("UpdateToRevision")
 			}
 
 			m_SnapShotRevision = newRevision;
@@ -2239,6 +2279,35 @@ bool AESPlugin::GetLatestRevision(string& revisionID)
 void AESPlugin::GetCurrentVersion(string& version)
 {
 	version = kAESPluginVersion;
+}
+
+bool AESPlugin::GetAssetsThumbnail(const ChangelistRevision& revision, VersionedAssetList& assetList, int size)
+{
+    GetConnection().Log().Debug() << "GetAssetsThumbnail" << Endl;
+
+    if (!EnsureConnected())
+    {
+        return false;
+    }
+
+	for (VersionedAssetList::const_iterator i = assetList.begin() ; i != assetList.end() ; i++)
+	{
+		const VersionedAsset& asset = (*i);
+		if (asset.IsFolder())
+		{
+			// Skip folders
+			continue;
+		}
+
+        string path = asset.GetPath().substr(GetProjectPath().size()+1);
+		string target = GetProjectPath() + kPreviewCache + revision + "/" + path + kPreviewExt;
+		if (!m_AES->DownloadThumbnail(revision, path, target, size))
+		{
+			GetConnection().Log().Debug() << "GetThumbnail failed for " << asset.GetPath() << Endl;
+		}
+	}
+
+	return true;
 }
 
 bool AESPlugin::PerformCustomCommand(const string& command, const CommandArgs& args)
