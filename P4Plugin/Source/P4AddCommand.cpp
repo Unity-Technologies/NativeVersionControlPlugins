@@ -43,7 +43,7 @@ public:
 		// the error go to the user so that he can manually decide what to do. ie. actually revert or submit 
 		// the move before adding new stuff on the move/delete file.
 
-		string paths = ResolvePaths(toAdd, kPathWild | kPathRecursive);
+		string paths = ResolvePaths(toAdd, kPathRecursive);
 
 		if (paths.empty())
 		{
