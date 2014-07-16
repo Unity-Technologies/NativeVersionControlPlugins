@@ -441,7 +441,9 @@ static bool fcopy(FILE *f1, FILE *f2)
         if (fwrite(buffer, sizeof(char), n, f2) != n)
 			return false;
     }
+	return !ferror(f1) && feof(f1);
 }
+
 
 bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
 {

@@ -101,17 +101,18 @@ string TrimStart(const string& str, char c)
 }
 
 string TrimEnd(const string& str, char c)
-{
-	string::size_type i1 = str.length() - 1;
+{ 
+   
+	string::size_type i1 = str.length();
 	
-	while ( i1 >= 0 && str[i1] == c) 
+	while ( i1 != 0 && str[i1-1] == c) 
 	{
 		--i1;
 	}
 	
-	if (i1 < 0) return "";
+	if (i1 == 0) return "";
 	
-	return str.substr(0, i1+1);
+	return str.substr(0, i1);
 }
 
 string Trim(const string& str, char c)
