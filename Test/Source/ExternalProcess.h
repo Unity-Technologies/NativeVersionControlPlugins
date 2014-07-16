@@ -18,12 +18,12 @@ struct AutoHandle
 	}
 	HANDLE	handle;
 };
-
+#else
+#include <unistd.h>
 #endif
 
 #include <string>
 #include <vector>
-#include <unistd.h>
 
 enum ExternalProcessState {
 	EPSTATE_NotRunning,
