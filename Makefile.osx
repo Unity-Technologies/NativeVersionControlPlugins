@@ -5,8 +5,8 @@ CXX = g++
 AR = ar
 
 # CXXFLAGS = -O3 -arch i386 -g
-CXXFLAGS = -arch i386 -g -stdlib=libstdc++ -mmacosx-version-min=10.6
-LDFLAGS = -arch i386 -stdlib=libstdc++ -mmacosx-version-min=10.6
+CXXFLAGS = -arch i386 -g -mmacosx-version-min=10.6
+LDFLAGS = -arch i386 -lstdc++ -mmacosx-version-min=10.6
 PLATFORM = OSXi386
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
