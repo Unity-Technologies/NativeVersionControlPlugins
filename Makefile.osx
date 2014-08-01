@@ -5,8 +5,8 @@ CXX = g++
 AR = ar
 
 # CXXFLAGS = -O3 -arch i386 -g
-CXXFLAGS = -arch i386 -g
-LIBRARIES = -lstdc++
+CXXFLAGS = -arch i386 -g -stdlib=libstdc++ -mmacosx-version-min=10.6
+LDFLAGS = -arch i386 -stdlib=libstdc++ -mmacosx-version-min=10.6
 PLATFORM = OSXi386
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
@@ -58,13 +58,13 @@ SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
 
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
-	$(CXX) -g -arch i386 -o $@ $^
+	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) -arch i386 -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
+	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
 
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
-	$(CXX) -arch i386 -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
+	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
 
 clean:
 	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(TESTSERVER_MODULES)
