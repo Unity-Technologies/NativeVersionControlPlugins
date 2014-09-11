@@ -277,20 +277,13 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
 	return true;
 }
 
-// Initialize the perforce client
-bool P4Task::Connect()
-{   
-	// If connection is still active then return success
-    if ( IsConnected() )
-		return Login();
-
-	// Disconnect client if marked as connected and return error
-	// if not possible
-    if ( m_P4Connect && !Disconnect()) return false;
-
-    Error err;
+bool P4Task::Reconnect()
+{
+	Disconnect();
+	
+	Error err;
 	m_Client.SetProg( "Unity" );
-    m_Client.SetVersion( "1.0" );
+	m_Client.SetVersion( "1.0" );
 
 	// Set the config because in case of reconnect the 
 	// config has been reset
@@ -302,9 +295,9 @@ bool P4Task::Connect()
 	else
 		m_Client.SetPassword(m_PasswordConfig.c_str());
 	m_Client.SetClient(m_ClientConfig.c_str());
-	
+
 	m_Client.Init( &err );
-	
+
 	VCSStatus status = errorToVCSStatus(err);
 
 	// Retry in case of unicode needs to be enabled on client	
@@ -334,16 +327,13 @@ bool P4Task::Connect()
 	}
 
 	if( err.Test() )
-	    return false;
+		return false;
 
 	m_P4Connect = true;
 
 	m_Client.SetVar("enableStreams");
 	m_Client.SetProtocol("enableStreams", "");
-
-	// We enforce ticket based authentication since that
-	// is supported on every security level.
-	return Login();
+	return true;
 }
 
 void P4Task::NotifyOffline(const string& reason)
@@ -405,9 +395,8 @@ bool P4Task::IsOnline()
 	return s_Singleton->m_IsOnline;
 }
 
-bool P4Task::Login()
-{	
-	// First check if we're already logged in
+bool P4Task::IsLoggedIn()
+{
 	P4Command* p4c = LookupCommand("login");
 	vector<string> args;
 	args.push_back("login");
@@ -422,22 +411,24 @@ bool P4Task::Login()
 	}
 
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
-	
-	if (loggedIn)
-	{
-		return true; // All is fine. We're already logged in
-	}
+	return loggedIn;
+}
 
+bool P4Task::Login()
+{	
 	if (GetP4Password().empty())
 	{
 		m_Connection->Log().Debug() << "Empty password -> skipping login" << Endl;
 		return true;
 	}
-
+	
+	m_IsLoginInProgress = true;
+	
 	// Do the actual login
-	args.clear();
+	P4Command* p4c = LookupCommand("login");
+	vector<string> args;
 	args.push_back("login");
-	loggedIn = p4c->Run(*this, args); 
+	bool loggedIn = p4c->Run(*this, args); 
 	
 	if (HasUnicodeNeededError(p4c->GetStatus()))
 	{
@@ -450,6 +441,7 @@ bool P4Task::Login()
 	if (!loggedIn)
 	{
 		NotifyOffline("Login failed");
+		m_IsLoginInProgress = false;
 		return false; // error login
 	}
 
@@ -462,6 +454,7 @@ bool P4Task::Login()
 	if (!res)
 	{
 		NotifyOffline("Couldn't fetch client spec file from perforce server");
+		m_IsLoginInProgress = false;
 		return false;
 	}
 
@@ -474,6 +467,7 @@ bool P4Task::Login()
 	if (!res)
 	{
 		NotifyOffline("Couldn't fetch client info from perforce server");
+		m_IsLoginInProgress = false;
 		return false;
 	}
 
@@ -486,6 +480,7 @@ bool P4Task::Login()
 	if (!res)
 	{
 		NotifyOffline("Couldn't fetch client streams from perforce server");
+		m_IsLoginInProgress = false;
 		return false;
 	}
 
@@ -495,7 +490,8 @@ bool P4Task::Login()
 	{
 		; // TODO: do the stuff
 	}
-
+	
+	m_IsLoginInProgress = false;
 	return true; // root reused
 }
 
@@ -515,10 +511,10 @@ bool P4Task::Disconnect()
 
 	m_IsOnline = false;
 
-    if ( !m_P4Connect ) // Nothing to do?
-	{
-		return true;
-	}
+ //   if ( !m_P4Connect ) // Nothing to do?
+	//{
+	//	return true;
+	//}
 
 	m_Client.Final( &err );
     m_P4Connect = false;
@@ -545,30 +541,53 @@ bool P4Task::IsConnected()
 // Run a perforce command
 bool P4Task::CommandRun(const string& command, P4Command* client)
 {
-	
-	if (m_Connection->Log().GetLogLevel() != LOG_DEBUG && command != "login -s")
+	if (m_Connection->Log().GetLogLevel() != LOG_DEBUG)
 		m_Connection->Log().Info() << command << Endl;
+	
 	m_Connection->VerboseLine(command);
 
-	// Force connection if this hasn't been set-up already.
-	// That is unless the command explicitely disallows connect.
-	if (!client->ConnectAllowed() || Connect())
+	if (IsConnected())
 	{
-		// Split out the arguments
-		int argc = 0;
-		char** argv = CommandLineToArgv( command.c_str(), &argc );
-
-		if ( argv == 0 || argc == 0 )
-			return "No perforce command was passed";
-
-		if ( argc > 1 )
-			m_Client.SetArgv( argc-1, &argv[1] );
-
-		m_Client.Run(argv[0], client);
-		CommandLineFreeArgs(argv);
+		// Make sure we have not been logged out
+		if (!m_IsLoginInProgress && !IsLoggedIn())
+		{
+			// relogin
+			if (!Reconnect() || !Login())
+				return false;
+		}
 	}
+	else
+	{
+		// Make sure commands run as part of a login request does not reconnect. But all other commands
+		// Should (re)establish the connection.
+		if (m_IsLoginInProgress)
+			return false; // This is an error since we are trying to login and has been disconnect while doing that
+		else if (!Reconnect() || !Login())
+			return false; // Cannot do any commands when not connected and logged in.
+	}
+	
+	return CommandRunNoLogin(command, client);
+
+}
+
+bool P4Task::CommandRunNoLogin( const string &command, P4Command* client )
+{
+	// Split out the arguments
+	int argc = 0;
+	char** argv = CommandLineToArgv( command.c_str(), &argc );
+
+	if ( argv == 0 || argc == 0 )
+		return "No perforce command was passed";
+
+	if ( argc > 1 )
+		m_Client.SetArgv( argc-1, &argv[1] );
+
+	m_Client.Run(argv[0], client);
+	CommandLineFreeArgs(argv);
+
 	return !client->HasErrors();
 }
+
 
 bool P4Task::HasUnicodeNeededError( VCSStatus status )
 {

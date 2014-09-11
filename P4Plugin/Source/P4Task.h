@@ -40,10 +40,16 @@ public:
 	
 	int Run();
 	bool IsConnected();
+	bool Reconnect();
+	bool Login();
 
-	// Run a single command and write response to stdout
+	// Run a single command and write response to stdout. Will (re)connect and (re)login if needed. 
 	// Returns true on success
 	bool CommandRun( const std::string& command, P4Command* client );
+
+	// Same as above but does not do any connect and login.
+	bool CommandRunNoLogin( const std::string& command, P4Command* client );
+
 	bool Disconnect();
 	
 	static void NotifyOffline(const std::string& reason);
@@ -59,16 +65,14 @@ private:
 
 	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
 
-	// Connection
-	bool Connect();
-
 	void EnableUTF8Mode();
 
-	bool Login();
 	bool HasUnicodeNeededError(VCSStatus status);
-	
+	bool IsLoggedIn();
+
 
 	bool m_IsOnline;
+	bool m_IsLoginInProgress;
 
 	// Perforce connection
 	bool            m_P4Connect;
