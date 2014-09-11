@@ -21,7 +21,7 @@ public:
 	
 		VersionedAssetList assetList;
 		Conn() >> assetList;
-		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
+		string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
 	
 		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 	
