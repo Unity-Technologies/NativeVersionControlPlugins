@@ -54,7 +54,17 @@ int ActionToState(const string& action, const string& headAction,
 			}
 			else if (headAction == "move/delete") 
 			{
-				state |= kDeletedRemote | kMovedRemote;
+				if (haveRev.empty())
+				{
+					// Not in registered as in workspace and moved remote ie. remove outofsync flag
+					// This may happen moving a file in vcs and creating a new file with the
+					// same name.
+					state = state & ~kOutOfSync;
+				}
+				else
+				{
+					state |= kDeletedRemote | kMovedRemote;			
+				}
 			}
 		}
 		else
