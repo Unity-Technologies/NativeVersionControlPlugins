@@ -22,6 +22,8 @@ bool StartsWith(const std::string& str, const std::string& lookFor);
 //bool IsReadOnly(const std::string& path);
 std::string Quote(const std::string& str);
 
+void UpperCaseDriveLetter( std::string& localPath );
+
 template <typename T> 
 std::string ToString(const T& v)
 {

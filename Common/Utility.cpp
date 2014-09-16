@@ -180,6 +180,13 @@ string LastErrorToMsg()
 
 #endif
 
+void UpperCaseDriveLetter( string& localPath ) 
+{
+#if defined( _WINDOWS )
+	if (localPath.length() > 2 && localPath[1] == '/' || localPath[1] == '\\')
+		localPath[0] = static_cast<char>(toupper(localPath[0]));
+#endif
+}
 
 PluginException::PluginException(const std::string& about) : m_What(about) {}
 
