@@ -68,7 +68,8 @@ public:
 			goto out1;
 		
 		string localPath = Replace(data.substr(0, i - kDelim1Len), "\\", "/");
-		
+		UpperCaseDriveLetter(localPath);
+
 		string::size_type j = data.find("//", i+2);
 		if (j == string::npos || j < (kDelim1Len + kDelim2Len + 2 + 3)) // 2 + 5 + 2 being smallest possible path repr of "/x - merging //y#1 using base "
 			goto out1;
@@ -102,6 +103,8 @@ public:
 			goto out2;
 		
 		string localPath = Replace(data.substr(0, i - kDelim3Len), "\\", "/");
+		UpperCaseDriveLetter(localPath);
+
 		string conflictPath = data.substr(i);
 		
 		if (i + 5 > data.length()) // the basePath must be a least 5 chars "//x#1"
@@ -164,6 +167,8 @@ public:
 		{
 			string cmd = baseCmd;
 			string tmpFile = targetDir + "/" + IntToString(idx) + "_";
+			string path = *i;
+			UpperCaseDriveLetter(path);
 
 			for (vector<string>::const_iterator j = versions.begin(); j != versions.end(); ++j) 
 			{
@@ -171,7 +176,7 @@ public:
 				{
 					// default is head
 					tmpFile += "head";
-					string fileCmd = cmd + "\"" + tmpFile + "\" \"" + *i + "#head\"";
+					string fileCmd = cmd + "\"" + tmpFile + "\" \"" + path + "#head\"";
 
 					Conn().Log().Info() << fileCmd << Endl;
 					if (!task.CommandRun(fileCmd, this))
@@ -210,10 +215,11 @@ public:
 						hasConflictInfo = true;
 					}
 					
-					map<string,ConflictInfo>::const_iterator ci = cConflictInfo.conflicts.find(*i);
+					map<string,ConflictInfo>::const_iterator ci = cConflictInfo.conflicts.find(path);
 					
 					// Location of "mine" version of file. In Perforce this is always
 					// the original location of the file.
+					assetList[idx].SetPath(path);
 					Conn() << assetList[idx];
 
 					VersionedAsset asset;
