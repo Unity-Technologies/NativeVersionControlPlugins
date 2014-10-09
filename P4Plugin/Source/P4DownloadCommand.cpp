@@ -54,6 +54,22 @@ public:
 			P4Command::OutputInfo(level, data);
 	}
 
+	string LookupByLocalPathWithNoCaseSentivitity(const string& path)
+	{
+		string localPath = path;
+		ToLower(localPath);
+		
+		for (map<string, ConflictInfo>::iterator i = conflicts.begin(); i != conflicts.end(); ++i)
+		{
+			string p = i->first;
+			ToLower(p);
+			if (p == localPath)
+				return i->first;
+		}
+		Conn().WarnLine("Cannot get conflict info for " + path);
+		return path;
+	}
+
 	void HandleMergableAsset(const string& data)
 	{
 		// format of the string should be 
@@ -67,8 +83,11 @@ public:
 		if (i == string::npos || i < (kDelim1Len + 2) ) // 2 being smallest possible path repr of "/x"
 			goto out1;
 		
-		string localPath = Replace(data.substr(0, i - kDelim1Len), "\\", "/");
-		UpperCaseDriveLetter(localPath);
+		string localPath = Replace(data.substr(0, i - kDelim1Len), "\\\\", "/");
+		localPath = Replace(localPath, "\\", "/");
+		
+		// Because case sensitivity between un*x and win is crazy in p4 we override the localPath 
+		localPath = LookupByLocalPathWithNoCaseSentivitity(localPath);
 
 		string::size_type j = data.find("//", i+2);
 		if (j == string::npos || j < (kDelim1Len + kDelim2Len + 2 + 3)) // 2 + 5 + 2 being smallest possible path repr of "/x - merging //y#1 using base "
@@ -80,7 +99,12 @@ public:
 			goto out1;
 		
 		string basePath = data.substr(j);
-		
+
+		string pref;
+		Conn().VerboseLine(pref + "Local: " + localPath);
+		Conn().VerboseLine(pref + "Base: " + basePath);
+		Conn().VerboseLine(pref + "Conflict: " + conflictPath);
+
 		ConflictInfo ci = { localPath, basePath, conflictPath };
 		conflicts[localPath] = ci;
 		ok = true;
@@ -102,14 +126,22 @@ public:
 		if (i == string::npos || i < (kDelim3Len + 2) ) // 2 being smallest possible path repr of "/x"
 			goto out2;
 		
-		string localPath = Replace(data.substr(0, i - kDelim3Len), "\\", "/");
-		UpperCaseDriveLetter(localPath);
+		string localPath = Replace(data.substr(0, i - kDelim3Len), "\\\\", "/");
+		localPath = Replace(localPath, "\\", "/");
+
+		// Because case sensitivity between un*x and win is crazy in p4 we override the localPath 
+		localPath = LookupByLocalPathWithNoCaseSentivitity(localPath);
 
 		string conflictPath = data.substr(i);
 		
 		if (i + 5 > data.length()) // the basePath must be a least 5 chars "//x#1"
 			goto out2;
-		
+	
+		string pref;
+		Conn().VerboseLine(pref + "Local: " + localPath);
+		Conn().VerboseLine(pref + "Base: <empty>");
+		Conn().VerboseLine(pref + "Conflict: " + conflictPath);
+
 		ConflictInfo ci = { localPath, string(), conflictPath };
 		conflicts[localPath] = ci;
 		ok = true;
@@ -120,7 +152,7 @@ public:
 	}
 
 	map<string,ConflictInfo> conflicts;
-	
+
 } cConflictInfo;
 
 
@@ -168,7 +200,6 @@ public:
 			string cmd = baseCmd;
 			string tmpFile = targetDir + "/" + IntToString(idx) + "_";
 			string path = *i;
-			UpperCaseDriveLetter(path);
 
 			for (vector<string>::const_iterator j = versions.begin(); j != versions.end(); ++j) 
 			{
@@ -199,6 +230,15 @@ public:
 						string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 						string rcmd = "resolve -o -n " + localPaths;
 						Conn().Log().Info() << rcmd << Endl;
+
+						// Tell conflict info job about the paths we want so that it can get the case sensitivity correct.
+						cConflictInfo.conflicts.clear();
+						vector<string> localPathsVector;
+						ResolvePaths(localPathsVector, assetList, kPathWild | kPathSkipFolders);
+						ConflictInfo emptyConflictInfo = { "", "", "" };
+						for (vector<string>::const_iterator i = localPathsVector.begin(); i != localPathsVector.end(); ++i)
+							cConflictInfo.conflicts[*i] = emptyConflictInfo;
+						
 						task.CommandRun(rcmd, &cConflictInfo);
 						Conn() << cConflictInfo.GetStatus();
 						
@@ -215,11 +255,12 @@ public:
 						hasConflictInfo = true;
 					}
 					
+					Conn().VerboseLine(string("ConflictFor: ") + path);
+
 					map<string,ConflictInfo>::const_iterator ci = cConflictInfo.conflicts.find(path);
 					
 					// Location of "mine" version of file. In Perforce this is always
 					// the original location of the file.
-					assetList[idx].SetPath(path);
 					Conn() << assetList[idx];
 
 					VersionedAsset asset;

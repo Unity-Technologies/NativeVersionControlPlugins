@@ -180,12 +180,10 @@ string LastErrorToMsg()
 
 #endif
 
-void UpperCaseDriveLetter( string& localPath ) 
+void ToLower( string& localPath ) 
 {
-#if defined( _WINDOWS )
-	if (localPath.length() > 2 && localPath[1] == '/' || localPath[1] == '\\')
-		localPath[0] = static_cast<char>(toupper(localPath[0]));
-#endif
+	for (size_t i = 0; i < localPath.length(); ++i)
+		localPath[i] = static_cast<char>(tolower(localPath[i]));
 }
 
 PluginException::PluginException(const std::string& about) : m_What(about) {}
