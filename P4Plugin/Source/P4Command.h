@@ -53,7 +53,6 @@ protected:
 	// state of a list. This is a convenience method to do that.
 	static void RunAndSendStatus(P4Task& task, const VersionedAssetList& assetList);
 	static void RunAndGetStatus(P4Task& task, const VersionedAssetList& assetList, VersionedAssetList& result);
-	bool m_AllowConnect;
 
 	struct Mapping 
 	{

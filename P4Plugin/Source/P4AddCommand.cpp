@@ -49,7 +49,7 @@ public:
 		{
 			RunAndSendStatus(task, incomingAssetList);
 			Conn().EndResponse();
-			return false;
+			return true;
 		}
 
 		string cmd = "add -f ";
@@ -60,7 +60,7 @@ public:
 		// We just wrap up the communication here.
 		Conn() << GetStatus();
 
-		RunAndSendStatus(task, toAdd);
+		RunAndSendStatus(task, incomingAssetList);
 
 		Conn().EndResponse();
 

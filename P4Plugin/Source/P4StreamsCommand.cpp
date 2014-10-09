@@ -9,7 +9,7 @@ using namespace std;
 class P4StreamsCommand : public P4Command
 {
 public:
-	P4StreamsCommand(const char* name) : P4Command(name) { m_AllowConnect = false; }
+	P4StreamsCommand(const char* name) : P4Command(name) { }
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();

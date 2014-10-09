@@ -59,7 +59,7 @@ P4Command* LookupCommand(const string& name)
 
 Connection* P4Command::s_Conn = NULL;
 
-P4Command::P4Command(const char* name) : m_AllowConnect(true)
+P4Command::P4Command(const char* name)
 {
 	if (s_Commands == NULL)
 		s_Commands = new CommandMap();
@@ -102,11 +102,6 @@ string P4Command::GetStatusMessage() const
 		delim = "\n";
 	}
 	return msg;
-}
-
-bool P4Command::ConnectAllowed()
-{
-	return m_AllowConnect;
 }
 
 // Default handler of P4

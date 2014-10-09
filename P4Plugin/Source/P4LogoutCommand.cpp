@@ -8,13 +8,19 @@ using namespace std;
 class P4LogoutCommand : public P4Command
 {
 public:
-	P4LogoutCommand(const char* name) : P4Command(name) { m_AllowConnect = false; }
+	P4LogoutCommand(const char* name) : P4Command(name) { }
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		if (!task.IsConnected()) // Cannot logout without being connected
 		{
-			Conn().Log().Info() << "Cannot logout when not connected" << Endl;
-			return false;
+			Conn().Log().Debug() << "Cannot logout when not connected. Reconnecting." << Endl;
+			
+			// Since a logout will invalidate session cookies we need to be logged in to really log out.
+			if (!task.Reconnect() || task.Login())
+			{
+				Conn().Log().Info() << "Cannot logout when not connected and could not re-login." << Endl;
+				return false;
+			}
 		}
 		
 		ClearStatus();

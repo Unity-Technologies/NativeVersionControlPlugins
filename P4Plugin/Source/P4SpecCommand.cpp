@@ -7,7 +7,7 @@ using namespace std;
 class P4SpecCommand : public P4Command
 {
 public:
-	P4SpecCommand(const char* name) : P4Command(name) { m_AllowConnect = false; }
+	P4SpecCommand(const char* name) : P4Command(name) { }
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();

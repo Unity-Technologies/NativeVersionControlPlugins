@@ -19,7 +19,7 @@ static const char* kCaseHandling = "Case Handling: ";
 class P4InfoCommand : public P4Command
 {
 public:
-	P4InfoCommand(const char* name) : P4Command(name) { m_AllowConnect = false; }
+	P4InfoCommand(const char* name) : P4Command(name) { }
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		ClearStatus();

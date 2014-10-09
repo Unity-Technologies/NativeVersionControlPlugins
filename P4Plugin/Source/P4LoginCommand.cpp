@@ -8,7 +8,7 @@ using namespace std;
 class P4LoginCommand : public P4Command
 {
 public:
-	P4LoginCommand(const char* name) : P4Command(name) { m_AllowConnect = false; }
+	P4LoginCommand(const char* name) : P4Command(name) { }
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
 		if (!task.IsConnected()) // Cannot login without being connected
@@ -24,10 +24,19 @@ public:
 		m_CheckingForLoggedIn = args.size() > 1;
 		const string cmd = string("login") + (m_CheckingForLoggedIn ? string(" " ) + args[1] : string());
 
-		if (!task.CommandRun(cmd, this) && !m_CheckingForLoggedIn)
+		if (m_CheckingForLoggedIn)
 		{
-			string errorMessage = GetStatusMessage();			
-			Conn().Log().Fatal() << errorMessage << Endl;
+			task.CommandRunNoLogin(cmd, this);
+			// Should not send error to unity when just checking for login status.
+		}
+		else
+		{
+			if (!task.CommandRun(cmd, this))
+			{
+				string errorMessage = GetStatusMessage();			
+				Conn().Log().Fatal() << errorMessage << Endl;
+			}
+
 		}
 		
 		if (m_CheckingForLoggedIn)
