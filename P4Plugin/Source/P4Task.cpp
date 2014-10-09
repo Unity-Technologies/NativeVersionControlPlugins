@@ -95,9 +95,9 @@ P4Task* P4Task::s_Singleton = NULL;
 // written to stdout and errors to stderr.  All text based communications used tags to make the parsing easier on both ends.
 P4Task::P4Task()
 {
-    m_P4Connect = false;
-	m_IsOnline = false;
+	m_P4Connect = false;
 	s_Singleton = this;
+	SetOnline(false);
 }
 
 P4Task::~P4Task()
@@ -109,7 +109,7 @@ void P4Task::SetP4Port(const string& p)
 { 
 	m_Client.SetPort(p.c_str()); 
 	m_PortConfig = p;
-	m_IsOnline = false;
+	SetOnline(false);
 }
 
 string P4Task::GetP4Port() const
@@ -121,7 +121,7 @@ void P4Task::SetP4User(const string& u)
 { 
 	m_Client.SetUser(u.c_str()); 
 	m_UserConfig = u;
-	m_IsOnline = false;
+	SetOnline(false);
 }
 
 string P4Task::GetP4User()
@@ -133,7 +133,7 @@ void P4Task::SetP4Client(const string& c)
 {
 	m_Client.SetClient(c.c_str()); 
 	m_ClientConfig = c;
-	m_IsOnline = false;
+	SetOnline(false);
 }
 
 string P4Task::GetP4Client()
@@ -152,7 +152,7 @@ void P4Task::SetP4Password(const string& p)
 		m_Client.SetPassword(p.c_str());
 	}
 	m_PasswordConfig = p;
-	m_IsOnline = false;
+	SetOnline(false);
 }
 
 const string& P4Task::GetP4Password() const
@@ -164,7 +164,7 @@ void P4Task::SetP4Host(const string& c)
 {
 	m_Client.SetHost(c.c_str()); 
 	m_HostConfig = c;
-	m_IsOnline = false;
+	SetOnline(false);
 }
 
 string P4Task::GetP4Host()
@@ -190,7 +190,7 @@ void P4Task::SetProjectPath(const std::string& p)
 		ChangeCWD(p);
 		m_Client.SetCwd(p.c_str());
 	}
-	m_IsOnline = false;
+	SetOnline(false);
 }
 
 const std::string& P4Task::GetProjectPath() const
@@ -349,7 +349,7 @@ void P4Task::NotifyOffline(const string& reason)
 		0
 	};
 
-	s_Singleton->m_IsOnline = false;
+	SetOnline(false);
 
 	int i = 0;
 	while (disableCmds[i])
@@ -372,7 +372,7 @@ void P4Task::NotifyOnline()
 		"submit", "unlock", 
 		0
 	};
-	if (s_Singleton->m_IsOnline)
+	if (IsOnline())
 		return;
 
 	s_Singleton->m_Connection->Command("online", MAProtocol);
@@ -382,7 +382,7 @@ void P4Task::NotifyOnline()
 		s_Singleton->m_Connection->Command(string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
-	s_Singleton->m_IsOnline = true;
+	SetOnline(true);
 }
 
 void P4Task::SetOnline(bool isOnline)
@@ -490,14 +490,16 @@ bool P4Task::Login()
 	{
 		; // TODO: do the stuff
 	}
-	
+
+	SetOnline(true);
 	m_IsLoginInProgress = false;
+
 	return true; // root reused
 }
 
 void P4Task::Logout()
 {
-	m_IsOnline = false;
+	SetOnline(false);
 
 	P4Command* p4c = LookupCommand("logout");
 	CommandArgs args;
@@ -507,9 +509,9 @@ void P4Task::Logout()
 // Finalise the perforce client 
 bool P4Task::Disconnect()
 {
-    Error err;
+	Error err;
 
-	m_IsOnline = false;
+	SetOnline(false);
 
  //   if ( !m_P4Connect ) // Nothing to do?
 	//{
@@ -517,7 +519,7 @@ bool P4Task::Disconnect()
 	//}
 
 	m_Client.Final( &err );
-    m_P4Connect = false;
+	m_P4Connect = false;
 	m_Info = P4Info();
 	m_Streams = P4Streams();
 
