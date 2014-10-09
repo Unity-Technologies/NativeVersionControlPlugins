@@ -419,6 +419,7 @@ bool P4Task::Login()
 	if (GetP4Password().empty())
 	{
 		m_Connection->Log().Debug() << "Empty password -> skipping login" << Endl;
+		SetOnline(true);
 		return true;
 	}
 	
