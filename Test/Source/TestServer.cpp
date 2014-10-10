@@ -217,12 +217,15 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 	const string genfiletoken = "<genfile ";
 
 	bool ok = true;
+	int lineNum = 0;
+
 	while (testscript.good())
 	{
 	restart:
 
 		while (testscript.getline(buf, BUFSIZE))
 		{
+			lineNum++;
 			string command(buf);
 			
 			replaceRootTagWithPath(command);
@@ -291,6 +294,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 		while (testscript.getline(buf, BUFSIZE))
 		{
+			lineNum++;
 			string expect(buf);
 
 			if (verbose || newbaseline)
@@ -332,7 +336,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				{
 					ok = false;
 					printStatus(ok);
-					cerr << "Output fail: expected '" << expect << "'" << endl;
+					cerr << "Output fail: expected '" << expect << "' at " << scriptPath << ":" << lineNum << endl;
 					cerr << "             got      '" << msg << "'" << endl;
 
 					// Read as much as possible from plugin and stop
