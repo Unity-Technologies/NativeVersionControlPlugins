@@ -298,6 +298,8 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			}
 		}
 
+
+		bool readNextPluginLine = true;
 		while (testscript.getline(buf, BUFSIZE))
 		{
 			lineNum++;
@@ -320,10 +322,16 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				continue;
 			}
 
-			string msg = p.ReadLine();
-			UnescapeString(msg);
-			replaceRootPathWithTag(msg);
-			EscapeNewline(msg);
+			string msg;
+			if (readNextPluginLine)
+			{
+				msg = p.ReadLine();
+				UnescapeString(msg);
+				replaceRootPathWithTag(msg);
+				EscapeNewline(msg);
+			}
+			readNextPluginLine = true;
+
 			if (expect.find(regextoken) == 0)
 			{
 				// TODO: implement regex match
@@ -335,12 +343,9 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			}
 			else if (expect.find(ignorewintoken) == 0)
 			{
-				if (isWindows)
-					continue;
-				
-				testscript.getline(buf, BUFSIZE);
-				lineNum++;
-				expect = string(buf);	
+				if (!isWindows)
+					readNextPluginLine = false;
+				continue;
 			}
 
 			// Optional match token
