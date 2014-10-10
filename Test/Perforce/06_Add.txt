@@ -6,11 +6,27 @@ c:add
 0
 --
 v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
-v1:login -s
 i1:Enabling unicode mode
-v1:login -s
 v1:'login' not necessary, no password set for this user.
-v1:./<root>/testfile2.txt - no such file(s).
+v1:client -o "testclient"
+<ignore>
+v1:info
+<ignore>
+v1:Client name: testclient
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+v1:Client address: 127.0.0.1
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+v1:Server license: none
+v1:Case Handling: insensitive
+v1:streams
+w32:No such stream.\n
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription
@@ -32,13 +48,12 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
+v1:./<root>/testfile2.txt - no such file(s).
 v1:add -f  "./<root>/testfile2.txt" 
-v1:login -s
 v1:'login' not necessary, no password set for this user.
 i1://depot/testfile2.txt#1 - opened for add (level 48)
 o1:-1
 v1:fstat  "./<root>/testfile2.txt" 
-v1:login -s
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt
@@ -53,7 +68,6 @@ c:status recurse
 --
 o1:-1
 v1:fstat  "./<root>/testfile2.txt" 
-v1:login -s
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt

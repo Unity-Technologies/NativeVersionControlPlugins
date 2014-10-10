@@ -5,32 +5,27 @@ c:revert
 0
 --
 v1:revert  "./<root>/testfile.txt" 
-v1:login -s
 i1:Enabling unicode mode
-v1:login -s
 v1:'login' not necessary, no password set for this user.
-i1://depot/testfile.txt#none - was add, abandoned (level 48)
-v1:where "//depot/testfile.txt_XUDELIMX_" 
-v1:login -s
-v1:'login' not necessary, no password set for this user.
-o1:1
-o1:<absroot>/testfile.txt
-o1:1
-r1:end of response
---
-c:status recurse
-1
-./Test/tmp/testclient/testfile.txt
-0
---
-o1:-1
-v1:fstat  "./<root>/testfile.txt" 
-v1:login -s
-v1:'login' not necessary, no password set for this user.
-o1:./<root>/testfile.txt
-o1:0
-v1:./<root>/testfile.txt - no such file(s).
-d1:end of list
+v1:client -o "testclient"
+<ignore>
+v1:info
+<ignore>
+v1:Client name: testclient
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+v1:Client address: 127.0.0.1
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+v1:Server license: none
+v1:Case Handling: insensitive
+v1:streams
+w32:No such stream.\n
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription
@@ -52,5 +47,25 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
+i1://depot/testfile.txt#none - was add, abandoned (level 48)
+v1:where "//depot/testfile.txt_XUDELIMX_" 
+v1:'login' not necessary, no password set for this user.
+o1:1
+o1:<absroot>/testfile.txt
+o1:1
+r1:end of response
+--
+c:status recurse
+1
+./Test/tmp/testclient/testfile.txt
+0
+--
+o1:-1
+v1:fstat  "./<root>/testfile.txt" 
+v1:'login' not necessary, no password set for this user.
+o1:./<root>/testfile.txt
+o1:0
+v1:./<root>/testfile.txt - no such file(s).
+d1:end of list
 r1:end of response
 --
