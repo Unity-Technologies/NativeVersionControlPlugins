@@ -11,7 +11,7 @@ v1:'login' not necessary, no password set for this user.
 v1:client -o "testclient"
 <ignore>
 v1:info
-<<ignore>
+<ignore>
 <ignore>
 <ignore>
 <ignore>
