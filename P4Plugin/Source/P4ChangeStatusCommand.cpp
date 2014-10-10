@@ -12,8 +12,8 @@ public:
 		// Since the changestatus command is used to check for online state we start out by
 		// forcing online state to true and check if it has been set to false in the
 		// end to determine if we should send online notifications.
-		bool wasOnline = P4Task::IsOnline();
-		P4Task::SetOnline(true);
+	/*	bool wasOnline = P4Task::IsOnline();
+		P4Task::SetOnline(true);*/
 
 		ClearStatus();
 		Conn().Log().Info() << "ChangeStatusCommand::Run()" << Endl;
@@ -35,12 +35,12 @@ public:
 		Conn().EndList();
 		Conn() << GetStatus();
 
-		if (P4Task::IsOnline() && !wasOnline)
-		{
-			// If set to online already we cannot notify as online so we fake an offline state.
-			P4Task::SetOnline(false);
-			P4Task::NotifyOnline();
-		}
+		//if (P4Task::IsOnline() && !wasOnline)
+		//{
+		//	// If set to online already we cannot notify as online so we fake an offline state.
+		//	P4Task::SetOnline(false);
+		//	P4Task::NotifyOnline();
+		//}
 
 		Conn().EndResponse();
 		

@@ -26,20 +26,20 @@ void P4StatusCommand::PreStatus()
 	// Since the status command is use to check for online state we start out by
 	// forcing online state to true and check if it has been set to false in the
 	// end to determine if we should send online notifications.
-	m_WasOnline = P4Task::IsOnline();
-	P4Task::SetOnline(true);
+	//m_WasOnline = P4Task::IsOnline();
+	//P4Task::SetOnline(true);
 	
 	ClearStatus();
 }
 
 void P4StatusCommand::PostStatus()
 {
-	if (P4Task::IsOnline() && !m_WasOnline)
-	{
-		// If set to online already we cannot notify as online so we fake an offline state.
-		P4Task::SetOnline(false);
-		P4Task::NotifyOnline();
-	}
+	//if (P4Task::IsOnline() && !m_WasOnline)
+	//{
+	//	// If set to online already we cannot notify as online so we fake an offline state.
+	//	P4Task::SetOnline(false);
+	//	P4Task::NotifyOnline();
+	//}
 }
 
 void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetList, bool recursive)

@@ -96,6 +96,7 @@ P4Task* P4Task::s_Singleton = NULL;
 P4Task::P4Task()
 {
 	m_P4Connect = false;
+	m_IsLoginInProgress = false;
 	s_Singleton = this;
 	SetOnline(false);
 }
@@ -349,6 +350,9 @@ void P4Task::NotifyOffline(const string& reason)
 		0
 	};
 
+	if (!IsOnline())
+		return;
+
 	SetOnline(false);
 
 	int i = 0;
@@ -416,34 +420,45 @@ bool P4Task::IsLoggedIn()
 
 bool P4Task::Login()
 {	
+	m_IsLoginInProgress = true;
+	P4Command* p4c = NULL;
+	vector<string> args;
+	
+	SetOnline(true);
+
 	if (GetP4Password().empty())
 	{
 		m_Connection->Log().Debug() << "Empty password -> skipping login" << Endl;
-		SetOnline(true);
-		return true;
+		bool loggedIn = IsLoggedIn();
+		if (!loggedIn)
+		{
+			NotifyOffline("Login failed.");
+			m_IsLoginInProgress = false;
+			return false;
+		}
 	}
-	
-	m_IsLoginInProgress = true;
-	
-	// Do the actual login
-	P4Command* p4c = LookupCommand("login");
-	vector<string> args;
-	args.push_back("login");
-	bool loggedIn = p4c->Run(*this, args); 
-	
-	if (HasUnicodeNeededError(p4c->GetStatus()))
+	else
 	{
-		EnableUTF8Mode();
-		loggedIn = p4c->Run(*this, args);
-	}
+		// Do the actual login
+		p4c = LookupCommand("login");
+		
+		args.push_back("login");
+		bool loggedIn = p4c->Run(*this, args); 
 
-	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+		if (HasUnicodeNeededError(p4c->GetStatus()))
+		{
+			EnableUTF8Mode();
+			loggedIn = p4c->Run(*this, args);
+		}
 
-	if (!loggedIn)
-	{
-		NotifyOffline("Login failed");
-		m_IsLoginInProgress = false;
-		return false; // error login
+		SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);	
+		
+		if (!loggedIn)
+		{
+			NotifyOffline("Login failed");
+			m_IsLoginInProgress = false;
+			return false; // error login
+		}
 	}
 
 	// Need to get Root path as the first thing on connect
@@ -492,7 +507,8 @@ bool P4Task::Login()
 		; // TODO: do the stuff
 	}
 
-	SetOnline(true);
+	SetOnline(false);
+	NotifyOnline();
 	m_IsLoginInProgress = false;
 
 	return true; // root reused
@@ -500,7 +516,7 @@ bool P4Task::Login()
 
 void P4Task::Logout()
 {
-	SetOnline(false);
+	NotifyOffline("Logging out");
 
 	P4Command* p4c = LookupCommand("logout");
 	CommandArgs args;
@@ -512,9 +528,11 @@ bool P4Task::Disconnect()
 {
 	Error err;
 
-	SetOnline(false);
-
- //   if ( !m_P4Connect ) // Nothing to do?
+	NotifyOffline("Disconnect");
+	
+	DisableUTF8Mode();
+ 
+	//   if ( !m_P4Connect ) // Nothing to do?
 	//{
 	//	return true;
 	//}

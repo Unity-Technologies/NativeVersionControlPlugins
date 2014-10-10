@@ -160,8 +160,8 @@ public:
 		else if (key == "end")
 		{
 			task.Logout();
-			task.Disconnect();
-			task.DisableUTF8Mode();
+			if (task.Reconnect())
+				task.Login();
 		}
 		else 
 		{
