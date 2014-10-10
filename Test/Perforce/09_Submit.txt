@@ -13,12 +13,12 @@ v1:client -o "testclient"
 <ignore>
 v1:info
 <ignore>
-v1:Client name: testclient
+<ignorewin>
 <ignore>
 <ignore>
 <ignore>
 <ignore>
-v1:Client address: 127.0.0.1
+<ignorewin>
 <ignore>
 <ignore>
 <ignore>

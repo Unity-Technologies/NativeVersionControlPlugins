@@ -206,6 +206,11 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 	char buf[BUFSIZE];
 	buf[0] = 0x00;
 
+	bool isWindows = false;
+#ifdef _WIN32
+	isWindows = true;
+#endif
+
 	const string restartline = "<restartplugin>";
 	const string includeline = "<include ";
 	const string commanddelim = "--";
@@ -214,6 +219,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 	const string regextoken = "==:";
 	const string exittoken = "<exit>";
 	const string ignoretoken = "<ignore>";
+	const string ignorewintoken = "<ignorewin>";
 	const string genfiletoken = "<genfile ";
 
 	bool ok = true;
@@ -322,7 +328,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			{
 				// TODO: implement regex match
 			}
-			else if (expect.find(ignoretoken) == 0)
+			else if (expect.find(ignoretoken) == 0 || (expect.find(ignorewintoken) == 0 && isWindows))
 			{
 				continue; // ignore this line for match
 			}
