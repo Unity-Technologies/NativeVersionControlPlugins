@@ -12,12 +12,12 @@ v1:client -o "testclient"
 <ignore>
 v1:info
 <ignore>
-<ignorewin>
 <ignore>
 <ignore>
 <ignore>
 <ignore>
 <ignorewin>
+<ignore>
 <ignore>
 <ignore>
 <ignore>
