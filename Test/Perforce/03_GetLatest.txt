@@ -22,7 +22,7 @@ v1:info
 <ignore>
 <ignore>
 <ignore>
-v1:Server license: none
+<ignore>
 v1:Case Handling: insensitive
 v1:streams
 w32:No such stream.\n
