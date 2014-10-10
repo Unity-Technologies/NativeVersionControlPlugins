@@ -327,42 +327,50 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			if (expect.find(regextoken) == 0)
 			{
 				// TODO: implement regex match
+				continue;
 			}
-			else if (expect.find(ignoretoken) == 0 || (expect.find(ignorewintoken) == 0 && isWindows))
+			else if (expect.find(ignoretoken) == 0)
 			{
 				continue; // ignore this line for match
 			}
-			else 
+			else if (expect.find(ignorewintoken) == 0)
 			{
-				// Optional match token
-				if (expect.find(matchtoken) == 0)
-					expect = expect.substr(0, matchtoken.length());
+				if (isWindows)
+					continue;
+				
+				testscript.getline(buf, BUFSIZE);
+				lineNum++;
+				expect = string(buf);	
+			}
 
-				if (expect != msg)
+			// Optional match token
+			if (expect.find(matchtoken) == 0)
+				expect = expect.substr(0, matchtoken.length());
+
+			if (expect != msg)
+			{
+				ok = false;
+				printStatus(ok);
+				cerr << "Output fail: expected '" << expect << "' at " << scriptPath << ":" << lineNum << endl;
+				cerr << "             got      '" << msg << "'" << endl;
+
+				// Read as much as possible from plugin and stop
+				p.SetReadTimeout(0.3);
+				try 
 				{
-					ok = false;
-					printStatus(ok);
-					cerr << "Output fail: expected '" << expect << "' at " << scriptPath << ":" << lineNum << endl;
-					cerr << "             got      '" << msg << "'" << endl;
+					cerr << "             reading as much as possible from plugin:" << endl;
+					cerr << msg << endl;
+					do {
+						string l = p.ReadLine();
+						UnescapeString(msg);
+						replaceRootPathWithTag(l);
+						EscapeNewline(msg);
+						cerr << l << endl;
+					} while (true);
 
-					// Read as much as possible from plugin and stop
-					p.SetReadTimeout(0.3);
-					try 
-					{
-						cerr << "             reading as much as possible from plugin:" << endl;
-						cerr << msg << endl;
-						do {
-							string l = p.ReadLine();
-							UnescapeString(msg);
-							replaceRootPathWithTag(l);
-							EscapeNewline(msg);
-							cerr << l << endl;
-						} while (true);
-
-					} catch (...)
-					{
-						return 1;
-					}
+				} catch (...)
+				{
+					return 1;
 				}
 			}
 		}
