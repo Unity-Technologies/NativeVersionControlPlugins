@@ -29,7 +29,7 @@ public:
 	}
 	
     // Called with entire spec file as data
-	void OutputInfo( char level, const char *data )
+    void OutputInfo( char level, const char *data )
     {
 		stringstream ss(data);
 		Conn().VerboseLine(data);
@@ -52,6 +52,26 @@ public:
 			}
 		}
 	}
+
+
+  void HandleError( Error *err )
+  {
+    if ( err == 0 )
+      return;
+    
+    StrBuf buf;
+    err->Fmt(&buf);
+    string value(buf.Text());
+
+    if (value.find("No such stream.") != string::npos)
+    {
+      Conn().Log().Debug() << value << Endl;
+      return;      
+    }
+
+    P4Command::HandleError(err);
+  }
+
 private:
 	P4Streams m_Streams;
 	
