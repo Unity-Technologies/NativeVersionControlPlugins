@@ -1,0 +1,41 @@
+# Specific
+Build/*
+PerforceBinaries/*
+*.BASE.*.cpp
+*.LOCAL.*.cpp
+*.BACKUP.*.cpp
+*.REMOTE.*.cpp
+*.orig
+Test/tmp/*
+PerforcePlugin
+SubversionPlugin
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
