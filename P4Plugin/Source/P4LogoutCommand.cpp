@@ -11,21 +11,17 @@ public:
 	P4LogoutCommand(const char* name) : P4Command(name) { }
 	virtual bool Run(P4Task& task, const CommandArgs& args)
 	{
-		if (!task.IsConnected()) // Cannot logout without being connected
-		{
-			Conn().Log().Debug() << "Cannot logout when not connected. Reconnecting." << Endl;
-			
-			// Since a logout will invalidate session cookies we need to be logged in to really log out.
-			if (!task.Reconnect() || task.Login())
-			{
-				Conn().Log().Info() << "Cannot logout when not connected and could not re-login." << Endl;
-				return false;
-			}
-		}
-		
-		ClearStatus();
-		
-		if (!task.CommandRun("logout", this))
+	  
+	  if (!task.IsConnected())
+	    task.Reconnect();
+
+	  if (!task.IsConnected())
+	  {
+	    Conn().Log().Debug() << "Cannot logout with no connection" << Endl;
+	    return true;
+	  }
+
+		if (!task.CommandRunNoLogin("logout", this))
 		{
 			string errorMessage = GetStatusMessage();
 			Conn().Log().Fatal() << errorMessage << Endl;
