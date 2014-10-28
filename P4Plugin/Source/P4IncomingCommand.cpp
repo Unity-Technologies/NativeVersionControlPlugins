@@ -128,7 +128,7 @@ public:
 			else if (key == "haveRev" && value != "none")
 				haveRev = atoi(val.Text());
 			else 
-				Conn().Log().Notice() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << Endl;
+				Conn().Log().Debug() << "Warning: skipping unknown stat variable: " << key << " : " << val.Text() << Endl;
 		}
 
 		Conn().VerboseLine(verboseLine);
