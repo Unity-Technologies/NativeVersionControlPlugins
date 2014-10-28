@@ -24,6 +24,8 @@ std::string Quote(const std::string& str);
 
 void ToLower( std::string& localPath );
 
+std::string Backtrace();
+
 template <typename T> 
 std::string ToString(const T& v)
 {

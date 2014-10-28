@@ -192,3 +192,30 @@ const char* PluginException::what() const throw()
 {
 	return m_What.c_str();
 }
+
+#if defined(_WINDOWS)
+string Backtrace()
+{
+  return "";
+}
+#elif defined(LINUX)
+
+#else
+
+#include <execinfo.h>
+#include <stdio.h>
+
+string Backtrace()
+{
+  void* callstack[128];
+  int i, frames = backtrace(callstack, 128);
+  char** strs = backtrace_symbols(callstack, frames);
+  string result;
+  for (i = 0; i < frames; ++i) {
+    result += strs[i];
+    result += "\n";
+  }
+  free(strs);
+  return result;
+}
+#endif
