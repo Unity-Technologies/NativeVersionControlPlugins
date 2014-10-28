@@ -26,7 +26,6 @@ v1:info
 <ignore>
 v1:Case Handling: insensitive
 v1:streams
-w32:No such stream.\n
 c32:online
 c32:enableCommand add
 c32:enableCommand changeDescription
