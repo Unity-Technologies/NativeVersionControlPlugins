@@ -13,6 +13,7 @@
 #include <cstring>
 #include <map>
 #include <vector>
+#include <stdlib.h>
 
 #if defined(_WINDOWS)
 #include "windows.h"
@@ -146,13 +147,22 @@ void P4Task::SetP4Password(const string& p)
 {
 	if (p.empty())
 	{
-		m_Client.SetIgnorePassword();
+		char* pw = getenv("P4PASSWD");
+		if (pw == NULL)
+		{
+			m_Client.SetIgnorePassword();
+			m_PasswordConfig.clear();
+		}
+		else
+		{
+			m_PasswordConfig = pw;
+		}
 	}
 	else
 	{
 		m_Client.SetPassword(p.c_str());
+		m_PasswordConfig = p;
 	}
-	m_PasswordConfig = p;
 	SetOnline(false);
 }
 

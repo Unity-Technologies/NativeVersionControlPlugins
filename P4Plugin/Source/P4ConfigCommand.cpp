@@ -35,7 +35,7 @@ public:
 			logValue = "*";
 
 		Conn().Log().Info() << "Got config " << key << " = '" << logValue << "'" << Endl;
-
+		
 		// This command actually handles several commands all 
 		// concerning connecting to the perforce server
 		if (key == "vcPerforceUsername") 
@@ -105,7 +105,7 @@ public:
 			Conn().DataLine("Username", MAConfig);               // label
 			Conn().DataLine("The perforce user name", MAConfig); // description
 			Conn().DataLine("");                                 // default
-			Conn().DataLine("1");                                // 1 == required field, 2 == password field
+			Conn().DataLine("0");                                // 1 == required field, 2 == password field
 
 			Conn().DataLine("vcPerforcePassword");
 			Conn().DataLine("Password", MAConfig);
@@ -117,7 +117,7 @@ public:
 			Conn().DataLine("Workspace", MAConfig);
 			Conn().DataLine("The perforce workspace/client", MAConfig);
 			Conn().DataLine("");
-			Conn().DataLine("1"); // required field
+			Conn().DataLine("0"); 
 
 			Conn().DataLine("vcPerforceServer");
 			Conn().DataLine("Server", MAConfig);
