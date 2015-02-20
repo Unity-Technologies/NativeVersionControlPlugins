@@ -28,6 +28,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	string headRev;
 	string haveRev;
 	string depotFile;
+	bool exclLockType = false;
 	bool isStateSet = false;
 	
 	// Dump out the variables, using the GetVar( x ) interface.
@@ -47,6 +48,10 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 				return; // invalid file
 			isStateSet = true;
 		}
+		else if (key == "headType")
+		{
+			exclLockType = value.find("+l") != string::npos;
+		}
 		else if (key == "clientFile")
 		{
 			current.SetPath(Replace(value, "\\", "/"));
@@ -62,6 +67,8 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		else if (key == "action")
 		{
 			action = value;
+			if (value == "edit" && exclLockType)
+				current.AddState(kLockedLocal);
 		}
 		else if (key == "ourLock")
 		{
@@ -74,6 +81,8 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		else if (key == "otherOpen")
 		{
 			current.AddState(kCheckedOutRemote);
+			if (exclLockType)
+				current.AddState(kLockedRemote);
 		}
 		else if (key == "unresolved")
 		{
