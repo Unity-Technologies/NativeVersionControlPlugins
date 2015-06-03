@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="TfsPlugin.UnitTestProject" GeneratedClassName="UnitTestSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ServerPathToUnitTestProject" Type="System.String" Scope="User">
+      <Value Profile="(Default)">&lt;enter ServerItem here&gt;/TfsPlugin.UnitTestProject</Value>
+    </Setting>
+    <Setting Name="TFSServerAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">&lt;enter tfs url here&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

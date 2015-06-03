@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="TfsPlugin" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="tfsnolock" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ExclusiveCheckoutFileTypes" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">.unity|.prefab|.anim|.controller</Value>
+    </Setting>
+    <Setting Name="LockLevels" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">$/:Checkout</Value>
+    </Setting>
+    <Setting Name="AllowSavingLockedExclusiveFiles" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DefaultURL" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tfsignore" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ignoreUsers" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ShareBinaryFileCheckout" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">$/:false</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
