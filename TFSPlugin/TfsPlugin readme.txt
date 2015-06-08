@@ -1,5 +1,9 @@
+This plugin adds support for Team Foundation Server and VS Online to the Unity Version Control Integration.
+
 This plugin is not officially supported by Unity.
 It has been developed by Microsoft and is released under public domain license.
+
+TFSPlugin specific bugs should be reported to tfsunity@microsoft.com
 
 Prerequisites
 	1. A Unity pro license for Unity 5.x or a Unity team license for Unity 4.x
