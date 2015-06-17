@@ -4,7 +4,7 @@ This is the source code of the builtin version control plugins that are shipped 
 
 You can build support for you own favourite version control system into Unity by cloning this repository and make changes as needed.
 
-Note that only Perforce support is shipped for Unity 4.2 and no shipping date for Subversion support has been set.
+Note that only Perforce support is shipped for Unity 4.2+, PlasticSCM for 4.3+, TFSPlugin for 4.6+ and no shipping date for Subversion support has been set.
 
 #### Overview
 
@@ -21,8 +21,10 @@ You need Unity 4.2+ to use the integrated version control plugins.
 #### Structure
 
 * Common/ contains structures and functionallity common to all plugins
-* P4Plugin/ contains the Perforce plugin code and Perforce libraries
-* SvnPlugin/ contains the Subversion plugin code and Subversion libraries
+* P4Plugin/ contains the Perforce plugin code and Perforce libraries (binaries shipped with Unity)
+* PlasticSCMPlugn contains the Plastic plugin code (binaries shipped with Unity)
+* SvnPlugin/ contains the Subversion plugin code and Subversion libraries 
+* TFSPlugin/ contains the Team Foundation Server/VS Online plugin code
 * Test/ contains integration tests
 
 To build:
