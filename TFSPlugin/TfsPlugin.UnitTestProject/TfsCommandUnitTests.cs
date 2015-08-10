@@ -12,6 +12,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace TfsPlugin.UnitTestProject
 {
@@ -58,13 +59,19 @@ namespace TfsPlugin.UnitTestProject
             }
         }
 
+
+        static Dictionary<string, Assembly> LoadedAssemblies = InstallChecker.LoadAssemblies();
+
         [TestInitialize]
         public void Setup()
-        {         
+        {
             mockNamedPipeName = Guid.NewGuid().ToString("D") + "-testpipe.txt";
             this.projectCollection = new TfsTeamProjectCollection(new Uri(TFSServerAddress));
             this.projectCollection.EnsureAuthenticated();
 
+#if TEAMFOUNTATION_14
+            this.projectCollection.GetService<VersionControlServer>().NonFatalError += TfsCommandUnitTests_NonFatalError;
+#endif
             this.tempWorkspace = new TfsTempWorkspace(this.projectCollection.GetService<VersionControlServer>(), "__TfsUnitTestWorkspace", projectCollection.AuthorizedIdentity.UniqueName, isFrozen: false);
 
             var mapping = this.tempWorkspace.Map(ServerPathToUnitTestProject + "/TestResources/UnityProjects", "TestResources");
@@ -86,6 +93,13 @@ namespace TfsPlugin.UnitTestProject
 
             this.scenesFolderPath = Path.Combine(this.testProjectPath, "Assets\\Scenes\\");
         }
+
+#if TEAMFOUNTATION_14
+        private void TfsCommandUnitTests_NonFatalError(object sender, ExceptionEventArgs e)
+        {
+           
+        }
+#endif
 
         [TestCleanup]
         public void Cleanup()
@@ -111,7 +125,7 @@ namespace TfsPlugin.UnitTestProject
 
             var s = task.GetStatus();
         }
-
+                 
         [TestMethod]
         public void TestPendingStatus()
         {
