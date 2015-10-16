@@ -110,10 +110,13 @@ namespace TfsPlugin
             m_Connection = conn;
             this.tpcPath = tpcPath;
 
+            if (!string.IsNullOrEmpty(Settings.Default.ExclusiveCheckoutFileTypes))
+            {
             foreach (var item in Settings.Default.ExclusiveCheckoutFileTypes.Split('|'))
             {
                 exclusiveCheckoutTypes.Add(item);
                 exclusiveCheckoutTypes.Add(item + ".meta");
+            }
             }
 
             if (!string.IsNullOrEmpty(projectPath))
@@ -1340,7 +1343,7 @@ namespace TfsPlugin
         {
             if (asset.Any() == false)
             {
-                return ;
+                return;
             }
 
             var assets = TfsFileStatusCache.Find(asset.Select(each => each.GetPath()));
@@ -1369,7 +1372,7 @@ namespace TfsPlugin
             footer = string.Format("The first user to submit their change to a non-mergable file ({0}) will prevent all other users who had the file checked out from submitting their change, resulting in lost work", ExclusiveCheckoutTypesToString());
 
             ShowWarningMessageBox(assets, caption, messageHeader, footer);
-        }     
+        }
 
         private void ShowWarningMessageBox(IEnumerable<TfsFileStatus> assets, string caption, string messageHeader, string footer)
         {

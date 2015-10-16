@@ -27,29 +27,44 @@ namespace TfsPlugin
             {"VS120COMNTOOLS", new string[] { @"..\IDE\ReferenceAssemblies" } },
         };
 
-        static List<string> GetAssemblyLoadPaths()
+        static readonly Dictionary<string, string> FallbackEnvVarValues = new Dictionary<string, string>
         {
+            {"VS140COMNTOOLS", @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools"  },
+            {"VS120COMNTOOLS", @"C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools"  },
+        };
+
+        static List<List<string>> GetAssemblyLoadPaths()
+        {
+            List<List<string>> result = new List<List<string>>();
+
             foreach (var eachEnvVariable in new[] { "VS140COMNTOOLS", "VS120COMNTOOLS" })
             {
                 string value = Environment.GetEnvironmentVariable(eachEnvVariable);
 
-                if (value == null)
+                if (string.IsNullOrEmpty(value) || !Directory.Exists(value))
                 {
-                    continue;
+                    if (Directory.Exists(FallbackEnvVarValues[eachEnvVariable]))
+                    {
+                        value = eachEnvVariable;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
                 var paths = AssemblyLoadPaths[eachEnvVariable];
-                List<string> result = new List<string>();
+                List<string> pathSet = new List<string>();
 
                 for (int i = 0; i < paths.Length; i++)
                 {
-                    result.Add( Path.GetFullPath(Path.Combine(value, paths[i])));
+                    pathSet.Add(Path.GetFullPath(Path.Combine(value, paths[i])));
                 }
 
-                return result;
+                result.Add(pathSet);
             }
 
-            return null;
+            return result;
         }
 
         static string TrimAssemblyName(string name)
@@ -78,7 +93,7 @@ namespace TfsPlugin
 
             foreach (var eachAssembly in toLoad)
             {
-                foreach (var eachPath in loadPaths)
+                foreach (var eachPath in loadPaths.ToArray())
                 {
                     string[] found = null;
                     var trialPath = Path.Combine(eachPath, eachAssembly);
@@ -111,19 +126,45 @@ namespace TfsPlugin
 
         public static Dictionary<string, Assembly> LoadAssemblies()
         {
-            if (LoadedAssemblies != null)
+            try
             {
-                return LoadedAssemblies;
+                if (LoadedAssemblies != null)
+                {
+                    return LoadedAssemblies;
+                }
+
+                var loadPathSets = GetAssemblyLoadPaths();
+
+                Dictionary<string, Assembly> result = new Dictionary<string, Assembly>();
+
+                foreach (var eachLoadPath in loadPathSets)
+                {
+                    var assembliesToLoad = GetAssembliesToLoad(AssembliesToLoad, eachLoadPath);
+
+                    if (assembliesToLoad.Count != AssembliesToLoad.Length)
+                    {
+                        continue;
+                    }
+
+                    var loadedAssemblies = LoadAssembliesFrom(assembliesToLoad);
+
+                    if (loadedAssemblies == null)
+                    {
+                        continue;
+                    }
+
+                    result = loadedAssemblies;
+                    break;
+                }
+
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+                return result;
             }
-            
-            var loadPaths = GetAssemblyLoadPaths();
-            var assembliesToLoad = GetAssembliesToLoad(AssembliesToLoad, loadPaths);
-            
-            var result = LoadAssembliesFrom(assembliesToLoad);
-
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            return result;
+            catch
+            {
+                return new Dictionary<string, Assembly>();
+            }
         }
 
         private static Dictionary<string, Assembly> LoadAssembliesFrom(List<string> assembliesToLoad)
@@ -131,8 +172,15 @@ namespace TfsPlugin
             Dictionary<string, Assembly> result = new Dictionary<string, Assembly>();
             foreach (var item in assembliesToLoad)
             {
-                Assembly assembly = Assembly.LoadFrom(item);
-                result[TrimAssemblyName(assembly.FullName)] = assembly;
+                try
+                {
+                    Assembly assembly = Assembly.LoadFrom(item);
+                    result[TrimAssemblyName(assembly.FullName)] = assembly;
+                }
+                catch
+                {
+                    return null;
+                }
             }
 
             return result;
