@@ -81,6 +81,7 @@
     <Compile Include="TfsCommandUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TfsTempWorkspace.cs" />
+    <Compile Include="TfsSettingsTests.cs" />
     <Compile Include="UnitTestSettings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -119,6 +120,14 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>UnitTestSettings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestResources\TfsSettings\OverrideAllSettings.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestResources\TfsSettings\NoOverrideSettings.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

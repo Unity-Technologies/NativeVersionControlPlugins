@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TfsSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- TFS Project URL to connect to by default, can be changed at runtime by editing the "Server Override" field in the Version Control section of Editor Settings. ex. "https://address.com:port/tfs/ProjectName" -->
+  <TfsServerConnectionString>https://address.com:port/tfs/ProjectName</TfsServerConnectionString>
+
+  <!-- Semicolon delimited list of file path wildcards to ignore from version control ex. "*/Some.dll;*/Some.pdb" -->
+  <TfsIgnore>*/Some.dll;*/Some.pdb</TfsIgnore>
+
+  <!-- Semicolon delimited list of file path wildcards to never lock on checkout ex. "*/Some.prefab;*/SomeOther.prefab" -->
+  <TfsNoLock>*/Some.prefab;*/SomeOther.prefab</TfsNoLock>
+
+  <!-- Pipe delimited list of file path extensions to lock on checkout. Most useful when using binary format. ex. ".unity|.prefab|.anim|.controller" -->
+  <ExclusiveCheckoutFileTypes></ExclusiveCheckoutFileTypes>
+
+  <!-- Pipe delimited list of users that will always be forced to work offline. Most useful for automated build user accounts. ex. "serviceAccount1|serviceAccount2" -->
+  <IgnoreUsers>serviceAccount1|serviceAccount2</IgnoreUsers>
+
+  <!-- Pipe delimited list of colon separated TFS server path:boolean pairs.
+    When true, the plugin will checkout ExclusiveCheckoutFileTypes files without a lock if they are currently checked out but not locked.
+    When false, the plugin will NOT checkout ExclusiveCheckoutFileTypes files without a lock if they are currently checked out but not locked.
+    ex. "$/:false|$/ProjectA:true". -->
+  <ShareBinaryFileCheckout>$/:true</ShareBinaryFileCheckout>
+
+  <!-- Pipe delimited list of colon separated TFS server path:boolean pairs. Will set the lock type used when locking ExclusiveCheckoutFileTypes files.
+    A check-out lock prevents other users from checking out and making changes to the locked item in their workspaces.
+    A check-in lock is less restrictive than a check-out lock. If you apply a check-in lock, users can continue to make local changes to the item in other workspaces.
+    However, those changes cannot be checked in until you remove the lock or check in your changes (if the file is non-mergable, one users version will be stomped).
+    Can be specified per server path. Valid values are None, Checkin or Checkout. The default value is Checkout.
+    ex. "$/:Checkout|$/ProjectA:Checkin". -->
+  <LockLevels>$/:Checkin</LockLevels>
+
+  <!-- Boolean value.
+    When True Unity will allow the user to save unsaved changes if a ExclusiveCheckoutFileTypes file is unable to be checked out and locked.
+    When False Unity will NOT allow the user to save unsaved changes if a ExclusiveCheckoutFileTypes file is unable to be checked out and locked.
+    Default value of True.
+    ex. "True"-->
+  <AllowSavingLockedExclusiveFiles>false</AllowSavingLockedExclusiveFiles>
+</TfsSettings>

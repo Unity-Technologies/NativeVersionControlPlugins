@@ -110,9 +110,9 @@ namespace TfsPlugin
             m_Connection = conn;
             this.tpcPath = tpcPath;
 
-            if (!string.IsNullOrEmpty(Settings.Default.ExclusiveCheckoutFileTypes))
+            if (!string.IsNullOrEmpty(TfsSettings.Default.ExclusiveCheckoutFileTypes))
             {
-            foreach (var item in Settings.Default.ExclusiveCheckoutFileTypes.Split('|'))
+                foreach (var item in TfsSettings.Default.ExclusiveCheckoutFileTypes.Split('|'))
             {
                 exclusiveCheckoutTypes.Add(item);
                 exclusiveCheckoutTypes.Add(item + ".meta");
@@ -126,6 +126,7 @@ namespace TfsPlugin
             else
             {
                 this.projectPath = string.Empty;
+                this.LoadTfsSettings();
             }
 
         }
@@ -321,7 +322,7 @@ namespace TfsPlugin
 
         private bool IsIgnoringUser()
         {
-            foreach (var item in Settings.Default.ignoreUsers.Split('|'))
+            foreach (var item in TfsSettings.Default.IgnoreUsers.Split('|'))
             {
                 if (Environment.UserName == item)
                 {
@@ -336,7 +337,7 @@ namespace TfsPlugin
         {
             var result = new List<Regex>();
 
-            FillWildcardList(Settings.Default.tfsignore, ';', result);
+            FillWildcardList(TfsSettings.Default.TfsIgnore, ';', result);
 
             if (!string.IsNullOrEmpty(projectPath) && Directory.Exists(projectPath))
             {
@@ -353,7 +354,7 @@ namespace TfsPlugin
         {
             var result = new List<Regex>();
 
-            FillWildcardList(Settings.Default.tfsnolock, ';', result);
+            FillWildcardList(TfsSettings.Default.TfsNoLock, ';', result);
 
             if (!string.IsNullOrEmpty(projectPath) && Directory.Exists(projectPath))
             {
@@ -376,7 +377,7 @@ namespace TfsPlugin
 
         private string TfsUrl()
         {
-            return string.IsNullOrEmpty(tpcPath) ? Settings.Default.DefaultURL : tpcPath;
+            return string.IsNullOrEmpty(tpcPath) ? TfsSettings.Default.TfsServerConnectionString : tpcPath;
         }
 
         void NotifyOffline(string reason)
@@ -556,6 +557,7 @@ namespace TfsPlugin
         public void SetProjectPath(string val)
         {
             projectPath = val;
+            this.LoadTfsSettings();
 
             // need to reset online flag to allow unity reconnecting
             isOnline = null;
@@ -571,7 +573,7 @@ namespace TfsPlugin
         {
             try
             {
-                var settingValue = FindBestMatchForProjectSetting(Settings.Default.ShareBinaryFileCheckout);
+                var settingValue = FindBestMatchForProjectSetting(TfsSettings.Default.ShareBinaryFileCheckout);
 
                 bool parsedValue;
                 if (settingValue != null && bool.TryParse(settingValue, out parsedValue))
@@ -593,7 +595,7 @@ namespace TfsPlugin
 
             try
             {
-                var settingValue = FindBestMatchForProjectSetting(Settings.Default.LockLevels);
+                var settingValue = FindBestMatchForProjectSetting(TfsSettings.Default.LockLevels);
 
                 LockLevel parsedLevel;
                 if (settingValue != null && Enum.TryParse<LockLevel>(settingValue, true, out parsedLevel))
@@ -1416,6 +1418,18 @@ namespace TfsPlugin
                 {
                     RunTfptScortchOnProject();
                 }
+            }
+        }
+
+        private void LoadTfsSettings()
+        {
+            if (string.IsNullOrEmpty(this.projectPath))
+            {
+                TfsSettings.Load(null);
+            }
+            else
+            {
+                TfsSettings.Load(Path.Combine(this.projectPath, @"ProjectSettings\TfsSettings.xml"));
             }
         }
     }

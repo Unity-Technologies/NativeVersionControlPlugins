@@ -42,7 +42,7 @@ namespace TfsPlugin
          
             task.WarnAboutOutOfDateFiles(req.Assets);
 
-            if (!Settings.Default.AllowSavingLockedExclusiveFiles)
+            if (!TfsSettings.Default.AllowSavingLockedExclusiveFiles)
             {
                 foreach (var item in resp.Assets)
                 {
