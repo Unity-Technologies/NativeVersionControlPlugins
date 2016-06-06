@@ -12,6 +12,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace TfsPlugin.UnitTestProject
 {
@@ -24,8 +25,6 @@ namespace TfsPlugin.UnitTestProject
     {
         readonly static string ServerPathToUnitTestProject = UnitTestSettings.Default.ServerPathToUnitTestProject;
         readonly static string TFSServerAddress = UnitTestSettings.Default.TFSServerAddress;
-
-        readonly static string project1 = ServerPathToUnitTestProject + @"/TestResources/UnityProjects/TestOne";
 
         TfsTeamProjectCollection projectCollection;
         TfsTempWorkspace tempWorkspace;
@@ -58,24 +57,30 @@ namespace TfsPlugin.UnitTestProject
             }
         }
 
+
+        static Dictionary<string, Assembly> LoadedAssemblies = InstallChecker.LoadAssemblies();
+
         [TestInitialize]
         public void Setup()
-        {         
+        {
             mockNamedPipeName = Guid.NewGuid().ToString("D") + "-testpipe.txt";
             this.projectCollection = new TfsTeamProjectCollection(new Uri(TFSServerAddress));
             this.projectCollection.EnsureAuthenticated();
 
+#if TEAMFOUNTATION_14
+            this.projectCollection.GetService<VersionControlServer>().NonFatalError += TfsCommandUnitTests_NonFatalError;
+#endif
             this.tempWorkspace = new TfsTempWorkspace(this.projectCollection.GetService<VersionControlServer>(), "__TfsUnitTestWorkspace", projectCollection.AuthorizedIdentity.UniqueName, isFrozen: false);
 
             var mapping = this.tempWorkspace.Map(ServerPathToUnitTestProject + "/TestResources/UnityProjects", "TestResources");
-         
+
             Workspace.Get();
 
             this.tempWorkspace2 = new TfsTempWorkspace(this.projectCollection.GetService<VersionControlServer>(), "__TfsUnitTestWorkspace2", projectCollection.AuthorizedIdentity.UniqueName, isFrozen: false);
 
             var mapping2 = this.tempWorkspace2.Map(ServerPathToUnitTestProject + "/TestResources/UnityProjects", "TestResources");
-         
-            Workspace2.Get();  
+
+            Workspace2.Get();
 
             this.testProjectPath = Path.Combine(mapping, "TestOne");
             this.mainScenePath = Path.Combine(this.testProjectPath, "Assets\\Scenes\\main.unity");
@@ -86,6 +91,13 @@ namespace TfsPlugin.UnitTestProject
 
             this.scenesFolderPath = Path.Combine(this.testProjectPath, "Assets\\Scenes\\");
         }
+
+#if TEAMFOUNTATION_14
+        private void TfsCommandUnitTests_NonFatalError(object sender, ExceptionEventArgs e)
+        {
+           
+        }
+#endif
 
         [TestCleanup]
         public void Cleanup()
@@ -107,7 +119,7 @@ namespace TfsPlugin.UnitTestProject
         [TestMethod]
         public void TestStatus()
         {
-            TfsTask task = CreateTfsTask(TFSServerAddress, testProjectPath);
+            TfsTask task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
 
             var s = task.GetStatus();
         }
@@ -115,31 +127,31 @@ namespace TfsPlugin.UnitTestProject
         [TestMethod]
         public void TestPendingStatus()
         {
-            TfsTask task = CreateTfsTask(TFSServerAddress, testProjectPath);
+            TfsTask task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
 
-            Workspace.PendEdit(new []{mainScenePath}, RecursionType.None, null, LockLevel.Checkin);
+            Workspace.PendEdit(new[] { mainScenePath }, RecursionType.None, null, LockLevel.Checkin);
 
             VersionedAssetList result = new VersionedAssetList();
-            task.GetStatus(new VersionedAssetList { new VersionedAsset(mainScenePath.Replace("\\","/") )}, result, true, true);
+            task.GetStatus(new VersionedAssetList { new VersionedAsset(mainScenePath.Replace("\\", "/")) }, result, true, true);
             Assert.AreEqual(true, result[0].HasState(State.kCheckedOutLocal));
 
-            var newFile = Path.Combine(testProjectPath, "assets", "new.txt");
+            var newFile = Path.Combine(this.testProjectPath, "assets", "new.txt");
             File.WriteAllText(newFile, "hi");
             Workspace.PendAdd(newFile);
 
             result = new VersionedAssetList();
             task.GetStatus(new VersionedAssetList { new VersionedAsset(newFile.Replace("\\", "/")) }, result, true, true);
             Assert.AreEqual(true, result[0].HasState(State.kAddedLocal));
-        }               
+        }
 
         [TestMethod]
         public void TestBulkStatus()
         {
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, project1);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
 
             List<string> paths = new List<string>();
 
-            foreach (var item in Directory.GetFiles(task.Workspace.GetLocalItemForServerItem(project1), "*.*", SearchOption.AllDirectories))
+            foreach (var item in Directory.GetFiles(this.testProjectPath, "*.*", SearchOption.AllDirectories))
             {
                 paths.Add(item);
             }
@@ -167,7 +179,7 @@ namespace TfsPlugin.UnitTestProject
         [TestMethod]
         public void TestStatus2()
         {
-            TfsTask task = CreateTfsTask(TFSServerAddress, testProjectPath);
+            TfsTask task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             var w = new Stopwatch();
             w.Start();
             var s = task.GetStatus();
@@ -204,7 +216,7 @@ namespace TfsPlugin.UnitTestProject
         [TestMethod]
         public void TestDelete()
         {
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
 
             var pipe = CreateUnityConnectionPipe();
 
@@ -238,7 +250,7 @@ namespace TfsPlugin.UnitTestProject
         public void TestCheckout()
         {
             List<string> warnings = new List<string>();
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             task.WarningDialogDisplayed += (m) => warnings.Add(m);
 
             var pipe = CreateUnityConnectionPipe();
@@ -271,7 +283,7 @@ namespace TfsPlugin.UnitTestProject
         public void TestCheckoutFolders()
         {
             List<string> warnings = new List<string>();
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             task.WarningDialogDisplayed += (m) => warnings.Add(m);
 
             var pipe = CreateUnityConnectionPipe();
@@ -306,7 +318,7 @@ namespace TfsPlugin.UnitTestProject
         {
             List<string> warnings = new List<string>();
 
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             task.WarningDialogDisplayed += (m) => warnings.Add(m);
 
             var pipe = CreateUnityConnectionPipe();
@@ -345,7 +357,7 @@ namespace TfsPlugin.UnitTestProject
         public void TestBinaryCheckoutWithRemoteCheckinLock()
         {
             List<string> warnings = new List<string>();
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             task.WarningDialogDisplayed += (m) => warnings.Add(m);
 
             var pipe = CreateUnityConnectionPipe();
@@ -380,7 +392,7 @@ namespace TfsPlugin.UnitTestProject
         public void TestBinaryCheckoutWithRemoteCheckoutNolock()
         {
             List<string> warnings = new List<string>();
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             task.WarningDialogDisplayed += (m) => warnings.Add(m);
 
             var pipe = CreateUnityConnectionPipe();
@@ -415,7 +427,7 @@ namespace TfsPlugin.UnitTestProject
         public void TestRename()
         {
             List<string> warnings = new List<string>();
-            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, testProjectPath);
+            var task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
             task.WarningDialogDisplayed += (m) => warnings.Add(m);
 
             var pipe = CreateUnityConnectionPipe();
@@ -447,7 +459,7 @@ namespace TfsPlugin.UnitTestProject
         [TestMethod]
         public void TestIncomingCommand()
         {
-            TfsTask task = CreateTfsTask(TFSServerAddress, testProjectPath);
+            TfsTask task = CreateTfsTaskFromLocalProjectPath(TFSServerAddress, this.testProjectPath);
 
             var history2 = task.VersionControlServer.QueryHistory(task.ProjectPath,
                 new WorkspaceVersionSpec(task.Workspace), 0,
@@ -489,18 +501,5 @@ namespace TfsPlugin.UnitTestProject
 
             return task;
         }
-
-        private TfsTask CreateTfsTask(string url, string project)
-        {
-            File.WriteAllText(mockNamedPipeName, "");
-
-            MemoryStream log = new MemoryStream();
-
-            var conn = new Connection(log, File.Open(mockNamedPipeName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite));
-
-            TfsTask task = new TfsTask(conn, url, project);
-
-            return task;
-        }     
     }
 }

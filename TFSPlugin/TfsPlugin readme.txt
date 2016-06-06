@@ -7,7 +7,7 @@ TFSPlugin specific bugs should be reported to tfsunity@microsoft.com
 
 Prerequisites
 	1. A Unity pro license for Unity 5.x or a Unity team license for Unity 4.x
-	2. Visual studio 2013 or Team Explorer 2013
+	2. Visual studio/Team Explorer 2013 or 2015
 
 Plugin Installation/Upgrade Instructions   
 	1. Copy the TfsPlugin.exe and TfsPlugin.exe.config into your "UnityEditor\Editor\Data\Tools\VersionControl" folder
@@ -22,7 +22,7 @@ Project setup Instructions
 		b. Note that the editor settings is on the inspector window
 	3. On the editor settings panel
 		a. Mode - Select "TFS" 
-		b. Enter the server URL of your TFS Team Project into the Server text box
+		b. Enter the server URL of your TFS Team Project into the Server text box using the format <protocol>://<url>:<port>/<path>/<Team project collection>
 		c. Press the "Connect" button
 		d. Make sure the plugin status shows as "Connected"
 

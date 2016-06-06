@@ -39,3 +39,14 @@ SubversionPlugin
 *.out
 *.app
 
+# Output folders
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio 2015 local files
+.vs/
+
+# Test Ouput
+TestResults/
