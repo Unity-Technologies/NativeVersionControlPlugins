@@ -1,6 +1,9 @@
 # Specific
-Build/*
-PerforceBinaries/*
+Build/
+PerforceBinaries/
+Library/
+*.sublime-project
+*.sublime-workspace
 *.BASE.*.cpp
 *.LOCAL.*.cpp
 *.BACKUP.*.cpp
