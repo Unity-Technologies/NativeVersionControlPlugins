@@ -5,7 +5,8 @@ c:getLatest
 0
 --
 v1:sync "./<root>/..." 
-i1:Enabling unicode mode
+v1:login
+v1:login
 v1:'login' not necessary, no password set for this user.
 v1:client -o "testclient"
 <ignore>

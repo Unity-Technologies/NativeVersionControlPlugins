@@ -7,7 +7,8 @@ This is a submit for delete
 0
 --
 v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
-i1:Enabling unicode mode
+v1:login
+v1:login
 v1:'login' not necessary, no password set for this user.
 v1:client -o "testclient"
 <ignore>
