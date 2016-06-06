@@ -5,7 +5,8 @@ use PerforceTest;
 
 sub IntegrationTest
 {
-	PerforceIntegrationTests(@_);
+	$exitCode = PerforceIntegrationTests(@_);
+	exit $exitCode;
 }
 
 1;

@@ -22,6 +22,7 @@ sub PerforceIntegrationTests
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
 	$ENV{'P4CLIENTROOTABS'} = getcwd() . "/" . $ENV{'P4CLIENTROOT'};
 	$ENV{'P4CLIENT'} = "testclient";
+	$ENV{'P4USER'} = "vcs_test_user";
 	$ENV{'P4CHARSET'} = 'utf8';
 	$ENV{'P4PASSWD'} = 'secret';
 	
@@ -36,10 +37,11 @@ sub PerforceIntegrationTests
 	sleep(1);
 	SetupClient();
 
-	RunTests($option);
+	$exitCode = RunTests($option);
 
 	TeardownClient();
 	TeardownServer($pid);
+	return $exitCode;
 }
 
 sub RunTests()
@@ -68,16 +70,17 @@ sub RunTests()
 		elsif ($? == -1)
 		{
 			print "Error running test : $!\n";
-			return;
+			return 1;
 		}
 		else
 		{
 			print "Test failed -> stopping all tests\n";
-			return;
+			return 1;
 		}
 		$total++;
 	}
 	print "Done: $success of $total tests passed.\n";
+	return 0;
 }
 
 sub SetupServer
@@ -114,7 +117,7 @@ Update:2013/02/19 09:13:18
 Access:2013/06/24 12:38:18
 
 Description:
-    Created by $ENV{'USER'}.
+    Created by $ENV{'P4USER'}.
 
 Root:$root
 
