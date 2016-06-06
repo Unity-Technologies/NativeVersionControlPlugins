@@ -4,7 +4,7 @@
 #
 
 EXE_TO_CHECK="PlasticSCMUnityPlugin"
-EXE_DEFAULT_PATH="/Applications/PlasticSCM/client/PlasticSCMUnityPlugin"
+EXE_DEFAULT_PATH="/usr/local/bin/PlasticSCMUnityPlugin"
 EXE_FULL_PATH=""
 RETVAL=0
 
