@@ -18,6 +18,7 @@ sub PerforceIntegrationTests
 
 	print "Running Perforce Integration Tests\n";
 	mkdir "Test/tmp";
+	mkdir "Test/tmp/testclient";
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "localhost:1667";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
