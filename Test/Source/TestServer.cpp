@@ -43,6 +43,13 @@ bool noresults;
 string root;
 string absroot;
 
+static void ConvertSeparatorsToWindows( string& pathName )
+{
+	for (string::iterator i = pathName.begin(); i != pathName.end(); ++i)
+		if (*i == '/')
+			*i = '\\';
+}
+
 static void ConvertSeparatorsFromWindows( string& pathName )
 {
 	for (string::iterator i = pathName.begin(); i != pathName.end(); ++i)
@@ -173,10 +180,9 @@ int run(int argc, char* argv[])
 	noresults = newbaseline;
 	verbose = argc > 3 ? string(argv[3]) == "verbose" && !newbaseline : false;
 	root = Trim(argc > 4 ? argv[4] : "", '\'');
+	absroot = string(getenv("PWD"));
 #ifdef _WIN32
-	absroot = string(getenv("PWD")) + "\\" + root;
-#else
-	absroot = string(getenv("PWD")) + "/" + root;
+	ConvertSeparatorsToWindows(absroot);
 #endif
 
 	cout << "Root:    " << root <<  endl;
