@@ -2,8 +2,6 @@
 Build/
 PerforceBinaries/
 Library/
-*.sublime-project
-*.sublime-workspace
 *.BASE.*.cpp
 *.LOCAL.*.cpp
 *.BACKUP.*.cpp
@@ -48,8 +46,17 @@ SubversionPlugin
 [Bb]in/
 [Oo]bj/
 
+# Visual Studio 2010 local files
+*.vcxproj.user
+*.opensdf
+*.sdf
+
 # Visual Studio 2015 local files
 .vs/
 
 # Test Ouput
 TestResults/
+
+# Sublime files
+*.sublime-project
+*.sublime-workspace
