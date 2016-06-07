@@ -64,7 +64,8 @@ sub RunTests()
 	$cwd = getcwd();
 	chdir $clientroot;
 	foreach $i (@files) {
-		$output = `$testserver $pluginexec $i $option '$clientroot'`;
+		$testFile = $cwd . $i;
+		$output = `$testserver $pluginexec $testFile $option '$clientroot'`;
 		$res = $? >> 8;
 		print $output;
 		if ($res == 0)
