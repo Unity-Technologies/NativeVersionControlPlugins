@@ -113,11 +113,11 @@ sub TestMac
 {
 	$ENV{'P4DEXEC'} = "PerforceBinaries/OSX/p4d";
 	$ENV{'P4EXEC'} = "PerforceBinaries/OSX/p4";
-	$ENV{'P4PLUGIN'} = "Build/OSXi386/PerforcePlugin";
-	$ENV{'TESTSERVER'} = "Build/OSXi386/TestServer";
+	$ENV{'P4PLUGIN'} = "Build/OSXx64/PerforcePlugin";
+	$ENV{'TESTSERVER'} = "Build/OSXx64/TestServer";
 
 	# Teamcity artifacts looses their file attributes on transfer
-	chmod 0755, glob("Build/OSXi386/*");
+	chmod 0755, glob("Build/OSXx64/*");
 
 	IntegrationTest($testoption);
 }
