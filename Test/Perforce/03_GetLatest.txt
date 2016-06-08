@@ -22,7 +22,7 @@ v1:info
 <ignore>
 <ignore>
 <ignore>
-v1:Server version: P4D/DARWIN90X86_64/2016.1/1396108 (2016/06/03)
+==:v1:Server version: P4D/
 v1:Server license: none
 v1:Case Handling: insensitive
 v1:streams
