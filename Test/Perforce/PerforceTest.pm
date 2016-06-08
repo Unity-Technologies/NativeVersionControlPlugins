@@ -86,7 +86,7 @@ sub RunTests()
 			return 1;
 		}
 		$total++;
-		}
+	}
 	print "Done: $success of $total tests passed.\n";
 	chdir $cwd;
 	return 0;
