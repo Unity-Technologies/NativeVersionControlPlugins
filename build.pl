@@ -6,16 +6,37 @@ use Cwd;
 use File::Path qw (rmtree mkpath);
 use lib 'Test';
 use VCSTest;
+use File::Find;
+use File::Basename;
 
-my ($testoption,$test, $target, @configs);
+my ($testoption,$test, $target, $clean, @configs);
 GetOptions("test"=>\$test, "testoption=s"=>\$testoption,
-		   "target=s"=>\$target, "configs=s"=>\@configs);
+		   "target=s"=>\$target, "configs=s"=>\@configs, "clean"=>\$clean);
 @configs = split(/,/,join(',',@configs));
 
 sub BuildLinux ($);
 sub TestLinux ($);
 
 $testoption = "nonverbose" unless ($testoption);
+
+if ($clean)
+{
+	rmtree("Build");
+	find(\&wanted, "./");
+	sub wanted 
+	{
+    	my($filename, $dirs, $suffix) = fileparse($File::Find::name, qr/\.[^.]*/);
+		if ($suffix eq ".o")
+		{
+    		print "delete $File::Find::name","\n";
+    		unlink($_);
+		}
+    }
+    unlink("PerforcePlugin");
+    unlink("SubversionPlugin");
+    unlink("PlasticSCMPlugin");
+	exit 0;
+}
 
 if (not $target)
 {
@@ -82,7 +103,7 @@ else
 
 sub BuildMac
 {
-	system ("rm", "-rf", "Build");
+	rmtree("Build");
 	system("make" , "-f", "Makefile.osx", "all") && die ("Failed to build version control plugins");
 }
 
