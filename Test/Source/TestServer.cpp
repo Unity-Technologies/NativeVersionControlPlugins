@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#endif
+
 using namespace std;
 
 void printStatus(bool ok);
