@@ -1,11 +1,11 @@
 <include ./Test/Perforce/02_Configure.txt>
-<genfile ./Test/tmp/testclient/testfile2.txt>
+<genfile ./testfile2.txt>
 c:add 
 1
-./Test/tmp/testclient/testfile2.txt
+./testfile2.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./testfile2.txt" 
 v1:login
 v1:login
 v1:'login' not necessary, no password set for this user.
@@ -48,12 +48,12 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:./<root>/testfile2.txt - no such file(s).
-v1:add -f  "./<root>/testfile2.txt" 
+v1:./testfile2.txt - no such file(s).
+v1:add -f  "./testfile2.txt" 
 v1:'login' not necessary, no password set for this user.
 i1://depot/testfile2.txt#1 - opened for add (level 48)
 o1:-1
-v1:fstat  "./<root>/testfile2.txt" 
+v1:fstat  "./testfile2.txt" 
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt
@@ -63,11 +63,11 @@ r1:end of response
 --
 c:status recurse
 1
-./Test/tmp/testclient/testfile2.txt
+./testfile2.txt
 0
 --
 o1:-1
-v1:fstat  "./<root>/testfile2.txt" 
+v1:fstat  "./testfile2.txt" 
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt

@@ -63,9 +63,10 @@ sub RunTests()
 	$clientroot = $ENV{'P4CLIENTROOT'};
 
 	$cwd = getcwd();
+	print "Changing working directory to: '", $clientroot,"'\n";
 	chdir $clientroot;
 	foreach $i (@files) {
-		$output = `$testserver $pluginexec $i $option '$clientroot'`;
+		$output = `$testserver $pluginexec $cwd $i $option`;
 		$res = $? >> 8;
 		print $output;
 		if ($res == 0)
@@ -85,7 +86,7 @@ sub RunTests()
 			return 1;
 		}
 		$total++;
-	}
+		}
 	print "Done: $success of $total tests passed.\n";
 	chdir $cwd;
 	return 0;
