@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#endif
+
 using namespace std;
 
 void printStatus(bool ok);
@@ -35,13 +39,19 @@ int main(int argc, char* argv[])
 }
 
 
-static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent = "");
+static int runScript(ExternalProcess& p, const string& testDir, const string& testScript, const string& indent = "");
 
 bool verbose;
 bool newbaseline;
 bool noresults;
-string root;
 string absroot;
+
+static void ConvertSeparatorsToWindows( string& pathName )
+{
+	for (string::iterator i = pathName.begin(); i != pathName.end(); ++i)
+		if (*i == '/')
+			*i = '\\';
+}
 
 static void ConvertSeparatorsFromWindows( string& pathName )
 {
@@ -93,13 +103,6 @@ static void replaceRootTagWithPath(string& str)
 		str.replace(i, 9, absroot);
 		i = str.find("<absroot>");
 	}
-
-	i = str.find("<root>");
-	while (i != string::npos)
-	{
-		str.replace(i, 6, root);
-		i = str.find("<root>");
-	}
 }
 
 static void replaceRootPathWithTag(string& instr)
@@ -129,57 +132,32 @@ static void replaceRootPathWithTag(string& instr)
 		i = str.find(wabsroot);
 		replacedSomething = true;
 	}
-	
-	string wroot = root;
-	ConvertSeparatorsFromWindows(wroot);
-	i = str.find(wroot);
-	while (i != string::npos)
-	{
-		str.replace(i, wroot.length(), "<root>");
-		i = str.find(wroot);
-		replacedSomething = true;
-	}
 #endif
 
-	i = str.find(root);
-	while (i != string::npos)
-	{
-		str.replace(i, root.length(), "<root>");
-		i = str.find(root);
-		replacedSomething = true;
-	}
 	if (replacedSomething)
 		instr.swap(str);
-
-#ifdef _WIN32_NOTDEFINED
-	string wroot = root;
-	ConvertSeparatorsFromWindows(wroot);
-	i = str.find(wroot);
-	if (i != string::npos)
-		str.replace(i, wroot.length(), "<root>");
-
-	string wabsroot = absroot;
-	ConvertSeparatorsFromWindows(wabsroot);
-	i = str.find(wabsroot);
-	if (i != string::npos)
-		str.replace(i, wabsroot.length(), "<root>");
-#endif
-	
 }
 
 int run(int argc, char* argv[])
 {
-	newbaseline = argc > 3 ? string(argv[3]) == "newbaseline" : false;
+	if (argc < 3)
+	{
+		cerr << "Usage: testserver <FULL_PATH_TO_PLUGIN> <FULL_PATH_TO_TEST_DIR> <TEST_SCRIPT_PATH_RELATIVE_TO_TEST_DIR> <OPTION>" << endl;
+		return 1;
+	}
+	newbaseline = argc > 4 ? string(argv[4]) == "newbaseline" : false;
 	noresults = newbaseline;
-	verbose = argc > 3 ? string(argv[3]) == "verbose" && !newbaseline : false;
-	root = Trim(argc > 4 ? argv[4] : "", '\'');
+	verbose = argc > 4 ? string(argv[4]) == "verbose" && !newbaseline : false;
+	char buffer[4096];
+	char *answer = getcwd(buffer, sizeof(buffer));
+	if (answer)
+	{
+		absroot = buffer;
+	}
 #ifdef _WIN32
-	absroot = string(getenv("PWD")) + "\\" + root;
-#else
-	absroot = string(getenv("PWD")) + "/" + root;
+	ConvertSeparatorsToWindows(absroot);
 #endif
 
-	cout << "Root:    " << root <<  endl;
 	cout << "AbsRoot: " << absroot <<  endl;
 
 	if (verbose)
@@ -188,19 +166,20 @@ int run(int argc, char* argv[])
 	vector<string> arguments;
 	ExternalProcess p(argv[1], arguments);
 	p.Launch();
-	int res = runScript(p, argv[2]);
+	int res = runScript(p, argv[2], argv[3]);
 	return res;
 }
 
-static int runScript(ExternalProcess& p, const string& scriptPath, const string& indent)
+static int runScript(ExternalProcess& p, const string& testDir, const string& testScript, const string& indent)
 {
+	const string scriptPath = testDir + "/" + testScript;
+	ifstream testscript(scriptPath.c_str());
+
 	if (!noresults)
 		cout << indent << "Testing " << scriptPath << " " << flush;
 
 	if (verbose)
 		cout << endl;
-
-	ifstream testscript(scriptPath.c_str());
 
 	if (!testscript)
 	{
@@ -268,7 +247,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				bool orig_newbaseline = newbaseline;
 				newbaseline = false;
 				string subIndent = indent + "  ";
-				int res = runScript(p, incfile, subIndent);
+				int res = runScript(p, testDir,	 incfile, subIndent);
 				newbaseline = orig_newbaseline;
 				if (res)
 				{

@@ -1,10 +1,10 @@
 <include ./Test/Perforce/02_Configure.txt>
 c:getLatest
 1
-./Test/tmp/testclient/
+./...
 0
 --
-v1:sync "./<root>/..." 
+v1:sync "./..." 
 v1:login
 v1:login
 v1:'login' not necessary, no password set for this user.
@@ -47,22 +47,22 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-w1:./<root>/... - no such file(s).\n
+w1:./... - no such file(s).\n
 o1:-1
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Test/tmp/testclient/testfile.txt
+./testfile.txt
 0
 --
 o1:-1
-v1:fstat  "./<root>/testfile.txt" 
+v1:fstat  "./testfile.txt" 
 v1:'login' not necessary, no password set for this user.
-o1:./<root>/testfile.txt
+o1:./testfile.txt
 o1:0
-v1:./<root>/testfile.txt - no such file(s).
+v1:./testfile.txt - no such file(s).
 d1:end of list
 r1:end of response
 --

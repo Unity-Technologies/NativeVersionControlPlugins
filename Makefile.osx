@@ -4,10 +4,9 @@ CC = gcc
 CXX = g++
 AR = ar
 
-# CXXFLAGS = -O3 -arch i386 -g
-CXXFLAGS = -arch i386 -g -mmacosx-version-min=10.6
-LDFLAGS = -arch i386 -lstdc++ -mmacosx-version-min=10.6
-PLATFORM = OSXi386
+CXXFLAGS = -arch x86_64 -g -mmacosx-version-min=10.8
+LDFLAGS = -arch x86_64 -lstdc++ -mmacosx-version-min=10.8
+PLATFORM = OSXx64
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
 COMMON_MODULES := $(COMMON_MODULES:.cpp=.o)
@@ -61,7 +60,7 @@ $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ ./P4Plugin/Source/r12.2/lib/osx32/libssl.a ./P4Plugin/Source/r12.2/lib/osx32/libcrypto.a -L./P4Plugin/Source/r12.2/lib/osx32 $(P4PLUGIN_LINK) 
+	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ -L./P4Plugin/Source/r16.1/lib/osx64 $(P4PLUGIN_LINK) 
 
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
 	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)

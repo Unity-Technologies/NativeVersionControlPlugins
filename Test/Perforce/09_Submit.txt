@@ -3,10 +3,10 @@ c:submit
 -1
 This is a submit for delete
 1
-./Test/tmp/testclient/testfile2.txt
+./testfile2.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./<root>/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./testfile2.txt" 
 v1:login
 v1:login
 v1:'login' not necessary, no password set for this user.
@@ -77,11 +77,11 @@ r1:end of response
 --
 c:status recurse
 1
-./Test/tmp/testclient/testfile2.txt
+./testfile2.txt
 0
 --
 o1:-1
-v1:fstat  "./<root>/testfile2.txt" 
+v1:fstat  "./testfile2.txt" 
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt

@@ -11,11 +11,11 @@ As an example for getting the status of a file:
 
 c:status
 1
-./Test/tmp/testclient/testfile.txt
+./testfile.txt
 0
 --
 o1:-1
-o1:./Test/tmp/testclient/testfile.txt
+o1:./testfile.txt
 o1:42
 d1:end of list
 r1:end of response
@@ -25,7 +25,6 @@ r1:end of response
 
 Some macros are supported that can be put in the command files:
 
-<root>    The relative path to the workspace e.g. Test/tmp/testclient
 <absroot> The absolute path to the workspace e.g. /Users/foobar/VersionControlPlugins/Test/tmp/testclient
 <ignore>  Placed at the start of a line to ignore it when matching responses
 

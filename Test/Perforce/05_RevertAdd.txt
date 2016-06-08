@@ -1,10 +1,10 @@
 <include ./Test/Perforce/02_Configure.txt>
 c:revert
 1
-./Test/tmp/testclient/testfile.txt
+./testfile.txt
 0
 --
-v1:revert  "./<root>/testfile.txt" 
+v1:revert  "./testfile.txt" 
 v1:login
 v1:login
 v1:'login' not necessary, no password set for this user.
@@ -57,15 +57,15 @@ r1:end of response
 --
 c:status recurse
 1
-./Test/tmp/testclient/testfile.txt
+./testfile.txt
 0
 --
 o1:-1
-v1:fstat  "./<root>/testfile.txt" 
+v1:fstat  "./testfile.txt" 
 v1:'login' not necessary, no password set for this user.
-o1:./<root>/testfile.txt
-o1:0
-v1:./<root>/testfile.txt - no such file(s).
+o1:./testfile.txt
+o1:1
+v1:./testfile.txt - no such file(s).
 d1:end of list
 r1:end of response
 --

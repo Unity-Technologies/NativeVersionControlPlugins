@@ -1,5 +1,6 @@
 use File::Path;
 use Cwd;
+use Cwd 'abs_path';
 
 if ($ENV{'TARGET'} eq "win32")
 {
@@ -18,6 +19,7 @@ sub PerforceIntegrationTests
 	print "Running Perforce Integration Tests\n";
 	rmtree("Test/tmp");
 	mkdir "Test/tmp";
+	mkdir "Test/tmp/testclient";
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "localhost:1667";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
@@ -56,12 +58,15 @@ sub RunTests()
 	$total = 0;
 	$success = 0;
 
-	$pluginexec = $ENV{'P4PLUGIN'};
-	$testserver = $ENV{'TESTSERVER'};
+	$pluginexec = abs_path($ENV{'P4PLUGIN'});
+	$testserver = abs_path($ENV{'TESTSERVER'});
 	$clientroot = $ENV{'P4CLIENTROOT'};
 
+	$cwd = getcwd();
+	print "Changing working directory to: '", $clientroot,"'\n";
+	chdir $clientroot;
 	foreach $i (@files) {
-		$output = `$testserver $pluginexec $i $option '$clientroot'`;
+		$output = `$testserver $pluginexec $cwd $i $option`;
 		$res = $? >> 8;
 		print $output;
 		if ($res == 0)
@@ -71,16 +76,19 @@ sub RunTests()
 		elsif ($? == -1)
 		{
 			print "Error running test : $!\n";
+			chdir $cwd;
 			return 1;
 		}
 		else
 		{
 			print "Test failed -> stopping all tests\n";
+			chdir $cwd;
 			return 1;
 		}
 		$total++;
 	}
 	print "Done: $success of $total tests passed.\n";
+	chdir $cwd;
 	return 0;
 }
 
