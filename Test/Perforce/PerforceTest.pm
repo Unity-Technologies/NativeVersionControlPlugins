@@ -16,6 +16,7 @@ sub PerforceIntegrationTests
 	unless ($option) { $option = "verbose" };
 
 	print "Running Perforce Integration Tests\n";
+	rmtree("Test/tmp");
 	mkdir "Test/tmp";
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "localhost:1667";
