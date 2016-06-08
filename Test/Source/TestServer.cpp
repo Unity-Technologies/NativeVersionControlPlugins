@@ -202,6 +202,12 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 	ifstream testscript(scriptPath.c_str());
 
+	if (!testscript)
+	{
+		cerr << "Test script failed to open '" << scriptPath << endl;
+		return 1;
+	}
+
 	const int BUFSIZE = 4096;
 	char buf[BUFSIZE];
 	buf[0] = 0x00;
@@ -376,6 +382,11 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 				}
 			}
 		}
+	}
+	if (lineNum == 0)
+	{
+		cerr << "Invalid test script it has no lines " << testscript << endl;
+		return 1;
 	}
 
 	printStatus(ok);
