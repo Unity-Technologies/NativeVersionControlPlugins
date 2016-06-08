@@ -21,12 +21,14 @@ $testoption = "nonverbose" unless ($testoption);
 
 if ($clean)
 {
+	rmtree("Debug");
+	rmtree("Release");
 	rmtree("Build");
 	find(\&wanted, "./");
 	sub wanted 
 	{
     	my($filename, $dirs, $suffix) = fileparse($File::Find::name, qr/\.[^.]*/);
-		if ($suffix eq ".o")
+		if (($suffix eq ".o") or ($suffix eq ".obj"))
 		{
     		print "delete $File::Find::name","\n";
     		unlink($_);
