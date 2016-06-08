@@ -215,8 +215,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 	const string includeline = "<include ";
 	const string commanddelim = "--";
 	const string expectdelim = "--";
-	const string matchtoken = "re:";
-	const string regextoken = "==:";
+	const string matchtoken = "==:";
 	const string exittoken = "<exit>";
 	const string ignoretoken = "<ignore>";
 	const string ignorewintoken = "<ignorewin>";
@@ -278,7 +277,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 			if (command.find(genfiletoken) == 0)
 			{
-				// Generate and posssibly overwrite a file
+				// Generate and possibly overwrite a file
 				string genfile = command.substr(9, command.length() - 1 - 9);
 				{
 					fstream f(genfile.c_str(), ios_base::trunc | ios_base::out);
@@ -332,12 +331,7 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 			}
 			readNextPluginLine = true;
 
-			if (expect.find(regextoken) == 0)
-			{
-				// TODO: implement regex match
-				continue;
-			}
-			else if (expect.find(ignoretoken) == 0)
+			if (expect.find(ignoretoken) == 0)
 			{
 				continue; // ignore this line for match
 			}
@@ -350,7 +344,10 @@ static int runScript(ExternalProcess& p, const string& scriptPath, const string&
 
 			// Optional match token
 			if (expect.find(matchtoken) == 0)
-				expect = expect.substr(0, matchtoken.length());
+			{
+				expect = expect.substr(matchtoken.length());
+				msg = msg.substr(0, expect.length());
+			}
 
 			if (expect != msg)
 			{
