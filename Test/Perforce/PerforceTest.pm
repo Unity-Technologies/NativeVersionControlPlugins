@@ -12,11 +12,12 @@ BEGIN {
 
 sub PerforceIntegrationTests
 {
-	$option = $_[0];
+	$dir = $_[0];
+	$option = $_[1];
 
 	unless ($option) { $option = "verbose" };
 
-	print "Running Perforce Integration Tests\n";
+	print "Running Perforce Integration Tests in '",$dir,"'\n";
 	rmtree("Test/tmp");
 	mkdir "Test/tmp";
 	mkdir "Test/tmp/testclient";
@@ -40,7 +41,7 @@ sub PerforceIntegrationTests
 	sleep(1);
 	SetupClient();
 
-	$exitCode = RunTests($option);
+	$exitCode = RunTests($dir, $option);
 
 	TeardownClient();
 	TeardownServer($pid);
@@ -49,10 +50,10 @@ sub PerforceIntegrationTests
 
 sub RunTests()
 {
-	$option = $_[0];
+	$dir = $_[0];
+	$option = $_[1];
 
-	@basefiles = <Test/*.txt>;
-	@perforcefiles = <Test/Perforce/*.txt>;
+	@perforcefiles = <Test/$dir/*.txt>;
 	@files = (@basefiles, @perforcefiles);
 
 	$total = 0;

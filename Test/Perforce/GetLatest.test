@@ -1,10 +1,9 @@
-<include ./Test/Perforce/02_Configure.txt>
-c:revert
+c:getLatest
 1
-./testfile.txt
+./...
 0
 --
-v1:revert  "./testfile.txt" 
+v1:sync "./..." 
 v1:login
 v1:login
 v1:'login' not necessary, no password set for this user.
@@ -47,12 +46,9 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-i1://depot/testfile.txt#none - was add, abandoned (level 48)
-v1:where "//depot/testfile.txt_XUDELIMX_" 
-v1:'login' not necessary, no password set for this user.
-o1:1
-o1:<absroot>/testfile.txt
-o1:1
+w1:./... - no such file(s).\n
+o1:-1
+d1:end of list
 r1:end of response
 --
 c:status recurse
@@ -64,8 +60,9 @@ o1:-1
 v1:fstat  "./testfile.txt" 
 v1:'login' not necessary, no password set for this user.
 o1:./testfile.txt
-o1:1
+o1:0
 v1:./testfile.txt - no such file(s).
 d1:end of list
 r1:end of response
 --
+

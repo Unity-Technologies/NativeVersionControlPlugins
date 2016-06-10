@@ -119,7 +119,10 @@ sub TestMac
 	# Teamcity artifacts looses their file attributes on transfer
 	chmod 0755, glob("Build/OSXx64/*");
 
-	IntegrationTest($testoption);
+	IntegrationTest("Plugin", $testoption);
+	IntegrationTest("Perforce/Common", $testoption);
+	IntegrationTest("Perforce/BaseIPv4", $testoption);
+	IntegrationTest("Perforce/SquareBracketIPv4", $testoption);
 }
 
 sub BuildWin32

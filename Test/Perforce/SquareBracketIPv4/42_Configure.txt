@@ -1,0 +1,7 @@
+<include ./Test/Perforce/ConfigureSquareBracketIPv4.test>
+c:pluginConfig vcPerforceServer [localhost]:1667
+--
+r1:end of response
+--
+c:info
+--

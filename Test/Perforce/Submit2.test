@@ -1,7 +1,6 @@
-<include ./Test/Perforce/02_Configure.txt>
 c:submit
 -1
-This is a submit
+This is a submit for delete
 1
 ./testfile2.txt
 0
@@ -56,22 +55,22 @@ v1:where "<absroot>/testfile2.txt_XUDELIMX_"
 v1:'login' not necessary, no password set for this user.
 v1:submit -i
 v1:'login' not necessary, no password set for this user.
-i1:Change 1 created with 1 open file(s). (level 48)
-p1:-1 0 Change 1 created with 1 open file(s).
-i1:Submitting change 1. (level 48)
-p1:-1 0 Submitting change 1.
+i1:Change 2 created with 1 open file(s). (level 48)
+p1:-1 0 Change 2 created with 1 open file(s).
+i1:Submitting change 2. (level 48)
+p1:-1 0 Submitting change 2.
 i1:Locking 1 files ... (level 48)
 p1:-1 0 Locking 1 files ...
-i1:add //depot/testfile2.txt#1 (level 48)
-p1:-1 0 add //depot/testfile2.txt#1
-i1:Change 1 submitted. (level 48)
-p1:-1 0 Change 1 submitted.
+i1:delete //depot/testfile2.txt#2 (level 48)
+p1:-1 0 delete //depot/testfile2.txt#2
+i1:Change 2 submitted. (level 48)
+p1:-1 0 Change 2 submitted.
 o1:-1
 v1:fstat  "<absroot>/testfile2.txt" 
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt
-o1:16387
+o1:0
 d1:end of list
 r1:end of response
 --
@@ -85,7 +84,7 @@ v1:fstat  "./testfile2.txt"
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/testfile2.txt
 o1:<absroot>/testfile2.txt
-o1:16387
+o1:0
 d1:end of list
 r1:end of response
 --
