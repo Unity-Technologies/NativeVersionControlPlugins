@@ -48,6 +48,7 @@ sub PerforceIntegrationTests
 
 	TeardownClient();
 	TeardownServer($pid);
+	sleep(1);
 	return $exitCode;
 }
 
