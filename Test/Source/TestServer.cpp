@@ -38,6 +38,14 @@ int main(int argc, char* argv[])
 	}
 }
 
+static void sleepInSeconds(const int sleepTimeInSeconds)
+{
+#ifdef WIN32
+	Sleep(sleepTimeInSeconds*1000);
+#else // #ifdef WIN32
+	sleep(sleepTimeInSeconds);
+#endif // #ifdef WIN32
+}
 
 static int runScript(ExternalProcess& p, const string& testDir, const string& testScript, const string& indent = "");
 
@@ -314,7 +322,8 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 			{
 				if (!p4pluginLog.good())
 				{
-					sleep(1);
+					const int sleepTimeInSeconds = 1;
+					sleepInSeconds(sleepTimeInSeconds);
 					p4pluginLog.open(p4pluginLogPath.c_str());
 				}
 				expect = expect.substr(p4pluginlogtoken.length());
