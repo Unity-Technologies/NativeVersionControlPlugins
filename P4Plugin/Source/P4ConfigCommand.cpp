@@ -70,13 +70,89 @@ public:
 		}
 		else if (key == "vcPerforceServer")
 		{
-			if (value.empty())
-				value = "perforce";
-			
-			string::size_type i = (StartsWith(value, "ssl:") ? value.substr(4) : value).find(":");
-			if (i == string::npos)
-				value += ":1666"; // default port
-			task.SetP4Port(value);
+			string p4address = value;
+			bool foundAddress = false;
+			string protocol = "";
+			string address = "";
+			string port = "";
+			// Perforce server field is: <protocol>:<address>:<port>
+			// <protocol> is optional but can be:
+			// 		ssl: ssl4: ssl6: ssl46: ssl64:
+			// 		tcp: tcp4: tcp6: tcp46: tcp64:
+			// <address> can be IPv4 or IPv6
+			//		IPV6 numeric addresses should be surrounded with [] to isolate the IPv6 : from the : token to mark the <port>
+			//		[] can be used to surround an IPv4 or IPv6 address
+			if (StartsWith(p4address, "ssl") || StartsWith(p4address, "tcp"))
+			{
+				const string temp = p4address.substr(3);
+				const string validSubProtocols[] = { ":", "4:", "6:", "46:", "64:", "END" };
+				int i = 0;
+				while (validSubProtocols[i] != "END")
+				{
+					if (StartsWith(temp, validSubProtocols[i]))
+					{
+						protocol = p4address.substr(0,3) + validSubProtocols[i];
+						break;
+					}
+					++i;
+				}
+			}
+			const string::size_type addressStart = protocol.length();
+			string addressPort = p4address.substr(addressStart);
+			// If the address Port contains [] take that as the address
+			const string::size_type leftSqBracket = addressPort.find('[');
+			const string::size_type rightSqBracket = addressPort.find(']');
+			if ((leftSqBracket != string::npos) && (rightSqBracket != string::npos) && (leftSqBracket < rightSqBracket))
+			{
+				address = addressPort.substr(leftSqBracket, (rightSqBracket-leftSqBracket+1));
+				const string::size_type finalColon = addressPort.rfind(":");
+				if ((finalColon != string::npos) && (finalColon > rightSqBracket))
+				{
+					port = addressPort.substr(finalColon+1);
+				}
+				foundAddress = true;
+			}
+			else
+			{
+				// If the address Port has a single (or no) colon in it split into <address>:<port> and reconstruct as [<address>]:<port> otherwise leave alone
+				const string::size_type finalColon = addressPort.rfind(":");
+				const string::size_type firstColon = addressPort.find(":");
+				if (firstColon == finalColon)
+				{
+					address = addressPort.substr(0,firstColon);
+					if (finalColon != string::npos)
+						port = addressPort.substr(finalColon+1);
+					foundAddress = true;
+				}
+			}
+
+			if (p4address.empty())
+			{
+				foundAddress = true;
+			}
+
+			if (foundAddress == false)
+			{
+			}
+
+			if (foundAddress)
+			{
+				// Perforce defaults
+				if (address.empty())
+					address = "perforce";
+				if (port.empty())
+					port = "1666";
+				if (address.find("[") == string::npos)
+				{
+					address = "[" + address + "]";
+				}
+				addressPort = address + ":" + port;
+			}
+
+			p4address = protocol + addressPort;
+
+			Conn().Log().Info() << "### P4Address Input:'" << value << "' Output:'" << p4address << "' Protocol:'" << protocol << "' AddressPort:'" << addressPort << "' Address:'" << address << "' Port:'" << port << "' ###" << Endl;
+			task.SetP4Port(p4address);
 		}
 		else if (key == "vcPerforceHost")
 		{
