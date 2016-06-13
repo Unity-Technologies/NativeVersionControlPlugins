@@ -1,0 +1,2 @@
+<include ./Test/Perforce/ConfigureSquareBracketIPv4.test>
+<include ./Test/Perforce/Submit2.test>

@@ -13,16 +13,19 @@ BEGIN {
 sub PerforceIntegrationTests
 {
 	$dir = $_[0];
-	$option = $_[1];
+	$p4port = $_[1];
+	$option = $_[2];
 
 	unless ($option) { $option = "verbose" };
 
-	print "Running Perforce Integration Tests in '",$dir,"'\n";
+	print "Running Perforce Integration Tests in dir:'",$dir,"' p4port:'",$p4port,"'\n";
+
 	rmtree("Test/tmp");
 	mkdir "Test/tmp";
 	mkdir "Test/tmp/testclient";
+	mkdir "Test/tmp/testclient/Assets";
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
-	$ENV{'P4PORT'} = "localhost:1667";
+	$ENV{'P4PORT'} = "$p4port";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
 	$ENV{'P4CLIENTROOTABS'} = getcwd() . "/" . $ENV{'P4CLIENTROOT'};
 	$ENV{'P4CLIENT'} = "testclient";
@@ -67,6 +70,8 @@ sub RunTests()
 	print "Changing working directory to: '", $clientroot,"'\n";
 	chdir $clientroot;
 	foreach $i (@files) {
+		rmtree("./Library");
+		mkdir "./Library";
 		$output = `$testserver $pluginexec $cwd $i $option`;
 		$res = $? >> 8;
 		print $output;
@@ -100,7 +105,7 @@ sub SetupServer
 	rmtree($root);
 	mkdir $root;
 	system("$ENV{'P4DEXEC'} -xi -r \"$root\"");
-	return SpawnSubProcess($ENV{'P4DEXEC'}, " -r \"$root\" -p 1667");
+	return SpawnSubProcess($ENV{'P4DEXEC'}, " -r \"$root\" -p $ENV{'P4PORT'}");
 }
 
 sub TeardownServer

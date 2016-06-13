@@ -1,4 +1,4 @@
-c:pluginConfig vcSharedLogLevel verbose
+c:pluginConfig vcSharedLogLevel debug
 --
 r1:end of response
 --

@@ -205,9 +205,13 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 	const string ignoretoken = "<ignore>";
 	const string ignorewintoken = "<ignorewin>";
 	const string genfiletoken = "<genfile ";
+	const string p4pluginlogtoken = "<p4pluginlog:";
 
 	bool ok = true;
 	int lineNum = 0;
+
+	string p4pluginLogPath(absroot + "/Library/p4plugin.log");
+	ifstream p4pluginLog(p4pluginLogPath.c_str());
 
 	while (testscript.good())
 	{
@@ -282,7 +286,6 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 			}
 		}
 
-
 		bool readNextPluginLine = true;
 		while (testscript.getline(buf, BUFSIZE))
 		{
@@ -307,6 +310,33 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 			}
 
 			string msg;
+			if (expect.find(p4pluginlogtoken) == 0)
+			{
+				if (!p4pluginLog.good())
+				{
+					sleep(1);
+					p4pluginLog.open(p4pluginLogPath.c_str());
+				}
+				expect = expect.substr(p4pluginlogtoken.length());
+				if (verbose)
+					cerr << "P4Plugin Expect:'" << expect << "'" << endl;
+				const int  matchLen = expect.length();
+				while (p4pluginLog.good())
+				{
+					std::getline(p4pluginLog, msg);
+					if (verbose)
+						cerr << "P4Plugin:'" << lineNum << " '" << msg << "'" << endl;
+					msg = msg.substr(0, matchLen);
+					if (expect == msg)
+					{
+						if (verbose)
+							cerr << "P4Plugin: MATCH '" << expect << "'" << endl;
+						break;
+					}
+				}
+				readNextPluginLine = false;
+			}
+
 			if (readNextPluginLine)
 			{
 				msg = p.ReadLine();

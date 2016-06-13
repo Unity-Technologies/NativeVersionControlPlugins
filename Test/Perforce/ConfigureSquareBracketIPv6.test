@@ -18,7 +18,7 @@ c:pluginConfig vcPerforceWorkspace testclient
 --
 r1:end of response
 --
-c:pluginConfig vcPerforceServer localhost:1667
+c:pluginConfig vcPerforceServer [::1]:1667
 --
 r1:end of response
 --
