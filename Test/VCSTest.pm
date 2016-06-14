@@ -6,7 +6,10 @@ use PerforceTest;
 sub IntegrationTest
 {
 	$exitCode = PerforceIntegrationTests(@_);
-	exit $exitCode;
+	if ($exitCode != 0)
+	{
+		exit $exitCode;
+	}
 }
 
 1;

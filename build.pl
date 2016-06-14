@@ -103,6 +103,17 @@ else
     die ("Unknown platform");
 }
 
+sub TestPerforce()
+{
+	IntegrationTest("Plugin", "localhost:1667", $testoption);
+	IntegrationTest("Perforce/Common", "localhost:1667", $testoption);
+	IntegrationTest("Perforce/BaseIPv4", "tcp4:localhost:1667", $testoption);
+	IntegrationTest("Perforce/SquareBracketIPv4", "tcp4:[localhost]:1667", $testoption);
+	#Only works if DNS routes via IPv6
+	#IntegrationTest("Perforce/BaseIPv6", "tcp6:[localhost]:1667", $testoption);
+	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[localhost]:1667", $testoption);
+}
+
 sub BuildMac
 {
 	rmtree("Build");
@@ -119,7 +130,7 @@ sub TestMac
 	# Teamcity artifacts looses their file attributes on transfer
 	chmod 0755, glob("Build/OSXx64/*");
 
-	IntegrationTest($testoption);
+	TestPerforce();
 }
 
 sub BuildWin32
@@ -137,7 +148,8 @@ sub TestWin32
 	$ENV{'P4EXEC'} = 'PerforceBinaries\Win_x64\p4.exe';
 	$ENV{'P4PLUGIN'} = 'Build\Win32\PerforcePlugin.exe';
 	$ENV{'TESTSERVER'} = 'Build\Win32\TestServer.exe';
-	IntegrationTest($testoption);
+
+	TestPerforce();
 }
 
 sub BuildLinux ($)

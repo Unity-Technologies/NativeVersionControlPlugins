@@ -1,10 +1,9 @@
-<include ./Test/Perforce/02_Configure.txt>
-c:delete
+c:revert
 1
-./testfile2.txt
+./Assets/testfile.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./testfile2.txt" 
+v1:revert  "./Assets/testfile.txt" 
 v1:login
 v1:login
 v1:'login' not necessary, no password set for this user.
@@ -47,30 +46,25 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:<absroot>/testfile2.txt
-v1:delete  "<absroot>/testfile2.txt" 
+i1://depot/Assets/testfile.txt#none - was add, abandoned (level 48)
+v1:where "//depot/Assets/testfile.txt_XUDELIMX_" 
 v1:'login' not necessary, no password set for this user.
-i1://depot/testfile2.txt#1 - opened for delete (level 48)
-o1:-1
-v1:fstat  "<absroot>/testfile2.txt" 
-v1:'login' not necessary, no password set for this user.
-v1:<absroot>/testfile2.txt
-o1:<absroot>/testfile2.txt
-o1:66
-d1:end of list
+o1:1
+o1:<absroot>/Assets/testfile.txt
+o1:1
 r1:end of response
 --
 c:status recurse
 1
-./testfile2.txt
+./Assets/testfile.txt
 0
 --
 o1:-1
-v1:fstat  "./testfile2.txt" 
+v1:fstat  "./Assets/testfile.txt" 
 v1:'login' not necessary, no password set for this user.
-v1:<absroot>/testfile2.txt
-o1:<absroot>/testfile2.txt
-o1:66
+o1:./Assets/testfile.txt
+o1:1
+v1:./Assets/testfile.txt - no such file(s).
 d1:end of list
 r1:end of response
 --

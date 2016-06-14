@@ -51,6 +51,7 @@ SubversionPlugin
 *.vcxproj.user
 *.opensdf
 *.sdf
+*.suo
 
 # Visual Studio 2015 local files
 .vs/

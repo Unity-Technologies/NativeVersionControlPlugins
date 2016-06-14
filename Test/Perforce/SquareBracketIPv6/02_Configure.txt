@@ -1,0 +1,1 @@
+<include ./Test/Perforce/ConfigureSquareBracketIPv6.test>

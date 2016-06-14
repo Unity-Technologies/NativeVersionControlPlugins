@@ -1,0 +1,2 @@
+<include ./Test/Perforce/ConfigureBaseIPv4.test>
+<include ./Test/Perforce/Submit.test>
