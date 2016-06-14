@@ -130,9 +130,7 @@ public:
 				address = addressPort.substr(leftSqBracket, (rightSqBracket-leftSqBracket+1));
 				const string::size_type finalColon = addressPort.rfind(":");
 				if ((finalColon != string::npos) && (finalColon > rightSqBracket))
-				{
 					port = addressPort.substr(finalColon+1);
-				}
 				foundAddress = true;
 			}
 			else
@@ -150,13 +148,7 @@ public:
 			}
 
 			if (p4address.empty())
-			{
 				foundAddress = true;
-			}
-
-			if (foundAddress == false)
-			{
-			}
 
 			if (foundAddress)
 			{
@@ -166,9 +158,7 @@ public:
 				if (port.empty())
 					port = "1666";
 				if (address.find("[") == string::npos)
-				{
 					address = "[" + address + "]";
-				}
 				addressPort = address + ":" + port;
 			}
 
