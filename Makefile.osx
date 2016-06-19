@@ -60,7 +60,7 @@ $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ -L./P4Plugin/Source/r16.1/lib/osx64 $(P4PLUGIN_LINK) -lcrypto
+	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ -L./P4Plugin/Source/r16.1/lib/osx64 $(P4PLUGIN_LINK) -lssl -lcrypto
 
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
 	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)

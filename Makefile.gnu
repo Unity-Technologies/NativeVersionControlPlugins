@@ -45,7 +45,7 @@ SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ $^  $(P4PLUGIN_LINK) -L./P4Plugin/Source/r16.1/lib/$(PLATFORM)
+	$(CXX) $(LDFLAGS) -o $@ $^  $(P4PLUGIN_LINK) -L./P4Plugin/Source/r16.1/lib/$(PLATFORM) -lp4sslstub
 
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(SVNPLUGIN_LINK)
