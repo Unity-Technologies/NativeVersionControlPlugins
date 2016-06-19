@@ -24,6 +24,7 @@ sub PerforceIntegrationTests
 	mkdir "Test/tmp";
 	mkdir "Test/tmp/testclient";
 	mkdir "Test/tmp/testclient/Assets";
+	mkdir "Test/tmp/testserver";
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "$p4port";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
