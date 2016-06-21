@@ -1,0 +1,2 @@
+<include ./Test/Perforce/ConfigureSecureSquareBracketIPv6.test>
+<include ./Test/Perforce/SecureSubmit2.test>

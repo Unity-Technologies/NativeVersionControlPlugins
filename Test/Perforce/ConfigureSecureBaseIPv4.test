@@ -1,0 +1,24 @@
+c:pluginConfig vcSharedLogLevel verbose
+--
+r1:end of response
+--
+c:pluginConfig projectPath <absroot>
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceUsername vcs_test_user
+--
+r1:end of response
+--
+c:pluginConfig vcPerforcePassword
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceWorkspace testclient
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceServer ssl:localhost:1667
+--
+r1:end of response
+--

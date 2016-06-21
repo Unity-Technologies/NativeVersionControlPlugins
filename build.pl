@@ -106,12 +106,16 @@ else
 sub TestPerforce()
 {
 	IntegrationTest("Plugin", "localhost:1667", $testoption);
+	IntegrationTest("Plugin", "ssl:localhost:1667", $testoption);
 	IntegrationTest("Perforce/Common", "localhost:1667", $testoption);
+	IntegrationTest("Perforce/Common", "ssl:localhost:1667", $testoption);
 	IntegrationTest("Perforce/BaseIPv4", "tcp4:localhost:1667", $testoption);
+	IntegrationTest("Perforce/SecureBaseIPv4", "ssl4:localhost:1667", $testoption);
 	IntegrationTest("Perforce/SquareBracketIPv4", "tcp4:[localhost]:1667", $testoption);
 	#Only works if DNS routes via IPv6
 	#IntegrationTest("Perforce/BaseIPv6", "tcp6:[localhost]:1667", $testoption);
 	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[localhost]:1667", $testoption);
+	IntegrationTest("Perforce/SecureSquareBracketIPv6", "ssl6:[localhost]:1667", $testoption);
 }
 
 sub BuildMac

@@ -1,0 +1,92 @@
+c:submit
+-1
+This is a submit for delete
+1
+./Assets/testfile2.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile2.txt" 
+v1:login
+v1:login
+v1:'login' not necessary, no password set for this user.
+v1:client -o "testclient"
+<ignore>
+v1:info
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+==:v1:Server version: P4D/
+v1:Server encryption: encrypted
+==:v1:Server cert expires:
+v1:Server license: none
+v1:Case Handling: insensitive
+v1:streams
+c32:online
+c32:enableCommand add
+c32:enableCommand changeDescription
+c32:enableCommand changeMove
+c32:enableCommand changes
+c32:enableCommand changeStatus
+c32:enableCommand checkout
+c32:enableCommand deleteChanges
+c32:enableCommand delete
+c32:enableCommand download
+c32:enableCommand getLatest
+c32:enableCommand incomingChangeAssets
+c32:enableCommand incoming
+c32:enableCommand lock
+c32:enableCommand move
+c32:enableCommand resolve
+c32:enableCommand revertChanges
+c32:enableCommand revert
+c32:enableCommand status
+c32:enableCommand submit
+c32:enableCommand unlock
+v1:<absroot>/Assets/testfile2.txt
+v1:where "<absroot>/Assets/testfile2.txt_XUDELIMX_" 
+v1:'login' not necessary, no password set for this user.
+v1:where "<absroot>/Assets/testfile2.txt_XUDELIMX_" 
+v1:'login' not necessary, no password set for this user.
+v1:submit -i
+v1:'login' not necessary, no password set for this user.
+i1:Change 2 created with 1 open file(s). (level 48)
+p1:-1 0 Change 2 created with 1 open file(s).
+i1:Submitting change 2. (level 48)
+p1:-1 0 Submitting change 2.
+i1:Locking 1 files ... (level 48)
+p1:-1 0 Locking 1 files ...
+i1:delete //depot/Assets/testfile2.txt#2 (level 48)
+p1:-1 0 delete //depot/Assets/testfile2.txt#2
+i1:Change 2 submitted. (level 48)
+p1:-1 0 Change 2 submitted.
+o1:-1
+v1:fstat  "<absroot>/Assets/testfile2.txt" 
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/Assets/testfile2.txt
+o1:<absroot>/Assets/testfile2.txt
+o1:0
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/testfile2.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/testfile2.txt" 
+v1:'login' not necessary, no password set for this user.
+v1:<absroot>/Assets/testfile2.txt
+o1:<absroot>/Assets/testfile2.txt
+o1:0
+d1:end of list
+r1:end of response
+--

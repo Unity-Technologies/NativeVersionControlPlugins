@@ -24,6 +24,7 @@ sub PerforceIntegrationTests
 	mkdir "Test/tmp";
 	mkdir "Test/tmp/testclient";
 	mkdir "Test/tmp/testclient/Assets";
+	mkdir "Test/tmp/testserver";
 	$ENV{'P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'P4PORT'} = "$p4port";
 	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
@@ -40,15 +41,15 @@ sub PerforceIntegrationTests
 		$ENV{'P4CLIENTROOTABS'} =~ s/\//\\/g;
 	}
 
+	$ENV{'P4ROOT'} = abs_path($ENV{'P4ROOT'});
+
 	$pid = SetupServer();
-	sleep(1);
 	SetupClient();
 
 	$exitCode = RunTests($dir, $option);
 
 	TeardownClient();
 	TeardownServer($pid);
-	sleep(1);
 	return $exitCode;
 }
 
@@ -102,11 +103,31 @@ sub RunTests()
 sub SetupServer
 {
 	$root = $ENV{'P4ROOT'}; 
-	print "Setting server in $ENV{'P4ROOT'} listening on port 1667\n";
+	my $p4port = $ENV{'P4PORT'};
+	print "Setting server in '$root' listening on port '$p4port'\n";
 	rmtree($root);
 	mkdir $root;
-	system("$ENV{'P4DEXEC'} -xi -r \"$root\"");
-	return SpawnSubProcess($ENV{'P4DEXEC'}, " -r \"$root\" -p $ENV{'P4PORT'}");
+	if ($p4port =~ /ssl[46]?[46]?:/)
+	{
+		my $ssldir = "$root/sslkeys";
+		mkdir $ssldir;
+		system("chmod 700 $ssldir");
+		$ENV{'P4SSLDIR'} =$ssldir;
+		system("$ENV{'P4EXEC'} set P4SSLDIR $ssldir");
+		system("$ENV{'P4DEXEC'} -Gc -r \"$root\"");
+		system("$ENV{'P4DEXEC'} -Gf -r \"$root\"");
+	}
+
+	my $p4d = $ENV{'P4DEXEC'};
+	system("$p4d -xi -r \"$root\"");
+	my $pid = SpawnSubProcess($p4d, " -r \"$root\" -p $p4port");
+	sleep(2);
+	if ($p4port =~ /ssl[46]?[46]?:/)
+	{
+		$ENV{'P4SSLDIR'} =$ssldir;
+		system("$ENV{'P4EXEC'} -p $p4port trust -y -f");
+	}
+	return $pid;
 }
 
 sub TeardownServer
@@ -115,6 +136,7 @@ sub TeardownServer
 	print "Tearing down server $handle\n";
 	KillSubProcess($handle);
 	waitpid($handle,0);
+	sleep(2);
 }
 
 sub SetupClient
