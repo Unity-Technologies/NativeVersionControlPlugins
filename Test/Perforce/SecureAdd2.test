@@ -26,7 +26,7 @@ v1:info
 v1:Server encryption: encrypted
 ==:v1:Server cert expires:
 v1:Server license: none
-v1:Case Handling: insensitive
+==:v1:Case Handling:
 v1:streams
 c32:online
 c32:enableCommand add
