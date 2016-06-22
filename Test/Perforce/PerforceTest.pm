@@ -139,7 +139,7 @@ sub TeardownServer
 	print "Tearing down server $handle\n";
 	KillSubProcess($handle);
 	waitpid($handle,0);
-	sleep(2);
+	sleep(4);
 }
 
 sub SetupClient
