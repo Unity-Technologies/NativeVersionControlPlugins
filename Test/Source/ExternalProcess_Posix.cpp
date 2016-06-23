@@ -7,6 +7,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 
 ExternalProcess::ExternalProcess(const std::string& app, const std::vector<std::string>& arguments) :
 m_LineBuffer(""),
@@ -91,7 +93,7 @@ bool ExternalProcess::Launch()
 		// Replace the child fork with a new process
 		int ret = execvp (m_ApplicationPath.c_str (), const_cast<char* const*> (&args[0]));
 		if( -1 == ret ) {
-			std::cerr << "Error: execvp(" << m_ApplicationPath << ") : " << strerror(errno) << std::endl;
+			std::cerr << "Error: execvp(" << m_ApplicationPath << ") : " << std::strerror(errno) << std::endl;
 			exit (ret);
 		}
 	}

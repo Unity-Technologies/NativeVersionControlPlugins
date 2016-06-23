@@ -25,7 +25,7 @@ v1:info
 <ignore>
 ==:v1:Server version: P4D/
 v1:Server license: none
-v1:Case Handling: insensitive
+==:v1:Case Handling:
 v1:streams
 c32:online
 c32:enableCommand add

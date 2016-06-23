@@ -50,6 +50,10 @@ if (not $target)
 	{
 		$target = "win32";
 	}
+	elsif ($^O eq "linux") 
+	{
+		$target = "linux64";
+	}
 }
 
 $ENV{'TARGET'} = $target;
@@ -114,8 +118,8 @@ sub TestPerforce()
 	IntegrationTest("Perforce/SquareBracketIPv4", "tcp4:[localhost]:1667", $testoption);
 	#Only works if DNS routes via IPv6
 	#IntegrationTest("Perforce/BaseIPv6", "tcp6:[localhost]:1667", $testoption);
-	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[localhost]:1667", $testoption);
-	IntegrationTest("Perforce/SecureSquareBracketIPv6", "ssl6:[localhost]:1667", $testoption);
+	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[::1]:1667", $testoption);
+	IntegrationTest("Perforce/SecureSquareBracketIPv6", "ssl6:[::1]:1667", $testoption);
 }
 
 sub BuildMac
@@ -183,6 +187,13 @@ sub TestLinux ($)
 {
 	my $platform = shift;
 
+	$ENV{'P4DEXEC'} = "PerforceBinaries/linux64/p4d";
+	$ENV{'P4EXEC'} = "PerforceBinaries/linux64/p4";
+	$ENV{'P4PLUGIN'} = "Build/linux64/PerforcePlugin";
+	$ENV{'TESTSERVER'} = "Build/linux64/TestServer";
+
 	# Teamcity artifacts looses their file attributes on transfer
-	chmod 0755, glob("Build/OSXi386/$platform/*");
+	chmod 0755, glob("Build/linux64/*");
+
+	TestPerforce();
 }

@@ -120,13 +120,19 @@ sub SetupServer
 
 	my $p4d = $ENV{'P4DEXEC'};
 	system("$p4d -xi -r \"$root\"");
-	my $pid = SpawnSubProcess($p4d, " -r \"$root\" -p $p4port");
+	my $pidfile = getcwd() . "/server.pid";
+	my $pid = SpawnSubProcess($p4d, " -r \"$root\" -p $p4port --pid-file=$pidfile");
 	sleep(2);
 	if ($p4port =~ /ssl[46]?[46]?:/)
 	{
 		$ENV{'P4SSLDIR'} =$ssldir;
 		system("$ENV{'P4EXEC'} -p $p4port trust -y -f");
 	}
+	if ($ENV{'TARGET'} ne "win32")
+	{
+		$pid = do { local(@ARGV, $/) = $pidfile; <> };
+	}
+	print "Server started $pid\n";
 	return $pid;
 }
 
@@ -136,7 +142,7 @@ sub TeardownServer
 	print "Tearing down server $handle\n";
 	KillSubProcess($handle);
 	waitpid($handle,0);
-	sleep(2);
+	sleep(4);
 }
 
 sub SetupClient
