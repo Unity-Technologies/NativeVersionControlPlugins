@@ -8,7 +8,7 @@ use lib 'Test';
 use VCSTest;
 use File::Find;
 use File::Basename;
-use Zip qw/ :ERROR_CODES :CONSTANTS /;
+use Archive::Zip qw/ :ERROR_CODES :CONSTANTS /;
 
 my ($testoption,$test, $target, $clean, $zip, @configs);
 GetOptions("test"=>\$test, "testoption=s"=>\$testoption,

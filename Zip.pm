@@ -1,4 +1,4 @@
-package Zip;
+package Archive::Zip;
 
 use 5.006;
 use strict;
