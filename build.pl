@@ -26,9 +26,14 @@ if ($zip)
 	chdir("Build");
 	my $zipFilename = "builds.zip";
 	unlink($zipFilename);
-	my @files = (	"Win32/PerforcePlugin.exe", "Win32/SubversionPlugin.exe", "Win32/PlasticSCMPlugin.exe",
-					"OSXx64/PerforcePlugin", "OSXx64/SubversionPlugin", "OSXx64/PlasticSCMPlugin",
-					"linux64/PerforcePlugin", "linux64/SubversionPlugin");
+	my @files = (	"Win32/PerforcePlugin.exe", "Win32/PerforcePlugin.pdb", 
+					"Win32/SubversionPlugin.exe", "Win32/SubversionPlugin.pdb", 
+					"Win32/PlasticSCMPlugin.exe",
+					"OSXx64/PerforcePlugin", 
+					"OSXx64/SubversionPlugin", 
+					"OSXx64/PlasticSCMPlugin",
+					"linux64/PerforcePlugin", 
+					"linux64/SubversionPlugin");
 
 	foreach (@files)
 	{
