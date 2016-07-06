@@ -30,12 +30,6 @@
     <ClCompile Include="..\Common\Status.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Task.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\UnityConnection.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Utility.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -54,6 +48,8 @@
     <ClCompile Include="..\Common\POpen.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Connection.cpp" />
+    <ClCompile Include="..\Common\Pipe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">
@@ -75,15 +71,6 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Status.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Task.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\UnityConnection.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\UnityPipe.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Utility.h">
@@ -200,5 +187,7 @@
     <ClInclude Include="..\Common\Commands\ChangeDescription.h">
       <Filter>Common\Commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Connection.h" />
+    <ClInclude Include="..\Common\Pipe.h" />
   </ItemGroup>
 </Project>

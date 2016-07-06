@@ -91,7 +91,8 @@ _SCL_SECURE_NO_DEPRECATE
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
+      <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y
+echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetName).pdb" "$(SolutionDir)Build\Win32\$(TargetName).pdb" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

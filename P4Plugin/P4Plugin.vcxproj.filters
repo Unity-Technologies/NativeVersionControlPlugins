@@ -134,12 +134,6 @@
     <ClCompile Include="..\Common\Status.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Task.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\UnityConnection.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\POpen.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -147,6 +141,18 @@
       <Filter>P4Plugin</Filter>
     </ClCompile>
     <ClCompile Include="Source\P4FileModeCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Connection.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Pipe.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4InfoCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\P4StreamsCommand.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,9 +164,6 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\FileSystem.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\UnityPipe.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Utility.h">
@@ -197,12 +200,6 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Status.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Task.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\UnityConnection.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Commands\Add.h">
@@ -244,5 +241,9 @@
     <ClInclude Include="..\Common\POpen.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Connection.h" />
+    <ClInclude Include="..\Common\Pipe.h" />
+    <ClInclude Include="Source\P4Info.h" />
+    <ClInclude Include="Source\P4Stream.h" />
   </ItemGroup>
 </Project>
