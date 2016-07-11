@@ -124,6 +124,8 @@ o1:16387
 d1:end of list
 r1:end of response
 --
+<delfile ./Assets/movefileNoLocal1.txt>
+<genfile ./Assets/movefileNoLocal2.txt>
 c:move noLocalFileMove
 2
 ./Assets/movefileNoLocal1.txt
@@ -148,6 +150,6 @@ v1:fstat  "./Assets/movefileNoLocal2.txt"
 v1:'login' not necessary, no password set for this user.
 v1:<absroot>/Assets/movefileNoLocal2.txt
 o1:<absroot>/Assets/movefileNoLocal2.txt
-o1:82179
+o1:65795
 d1:end of list
 r1:end of response
