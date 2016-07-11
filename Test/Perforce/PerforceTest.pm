@@ -58,8 +58,7 @@ sub RunTests()
 	$dir = $_[0];
 	$option = $_[1];
 
-	@perforcefiles = <Test/$dir/*.txt>;
-	@files = (@basefiles, @perforcefiles);
+	@files = <Test/$dir/*.txt>;
 
 	$total = 0;
 	$success = 0;
@@ -67,6 +66,12 @@ sub RunTests()
 	$pluginexec = abs_path($ENV{'P4PLUGIN'});
 	$testserver = abs_path($ENV{'TESTSERVER'});
 	$clientroot = $ENV{'P4CLIENTROOT'};
+
+	if (not(-e -f -x $testserver))
+	{
+		print "Error testserver '$testserver' doesn't exist\n";
+		return 1;
+	}
 
 	$cwd = getcwd();
 	print "Changing working directory to: '", $clientroot,"'\n";
@@ -83,7 +88,7 @@ sub RunTests()
 		}
 		elsif ($? == -1)
 		{
-			print "Error running test : $!\n";
+			print "Error running test '$i' : $!\n";
 			chdir $cwd;
 			return 1;
 		}
