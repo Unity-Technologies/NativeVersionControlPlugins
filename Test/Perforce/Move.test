@@ -131,7 +131,7 @@ c:move
 ./Assets/movefile2.txt
 0
 --
-v1:edit  "./Assets/movefile1.txt" 
+v1:edit "./Assets/movefile1.txt" 
 v1:'login' not necessary, no password set for this user.
 i1://depot/Assets/movefile1.txt#1 - opened for edit (level 48)
 v1:move "./Assets/movefile1.txt" "./Assets/movefile2.txt" 

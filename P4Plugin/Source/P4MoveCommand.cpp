@@ -52,22 +52,23 @@ public:
 			}
 			else
 			{
-				editPaths += " ";
+				if (!editPaths.empty())
+					editPaths += " ";
 				editPaths += ResolvePaths(b, b+1, kPathWild | kPathRecursive);
 			}
 			b = e;
 		}
 
+		string noLocalFileMoveFlag = noLocalFileMove ? "-k " : "";
 		if (!editPaths.empty())
 		{
-			task.CommandRun("edit " + editPaths, this);
+			task.CommandRun("edit " + noLocalFileMoveFlag + editPaths, this);
 		}
 
 		b = assetList.begin();
 		e = b;
 
 		VersionedAssetList targetAssetList;
-		string noLocalFileMoveFlag = noLocalFileMove ? " -k " : "";
 		while (!HasErrors() && b != assetList.end())
 		{
 			e += 2;
