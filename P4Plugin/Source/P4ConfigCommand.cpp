@@ -80,25 +80,27 @@ public:
 			// 		ssl: ssl4: ssl6: ssl46: ssl64:
 			// 		tcp: tcp4: tcp6: tcp46: tcp64:
 			// <address> can be IPv4 or IPv6
+			// P4 documentation says this
 			//		IPV6 numeric addresses should be surrounded with [] to isolate the IPv6 : from the : token to mark the <port>
 			//		[] can be used to surround an IPv4 or IPv6 address
+			// But in practice it isn't true and putting [] around a Helix cloud server stops it working
 			// Example tests pushed through this code to verify it:
-			// 		Value:'' Output:'[perforce]:1666' Protocol:'' AddressPort:'[perforce]:1666' Address:'[perforce]' Port:'1666'
-			//		Value:':1667' Output:'[perforce]:1667' Protocol:'' AddressPort:'[perforce]:1667' Address:'[perforce]' Port:'1667' ###
-			//		Value:'localhost' Output:'[localhost]:1666' Protocol:'' AddressPort:'[localhost]:1666' Address:'[localhost]' Port:'1666' ###
-			//		Value:'localhost:1667' Output:'[localhost]:1667' Protocol:'' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+			//		Value:'' Output:'perforce:1666' Protocol:'' AddressPort:'perforce:1666' Address:'perforce' Port:'1666' ###
+			//		Value:':1667' Output:'perforce:1667' Protocol:'' AddressPort:'perforce:1667' Address:'perforce' Port:'1667' ###
+			//		Value:'localhost' Output:'localhost:1666' Protocol:'' AddressPort:'localhost:1666' Address:'localhost' Port:'1666' ###
+			//		Value:'localhost:1667' Output:'localhost:1667' Protocol:'' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 			//		Value:'[localhost]' Output:'[localhost]:1666' Protocol:'' AddressPort:'[localhost]:1666' Address:'[localhost]' Port:'1666' ###
 			//		Value:'[localhost]:1667' Output:'[localhost]:1667' Protocol:'' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'tcp:localhost:1667' Output:'tcp:[localhost]:1667' Protocol:'tcp:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'tcp4:localhost:1667' Output:'tcp4:[localhost]:1667' Protocol:'tcp4:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'tcp6:localhost:1667' Output:'tcp6:[localhost]:1667' Protocol:'tcp6:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'tcp46:localhost:1667' Output:'tcp46:[localhost]:1667' Protocol:'tcp46:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'tcp64:localhost:1667' Output:'tcp64:[localhost]:1667' Protocol:'tcp64:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'ssl:localhost:1667' Output:'ssl:[localhost]:1667' Protocol:'ssl:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'ssl4:localhost:1667' Output:'ssl4:[localhost]:1667' Protocol:'ssl4:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'ssl6:localhost:1667' Output:'ssl6:[localhost]:1667' Protocol:'ssl6:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'ssl46:localhost:1667' Output:'ssl46:[localhost]:1667' Protocol:'ssl46:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
-			//		Value:'ssl64:localhost:1667' Output:'ssl64:[localhost]:1667' Protocol:'ssl64:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+			//		Value:'tcp:localhost:1667' Output:'tcp:localhost:1667' Protocol:'tcp:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'tcp4:localhost:1667' Output:'tcp4:localhost:1667' Protocol:'tcp4:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'tcp6:localhost:1667' Output:'tcp6:localhost:1667' Protocol:'tcp6:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'tcp46:localhost:1667' Output:'tcp46:localhost:1667' Protocol:'tcp46:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'tcp64:localhost:1667' Output:'tcp64:localhost:1667' Protocol:'tcp64:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'ssl:localhost:1667' Output:'ssl:localhost:1667' Protocol:'ssl:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'ssl4:localhost:1667' Output:'ssl4:localhost:1667' Protocol:'ssl4:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'ssl6:localhost:1667' Output:'ssl6:localhost:1667' Protocol:'ssl6:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'ssl46:localhost:1667' Output:'ssl46:localhost:1667' Protocol:'ssl46:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
+			//		Value:'ssl64:localhost:1667' Output:'ssl64:localhost:1667' Protocol:'ssl64:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 			//		Value:'tcp:[localhost]' Output:'tcp:[localhost]:1666' Protocol:'tcp:' AddressPort:'[localhost]:1666' Address:'[localhost]' Port:'1666' ###
 			//		Value:'tcp:[localhost]:1667' Output:'tcp:[localhost]:1667' Protocol:'tcp:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
 			//		Value:'[::1]' Output:'[::1]:1666' Protocol:'' AddressPort:'[::1]:1666' Address:'[::1]' Port:'1666' ###
@@ -157,8 +159,6 @@ public:
 					address = "perforce";
 				if (port.empty())
 					port = "1666";
-				if (address.find("[") == string::npos)
-					address = "[" + address + "]";
 				addressPort = address + ":" + port;
 			}
 

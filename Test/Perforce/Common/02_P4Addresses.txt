@@ -22,25 +22,25 @@ c:pluginConfig vcPerforceServer
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer
-<p4pluginlog:### P4Address Value:'' Output:'[perforce]:1666' Protocol:'' AddressPort:'[perforce]:1666' Address:'[perforce]' Port:'1666' ###
+<p4pluginlog:### P4Address Value:'' Output:'perforce:1666' Protocol:'' AddressPort:'perforce:1666' Address:'perforce' Port:'1666' ###
 --
 c:pluginConfig vcPerforceServer :1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer :1667
-<p4pluginlog:### P4Address Value:':1667' Output:'[perforce]:1667' Protocol:'' AddressPort:'[perforce]:1667' Address:'[perforce]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:':1667' Output:'perforce:1667' Protocol:'' AddressPort:'perforce:1667' Address:'perforce' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer localhost
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer localhost
-<p4pluginlog:### P4Address Value:'localhost' Output:'[localhost]:1666' Protocol:'' AddressPort:'[localhost]:1666' Address:'[localhost]' Port:'1666' ###
+<p4pluginlog:### P4Address Value:'localhost' Output:'localhost:1666' Protocol:'' AddressPort:'localhost:1666' Address:'localhost' Port:'1666' ###
 --
 c:pluginConfig vcPerforceServer localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer localhost:1667
-<p4pluginlog:### P4Address Value:'localhost:1667' Output:'[localhost]:1667' Protocol:'' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'localhost:1667' Output:'localhost:1667' Protocol:'' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer [localhost]
 --
@@ -58,61 +58,61 @@ c:pluginConfig vcPerforceServer tcp:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer tcp:localhost:1667
-<p4pluginlog:### P4Address Value:'tcp:localhost:1667' Output:'tcp:[localhost]:1667' Protocol:'tcp:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'tcp:localhost:1667' Output:'tcp:localhost:1667' Protocol:'tcp:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer tcp4:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer tcp4:localhost:1667
-<p4pluginlog:### P4Address Value:'tcp4:localhost:1667' Output:'tcp4:[localhost]:1667' Protocol:'tcp4:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'tcp4:localhost:1667' Output:'tcp4:localhost:1667' Protocol:'tcp4:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer tcp6:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer tcp6:localhost:1667
-<p4pluginlog:### P4Address Value:'tcp6:localhost:1667' Output:'tcp6:[localhost]:1667' Protocol:'tcp6:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'tcp6:localhost:1667' Output:'tcp6:localhost:1667' Protocol:'tcp6:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer tcp46:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer tcp46:localhost:1667
-<p4pluginlog:### P4Address Value:'tcp46:localhost:1667' Output:'tcp46:[localhost]:1667' Protocol:'tcp46:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'tcp46:localhost:1667' Output:'tcp46:localhost:1667' Protocol:'tcp46:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer tcp64:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer tcp64:localhost:1667
-<p4pluginlog:### P4Address Value:'tcp64:localhost:1667' Output:'tcp64:[localhost]:1667' Protocol:'tcp64:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'tcp64:localhost:1667' Output:'tcp64:localhost:1667' Protocol:'tcp64:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer ssl:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer ssl:localhost:1667
-<p4pluginlog:### P4Address Value:'ssl:localhost:1667' Output:'ssl:[localhost]:1667' Protocol:'ssl:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'ssl:localhost:1667' Output:'ssl:localhost:1667' Protocol:'ssl:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer ssl4:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer ssl4:localhost:1667
-<p4pluginlog:### P4Address Value:'ssl4:localhost:1667' Output:'ssl4:[localhost]:1667' Protocol:'ssl4:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'ssl4:localhost:1667' Output:'ssl4:localhost:1667' Protocol:'ssl4:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer ssl6:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer ssl6:localhost:1667
-<p4pluginlog:### P4Address Value:'ssl6:localhost:1667' Output:'ssl6:[localhost]:1667' Protocol:'ssl6:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'ssl6:localhost:1667' Output:'ssl6:localhost:1667' Protocol:'ssl6:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer ssl46:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer ssl46:localhost:1667
-<p4pluginlog:### P4Address Value:'ssl46:localhost:1667' Output:'ssl46:[localhost]:1667' Protocol:'ssl46:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'ssl46:localhost:1667' Output:'ssl46:localhost:1667' Protocol:'ssl46:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer ssl64:localhost:1667
 --
 r1:end of response
 <p4pluginlog:UNITY > c:pluginConfig vcPerforceServer ssl64:localhost:1667
-<p4pluginlog:### P4Address Value:'ssl64:localhost:1667' Output:'ssl64:[localhost]:1667' Protocol:'ssl64:' AddressPort:'[localhost]:1667' Address:'[localhost]' Port:'1667' ###
+<p4pluginlog:### P4Address Value:'ssl64:localhost:1667' Output:'ssl64:localhost:1667' Protocol:'ssl64:' AddressPort:'localhost:1667' Address:'localhost' Port:'1667' ###
 --
 c:pluginConfig vcPerforceServer tcp:[localhost]
 --
