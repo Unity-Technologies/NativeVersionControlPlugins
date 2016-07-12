@@ -1,0 +1,34 @@
+High Priority
+-------------
+Add test for move including a folder e.g. 
+c:move noLocalFileMove
+4
+/Users/jake/Workspace/UnityProjects/JakeVCSTest/Assets/1/2/Material2.mat.meta
+0
+/Users/jake/Workspace/UnityProjects/JakeVCSTest/Assets/1/3/2/Material2.mat.meta
+0
+/Users/jake/Workspace/UnityProjects/JakeVCSTest/Assets/1/2
+0
+/Users/jake/Workspace/UnityProjects/JakeVCSTest/Assets/1/3/2
+0
+
+Medium Priority
+---------------
+Check to see if these commands need tests adding (or already included):
+	UCOM_ChangeDescription,
+	UCOM_ChangeMove,
+	UCOM_ChangeStatus,
+	UCOM_Changes,
+	UCOM_Checkout,
+	UCOM_Config,
+	UCOM_DeleteChanges,
+	UCOM_Download,
+	UCOM_GetLatest,
+	UCOM_IncomingChangeAssets,
+	UCOM_Incoming,
+	UCOM_Lock,
+	UCOM_QueryConfigParameters,
+	UCOM_Resolve,
+	UCOM_RevertChanges,
+	UCOM_Unlock,
+	UCOM_FileMode,

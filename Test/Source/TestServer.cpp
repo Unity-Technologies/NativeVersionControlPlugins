@@ -213,6 +213,7 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 	const string ignoretoken = "<ignore>";
 	const string ignorewintoken = "<ignorewin>";
 	const string genfiletoken = "<genfile ";
+	const string delfiletoken = "<delfile ";
 	const string p4pluginlogtoken = "<p4pluginlog:";
 
 	bool ok = true;
@@ -253,7 +254,7 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 
 			if (command.find(includeline) == 0)
 			{
-				string incfile = command.substr(9, command.length() - 1 - 9);
+				string incfile = command.substr(includeline.length(), command.length() - 1 - includeline.length());
 				if (!newbaseline)
 					cout << endl;
 				bool orig_newbaseline = newbaseline;
@@ -275,7 +276,7 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 			if (command.find(genfiletoken) == 0)
 			{
 				// Generate and possibly overwrite a file
-				string genfile = command.substr(9, command.length() - 1 - 9);
+				string genfile = command.substr(genfiletoken.length(), command.length() - 1 - genfiletoken.length());
 				{
 					fstream f(genfile.c_str(), ios_base::trunc | ios_base::out);
 					f << "Random: " << rand() 
@@ -283,7 +284,13 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 					  << "\nRandom: " << rand() << endl;
 					f.flush();
 				}
-
+				continue;
+			}
+			if (command.find(delfiletoken) == 0)
+			{
+				string delfile = command.substr(delfiletoken.length(), command.length() - 1 - delfiletoken.length());
+				// Delete a local file
+				unlink(delfile.c_str());
 				continue;
 			}
 
