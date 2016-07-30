@@ -4,8 +4,8 @@ CC = gcc
 CXX = g++
 AR = ar
 
-# CXXFLAGS = -O3 -arch i386 -g
-CXXFLAGS += -g -fpermissive $(P4PLUGIN_INCLUDE)
+CXXFLAGS += -O2 -g -fpermissive $(P4PLUGIN_INCLUDE)
+LDFLAGS += -g
 LIBRARIES = -lstdc++ -lrt
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
