@@ -63,3 +63,6 @@ TestResults/
 *.sublime-project
 *.sublime-workspace
 server.pid
+
+# VI files
+*.swp
