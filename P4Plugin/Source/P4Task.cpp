@@ -114,11 +114,6 @@ void P4Task::SetP4Port(const string& p)
 	SetOnline(false);
 }
 
-string P4Task::GetP4Port() const
-{
-	return m_PortConfig.empty() ? string("perforce:1666") : m_PortConfig;
-}
-
 void P4Task::SetP4User(const string& u)
 { 
 	m_Client.SetUser(u.c_str()); 
@@ -291,6 +286,23 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
 bool P4Task::Reconnect()
 {
 	Disconnect();
+
+	// Ignore invalid configurations: empty server, empty username, empty workspace
+	if (m_PortConfig.empty())
+	{
+		m_Connection->Log().Debug() << "server not set -> skipping connection" << Endl;
+		return false;
+	}
+	if (m_UserConfig.empty())
+	{
+		m_Connection->Log().Debug() << "username not set -> skipping connection" << Endl;
+		return false;
+	}
+	if (m_ClientConfig.empty())
+	{
+		m_Connection->Log().Debug() << "workspace not set -> skipping connection" << Endl;
+		return false;
+	}
 	
 	Error err;
 	m_Client.SetProg( "Unity" );
@@ -299,7 +311,7 @@ bool P4Task::Reconnect()
 	// Set the config because in case of reconnect the 
 	// config has been reset
 	SetP4Root("");
-	m_Client.SetPort(GetP4Port().c_str()); 
+	m_Client.SetPort(m_PortConfig.c_str()); 
 	m_Client.SetUser(m_UserConfig.c_str());
 	if (m_PasswordConfig.empty())
 		m_Client.SetIgnorePassword();
@@ -430,6 +442,12 @@ bool P4Task::IsLoggedIn()
 
 bool P4Task::Login()
 {	
+	if (!IsConnected())
+	{
+		m_Connection->Log().Debug() << "Not connected -> skipping login" << Endl;
+		return false;
+	}
+
 	m_IsLoginInProgress = true;
 	P4Command* p4c = NULL;
 	vector<string> args;
