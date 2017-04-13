@@ -284,21 +284,21 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<std::string>& args)
 bool P4Task::Reconnect()
 {
 	Disconnect();
-
+	m_OfflineReason.clear();
 	// Ignore invalid configurations: empty server, empty username, empty workspace
 	if (m_PortConfig.empty())
 	{
-		m_Connection->Log().Debug() << "server not set -> skipping connection" << Endl;
+		NotifyOffline("Perforce server and port not set. Ignoring connection request.");
 		return false;
 	}
 	if (m_UserConfig.empty())
 	{
-		m_Connection->Log().Debug() << "username not set -> skipping connection" << Endl;
+		NotifyOffline("Perforce username not set. Ignoring connection request.");
 		return false;
 	}
 	if (m_ClientConfig.empty())
 	{
-		m_Connection->Log().Debug() << "workspace not set -> skipping connection" << Endl;
+		NotifyOffline("Perforce workspace not set. Ignoring connection request.");
 		return false;
 	}
 	
@@ -357,7 +357,7 @@ bool P4Task::Reconnect()
 	return true;
 }
 
-void P4Task::NotifyOffline(const string& reason)
+void P4Task::NotifyOffline(const std::string& reason)
 {
 	const char* disableCmds[]  = { 
 		"add", "changeDescription", "changeMove",
@@ -370,7 +370,7 @@ void P4Task::NotifyOffline(const string& reason)
 		0
 	};
 
-	if (!IsOnline())
+	if (!s_Singleton->m_OfflineReason.empty() && !IsOnline())
 		return;
 
 	SetOnline(false);
@@ -382,6 +382,7 @@ void P4Task::NotifyOffline(const string& reason)
 		++i;
 	}
 	s_Singleton->m_Connection->Command(std::string("offline ") + reason, MAProtocol);
+	s_Singleton->m_OfflineReason = reason;
 }
 
 void P4Task::NotifyOnline()
@@ -442,7 +443,7 @@ bool P4Task::Login()
 {	
 	if (!IsConnected())
 	{
-		m_Connection->Log().Debug() << "Not connected -> skipping login" << Endl;
+		m_Connection->Log().Notice() << "Perforce server not connected. Ignoring login request." << Endl;
 		return false;
 	}
 
@@ -454,7 +455,7 @@ bool P4Task::Login()
 
 	if (GetP4Password().empty())
 	{
-		m_Connection->Log().Debug() << "Empty password -> skipping login" << Endl;
+		m_Connection->Log().Notice() << "Perforce password is empty. Ignoring login request." << Endl;
 		bool loggedIn = IsLoggedIn();
 		if (!loggedIn)
 		{
@@ -495,7 +496,7 @@ bool P4Task::Login()
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
 	if (!res)
 	{
-		NotifyOffline("Couldn't fetch client spec file from perforce server");
+		NotifyOffline("Couldn't fetch client spec file from Perforce server");
 		m_IsLoginInProgress = false;
 		return false;
 	}
@@ -508,7 +509,7 @@ bool P4Task::Login()
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
 	if (!res)
 	{
-		NotifyOffline("Couldn't fetch client info from perforce server");
+		NotifyOffline("Couldn't fetch server info from Perforce server");
 		m_IsLoginInProgress = false;
 		return false;
 	}
@@ -593,6 +594,7 @@ bool P4Task::CommandRun(const std::string& command, P4Command* client)
 	
 	m_Connection->VerboseLine(command);
 
+	m_OfflineReason.clear();
 	if (IsConnected())
 	{
 		// Make sure we have not been logged out

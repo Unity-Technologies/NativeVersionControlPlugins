@@ -154,14 +154,6 @@ void P4Command::OutputError( const char *errBuf )
 	Conn().Log().Fatal() << "We cannot get to here" << Endl;
 }
 
-static bool ErrorStringMatch(Error *err, const char* msg)
-{
-	StrBuf buf;
-	err->Fmt(&buf);
-	string value(buf.Text());
-	return value.find(msg) != string::npos;
-}
-
 bool P4Command::HandleOnlineStatusOnError(Error *err)
 {
 	if (err->IsError())
@@ -170,26 +162,22 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 		err->Fmt(&buf);
 		std::string value(buf.Text());
 
-		if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
-			P4Task::NotifyOffline("Couldn't connect to the perforce server");
-
-		else if (ErrorStringMatch(err, "TCP connect to"))
-			P4Task::NotifyOffline(string("Could not connect to Perforce server"));
-
-		else if (ErrorStringMatch(err, "Perforce password (P4PASSWD) invalid or unset."))
-			P4Task::NotifyOffline("Perforce password invalid or unset");
-
-		else if (ErrorStringMatch(err, " - must create client '"))
-			P4Task::NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");	
-
-		else if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
-			P4Task::NotifyOffline("Could not connect to Perforce server");
-
-		else if (value.find("Client '") != string::npos && value.find("' unknown") != string::npos)
-			P4Task::NotifyOffline("Perforce workspace does not exist on server. Check your Editor Settings.");
-
-		else if (ErrorStringMatch(err, "Unicode server permits only unicode enabled clients"))
-			P4Task::NotifyOffline("Unicode perforce server permits only unicode enabled clients");
+		if (value.find("Connect to server failed; check $P4PORT.") != std::string::npos)
+			P4Task::NotifyOffline("Could not connect to the perforce server. Please check your Server setting in the Editor Settings.");
+		else if (value.find("TCP connect to") != std::string::npos)
+			P4Task::NotifyOffline("Could not connect to the perforce server. Please check your Server setting in the Editor Settings.");
+		else if (value.find("Perforce password (P4PASSWD) invalid or unset.") != std::string::npos)
+			P4Task::NotifyOffline("Perforce server login failed. Please check your Password setting in the Editor Settings.");
+		else if (value.find(" - must create client '") != std::string::npos)
+			P4Task::NotifyOffline("Perforce client workspace not present on the Perforce server. Please check your Workspace setting in the Editor Settings.");
+		else if (value.find("Client '") != std::string::npos && value.find("' unknown") != std::string::npos)
+			P4Task::NotifyOffline("Perforce client workspace not present on the Perforce server. Please check your Workspace setting in the Editor Settings.");
+		else if (value.find("Unicode server permits only unicode enabled clients") != std::string::npos)
+			P4Task::NotifyOffline("Perforce server connection failed. A unicode Perforce server only permits unicode enabled clients. Please check the unicode settings on your Perforce client workspace and Perforce server.");
+		else if (StartsWith(value, "User ") && value.find("doesn't exist.") != std::string::npos)
+			P4Task::NotifyOffline(std::string("User '") + P4Task::s_Singleton->GetP4User() + std::string("' not found on Perforce server. Please check the Username in the Editor settings."));
+		else if (value.find("Password invalid.") != std::string::npos)
+			P4Task::NotifyOffline(std::string("User '") + P4Task::s_Singleton->GetP4User() + std::string("' login failed with incorrect password. Please check the Password in the Editor settings."));
 
 		else
 		{

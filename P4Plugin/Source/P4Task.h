@@ -87,6 +87,7 @@ private:
 	std::string m_HostConfig;
 	std::string m_PasswordConfig;
 	std::string m_ProjectPathConfig;
+	std::string m_OfflineReason;
 	
 	// Command execution
 	std::string m_CommandOutput;
