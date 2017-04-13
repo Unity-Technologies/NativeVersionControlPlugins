@@ -555,7 +555,8 @@ bool P4Task::Disconnect()
 {
 	Error err;
 
-	NotifyOffline("Disconnect");
+	if (IsOnline())
+		NotifyOffline("Disconnect");
 	
 	DisableUTF8Mode();
  
