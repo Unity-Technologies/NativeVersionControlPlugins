@@ -82,7 +82,7 @@ bool ExternalProcess::Launch()
 		std::string arg = "\"";
 		arg += m_Arguments[ i ] + "\"";
 		ConvertUnityPathName(arg.c_str(), widePath, kDefaultPathBufferSize);
-		argWide = wstring(widePath);
+		argWide = std::wstring(widePath);
 		argumentString += argWide;
 	}
 
@@ -106,12 +106,12 @@ bool ExternalProcess::Launch()
 
 	if( processResult == FALSE )
 	{
-		string t = string("Error creating external process: ") + LastErrorToMsg();
+		std::string t = std::string("Error creating external process: ") + LastErrorToMsg();
 		throw std::exception(t.c_str());
 	}
 
 	if (!CloseHandle(m_Task.hThread))
-		throw std::exception((string("Error closing external process thread: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error closing external process thread: ") + LastErrorToMsg()).c_str());
 
 	//
 	// Setup named pipe to external process
@@ -129,7 +129,7 @@ bool ExternalProcess::Launch()
 	if (m_NamedPipe == INVALID_HANDLE_VALUE)
 	{
 		Cleanup();
-		throw std::exception((string("Error creating named pipe: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error creating named pipe: ") + LastErrorToMsg()).c_str());
 		return false;
 	}
 	
@@ -138,7 +138,7 @@ bool ExternalProcess::Launch()
 	if (ret != 0)
 	{
 		Cleanup();
-		throw std::exception((string("Error connecting named pipe: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error connecting named pipe: ") + LastErrorToMsg()).c_str());
 		return false;
 	}
 
@@ -159,17 +159,17 @@ bool ExternalProcess::Launch()
 					ret = GetOverlappedResult(m_NamedPipe, &m_Overlapped, &dwIgnore, FALSE);
 					if (!ret)
 					{
-						throw std::exception((string("Error waiting for named pipe connect: ") + LastErrorToMsg()).c_str());
+						throw std::exception((std::string("Error waiting for named pipe connect: ") + LastErrorToMsg()).c_str());
 						Cleanup();
 						return false;
 					}
 					return true; // connected to external process
 				}
 				case WAIT_TIMEOUT:
-					throw std::exception((string("Timed out connecting pipe to external process: ") + m_ApplicationPath).c_str());
+					throw std::exception((std::string("Timed out connecting pipe to external process: ") + m_ApplicationPath).c_str());
 					break;
 				case WAIT_FAILED:
-					throw std::exception((string("Wait timout while connecting to named pipe:") + LastErrorToMsg()).c_str());
+					throw std::exception((std::string("Wait timout while connecting to named pipe:") + LastErrorToMsg()).c_str());
 					break;
 				default:
 					throw std::exception("Unknown error while connecting pipe to external process");
@@ -193,7 +193,7 @@ bool ExternalProcess::IsRunning()
 	DWORD result = WaitForSingleObject(m_Task.hProcess, 0);
 	
 	if (result == WAIT_FAILED)
-		throw std::exception((string("Error checking run state of external process: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error checking run state of external process: ") + LastErrorToMsg()).c_str());
 	
 	return result == WAIT_TIMEOUT;
 }
@@ -217,7 +217,7 @@ static void ConvertToString(CHAR* buffer, std::string& result)
 	}
 }
 
-string ExternalProcess::ReadLine()
+std::string ExternalProcess::ReadLine()
 {
 	if (m_LineBufferValid)
 	{
@@ -296,16 +296,16 @@ string ExternalProcess::ReadLine()
 			
 		buffer[bytesRead] = 0;
 			
-		string newData;
+		std::string newData;
 		ConvertToString(buffer, newData);
 		m_Buffer += newData;
 	}
 
 	throw ExternalProcessException(EPSTATE_TimeoutReading, "Too many retries while reading from external process. This cannot happen.");
-	return string();
+	return std::string();
 }
 
-string ExternalProcess::PeekLine()
+std::string ExternalProcess::PeekLine()
 {
 	m_LineBuffer = ReadLine();
 	m_LineBufferValid = true;
@@ -411,14 +411,14 @@ double ExternalProcess::GetWriteTimeout()
 void ExternalProcess::Cleanup()
 {	
 	if (m_Event != INVALID_HANDLE_VALUE && !CloseHandle(m_Event))
-		throw std::exception((string("Error cleaning up external process event: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error cleaning up external process event: ") + LastErrorToMsg()).c_str());
 	m_Event = INVALID_HANDLE_VALUE;
 
 	if (m_NamedPipe != INVALID_HANDLE_VALUE && !CloseHandle(m_NamedPipe))
-		throw std::exception((string("Error cleaning up external process named pipe: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error cleaning up external process named pipe: ") + LastErrorToMsg()).c_str());
 	m_NamedPipe = INVALID_HANDLE_VALUE;
 
 	if (m_Task.hProcess != INVALID_HANDLE_VALUE  && !TerminateProcess(m_Task.hProcess, 1) && !CloseHandle(m_Task.hProcess))
-		throw std::exception((string("Error cleaning up external process: ") + LastErrorToMsg()).c_str());
+		throw std::exception((std::string("Error cleaning up external process: ") + LastErrorToMsg()).c_str());
 	m_Task.hProcess = INVALID_HANDLE_VALUE;
 }

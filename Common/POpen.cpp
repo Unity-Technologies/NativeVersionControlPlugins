@@ -110,15 +110,15 @@ POpen::POpen(const std::string& cmd) : m_Command(cmd)
 	}
 
 	if (!GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode))
-		throw PluginException(string("Could not get exit code for process '") + cmd + "': " + LastErrorToMsg());
+		throw PluginException(std::string("Could not get exit code for process '") + cmd + "': " + LastErrorToMsg());
 
 	if (exitCode != STILL_ACTIVE && exitCode != 0)
-		throw PluginException(string("Failed to start process '") + cmd + "' exit code " + IntToString(exitCode));
+		throw PluginException(std::string("Failed to start process '") + cmd + "' exit code " + IntToString(exitCode));
 }
 
 POpen::~POpen()
 {
-	string msg = "";
+	std::string msg = "";
 	if (m_ChildStd_IN_Rd != NULL && !CloseHandle(m_ChildStd_IN_Rd))
 		msg += ErrorCodeToMsg(GetLastError()) + " - ";
 	if (m_ChildStd_IN_Wr != NULL && !CloseHandle(m_ChildStd_IN_Wr))
@@ -134,7 +134,7 @@ POpen::~POpen()
 	// msg could be printed or something at some point
 }
 
-bool POpen::ReadLine(string& result)
+bool POpen::ReadLine(std::string& result)
 {
 	static int aa = 0;
 
@@ -177,13 +177,13 @@ bool POpen::ReadLine(string& result)
 
 		// Need more data 
 		DWORD bufferLeft = BUFSIZE - m_BufSize - 1;
-		Enforce<PluginException>(bufferLeft > 0, string("Buffer overflow in ReadLine for '") + m_Command + "'");
+		Enforce<PluginException>(bufferLeft > 0, std::string("Buffer overflow in ReadLine for '") + m_Command + "'");
 		
 		if (!ReadFile( m_ChildStd_OUT_Rd, m_Buf + m_BufSize, bufferLeft, &dwRead, NULL))
 		{
 			DWORD err = GetLastError();
 			if (err != ERROR_BROKEN_PIPE)
-				throw PluginException(string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(GetLastError()));
+				throw PluginException(std::string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(GetLastError()));
 			dwRead = 0;
 		}
 
@@ -217,7 +217,7 @@ void POpen::ReadIntoFile(const std::string& path)
 		FILE_ATTRIBUTE_NORMAL, 
 		NULL); 
 	
-	Enforce<PluginException>(fh != INVALID_HANDLE_VALUE, string("Invalid result file handle for ReadIntoFile during '") + m_Command + "' " + path + " " + ErrorCodeToMsg(GetLastError())); 
+	Enforce<PluginException>(fh != INVALID_HANDLE_VALUE, std::string("Invalid result file handle for ReadIntoFile during '") + m_Command + "' " + path + " " + ErrorCodeToMsg(GetLastError())); 
 
 	DWORD dwRead, dwWritten; 
 
@@ -227,7 +227,7 @@ void POpen::ReadIntoFile(const std::string& path)
 		{
 			DWORD err = GetLastError();
 			if (err != ERROR_BROKEN_PIPE)
-				throw PluginException(string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(err));
+				throw PluginException(std::string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(err));
 			break;
 		}
 
@@ -236,7 +236,7 @@ void POpen::ReadIntoFile(const std::string& path)
 		if (!WriteFile(fh, m_Buf, dwRead, &dwWritten, NULL))
 		{
 			CloseHandle(fh);
-			throw PluginException(string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(GetLastError()));
+			throw PluginException(std::string("Error during read from '") + m_Command + "': " + ErrorCodeToMsg(GetLastError()));
 		}
 	}
 	CloseHandle(fh);
