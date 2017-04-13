@@ -1,7 +1,6 @@
 #include "Utility.h"
 #include "P4FileSetBaseCommand.h"
 #include "P4Utility.h"
-using namespace std;
 
 class P4AddCommand : public P4Command
 {
@@ -43,7 +42,7 @@ public:
 		// the error go to the user so that he can manually decide what to do. ie. actually revert or submit 
 		// the move before adding new stuff on the move/delete file.
 
-		string paths = ResolvePaths(toAdd, kPathRecursive);
+		std::string paths = ResolvePaths(toAdd, kPathRecursive);
 
 		if (paths.empty())
 		{
@@ -52,7 +51,7 @@ public:
 			return true;
 		}
 
-		string cmd = "add -f ";
+		std::string cmd = "add -f ";
 		cmd += " " + paths;
 
 		task.CommandRun(cmd, this);
@@ -69,7 +68,7 @@ public:
 
 	void RevertAndCheckoutAssets(P4Task& task, const VersionedAssetList& assetList)
 	{
-		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
+		std::string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 
 		Conn().Log().Debug() << "Paths to revert before add are: " << paths << Endl;
 
@@ -92,10 +91,10 @@ public:
 		StrBuf buf;
 		err->Fmt(&buf);
 		
-		const string dirNoAdd = " - directory file can't be added.";
-		const string noDouble = " - can't add existing file";
+		const std::string dirNoAdd = " - directory file can't be added.";
+		const std::string noDouble = " - can't add existing file";
 
-		string value(buf.Text());
+		std::string value(buf.Text());
 		value = TrimEnd(value, '\n');
 		
 		if (EndsWith(value, dirNoAdd) || EndsWith(value, noDouble)) return; // ignore

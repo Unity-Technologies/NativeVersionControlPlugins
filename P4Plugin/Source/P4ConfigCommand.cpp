@@ -4,8 +4,6 @@
 #include <algorithm>
 #include <iterator>
 
-using namespace std;
-
 class P4ConfigCommand : public P4Command
 {
 public:
@@ -15,7 +13,7 @@ public:
 		//ConfigRequest req(args, task.
 		if (args.size() < 2)
 		{
-			string msg = "Perforce plugin got invalid config setting :"; 
+			std::string msg = "Perforce plugin got invalid config setting :"; 
 			for (CommandArgs::const_iterator i = args.begin(); i != args.end(); ++i) {
 				msg += " ";
 				msg += *i;
@@ -25,12 +23,12 @@ public:
 			return true;
 		}
 		
-		string key = args[1];
-		string value = Join(args.begin() + 2, args.end(), " ");
+		std::string key = args[1];
+		std::string value = Join(args.begin() + 2, args.end(), " ");
 		
 		ClearStatus();
 		
-		string logValue = value;
+		std::string logValue = value;
 		if (key == "vcPerforcePassword")
 			logValue = "*";
 
@@ -70,11 +68,11 @@ public:
 		}
 		else if (key == "vcPerforceServer")
 		{
-			string p4address = value;
+			std::string p4address = value;
 			bool foundAddress = false;
-			string protocol = "";
-			string address = "";
-			string port = "";
+			std::string protocol = "";
+			std::string address = "";
+			std::string port = "";
 			// Perforce server field is: <protocol>:<address>:<port>
 			// <protocol> is optional but can be:
 			// 		ssl: ssl4: ssl6: ssl46: ssl64:
@@ -109,8 +107,8 @@ public:
 
 			if (StartsWith(p4address, "ssl") || StartsWith(p4address, "tcp"))
 			{
-				const string temp = p4address.substr(3);
-				const string validSubProtocols[] = { ":", "4:", "6:", "46:", "64:", "END" };
+				const std::string temp = p4address.substr(3);
+				const std::string validSubProtocols[] = { ":", "4:", "6:", "46:", "64:", "END" };
 				int i = 0;
 				while (validSubProtocols[i] != "END")
 				{
@@ -122,28 +120,28 @@ public:
 					++i;
 				}
 			}
-			const string::size_type addressStart = protocol.length();
-			string addressPort = p4address.substr(addressStart);
+			const std::string::size_type addressStart = protocol.length();
+			std::string addressPort = p4address.substr(addressStart);
 			// If the address Port contains [] take that as the address
-			const string::size_type leftSqBracket = addressPort.find('[');
-			const string::size_type rightSqBracket = addressPort.find(']');
-			if ((leftSqBracket != string::npos) && (rightSqBracket != string::npos) && (leftSqBracket < rightSqBracket))
+			const std::string::size_type leftSqBracket = addressPort.find('[');
+			const std::string::size_type rightSqBracket = addressPort.find(']');
+			if ((leftSqBracket != std::string::npos) && (rightSqBracket != std::string::npos) && (leftSqBracket < rightSqBracket))
 			{
 				address = addressPort.substr(leftSqBracket, (rightSqBracket-leftSqBracket+1));
-				const string::size_type finalColon = addressPort.rfind(":");
-				if ((finalColon != string::npos) && (finalColon > rightSqBracket))
+				const std::string::size_type finalColon = addressPort.rfind(":");
+				if ((finalColon != std::string::npos) && (finalColon > rightSqBracket))
 					port = addressPort.substr(finalColon+1);
 				foundAddress = true;
 			}
 			else
 			{
 				// If the address Port has a single (or no) colon in it split into <address>:<port> and reconstruct as [<address>]:<port> otherwise leave alone
-				const string::size_type finalColon = addressPort.rfind(":");
-				const string::size_type firstColon = addressPort.find(":");
+				const std::string::size_type finalColon = addressPort.rfind(":");
+				const std::string::size_type firstColon = addressPort.find(":");
 				if (firstColon == finalColon)
 				{
 					address = addressPort.substr(0,firstColon);
-					if (finalColon != string::npos)
+					if (finalColon != std::string::npos)
 						port = addressPort.substr(finalColon+1);
 					foundAddress = true;
 				}
@@ -262,8 +260,8 @@ public:
 	
 	int SelectVersion(const CommandArgs& args)
 	{
-		set<int> unitySupportedVersions;
-		set<int> pluginSupportedVersions;
+		std::set<int> unitySupportedVersions;
+		std::set<int> pluginSupportedVersions;
 		
 		pluginSupportedVersions.insert(2);
 		
@@ -275,8 +273,8 @@ public:
 			unitySupportedVersions.insert(atoi(i->c_str()));
 		}
 		
-		set<int> candidates;
-		set_intersection(unitySupportedVersions.begin(), unitySupportedVersions.end(),
+		std::set<int> candidates;
+		std::set_intersection(unitySupportedVersions.begin(), unitySupportedVersions.end(),
 						 pluginSupportedVersions.begin(), pluginSupportedVersions.end(),
 						 inserter(candidates, candidates.end()));
 		if (candidates.empty())

@@ -6,8 +6,6 @@
 #include <sstream>
 #include <string>
 
-using namespace std;
-
 ExternalProcess::ExternalProcess(const std::string& app, const std::vector<std::string>& arguments)
 : m_LineBufferValid(false), m_ApplicationPath(app), m_Arguments(arguments),
   m_ReadTimeout(30.0), m_WriteTimeout(30.0)

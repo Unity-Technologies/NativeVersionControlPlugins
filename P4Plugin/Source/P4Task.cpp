@@ -24,27 +24,25 @@
 #undef SetPort
 #endif
 
-using namespace std;
-
 // Clean up messages to make it look nicer in Unity
 // Return true is a line was removed
-static bool ReplaceLineWithPrefix(string& m, const string& prefix, const string& replaceWith)
+static bool ReplaceLineWithPrefix(std::string& m, const std::string& prefix, const std::string& replaceWith)
 {
 	if (!StartsWith(m, prefix))
 		return false;
-	string::size_type i = m.find('\n');
-	if (i == string::npos)
+	std::string::size_type i = m.find('\n');
+	if (i == std::string::npos)
 		return false;
 	m.replace(0, i+1, replaceWith);
 	return true;
 }
 
-static bool RemoveLineWithPrefix(string& m, const string& prefix)
+static bool RemoveLineWithPrefix(std::string& m, const std::string& prefix)
 {
 	return ReplaceLineWithPrefix(m, prefix, "");
 }
 
-static void CleanupErrorMessage(string& m)
+static void CleanupErrorMessage(std::string& m)
 {
 	RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c") ||
 	ReplaceLineWithPrefix(m, 
@@ -81,7 +79,7 @@ VCSStatus errorToVCSStatus(Error& e)
 	StrBuf msg;
 	e.Fmt(&msg);
 	VCSStatus status;
-	string msgStr = msg.Text();
+	std::string msgStr = msg.Text();
 
 	CleanupErrorMessage(msgStr);
 	
@@ -107,38 +105,38 @@ P4Task::~P4Task()
 	Disconnect();
 }
 
-void P4Task::SetP4Port(const string& p)
+void P4Task::SetP4Port(const std::string& p)
 { 
 	m_Client.SetPort(p.c_str()); 
 	m_PortConfig = p;
 	SetOnline(false);
 }
 
-void P4Task::SetP4User(const string& u)
+void P4Task::SetP4User(const std::string& u)
 { 
 	m_Client.SetUser(u.c_str()); 
 	m_UserConfig = u;
 	SetOnline(false);
 }
 
-string P4Task::GetP4User()
+std::string P4Task::GetP4User()
 {
 	return m_Client.GetUser().Text();
 }
 
-void P4Task::SetP4Client(const string& c)
+void P4Task::SetP4Client(const std::string& c)
 {
 	m_Client.SetClient(c.c_str()); 
 	m_ClientConfig = c;
 	SetOnline(false);
 }
 
-string P4Task::GetP4Client()
+std::string P4Task::GetP4Client()
 {
 	return m_Client.GetClient().Text(); 
 }
 
-void P4Task::SetP4Password(const string& p)
+void P4Task::SetP4Password(const std::string& p)
 {
 	if (p.empty())
 	{
@@ -161,29 +159,29 @@ void P4Task::SetP4Password(const string& p)
 	SetOnline(false);
 }
 
-const string& P4Task::GetP4Password() const
+const std::string& P4Task::GetP4Password() const
 {
 	return m_PasswordConfig;
 }
 
-void P4Task::SetP4Host(const string& c)
+void P4Task::SetP4Host(const std::string& c)
 {
 	m_Client.SetHost(c.c_str()); 
 	m_HostConfig = c;
 	SetOnline(false);
 }
 
-string P4Task::GetP4Host()
+std::string P4Task::GetP4Host()
 {
 	return m_Client.GetHost().Text(); 
 }
 
-const string& P4Task::GetP4Root() const
+const std::string& P4Task::GetP4Root() const
 { 
 	return m_Root; 
 }
 
-void P4Task::SetP4Root(const string& r) 
+void P4Task::SetP4Root(const std::string& r) 
 { 
 	m_Root = r; 
 }
@@ -232,7 +230,7 @@ int P4Task::Run()
 	try 
 	{
 		UnityCommand cmd;
-		vector<string> args;
+		std::vector<std::string> args;
 		
 		for ( ;; )
 		{
@@ -253,19 +251,19 @@ int P4Task::Run()
 				return 0; // ok
 		}
 	}
-	catch (exception& e)
+	catch (std::exception& e)
 	{
 		m_Connection->Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
 	}
 	return 1;
 }
 
-bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
+bool P4Task::Dispatch(UnityCommand cmd, const std::vector<std::string>& args)
 {
 	// Simple hack to test custom commands
 	if (cmd == UCOM_CustomCommand)
 	{
-		m_Connection->WarnLine(string("You called the custom command ") + args[1]);
+		m_Connection->WarnLine(std::string("You called the custom command ") + args[1]);
 		m_Connection->EndResponse();
 		return true;
 	}
@@ -274,7 +272,7 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<string>& args)
 	P4Command* p4c = LookupCommand(UnityCommandToString(cmd));
 	if (!p4c)
 	{
-		throw CommandException(cmd, string("unknown command"));
+		throw CommandException(cmd, std::string("unknown command"));
 	}
 	
 	if (!p4c->Run(*this, args))
@@ -380,10 +378,10 @@ void P4Task::NotifyOffline(const string& reason)
 	int i = 0;
 	while (disableCmds[i])
 	{
-		s_Singleton->m_Connection->Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		s_Singleton->m_Connection->Command(std::string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
-	s_Singleton->m_Connection->Command(string("offline ") + reason, MAProtocol);
+	s_Singleton->m_Connection->Command(std::string("offline ") + reason, MAProtocol);
 }
 
 void P4Task::NotifyOnline()
@@ -405,7 +403,7 @@ void P4Task::NotifyOnline()
 	int i = 0;
 	while (enableCmds[i])
 	{
-		s_Singleton->m_Connection->Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		s_Singleton->m_Connection->Command(std::string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
 	SetOnline(true);
@@ -424,7 +422,7 @@ bool P4Task::IsOnline()
 bool P4Task::IsLoggedIn()
 {
 	P4Command* p4c = LookupCommand("login");
-	vector<string> args;
+	std::vector<std::string> args;
 	args.push_back("login");
 	args.push_back("-s");
 	bool loggedIn = p4c->Run(*this, args); 
@@ -450,7 +448,7 @@ bool P4Task::Login()
 
 	m_IsLoginInProgress = true;
 	P4Command* p4c = NULL;
-	vector<string> args;
+	std::vector<std::string> args;
 	
 	SetOnline(true);
 
@@ -588,7 +586,7 @@ bool P4Task::IsConnected()
 }
 
 // Run a perforce command
-bool P4Task::CommandRun(const string& command, P4Command* client)
+bool P4Task::CommandRun(const std::string& command, P4Command* client)
 {
 	if (m_Connection->Log().GetLogLevel() != LOG_DEBUG)
 		m_Connection->Log().Info() << command << Endl;
@@ -619,7 +617,7 @@ bool P4Task::CommandRun(const string& command, P4Command* client)
 
 }
 
-bool P4Task::CommandRunNoLogin( const string &command, P4Command* client )
+bool P4Task::CommandRunNoLogin( const std::string &command, P4Command* client )
 {
 	// Split out the arguments
 	int argc = 0;
@@ -636,7 +634,6 @@ bool P4Task::CommandRunNoLogin( const string &command, P4Command* client )
 
 	return !client->HasErrors();
 }
-
 
 bool P4Task::HasUnicodeNeededError( VCSStatus status )
 {
@@ -656,6 +653,3 @@ void P4Task::DisableUTF8Mode()
 	CharSetApi::CharSet cs = CharSetApi::NOCONV;
 	m_Client.SetTrans( cs, -2, -2, -2 );
 }
-
-
-

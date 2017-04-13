@@ -4,14 +4,12 @@
 #include "P4Task.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 class P4ResolveCommand : public P4FileSetBaseCommand
 {
 public:
 	P4ResolveCommand() : P4FileSetBaseCommand("resolve") { }
 
-	virtual string SetupCommand(const CommandArgs& args)
+	virtual std::string SetupCommand(const CommandArgs& args)
 	{
 		// 'mine' in p4 is always the actual source file. Unity merges
 		// into the actual source file which makes them the same case.

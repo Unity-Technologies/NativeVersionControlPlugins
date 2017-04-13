@@ -2,8 +2,6 @@
 #include "P4Task.h"
 #include <sstream>
 
-using namespace std;
-
 static const char* kClientName = "Client name: ";
 static const char* kClientHost = "Client host: "; 
 static const char* kClientUnknown = "Client unknown.";
@@ -28,7 +26,7 @@ public:
 
 		if (!task.CommandRun("info", this))
 		{
-			string errorMessage = GetStatusMessage();			
+			std::string errorMessage = GetStatusMessage();			
 			Conn().Log().Fatal() << errorMessage << Endl;
 			return false;
 		}
@@ -39,7 +37,7 @@ public:
 		}
 	}
 	
-	bool ExtractInfo(const string& line, const char* prefix, string& dest)
+	bool ExtractInfo(const std::string& line, const char* prefix, std::string& dest)
 	{
 		if (StartsWith(line, prefix))
 		{
@@ -52,11 +50,11 @@ public:
     // Called with entire spec file as data
 	void OutputInfo( char level, const char *data )
     {
-		stringstream ss(data);
+		std::stringstream ss(data);
 		Conn().VerboseLine(data);
 		size_t minlen = 5; // "Root:" 
 		
-		string line;
+		std::string line;
 		while ( getline(ss, line) ) 
 		{	
 			if (ExtractInfo(line, kClientName, m_Info.clientName)) continue;

@@ -8,14 +8,12 @@
 #include <algorithm>
 #include <map>
 
-using namespace std;
-
-static map<int, SvnLogResult::Entry> g_LogCache;
+static std::map<int, SvnLogResult::Entry> g_LogCache;
 static size_t g_LogCacheAssetsCount = 0;
 
 static time_t g_StatusNextCacheUpdateTime = 0;
 static VersionedAssetList g_StatusResultAssetsCache;
-static std::set<string> g_StatusResultPathsCache;
+static std::set<std::string> g_StatusResultPathsCache;
 
 SvnTask::SvnTask() : m_Connection(NULL), m_IsOnline(false)
 {
@@ -105,7 +103,7 @@ void SvnTask::SetSvnExecutable(const std::string& e)
 			m_SvnPath = e;
 			return;
 		}
-		m_Connection->WarnLine(string("No svn executable at path '") + e + "'");
+		m_Connection->WarnLine(std::string("No svn executable at path '") + e + "'");
 	}
 
 #if defined(_WINDOWS)
@@ -123,7 +121,7 @@ const std::string& SvnTask::GetSvnExecutable() const
 
 std::string SvnTask::GetCredentials() const
 {
-	string c;
+	std::string c;
 	if (!m_UserConfig.empty())
 		c += ToString("--username ", m_UserConfig) + " ";
 	if (!m_PasswordConfig.empty())
@@ -133,7 +131,7 @@ std::string SvnTask::GetCredentials() const
 	return c;
 }
 
-void SvnTask::SetProjectPath(const string& p)
+void SvnTask::SetProjectPath(const std::string& p)
 {
 	if (m_ProjectPath != p)
 	{
@@ -146,7 +144,7 @@ void SvnTask::SetProjectPath(const string& p)
 	m_IsOnline = false;		
 }
 
-const string& SvnTask::GetProjectPath() const
+const std::string& SvnTask::GetProjectPath() const
 {
 	return m_ProjectPath;
 }
@@ -199,8 +197,8 @@ int SvnTask::Run()
 
 APOpen SvnTask::RunCommand(const std::string& cmd)
 {
-	string cred = GetCredentials();
-	string cmdline = "\"";
+	std::string cred = GetCredentials();
+	std::string cmdline = "\"";
 	cmdline += m_SvnPath + "\" " + cred + cmd;
 	m_Connection->Log().Info() << cmdline << Endl;
 	try
@@ -211,7 +209,7 @@ APOpen SvnTask::RunCommand(const std::string& cmd)
 	{
 		if (PathExists(m_SvnPath))
 			throw;
-		throw PluginException(string("No svn executable at path '") + m_SvnPath + "'");
+		throw PluginException(std::string("No svn executable at path '") + m_SvnPath + "'");
 	}
 }
 
@@ -247,7 +245,7 @@ int ParseChangeState(int state, char c)
 		state |= kCheckedOutLocal; // Changed type (e.g. file -> dir) 
 		break;
 	default:
-		throw SvnException(string("Invalid status 'change' flag ") + ToString((int)c));
+		throw SvnException(std::string("Invalid status 'change' flag ") + ToString((int)c));
 	}
 		
 	return state;
@@ -266,7 +264,7 @@ int ParsePropertyState(int state, char c)
 		state |= kConflicted;
 		break;
 	default:
-		throw SvnException(string("Invalid status 'property' flag ") + ToString((int)c));
+		throw SvnException(std::string("Invalid status 'property' flag ") + ToString((int)c));
 	}
 	return state;
 }
@@ -281,7 +279,7 @@ int ParseWorkingDirLockState(int state, char c)
 		state |= kLockedLocal;
 		break;
 	default:
-		throw SvnException(string("Invalid status 'workdirlock' flag ") + ToString((int)c));
+		throw SvnException(std::string("Invalid status 'workdirlock' flag ") + ToString((int)c));
 	}
 	return state;
 }
@@ -306,7 +304,7 @@ int ParseLockState(int state, char c)
 		state &= ~kLockedRemote; 
 		break;
 	default:
-		throw SvnException(string("Invalid status 'lock' flag ") + ToString((int)c));
+		throw SvnException(std::string("Invalid status 'lock' flag ") + ToString((int)c));
 	}
 	return state;
 }
@@ -321,7 +319,7 @@ int ParseConflictState(int state, char c)
 		state |= kConflicted;
 		break;
 	default:
-		throw SvnException(string("Invalid status 'conflict' flag ") + ToString((int)c));
+		throw SvnException(std::string("Invalid status 'conflict' flag ") + ToString((int)c));
 	}
 	return state;
 }
@@ -337,7 +335,7 @@ int ParseSyncedState(int state, char c)
 		state |= kOutOfSync;
 		break;
 	default:
-		throw SvnException(string("Invalid status 'synced' flag ") + ToString((int)c));
+		throw SvnException(std::string("Invalid status 'synced' flag ") + ToString((int)c));
 	}
 	return state;
 }
@@ -361,11 +359,11 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& inAssets,
 	// Fetch status for entire workspace since getting status of a range of files will make
 	// a request per file to the server. 
 	VersionedAssetList tmp;
-	std::set<string> resultPaths;
+	std::set<std::string> resultPaths;
 	VersionedAssetList assets(inAssets.begin(), inAssets.end());
 	
 	// String project path from asset to ease matching
-	string projPath = GetProjectPath() + "/";
+	std::string projPath = GetProjectPath() + "/";
 	size_t prefixLen = projPath.length();
 	for (VersionedAssetList::iterator i = assets.begin(); i != assets.end(); ++i)
 	{
@@ -427,7 +425,7 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& inAssets,
 	// Make sure that we have status for local only assets as well
 	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
 	{
-		const string& p = i->GetPath();
+		const std::string& p = i->GetPath();
 		if (resultPaths.find(p) == resultPaths.end())
 			result.push_back(VersionedAsset(p, kLocal, "0"));
 	}
@@ -436,7 +434,7 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& inAssets,
 #ifdef DEPRECATED
 void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
 									   VersionedAssetList& result, 
-									   vector<string>& changelistAssoc,
+									   std::vector<std::string>& changelistAssoc,
 									   bool recursive, bool queryRemote)
 {
 	// Svn version 1.7.6 fixed that --depth=empty could be used with files
@@ -484,24 +482,24 @@ void SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 bool SvnTask::HandleConnectErrorLine(const std::string& line)
 {
-	bool connectError = line.find("Unable to connect to a repository") != string::npos;
+	bool connectError = line.find("Unable to connect to a repository") != std::string::npos;
 	bool svnVersionError = 
-		line.find("appears to be part of a Subversion") != string::npos &&
+		line.find("appears to be part of a Subversion") != std::string::npos &&
 		EndsWith(line, " or greater");
 
 	if (connectError)
 	{
-		string msg = "Could not connect subversion to repository ";
-		string::size_type si = line.find('\'');
-		if (si != string::npos)
+		std::string msg = "Could not connect subversion to repository ";
+		std::string::size_type si = line.find('\'');
+		if (si != std::string::npos)
 			msg += line.substr(si);
 		m_Connection->WarnLine(msg, MAProtocol);
 		NotifyOffline(msg);
 	} 
 	else if (svnVersionError)
 	{
-		string::size_type i = line.find("appears to be part of a Subversion");
-		string msg = "Project ";
+		std::string::size_type i = line.find("appears to be part of a Subversion");
+		std::string msg = "Project ";
 		msg += line.substr(i);
 		msg += ". The unity builtin svn is a lower version. You can specify a custom svn path in Editor Settings.";
 		m_Connection->WarnLine(msg, MAProtocol);
@@ -513,11 +511,11 @@ bool SvnTask::HandleConnectErrorLine(const std::string& line)
 
 bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets, 
 									   VersionedAssetList& result, 
-									   set<string>& resultPaths,
+									   std::set<std::string>& resultPaths,
 									   const char* depth, bool queryRemote)
 {
 	const int MIN_STATUS_LINE_LENGTH = 32;
-	string cmd = "status --verbose ";
+	std::string cmd = "status --verbose ";
 	if (queryRemote)
 		cmd += "--show-updates ";
 	cmd += "--depth ";
@@ -529,8 +527,8 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 
 	APOpen ppipe = RunCommand(cmd);
 
-	string line;
-	string currentChangelist;
+	std::string line;
+	std::string currentChangelist;
 	bool reposVerified = false;
 
 	time_t lastTick = time(NULL);
@@ -561,9 +559,9 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 				return true;
 			}
 
-			string::size_type i1 = line.find("'");
-			string::size_type i2 = line.find("'", i1+1); 
-			string filename = line.substr(i1+1, i2-i1-1);
+			std::string::size_type i1 = line.find("'");
+			std::string::size_type i2 = line.find("'", i1+1); 
+			std::string filename = line.substr(i1+1, i2-i1-1);
 			char endchar = filename[filename.length()-1];
 			if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
 				filename += "/";
@@ -617,7 +615,7 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		}
 		catch (SvnException& ex)
 		{
-			throw SvnException(string("Parsing: ") + line + " Got: " + ex.what());
+			throw SvnException(std::string("Parsing: ") + line + " Got: " + ex.what());
 		}
 
 		/*
@@ -636,12 +634,12 @@ bool SvnTask::GetStatusWithChangelists(const VersionedAssetList& assets,
 		*/
 
 		// Revision is idx 11-19
-		string revision = TrimStart(line.substr(10, 8), ' ');
+		std::string revision = TrimStart(line.substr(10, 8), ' ');
 
 		// Filename is after usename which starts at idx 28 or 29
-		string::size_type i1 = line.find(' ', line[28] == ' ' ? 29 : 28);
+		std::string::size_type i1 = line.find(' ', line[28] == ' ' ? 29 : 28);
 		i1 = line.find_first_not_of(' ', i1);
-		string filename = line.substr(i1);
+		std::string filename = line.substr(i1);
 		char endchar = filename[filename.length()-1];
 		if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
 			filename += "/";
@@ -710,7 +708,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 	}
 	
 	const int MIN_HEADER_LINE_LENGTH = 30;
-	string cmd = "log -r ";
+	std::string cmd = "log -r ";
 	cmd += from;
 	cmd += ":";
 	cmd += to;
@@ -722,9 +720,9 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 
 	APOpen ppipe = RunCommand(cmd);
 
-	string line;
+	std::string line;
 	
-	vector<string> toks;
+	std::vector<std::string> toks;
 	VersionedAsset asset;
 	bool reposVerified = false;
 
@@ -755,7 +753,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 			reposVerified = true;
 		}
 
-		Enforce<SvnException>(StartsWith(line, "--------------"), string("Invalid log header top: ") + line);
+		Enforce<SvnException>(StartsWith(line, "--------------"), std::string("Invalid log header top: ") + line);
 		
 		NotifyOnline();
 
@@ -765,7 +763,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 		
 		m_Connection->Log().Debug() << line << Endl;
 		Enforce<SvnException>(line.length() >= MIN_HEADER_LINE_LENGTH && line[0] == 'r',
-							  string("Invalid log header: ") + line);
+							  std::string("Invalid log header: ") + line);
 		
 		toks.clear();
 		size_t size = Tokenize(toks, line, "|");
@@ -797,12 +795,12 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 				m_Connection->Log().Debug() << line << Endl;
 
 				asset.Reset();
-				string::size_type i1 = line.find_first_not_of(' ');
-				string::size_type i2 = line.find(' ', i1);
-				Enforce<SvnException>(i1 != string::npos && i2 != string::npos,
+				std::string::size_type i1 = line.find_first_not_of(' ');
+				std::string::size_type i2 = line.find(' ', i1);
+				Enforce<SvnException>(i1 != std::string::npos && i2 != std::string::npos,
 									  "Malformed changed file path during svn log");
 
-				string mod = TrimStart(line.substr(i1, i2 - i1));
+				std::string mod = TrimStart(line.substr(i1, i2 - i1));
 				Enforce<SvnException>(!mod.empty(), "Empty changed file flag during svn log");
 				
 				bool checkCopy = false;
@@ -830,15 +828,15 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 				
 				// Since this is verbose mode the copied_from file is listed
 				// after the listed files that have been copied into. Strip that part.
-				i1 = checkCopy ? line.rfind(':') : string::npos;
-				if (i1 != string::npos)
+				i1 = checkCopy ? line.rfind(':') : std::string::npos;
+				if (i1 != std::string::npos)
 				{
 					// make sure the part from i1 to the end is only digits
-					string copyRev = line.substr(i1+1, line.length() - i1 - 2); // eat first : and last )
+					std::string copyRev = line.substr(i1+1, line.length() - i1 - 2); // eat first : and last )
 					
 					i2 = line.rfind(" from ", i1);
-					i1 = i2 == string::npos ? line.rfind("(from ", i1) : i2;
-					if (i1 != string::npos && 
+					i1 = i2 == std::string::npos ? line.rfind("(from ", i1) : i2;
+					if (i1 != std::string::npos && 
 						partition(copyRev.begin(), copyRev.end(), isDigit) == copyRev.end())
 					{
 						// all is digits and we have a " from " string.
@@ -846,7 +844,7 @@ void SvnTask::GetLog(SvnLogResult& result, const std::string& from, const std::s
 					}
 				}
 
-				string filename = line.substr(1);
+				std::string filename = line.substr(1);
 				char endchar = filename[filename.length()-1];
 				if (endchar != '/' && endchar != '\'' && IsDirectory(filename))
 					filename += "/";
@@ -916,11 +914,11 @@ void SvnTask::NotifyOffline(const std::string& reason, bool invalidWorkingCopy)
 	int i = 0;
 	while (disableCmds[i])
 	{
-		m_Connection->Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		m_Connection->Command(std::string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
 
-	m_Connection->Command(string("offline ") + reason, MAProtocol);
+	m_Connection->Command(std::string("offline ") + reason, MAProtocol);
 
 	g_LogCacheAssetsCount = 0;
 	g_LogCache.clear();
@@ -947,7 +945,7 @@ void SvnTask::NotifyOnline()
 	int i = 0;
 	while (enableCmds[i])
 	{
-		m_Connection->Command(string("enableCommand ") + enableCmds[i], MAProtocol);
+		m_Connection->Command(std::string("enableCommand ") + enableCmds[i], MAProtocol);
 		++i;
 	}
 
@@ -959,7 +957,7 @@ void SvnTask::NotifyOnline()
 	i = 0;
 	while (disableCmds[i])
 	{
-		m_Connection->Command(string("disableCommand ") + disableCmds[i], MAProtocol);
+		m_Connection->Command(std::string("disableCommand ") + disableCmds[i], MAProtocol);
 		++i;
 	}
 	m_IsOnline = true;

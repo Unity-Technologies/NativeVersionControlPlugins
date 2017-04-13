@@ -1,14 +1,12 @@
 #include "Utility.h"
 
-using namespace std;
-
 #if defined(_WINDOWS)
 #include "string.h"
 #include "FileSystem.h"
 
 #define BUFSIZE 4096 
 
-POpen::POpen(const string& cmd) : m_Command(cmd)
+POpen::POpen(const std::string& cmd) : m_Command(cmd)
 ,	m_ChildStd_IN_Rd(NULL)
 ,	m_ChildStd_IN_Wr(NULL)
 ,	m_ChildStd_OUT_Rd(NULL)
@@ -26,16 +24,16 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	saAttr.lpSecurityDescriptor = NULL; 
 	
 	// Create a pipe for the child process's STDOUT. 
-	Enforce<PluginException>(CreatePipe(&m_ChildStd_OUT_Rd, &m_ChildStd_OUT_Wr, &saAttr, 0) == TRUE, string("Error creating STDOUT for '") + cmd + "' " + ErrorCodeToMsg(GetLastError()));
+	Enforce<PluginException>(CreatePipe(&m_ChildStd_OUT_Rd, &m_ChildStd_OUT_Wr, &saAttr, 0) == TRUE, std::string("Error creating STDOUT for '") + cmd + "' " + ErrorCodeToMsg(GetLastError()));
 
 	// Ensure the read handle to the pipe for STDOUT is not inherited.
-	Enforce<PluginException>(SetHandleInformation(m_ChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0) == TRUE, string("Error STDOUT no inherit '") + cmd + "' " + ErrorCodeToMsg(GetLastError())); 
+	Enforce<PluginException>(SetHandleInformation(m_ChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0) == TRUE, std::string("Error STDOUT no inherit '") + cmd + "' " + ErrorCodeToMsg(GetLastError())); 
 	
 	// Create a pipe for the child process's STDIN. 
-	Enforce<PluginException>(CreatePipe(&m_ChildStd_IN_Rd, &m_ChildStd_IN_Wr, &saAttr, 0) == TRUE,  string("Error creating STDIN for '") + cmd + "' " + ErrorCodeToMsg(GetLastError())); 
+	Enforce<PluginException>(CreatePipe(&m_ChildStd_IN_Rd, &m_ChildStd_IN_Wr, &saAttr, 0) == TRUE,  std::string("Error creating STDIN for '") + cmd + "' " + ErrorCodeToMsg(GetLastError())); 
 
 	// Ensure the write handle to the pipe for STDIN is not inherited. 
-	Enforce<PluginException>(SetHandleInformation(m_ChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) == TRUE, string("Error STDIN no inherit '") + cmd + "'" + ErrorCodeToMsg(GetLastError()));
+	Enforce<PluginException>(SetHandleInformation(m_ChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) == TRUE, std::string("Error STDIN no inherit '") + cmd + "'" + ErrorCodeToMsg(GetLastError()));
 
 	//
 	// Create child process
@@ -74,7 +72,7 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 		&m_ProcInfo);  // receives PROCESS_INFORMATION 
 
 	// If an error occurs, exit the application. 
-	Enforce<PluginException>(bSuccess == TRUE, string("Could not start '") + cmd + "'" + ErrorCodeToMsg(GetLastError()));
+	Enforce<PluginException>(bSuccess == TRUE, std::string("Could not start '") + cmd + "'" + ErrorCodeToMsg(GetLastError()));
 	
 	// Close the client pipe ends here or we will keep the handles open even though the
 	// client has terminated. This is turn would block reads/writes and we would get EOL.
@@ -91,11 +89,11 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 	switch (waitRes)
 	{
 	case WAIT_TIMEOUT:
-		throw PluginException(string("Timed out starting '" + cmd + "'"));
+		throw PluginException(std::string("Timed out starting '" + cmd + "'"));
 	case WAIT_FAILED:
 		{
 			if (!GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode))
-				throw PluginException(string("Could not get exit code for failed process '") + cmd + "': " + LastErrorToMsg());
+				throw PluginException(std::string("Could not get exit code for failed process '") + cmd + "': " + LastErrorToMsg());
 
 			if (exitCode == STILL_ACTIVE)
 			{
@@ -104,7 +102,7 @@ POpen::POpen(const string& cmd) : m_Command(cmd)
 			}
 			else
 			{
-				throw PluginException(string("Process failed '") + cmd + "' exit code " + IntToString(exitCode));
+				throw PluginException(std::string("Process failed '") + cmd + "' exit code " + IntToString(exitCode));
 			}
 		}
 	default:
@@ -248,10 +246,10 @@ void POpen::ReadIntoFile(const std::string& path)
 
 #include <string.h>
 
-POpen::POpen(const string& cmd) : m_Command(cmd)
+POpen::POpen(const std::string& cmd) : m_Command(cmd)
 {
 	m_Handle = popen((cmd + " 2>&1").c_str(), "r");
-	Enforce<PluginException>(m_Handle, string("Error starting '") + cmd + "'");
+	Enforce<PluginException>(m_Handle, std::string("Error starting '") + cmd + "'");
 }
 
 POpen::~POpen()
@@ -260,9 +258,9 @@ POpen::~POpen()
 		pclose(m_Handle);
 }
 
-bool POpen::ReadLine(string& result)
+bool POpen::ReadLine(std::string& result)
 {
-	Enforce<PluginException>(m_Handle, string("Null handle when reading from command pipe: ") + m_Command);
+	Enforce<PluginException>(m_Handle, std::string("Null handle when reading from command pipe: ") + m_Command);
 
 	const size_t BUFSIZE = 8192;
 	static char buf[BUFSIZE];
@@ -274,12 +272,12 @@ bool POpen::ReadLine(string& result)
 		if (feof(m_Handle))
 			return false; // no more data
 
-		throw PluginException(string("Error reading command pipe :") + 
+		throw PluginException(std::string("Error reading command pipe :") + 
 			strerror(ferror(m_Handle)) 
 			+ " - "  + m_Command);
 	}
 	result = res;
-	string::reverse_iterator i = result.rbegin();
+	std::string::reverse_iterator i = result.rbegin();
 	if (!result.empty() && *i == '\n')
 		result.resize(result.size()-1);
 
@@ -288,7 +286,7 @@ bool POpen::ReadLine(string& result)
 
 void POpen::ReadIntoFile(const std::string& path)
 {
-	Enforce<PluginException>(m_Handle, string("Null handle when reading into filefrom command pipe: ") + m_Command);
+	Enforce<PluginException>(m_Handle, std::string("Null handle when reading into filefrom command pipe: ") + m_Command);
 
 	const size_t BUFSIZE = 8192;
 	static char buf[BUFSIZE];
@@ -315,12 +313,12 @@ void POpen::ReadIntoFile(const std::string& path)
 		{
 			// Error writing to disk
 			fclose(fh);
-			throw PluginException(string("Error writing process output into file: ") + path + " for command " + m_Command);
+			throw PluginException(std::string("Error writing process output into file: ") + path + " for command " + m_Command);
 		}
 		bytes = fread(buf, BUFSIZE, 1, m_Handle);
 	}
 
-	stringstream os;
+	std::stringstream os;
 	os << "Error writing process output to file: ";
 	os << path << " code " << ferror(fh);
 	os << " for command " <<  m_Command << std::endl;

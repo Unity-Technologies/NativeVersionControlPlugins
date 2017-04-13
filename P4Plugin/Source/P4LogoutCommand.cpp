@@ -3,8 +3,6 @@
 #include "Utility.h"
 #include <sstream>
 
-using namespace std;
-
 class P4LogoutCommand : public P4Command
 {
 public:
@@ -23,7 +21,7 @@ public:
 
 		if (!task.CommandRunNoLogin("logout", this))
 		{
-			string errorMessage = GetStatusMessage();
+			std::string errorMessage = GetStatusMessage();
 			Conn().Log().Fatal() << errorMessage << Endl;
 		}
 		

@@ -3,21 +3,18 @@
 #include <stdio.h>
 #include <string.h>
 
-
-using namespace std;
-
-static string ParentDirectory(const string& path)
+static std::string ParentDirectory(const std::string& path)
 {
 	if (path.empty()) return path;
 
-	size_t i = string::npos;
+	size_t i = std::string::npos;
 
 	if (*path.rbegin() == '/')
 		i = path.length() - 2;
 
 	i = path.rfind('/', i);
 
-	if (i == string::npos)
+	if (i == std::string::npos)
 		return "";
 
 	// include the ending / in the result
@@ -54,7 +51,7 @@ void ConvertUnityPathName( const char* utf8, wchar_t* outBuffer, int outBufferSi
 	ConvertSeparatorsToWindows( outBuffer );
 }
 
-string PluginPath()
+std::string PluginPath()
 {
 	HMODULE hModule = GetModuleHandleW(NULL);
 	if (hModule == NULL)
@@ -66,9 +63,9 @@ string PluginPath()
 	return path;
 }
 
-bool EnsureDirectory(const string& path)
+bool EnsureDirectory(const std::string& path)
 {
-	string parent = ParentDirectory(path);
+	std::string parent = ParentDirectory(path);
 	if (!IsDirectory(parent) && !EnsureDirectory(parent))
 		return false;
 
@@ -101,14 +98,14 @@ static bool IsReadOnlyW(LPCWSTR path)
 	return FILE_ATTRIBUTE_READONLY & attributes;
 }
 
-bool IsReadOnly(const string& path)
+bool IsReadOnly(const std::string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
 	return PathExists(path) && IsReadOnlyW(widePath);
 }
 
-bool IsDirectory(const string& path)
+bool IsDirectory(const std::string& path)
 {
 	wchar_t widePath[kDefaultPathBufferSize];
 	ConvertUnityPathName(path.c_str(), widePath, kDefaultPathBufferSize);
@@ -235,7 +232,7 @@ static bool RemoveDirectoryRecursive( const std::string& pathUtf8 )
 	return RemoveDirectoryRecursiveWide( widePath );
 }
 
-bool DeleteRecursive(const string& path)
+bool DeleteRecursive(const std::string& path)
 {
 	if( IsDirectory(path) )
 		return RemoveDirectoryRecursive( path );
@@ -265,7 +262,7 @@ bool DeleteRecursive(const string& path)
 	}
 }
 
-bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
+bool CopyAFile(const std::string& fromPath, const std::string& toPath, bool createMissingFolders)
 {
 	if (createMissingFolders && !EnsureDirectory(ParentDirectory(toPath)))
 		return false;
@@ -290,7 +287,7 @@ bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingF
 	return false;
 }
 
-bool MoveAFile(const string& fromPath, const string& toPath)
+bool MoveAFile(const std::string& fromPath, const std::string& toPath)
 {
 	wchar_t wideFrom[kDefaultPathBufferSize], wideTo[kDefaultPathBufferSize];
 	ConvertUnityPathName( fromPath.c_str(), wideFrom, kDefaultPathBufferSize );
@@ -319,7 +316,7 @@ bool MoveAFile(const string& fromPath, const string& toPath)
 #include <unistd.h>
 #include <dirent.h>
 
-bool IsReadOnly(const string& path)
+bool IsReadOnly(const std::string& path)
 {
 	struct stat st;
 	// @TODO: Error handling
@@ -348,9 +345,9 @@ bool IsDirectory(const std::string& path)
 	return S_ISDIR(status.st_mode);
 }
 
-bool EnsureDirectory(const string& path)
+bool EnsureDirectory(const std::string& path)
 {
-	string parent = ParentDirectory(path);
+	std::string parent = ParentDirectory(path);
 	if (!IsDirectory(parent) && !EnsureDirectory(parent))
 		return false;
 
@@ -364,7 +361,7 @@ bool EnsureDirectory(const string& path)
 	return true;
 }
 
-static int DeleteRecursiveHelper(const string& path)
+static int DeleteRecursiveHelper(const std::string& path)
 {
 	int res;
 
@@ -384,7 +381,7 @@ static int DeleteRecursiveHelper(const string& path)
 		{
 			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 			{
-				string name = dp->d_name;
+				std::string name = dp->d_name;
 				res = DeleteRecursiveHelper(path + "/" + name);
 				if (res != 0)
 				{
@@ -405,7 +402,7 @@ static int DeleteRecursiveHelper(const string& path)
 	return res;
 }
 
-bool DeleteRecursive(const string& path)
+bool DeleteRecursive(const std::string& path)
 {
 	return DeleteRecursiveHelper(path) == 0;
 }
@@ -445,7 +442,7 @@ static bool fcopy(FILE *f1, FILE *f2)
 }
 
 
-bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingFolders)
+bool CopyAFile(const std::string& fromPath, const std::string& toPath, bool createMissingFolders)
 {
 	if (createMissingFolders && !EnsureDirectory(ParentDirectory(toPath)))
 		return false;
@@ -473,7 +470,7 @@ bool CopyAFile(const string& fromPath, const string& toPath, bool createMissingF
 	return res;
 }
 
-bool MoveAFile(const string& fromPath, const string& toPath)
+bool MoveAFile(const std::string& fromPath, const std::string& toPath)
 {
 	int res = rename(fromPath.c_str(), toPath.c_str());
 	return !res;

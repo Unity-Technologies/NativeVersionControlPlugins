@@ -2,8 +2,6 @@
 #include "Utility.h"
 #include "FileSystem.h"
 
-using namespace std;
-
 const char* DATA_PREFIX = "o";
 const char* VERBOSE_PREFIX = "v";
 const char* ERROR_PREFIX = "e";
@@ -14,13 +12,13 @@ const char* PROGRESS_PREFIX = "p";
 
 const size_t MAX_LOG_FILE_SIZE = 2000000; 
 
-Connection::Connection(const string& logPath) 
+Connection::Connection(const std::string& logPath) 
 	: m_Log(NULL), m_Pipe(NULL) 
 { 
 	// Rotate log file if too large
 	if (PathExists(logPath) && GetFileLength(logPath) > MAX_LOG_FILE_SIZE)
 	{
-		string prevPath(logPath);
+		std::string prevPath(logPath);
 		prevPath += "-prev";
 		if (PathExists(prevPath))
 			DeleteRecursive(prevPath);
@@ -48,14 +46,14 @@ UnityCommand Connection::ReadCommand(CommandArgs& args)
 		if (!IsConnected())
 			Connect();
 	}
-	catch (exception& e)
+	catch (std::exception& e)
 	{
 		Log().Notice() << "While reading command: " << e.what() << Endl;
 		return UCOM_Invalid;
 	}
 	
 	args.clear();
-    string read;
+    std::string read;
 	ReadLine(read);
 
 	if (read.empty())
@@ -84,11 +82,11 @@ UnityCommand Connection::ReadCommand(CommandArgs& args)
 		return UCOM_Invalid;
 	}
 
-	string command = read.substr(2);
+	std::string command = read.substr(2);
 
 	if (Tokenize(args, command) == 0)
 	{
-		ErrorLine(string("invalid formatted - '") + command + "'");
+		ErrorLine(std::string("invalid formatted - '") + command + "'");
 		return UCOM_Invalid;
 	}
 	return StringToUnityCommand(args[0].c_str());
@@ -146,7 +144,7 @@ Connection& Connection::Command(const std::string& cmd, MessageArea ma)
 }
 
 
-static void DecodeString(string& target)
+static void DecodeString(std::string& target)
 {
 	std::string::size_type len = target.length();
 	std::string::size_type n1 = 0;
@@ -191,7 +189,7 @@ std::string& Connection::PeekLine(std::string& target)
 // Params: -1 means not specified
 Connection& Connection::Progress(int pct, time_t timeSoFar, const std::string& message, MessageArea ma)
 {
-	string msg = IntToString(pct) + " " + IntToString((int)timeSoFar) + " " + message;
+	std::string msg = IntToString(pct) + " " + IntToString((int)timeSoFar) + " " + message;
 	WritePrefixLine(PROGRESS_PREFIX, ma, msg, m_Log->Notice());
 	return *this;
 }

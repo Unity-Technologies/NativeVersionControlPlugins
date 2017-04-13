@@ -3,8 +3,6 @@
 #include "P4Command.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 class P4IncomingChangeAssetsCommand : public P4Command
 {
 public:
@@ -18,11 +16,11 @@ public:
 		ChangelistRevision cl;
 		Conn() >> cl;
 		
-		vector<string> toks;
+		std::vector<std::string> toks;
 		if (Tokenize(toks, m_ProjectPath, "/") == 0)
 		{
 			Conn().BeginList();
-			Conn().WarnLine(string("Project path invalid - ") + m_ProjectPath);
+			Conn().WarnLine(std::string("Project path invalid - ") + m_ProjectPath);
 			Conn().EndList();
 			Conn().EndResponse();
 			return true;
@@ -30,8 +28,8 @@ public:
 		
 		Conn().Log().Debug() << "Project path is " << m_ProjectPath << Endl;
 		
-		string rev = cl == kDefaultListRevision ? string("default") : cl;
-		const std::string cmd = string("describe -s ") + rev;
+		std::string rev = cl == kDefaultListRevision ? std::string("default") : cl;
+		const std::string cmd = std::string("describe -s ") + rev;
 		
 		task.CommandRun(cmd, this);
 		
@@ -71,22 +69,22 @@ public:
 		if (Conn().Log().GetLogLevel() != LOG_DEBUG)
 			Conn().Log().Info() << "OutputInfo: " << data << Endl;
 		
-		string d(data);
+		std::string d(data);
 		Conn().VerboseLine(d);
-		string::size_type i = d.rfind(" ");
-		if (i == string::npos || i < 2 || i+1 >= d.length()) // 2 == "//".length()
+		std::string::size_type i = d.rfind(" ");
+		if (i == std::string::npos || i < 2 || i+1 >= d.length()) // 2 == "//".length()
 		{
-			Conn().WarnLine(string("Invalid change asset - ") + d);
+			Conn().WarnLine(std::string("Invalid change asset - ") + d);
 			return;
 		}
 		
 		// strip revision specifier "#ddd"
-		string::size_type iPathEnd = d.rfind("#", i);
-		if (iPathEnd == string::npos)
+		std::string::size_type iPathEnd = d.rfind("#", i);
+		if (iPathEnd == std::string::npos)
 			iPathEnd = i;
 		
 		VersionedAsset a(d.substr(0, iPathEnd));
-		string action = d.substr(i+1);
+		std::string action = d.substr(i+1);
 		int state = action.empty() ? kNone : ActionToState(action,"","","");
 		a.SetState(state);
 		a.RemoveState(kCheckedOutLocal);
@@ -95,7 +93,7 @@ public:
 	}
 	
 private:
-	string m_ProjectPath;
+	std::string m_ProjectPath;
 	VersionedAssetList m_Result;
 	
 } cIncomingChangeAssets("incomingChangeAssets");

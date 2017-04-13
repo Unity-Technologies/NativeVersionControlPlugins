@@ -4,8 +4,6 @@
 #include "Utility.h"
 #include <sstream>
 
-using namespace std;
-
 class P4StreamsCommand : public P4Command
 {
 public:
@@ -17,7 +15,7 @@ public:
 
 		if (!task.CommandRun("streams", this))
 		{
-			string errorMessage = GetStatusMessage();			
+			std::string errorMessage = GetStatusMessage();			
 			Conn().Log().Fatal() << errorMessage << Endl;
 			return false;
 		}
@@ -31,18 +29,18 @@ public:
     // Called with entire spec file as data
     void OutputInfo( char level, const char *data )
     {
-		stringstream ss(data);
+		std::stringstream ss(data);
 		Conn().VerboseLine(data);
 		size_t minlen = 5; // "Root:" 
 		
-		string line;
-		const string streamPrefix = "Stream ";
+		std::string line;
+		const std::string streamPrefix = "Stream ";
 		while ( getline(ss, line) ) 
 		{	
 			if (StartsWith(line, streamPrefix))
 			{
 				// TODO: safety
-				vector<string> toks;
+				std::vector<std::string> toks;
 				Tokenize(toks, line);
 
 				P4Stream s;
@@ -61,9 +59,9 @@ public:
     
     StrBuf buf;
     err->Fmt(&buf);
-    string value(buf.Text());
+    std::string value(buf.Text());
 
-    if (value.find("No such stream.") != string::npos)
+    if (value.find("No such stream.") != std::string::npos)
     {
       Conn().Log().Debug() << value << Endl;
       return;      

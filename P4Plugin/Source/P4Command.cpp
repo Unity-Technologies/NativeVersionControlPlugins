@@ -7,8 +7,6 @@
 #include <cassert>
 #include <sstream>
 
-using namespace std;
-
 Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma)
 {
 	// Convertion of p4 errors to unity vcs errors
@@ -33,7 +31,7 @@ Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma)
 			break;
 		default:
 			// MAPlugin will make Unity restart the plugin
-			p.ErrorLine(string("<Unknown errortype>: ") + i->message, MAPlugin);
+			p.ErrorLine(std::string("<Unknown errortype>: ") + i->message, MAPlugin);
 			break;
 		}
 	}
@@ -46,10 +44,10 @@ Connection& operator<<(Connection& p, const VCSStatus& st)
 }
 
 // Global map of all commands registered at initialization time
-typedef std::map<string, P4Command*> CommandMap;
+typedef std::map<std::string, P4Command*> CommandMap;
 static CommandMap* s_Commands = NULL;
 
-P4Command* LookupCommand(const string& name)
+P4Command* LookupCommand(const std::string& name)
 {
 	assert(s_Commands != NULL);
 	CommandMap::iterator i = s_Commands->find(name);
@@ -64,9 +62,8 @@ P4Command::P4Command(const char* name)
 	if (s_Commands == NULL)
 		s_Commands = new CommandMap();
 
-	s_Commands->insert(make_pair(name,this));
+	s_Commands->insert(std::make_pair(name,this));
 }
-
 
 const VCSStatus& P4Command::GetStatus() const
 { 
@@ -88,11 +85,10 @@ void P4Command::ClearStatus()
 	m_Status.clear(); 
 }
 
-
-string P4Command::GetStatusMessage() const
+std::string P4Command::GetStatusMessage() const
 {
-	string delim = "";
-	string msg;
+	std::string delim = "";
+	std::string msg;
 	for (VCSStatus::const_iterator i = m_Status.begin(); i != m_Status.end(); ++i)
 	{
 		msg += VCSSeverityToString(i->severity);
@@ -110,7 +106,6 @@ void P4Command::OutputStat( StrDict *varList )
 	Conn().Log().Info() << "Default ClientUser OutputState()\n";
 }
 
-
 // Default handler of P4
 void P4Command::InputData( StrBuf *buf, Error *err ) 
 { 
@@ -123,13 +118,11 @@ void P4Command::Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 	Conn().Log().Info() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
 }
 
-
 // Default handler of P4
 void P4Command::Finished() 
 { 
 //	Conn().Log().Info() << "Default ClientUser Finished()\n";
 }
-
 
 // Default handler of P4 error output. Called by the default P4Command::Message() handler.
 void P4Command::HandleError( Error *err )
@@ -147,7 +140,6 @@ void P4Command::HandleError( Error *err )
 	}
 
 	// This is a regular non-connection related error
-
 	VCSStatus s = errorToVCSStatus(*err);
 	m_Status.insert(s.begin(), s.end());
 
@@ -176,7 +168,7 @@ bool P4Command::HandleOnlineStatusOnError(Error *err)
 	{
 		StrBuf buf;
 		err->Fmt(&buf);
-		string value(buf.Text());
+		std::string value(buf.Text());
 
 		if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
 			P4Task::NotifyOffline("Couldn't connect to the perforce server");
@@ -213,18 +205,15 @@ void P4Command::ErrorPause( char* errBuf, Error* e)
 	Conn().Log().Fatal() << "Error: Default ClientUser ErrorPause()\n";
 }
 
-
 void P4Command::OutputText( const char *data, int length)
 {
 	Conn().Log().Fatal() << "Error: Default ClientUser OutputText\n";
 }
 
-
 void P4Command::OutputBinary( const char *data, int length)
 {
 	Conn().Log().Fatal() << "Error: Default ClientUser OutputBinary\n";
 }
-
 
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
@@ -283,7 +272,7 @@ public:
 	virtual void OutputInfo( char level, const char *data )
 	{	
 		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
-		string msg(data);
+		std::string msg(data);
 		bool propergate = true;
 		if (level == 48 && msg.length() > 1)
 		{
@@ -306,11 +295,11 @@ public:
 			}
 			else
 			{
-				string::size_type i = msg.find(kDelim); // depotPath end
-				string::size_type j = msg.find(kDelim, i+1); // workspacePath end
+				std::string::size_type i = msg.find(kDelim); // depotPath end
+				std::string::size_type j = msg.find(kDelim, i+1); // workspacePath end
 				j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
-				string::size_type k = msg.find(kDelim, j); // clientPath end
-				if (i != string::npos && i > 2 && k != string::npos)
+				std::string::size_type k = msg.find(kDelim, j); // clientPath end
+				if (i != std::string::npos && i > 2 && k != std::string::npos)
 				{
 					propergate = false;
 					P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
@@ -323,7 +312,7 @@ public:
 			P4Command::OutputInfo(level, data);
 	}
 	
-	vector<Mapping> mappings;
+	std::vector<Mapping> mappings;
 	
 } cWhere;
 
@@ -336,7 +325,7 @@ const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, cons
 	if (assets.empty())
 		return cWhere.mappings;
 
-	string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
+	std::string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
 	
 	task.CommandRun("where " + localPaths, &cWhere);
 	Conn() << cWhere.GetStatus();
@@ -351,11 +340,11 @@ const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, cons
 
 bool P4Command::MapToLocal(P4Task& task, VersionedAssetList& assets)
 {
-	const vector<Mapping>& mappings = GetMappings(task, assets);
+	const std::vector<Mapping>& mappings = GetMappings(task, assets);
 	if (mappings.size() != assets.size())
 		return false; // error
 
-	vector<Mapping>::const_iterator m = mappings.begin();
+	std::vector<Mapping>::const_iterator m = mappings.begin();
 	for (VersionedAssetList::iterator i = assets.begin(); i != assets.end(); ++i, ++m)
 	{
 		i->SetPath(m->clientPath);

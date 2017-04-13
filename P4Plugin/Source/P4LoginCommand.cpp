@@ -3,8 +3,6 @@
 #include "Utility.h"
 #include <sstream>
 
-using namespace std;
-
 class P4LoginCommand : public P4Command
 {
 public:
@@ -22,7 +20,7 @@ public:
 		m_LoggedIn = false;
 		m_Password = task.GetP4Password();
 		m_CheckingForLoggedIn = args.size() > 1;
-		const string cmd = string("login") + (m_CheckingForLoggedIn ? string(" " ) + args[1] : string());
+		const std::string cmd = std::string("login") + (m_CheckingForLoggedIn ? std::string(" " ) + args[1] : std::string());
 
 		if (m_CheckingForLoggedIn)
 		{
@@ -33,7 +31,7 @@ public:
 		{
 			if (!task.CommandRun(cmd, this))
 			{
-				string errorMessage = GetStatusMessage();			
+				std::string errorMessage = GetStatusMessage();			
 				Conn().Log().Fatal() << errorMessage << Endl;
 			}
 
@@ -50,7 +48,7 @@ public:
 	
 	void OutputInfo( char level, const char *data )
     {
-		string d(data);
+		std::string d(data);
 		Conn().VerboseLine(d);
 
 		m_LoggedIn = d == "'login' not necessary, no password set for this user.";
@@ -59,7 +57,7 @@ public:
 
 		if (m_CheckingForLoggedIn)
 		{
-			m_LoggedIn = StartsWith(d, "User ") && d.find(" ticket expires in ") != string::npos;
+			m_LoggedIn = StartsWith(d, "User ") && d.find(" ticket expires in ") != std::string::npos;
 			if (m_LoggedIn)
 				return;
 
@@ -86,9 +84,9 @@ public:
 
 		StrBuf buf;
 		err->Fmt(&buf);
-		string value(buf.Text());
+		std::string value(buf.Text());
 
-		if (value.find("Unicode server permits only unicode enabled clients") != string::npos)
+		if (value.find("Unicode server permits only unicode enabled clients") != std::string::npos)
 		{
 			VCSStatus s = errorToVCSStatus(*err);
 			GetStatus().insert(s.begin(), s.end());
@@ -114,7 +112,7 @@ public:
 	
 private:
 	bool m_LoggedIn;
-	string m_Password;
+	std::string m_Password;
 	bool m_CheckingForLoggedIn;
 	
 } cLogin("login");

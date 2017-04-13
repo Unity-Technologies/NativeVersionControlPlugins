@@ -1,8 +1,6 @@
 #include "Pipe.h"
 #include "Utility.h"
 
-using namespace std;
-
 Pipe::Pipe() : m_LineBufferValid(false)
 {
 #if defined(_WINDOWS)
@@ -11,7 +9,7 @@ Pipe::Pipe() : m_LineBufferValid(false)
 	// All pipe instances are busy, so wait for 2 seconds. 
 	if ( ! WaitNamedPipe(lpszPipename, 2000)) 
 	{ 
-		string msg = "Could not open pipe: 2 second wait timed out.\n";
+		std::string msg = "Could not open pipe: 2 second wait timed out.\n";
 		msg += ErrorCodeToMsg(GetLastError());
 		throw PipeException(msg);
 	}
@@ -30,7 +28,7 @@ Pipe::Pipe() : m_LineBufferValid(false)
 	if (m_NamedPipe == INVALID_HANDLE_VALUE) 
 	{		
 		// Exit if an error other than ERROR_PIPE_BUSY occurs. 
-		string msg = "Could not open pipe. GLE=";
+		std::string msg = "Could not open pipe. GLE=";
 		msg += ErrorCodeToMsg(GetLastError());
 		throw PipeException(msg);
 	}
@@ -54,11 +52,11 @@ void Pipe::Flush()
 #if defined(_WINDOWS)
 	FlushFileBuffers(m_NamedPipe);
 #else
-	cout << flush;
+	std::cout << std::flush;
 #endif
 }
 
-Pipe& Pipe::Write(const string& str)
+Pipe& Pipe::Write(const std::string& str)
 {
 #if defined(_WINDOWS)
 	const CHAR* buf = str.c_str(); 
@@ -72,19 +70,19 @@ Pipe& Pipe::Write(const string& str)
 	
 	if (!success) 
 	{
-		string msg = "WriteFile to pipe failed. GLE=";
+		std::string msg = "WriteFile to pipe failed. GLE=";
 		msg += ErrorCodeToMsg(GetLastError());
 		throw PipeException(msg);
 	}
 
 #else
-	cout << str;
+	std::cout << str;
 #endif
 	return *this;
 }
 
 
-string& Pipe::ReadLine(string& target)
+std::string& Pipe::ReadLine(std::string& target)
 {
 	if (m_LineBufferValid)
 	{
@@ -104,8 +102,8 @@ string& Pipe::ReadLine(string& target)
 	while (true)
 	{ 
 		// First check if we have already buffered lines up for grabs
-		string::size_type i = m_Buffer.find("\n");
-		if (i != string::npos)
+		std::string::size_type i = m_Buffer.find("\n");
+		if (i != std::string::npos)
 		{
 			success = true;
 			target = m_Buffer.substr(0,i);
@@ -133,17 +131,17 @@ string& Pipe::ReadLine(string& target)
 			
 	if (!success)
 	{
-		string msg = "Readfile from pipe failed. GLE=";
+		std::string msg = "Readfile from pipe failed. GLE=";
 		msg += ErrorCodeToMsg(GetLastError());
 		throw PipeException(msg);
 	}
 #else
-	getline(cin, target);
+	getline(std::cin, target);
 #endif
 	return target;
 }
 	
-string& Pipe::PeekLine(string& dest)
+std::string& Pipe::PeekLine(std::string& dest)
 {
 	ReadLine(m_LineBuffer);
 	dest = m_LineBuffer;
@@ -156,6 +154,6 @@ bool Pipe::IsEOF() const
 #if defined(_WINDOWS)
 	return false; // TODO: Implement
 #else
-	return cin.eof();
+	return std::cin.eof();
 #endif
 }

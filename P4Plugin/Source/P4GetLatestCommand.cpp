@@ -3,9 +3,6 @@
 #include "P4Utility.h"
 #include <time.h>
 
-using namespace std;
-
-
 class P4GetLatestCommand : public P4Command
 {
 public:
@@ -20,11 +17,11 @@ public:
 		ClearStatus();
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
-		string cmd = "sync";
+		std::string cmd = "sync";
 		
 		VersionedAssetList assetList;
 		Conn() >> assetList;
-		string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
+		std::string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
 		
 		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 		
@@ -58,8 +55,8 @@ public:
 		StrBuf buf;
 		err->Fmt(&buf);
 		
-		const string upToDate = " - file(s) up-to-date.";
-		string value(buf.Text());
+		const std::string upToDate = " - file(s) up-to-date.";
+		std::string value(buf.Text());
 		value = TrimEnd(value, '\n');
 		
 		if (EndsWith(value, upToDate)) return; // ignore
@@ -84,10 +81,10 @@ public:
 		// //depot/P4Test/Assets/killme.txt#1 - added as /Users/foo....
 		// //depot/P4Test/Assets/killme.txt#1 - deleted as /Users/foo....
 
-		string d(data);
-		string::size_type i1 = d.find('#');
-		string::size_type i2 = d.find(' ', i1);
-		string rev = d.substr(i1+1, i2);
+		std::string d(data);
+		std::string::size_type i1 = d.find('#');
+		std::string::size_type i2 = d.find(' ', i1);
+		std::string rev = d.substr(i1+1, i2);
 
 		// Skip " updating " or " xxxxx as "
 		i1 = d.find(' ', i2+3);
@@ -96,7 +93,7 @@ public:
 		if (d.substr(i1, 3) == "as ")
 			i1 += 3;
 
-		string path = d.substr(i1);
+		std::string path = d.substr(i1);
 		
 		incomingAssetList.push_back(VersionedAsset(path, kSynced, rev));
 		Conn().Progress(-1, time(0) - m_StartTime, StartsWith(path, m_ProjectPath) ? path.substr(m_ProjectPath.length()) : path);

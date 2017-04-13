@@ -3,8 +3,6 @@
 #include "P4StatusBaseCommand.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 P4StatusBaseCommand::P4StatusBaseCommand(const char* name, bool streamResultToConnection) 
 	: P4Command(name), m_StreamResultToConnection(streamResultToConnection)
 {
@@ -15,19 +13,19 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	if (!P4Task::IsOnline())
 		return;
 
-	const string invalidPath = "//...";
-	const string notFound = " - no such file(s).";
+	const std::string invalidPath = "//...";
+	const std::string notFound = " - no such file(s).";
 	
 	int i;
 	StrRef var, val;
 	
-	vector<string> toks;
+	std::vector<std::string> toks;
 	VersionedAsset current;
-	string action;
-	string headAction;
-	string headRev;
-	string haveRev;
-	string depotFile;
+	std::string action;
+	std::string headAction;
+	std::string headRev;
+	std::string haveRev;
+	std::string depotFile;
 	bool exclLockType = false;
 	bool isStateSet = false;
 	
@@ -38,8 +36,8 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		if( var == "func" ) 
 			continue;
 		
-		string key(var.Text());
-		string value(val.Text());
+		std::string key(var.Text());
+		std::string value(val.Text());
 		// Conn().Log().Debug() << key << " # " << value << Endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
@@ -50,7 +48,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		}
 		else if (key == "headType")
 		{
-			exclLockType = value.find("+l") != string::npos;
+			exclLockType = value.find("+l") != std::string::npos;
 		}
 		else if (key == "clientFile")
 		{
@@ -139,9 +137,9 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	StrBuf buf;
 	err->Fmt(&buf);
 	
-	const string invalidPath = "//...";
-	const string notFound = " - no such file(s).";
-	string value(buf.Text());
+	const std::string invalidPath = "//...";
+	const std::string notFound = " - no such file(s).";
+	std::string value(buf.Text());
 	value = TrimEnd(value, '\n');
 	VersionedAsset asset;	
 	
@@ -177,9 +175,9 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	P4Command::HandleError(err);
 }
 
-bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const string& value)
+bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const std::string& value)
 {
-	const string notFound = " - no such file(s).";
+	const std::string notFound = " - no such file(s).";
 
 	current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
 	if (EndsWith(current.GetPath(), "*")) 

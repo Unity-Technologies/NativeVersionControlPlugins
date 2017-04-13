@@ -2,8 +2,6 @@
 #include "P4Command.h"
 #include "P4Task.h"
 
-using namespace std;
-
 /*
  * Returns the Changelists that are pending to be submitted to perforce server.
  * The assets associated with the changelists are not included.
@@ -16,7 +14,7 @@ public:
 	{				
 		ClearStatus();
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
-		const string cmd = string("changes -s pending -u ") + Quote(task.GetP4User()) + " -c " + Quote(task.GetP4Client());
+		const std::string cmd = std::string("changes -s pending -u ") + Quote(task.GetP4User()) + " -c " + Quote(task.GetP4Client());
 
 		Conn().BeginList();
 		
@@ -42,22 +40,22 @@ public:
 	// Called once per changelist 
 	void OutputInfo( char level, const char *data )
 	{
-		string d(data);
+		std::string d(data);
 		const size_t minLength = 8; // "Change x".length()
 
 		Conn().VerboseLine(d);
 
 		if (d.length() <= minLength)
 		{
-			Conn().WarnLine(string("p4 changelist too short: ") + d);
+			Conn().WarnLine(std::string("p4 changelist too short: ") + d);
 			return;
 		}
 		
 		// Parse the change list
-		string::size_type i = d.find(' ', 8);
-		if (i == string::npos)
+		std::string::size_type i = d.find(' ', 8);
+		if (i == std::string::npos)
 		{
-			Conn().WarnLine(string("p4 couldn't locate revision: ") + d);
+			Conn().WarnLine(std::string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		

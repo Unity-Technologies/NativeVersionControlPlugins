@@ -4,9 +4,7 @@
 #include <algorithm>
 #include <functional>
 
-using namespace std;
-
-string IntToString (int i)
+std::string IntToString (int i)
 {
 	char buf[255];
 #ifdef WIN32
@@ -14,20 +12,20 @@ string IntToString (int i)
 #else
 	snprintf (buf, sizeof(buf), "%i", i);
 #endif
-	return string (buf);		
+	return std::string (buf);		
 }
 
 size_t Tokenize(std::vector<std::string>& result,
 				const std::string& str, 
 				const std::string& delimiters)
 {
-	string::size_type startPos = 0;
-	string::size_type endPos = str.find_first_of(delimiters);
+	std::string::size_type startPos = 0;
+	std::string::size_type endPos = str.find_first_of(delimiters);
 	
 	result.clear();
-	string::size_type strLen = str.length();
+	std::string::size_type strLen = str.length();
 	
-	while (endPos != string::npos) {
+	while (endPos != std::string::npos) {
 		
 		std::string tok = str.substr(startPos, endPos-startPos);
 		startPos = ++endPos;
@@ -45,17 +43,17 @@ size_t Tokenize(std::vector<std::string>& result,
 	return result.size();
 }
 
-string Join(const vector<string>& items, const string& delim, const string& surround)
+std::string Join(const std::vector<std::string>& items, const std::string& delim, const std::string& surround)
 {
 	return Join(items.begin(), items.end(), delim, surround);
 }
 
-string Join(const vector<string>::const_iterator i1, 
-			const vector<string>::const_iterator i2,
-			const string& delim, const string& surround)
+std::string Join(const std::vector<std::string>::const_iterator i1, 
+			const std::vector<std::string>::const_iterator i2,
+			const std::string& delim, const std::string& surround)
 {
-	string result;
-	for (vector<string>::const_iterator i = i1; i != i2; ++i)
+	std::string result;
+	for (std::vector<std::string>::const_iterator i = i1; i != i2; ++i)
 	{
 		if (i != i1)
 			result += delim;
@@ -65,18 +63,18 @@ string Join(const vector<string>::const_iterator i1,
 }
 
 // Replace all occurences of lookFor in str by replaceWith
-string Replace(const string& str, const string& lookFor, const string& replaceWith)
+std::string Replace(const std::string& str, const std::string& lookFor, const std::string& replaceWith)
 {
-	string result(str);
+	std::string result(str);
 	size_t lflen = lookFor.length();
 	size_t rwlen = replaceWith.length();
 	
-	string::size_type i1 = 0;
-	string::size_type i2 = 0;
+	std::string::size_type i1 = 0;
+	std::string::size_type i2 = 0;
 	do 
 	{
 		i2 = result.find(lookFor, i1);
-		if (i2 == string::npos)
+		if (i2 == std::string::npos)
 			return result;
 		result.replace(i2, lflen, replaceWith);
 		i1 = i2 + rwlen;
@@ -85,10 +83,10 @@ string Replace(const string& str, const string& lookFor, const string& replaceWi
 	return result;
 }
 
-string TrimStart(const string& str, char c)
+std::string TrimStart(const std::string& str, char c)
 {
-	string::size_type iend = str.length();
-	string::size_type i1 = 0;
+	std::string::size_type iend = str.length();
+	std::string::size_type i1 = 0;
 	
 	while ( i1 < iend && str[i1] == c) 
 	{
@@ -100,10 +98,10 @@ string TrimStart(const string& str, char c)
 	return str.substr(i1);
 }
 
-string TrimEnd(const string& str, char c)
+std::string TrimEnd(const std::string& str, char c)
 { 
    
-	string::size_type i1 = str.length();
+	std::string::size_type i1 = str.length();
 	
 	while ( i1 != 0 && str[i1-1] == c) 
 	{
@@ -115,30 +113,30 @@ string TrimEnd(const string& str, char c)
 	return str.substr(0, i1);
 }
 
-string Trim(const string& str, char c)
+std::string Trim(const std::string& str, char c)
 {
 	// Could be optimized
 	return TrimStart(TrimEnd(str,c), c);
 }
 
-bool EndsWith(const string& str, const string& lookFor)
+bool EndsWith(const std::string& str, const std::string& lookFor)
 {
 	if (str.length() < lookFor.length()) return false;
 	
-	string::const_reverse_iterator i1 = str.rbegin();
-	string::const_reverse_iterator i2 = lookFor.rbegin();
+	std::string::const_reverse_iterator i1 = str.rbegin();
+	std::string::const_reverse_iterator i2 = lookFor.rbegin();
 	
 	for ( ; i2 != lookFor.rend(); i2++, i1++)
 		if (*i1 != *i2) return false;
 	return true;
 }
 
-bool StartsWith(const string& str, const string& lookFor)
+bool StartsWith(const std::string& str, const std::string& lookFor)
 {
 	if (str.length() < lookFor.length()) return false;
 	
-	string::const_iterator i1 = str.begin();
-	string::const_iterator i2 = lookFor.begin();
+	std::string::const_iterator i1 = str.begin();
+	std::string::const_iterator i2 = lookFor.begin();
 	
 	for ( ; i2 != lookFor.end(); i2++, i1++)
 		if (*i1 != *i2) return false;
@@ -147,7 +145,7 @@ bool StartsWith(const string& str, const string& lookFor)
 
 std::string Quote(const std::string& str)
 {
-	string s = "\"";
+	std::string s = "\"";
 	s += str;
 	s += "\"";
 	return s;
@@ -155,7 +153,7 @@ std::string Quote(const std::string& str)
 
 #if defined(_WINDOWS)
 #include <stdio.h>
-string ErrorCodeToMsg( DWORD code )
+std::string ErrorCodeToMsg( DWORD code )
 {
 	void* msgBuf;
 	if( !FormatMessageA( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -167,20 +165,20 @@ string ErrorCodeToMsg( DWORD code )
 	}
 	else
 	{
-		string msg = (const char*)msgBuf;
+		std::string msg = (const char*)msgBuf;
 		LocalFree( msgBuf );
 		return msg;
 	}
 }
 
-string LastErrorToMsg()
+std::string LastErrorToMsg()
 {
 	return ErrorCodeToMsg(GetLastError());
 }
 
 #endif
 
-void ToLower( string& localPath ) 
+void ToLower( std::string& localPath ) 
 {
 	for (size_t i = 0; i < localPath.length(); ++i)
 		localPath[i] = static_cast<char>(tolower(localPath[i]));
@@ -194,7 +192,7 @@ const char* PluginException::what() const throw()
 }
 
 #if defined(_WINDOWS)
-string Backtrace()
+std::string Backtrace()
 {
   return "";
 }
@@ -205,12 +203,12 @@ string Backtrace()
 #include <execinfo.h>
 #include <stdio.h>
 
-string Backtrace()
+std::string Backtrace()
 {
   void* callstack[128];
   int i, frames = backtrace(callstack, 128);
   char** strs = backtrace_symbols(callstack, frames);
-  string result;
+  std::string result;
   for (i = 0; i < frames; ++i) {
     result += strs[i];
     result += "\n";

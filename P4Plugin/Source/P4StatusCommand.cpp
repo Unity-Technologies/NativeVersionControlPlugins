@@ -1,8 +1,6 @@
 #include "P4StatusCommand.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 P4StatusCommand::P4StatusCommand(const char* name) : P4StatusBaseCommand(name) {}
 
 bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
@@ -45,7 +43,7 @@ void P4StatusCommand::PostStatus()
 void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetList, bool recursive)
 {
 	m_StreamResultToConnection = true;
-	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
+	std::string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
 	Conn().Log().Debug() << "Paths to stat are: " << paths << Endl;
 	
@@ -60,7 +58,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 
 	// Server >=2008: string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
 	// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
-	string cmd = "fstat ";
+	std::string cmd = "fstat ";
 	cmd += " " + paths;
 
 	// We're sending along an asset list with an unknown size.
@@ -78,7 +76,7 @@ void P4StatusCommand::Run(P4Task& task, const VersionedAssetList& assetList, boo
 {
 	m_StreamResultToConnection = false;
 	m_StatusResult.clear();
-	string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
+	std::string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders | (recursive ? kPathRecursive : kNone) );
 	
 	result.clear();
 	Conn().Log().Info() << "Paths to stat are: " << paths << Endl;
@@ -89,7 +87,7 @@ void P4StatusCommand::Run(P4Task& task, const VersionedAssetList& assetList, boo
 		return;
 	}
 	
-	string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
+	std::string cmd = "fstat -T \"movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev\" ";
 	cmd += " " + paths;
 
 	// We're sending along an asset list with an unknown size.

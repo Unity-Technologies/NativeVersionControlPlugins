@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <functional>
 
-using namespace std;
-
 VersionedAsset::VersionedAsset() : m_State(kNone)
 { 
 	SetPath(""); 
@@ -107,14 +105,14 @@ bool VersionedAsset::operator<(const VersionedAsset& other) const
 	return GetPath() < other.GetPath();
 }
 
-vector<string> Paths(const VersionedAssetList& assets)
+std::vector<std::string> Paths(const VersionedAssetList& assets)
 {
-	vector<string> result;
+	std::vector<std::string> result;
 	result.reserve(assets.size());
 
 	for (VersionedAssetList::const_iterator i = assets.begin(); i != assets.end(); ++i)
 	{
-		string p = i->GetPath();
+		std::string p = i->GetPath();
 		if (i->IsFolder()) 
 			p.resize(p.size() - 1 ); // strip ending /
 		result.push_back(p);
@@ -131,7 +129,7 @@ Connection& operator<<(Connection& p, const VersionedAsset& asset)
 
 Connection& operator>>(Connection& p, VersionedAsset& v)
 {
-    string line;
+    std::string line;
 	p.ReadLine(line);
 	v.SetPath(line);
 	p.ReadLine(line);
