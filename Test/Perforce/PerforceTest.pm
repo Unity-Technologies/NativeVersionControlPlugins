@@ -45,6 +45,7 @@ sub PerforceIntegrationTests
 
 	$pid = SetupServer();
 	SetupClient();
+	SetupUsers();
 
 	$exitCode = RunTests($dir, $option);
 
@@ -147,7 +148,21 @@ sub TeardownServer
 	print "Tearing down server $handle\n";
 	KillSubProcess($handle);
 	waitpid($handle,0);
-	sleep(4);
+	sleep(5);
+	rmtree "Test/tmp/testclient";
+	rmtree("Test/tmp/testserver");
+	rmtree("Test/tmp");
+}
+
+sub SetupUsers
+{
+	print "Setting up user password_vcs_test_user\n";
+	print "Clients:\n";
+	print `$ENV{'P4EXEC'} -p $ENV{'P4PORT'} -u password_vcs_test_user clients`;
+	print "Users:\n";
+	print `$ENV{'P4EXEC'} -p $ENV{'P4PORT'} -u password_vcs_test_user users`;
+	system("$ENV{'P4EXEC'} -u password_vcs_test_user passwd -O ? -P Password1");
+	$ENV{'P4USER'} = "vcs_test_user";
 }
 
 sub SetupClient
