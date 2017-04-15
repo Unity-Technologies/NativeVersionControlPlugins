@@ -10,7 +10,7 @@ c:pluginConfig vcPerforceUsername vcs_test_user
 --
 r1:end of response
 --
-c:pluginConfig vcPerforcePassword
+c:pluginConfig vcPerforcePassword Secret
 --
 r1:end of response
 --

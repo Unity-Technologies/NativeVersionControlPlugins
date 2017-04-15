@@ -25,23 +25,23 @@ sub PerforceIntegrationTests
 	mkdir "Test/tmp/testclient";
 	mkdir "Test/tmp/testclient/Assets";
 	mkdir "Test/tmp/testserver";
-	$ENV{'P4ROOT'} = "Test/tmp/testserver";
-	$ENV{'P4PORT'} = "$p4port";
-	$ENV{'P4CLIENTROOT'} = "Test/tmp/testclient";
-	$ENV{'P4CLIENTROOTABS'} = getcwd() . "/" . $ENV{'P4CLIENTROOT'};
-	$ENV{'P4CLIENT'} = "testclient";
-	$ENV{'P4USER'} = "vcs_test_user";
+	$ENV{'VCS_P4ROOT'} = "Test/tmp/testserver";
+	$ENV{'VCS_P4PORT'} = "$p4port";
+	$ENV{'VCS_P4CLIENTROOT'} = "Test/tmp/testclient";
+	$ENV{'VCS_P4CLIENTROOTABS'} = getcwd() . "/" . $ENV{'VCS_P4CLIENTROOT'};
+	$ENV{'VCS_P4CLIENT'} = "testclient";
+	$ENV{'VCS_P4USER'} = "vcs_test_user";
 	$ENV{'P4CHARSET'} = 'utf8';
-	$ENV{'P4PASSWD'} = 'secret';
+	$ENV{'VCS_P4PASSWD'} = 'secret';
 	
 	if ($ENV{'TARGET'} eq "win32")
 	{
-		$ENV{'P4ROOT'} =~ s/\//\\/g;
-		$ENV{'P4CLIENTROOT'} =~ s/\//\\/g;
-		$ENV{'P4CLIENTROOTABS'} =~ s/\//\\/g;
+		$ENV{'VCS_P4ROOT'} =~ s/\//\\/g;
+		$ENV{'VCS_P4CLIENTROOT'} =~ s/\//\\/g;
+		$ENV{'VCS_P4CLIENTROOTABS'} =~ s/\//\\/g;
 	}
 
-	$ENV{'P4ROOT'} = abs_path($ENV{'P4ROOT'});
+	$ENV{'VCS_P4ROOT'} = abs_path($ENV{'VCS_P4ROOT'});
 
 	$pid = SetupServer();
 	SetupClient();
@@ -66,7 +66,7 @@ sub RunTests()
 
 	$pluginexec = abs_path($ENV{'P4PLUGIN'});
 	$testserver = abs_path($ENV{'TESTSERVER'});
-	$clientroot = $ENV{'P4CLIENTROOT'};
+	$clientroot = $ENV{'VCS_P4CLIENTROOT'};
 
 	if (not(-e -f -x $testserver))
 	{
@@ -108,8 +108,8 @@ sub RunTests()
 
 sub SetupServer
 {
-	$root = $ENV{'P4ROOT'}; 
-	my $p4port = $ENV{'P4PORT'};
+	$root = $ENV{'VCS_P4ROOT'}; 
+	my $p4port = $ENV{'VCS_P4PORT'};
 	print "Setting server in '$root' listening on port '$p4port'\n";
 	rmtree($root);
 	mkdir $root;
@@ -158,30 +158,31 @@ sub SetupUsers
 {
 	print "Setting up user password_vcs_test_user\n";
 	print "Clients:\n";
-	print `$ENV{'P4EXEC'} -p $ENV{'P4PORT'} -u password_vcs_test_user clients`;
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user clients");
 	print "Users:\n";
-	print `$ENV{'P4EXEC'} -p $ENV{'P4PORT'} -u password_vcs_test_user users`;
-	system("$ENV{'P4EXEC'} -u password_vcs_test_user passwd -O ? -P Password1");
-	$ENV{'P4USER'} = "vcs_test_user";
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user users");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O ? -P Password1");
+	$ENV{'VCS_P4USER'} = "vcs_test_user";
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O ? -P Secret");
 }
 
 sub SetupClient
 {
-	$root = $ENV{'P4CLIENTROOTABS'};
+	$root = $ENV{'VCS_P4CLIENTROOTABS'};
 	#print "Login in to server\n";
 	#system("$ENV{'P4EXEC'} -p $ENV{'P4PORT'} login");
-	print "Setting up workspace $ENV{'P4CLIENT'} in $root\n";
+	print "Setting up workspace $ENV{'VCS_P4CLIENT'} in $root\n";
 	mkdir $root;
 	$SPEC =<<EOF;
 
-Client:$ENV{'P4CLIENT'}
+Client:$ENV{'VCS_P4CLIENT'}
 
 Update:2013/02/19 09:13:18
 
 Access:2013/06/24 12:38:18
 
 Description:
-    Created by $ENV{'P4USER'}.
+    Created by $ENV{'VCS_P4USER'}.
 
 Root:$root
 
@@ -192,22 +193,21 @@ SubmitOptions:submitunchanged
 LineEnd:local
 
 View:
-    //depot/... //$ENV{'P4CLIENT'}/...
+    //depot/... //$ENV{'VCS_P4CLIENT'}/...
 EOF
 
-	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'P4PORT'} client -i ");
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user client -i ");
 	print FD "$SPEC\n";
 	close(FD);
 
-	# print `$ENV{'P4EXEC'} -p $ENV{'P4PORT'} clients`;
+	# print `$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} clients`;
 	1;
 }
 
 sub TeardownClient
 {
-	print "Tearing down workspace $ENV{'P4CLIENT'}\n";
-	system("$ENV{'P4EXEC'} -p $ENV{'P4PORT'} client -f -d $ENV{'P4CLIENT'}");
-	#rmtree $ENV{'P4CLIENTROOT'};
+	print "Tearing down workspace $ENV{'VCS_P4CLIENT'}\n";
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user -P Secret client -f -d $ENV{'VCS_P4CLIENT'}");
 	1;
 }
 

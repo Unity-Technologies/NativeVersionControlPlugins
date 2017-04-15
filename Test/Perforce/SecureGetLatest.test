@@ -6,7 +6,8 @@ c:getLatest
 v1:sync "./..." 
 v1:login
 v1:login
-v1:'login' not necessary, no password set for this user.
+v1:Prompted for password
+v1:User vcs_test_user logged in.
 v1:client -o "testclient"
 <ignore>
 v1:info
@@ -60,7 +61,7 @@ c:status recurse
 --
 o1:-1
 v1:fstat  "./Assets/testfile.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 o1:./Assets/testfile.txt
 o1:0
 v1:./Assets/testfile.txt - no such file(s).

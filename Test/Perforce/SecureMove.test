@@ -7,7 +7,8 @@ c:add
 v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/movefile1.txt" 
 v1:login
 v1:login
-v1:'login' not necessary, no password set for this user.
+v1:Prompted for password
+v1:User vcs_test_user logged in.
 v1:client -o "testclient"
 <ignore>
 v1:info
@@ -51,11 +52,11 @@ c32:enableCommand submit
 c32:enableCommand unlock
 v1:./Assets/movefile1.txt - no such file(s).
 v1:add -f  "./Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 i1://depot/Assets/movefile1.txt#1 - opened for add (level 48)
 o1:-1
 v1:fstat  "./Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/movefile1.txt
 o1:<absroot>/Assets/movefile1.txt
 o1:257
@@ -69,7 +70,7 @@ c:status recurse
 --
 o1:-1
 v1:fstat  "./Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/movefile1.txt
 o1:<absroot>/Assets/movefile1.txt
 o1:257
@@ -85,14 +86,14 @@ This is a submit
 0
 --
 v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/movefile1.txt
 v1:where "<absroot>/Assets/movefile1.txt_XUDELIMX_" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:where "<absroot>/Assets/movefile1.txt_XUDELIMX_" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:submit -i
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 i1:Change 3 created with 1 open file(s). (level 48)
 p1:-1 0 Change 3 created with 1 open file(s).
 i1:Submitting change 3. (level 48)
@@ -105,7 +106,7 @@ i1:Change 3 submitted. (level 48)
 p1:-1 0 Change 3 submitted.
 o1:-1
 v1:fstat  "<absroot>/Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/movefile1.txt
 o1:<absroot>/Assets/movefile1.txt
 o1:16387
@@ -119,7 +120,7 @@ c:status recurse
 --
 o1:-1
 v1:fstat  "./Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/movefile1.txt
 o1:<absroot>/Assets/movefile1.txt
 o1:16387
@@ -134,10 +135,10 @@ c:move
 0
 --
 v1:edit "./Assets/movefile1.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 i1://depot/Assets/movefile1.txt#1 - opened for edit (level 48)
 v1:move "./Assets/movefile1.txt" "./Assets/movefile2.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 i1://depot/Assets/movefile2.txt#1 - moved from //depot/Assets/movefile1.txt#1 (level 48)
 --
 c:status recurse
@@ -147,7 +148,7 @@ c:status recurse
 --
 o1:-1
 v1:fstat  "./Assets/movefile2.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/movefile2.txt
 o1:<absroot>/Assets/movefile2.txt
 o1:65795
