@@ -1,0 +1,2 @@
+<include ./Test/Perforce/ConfigureSquareBracketIPv6.test>
+<include ./Test/Perforce/MoveNoLocal.test>
