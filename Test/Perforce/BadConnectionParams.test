@@ -8,7 +8,7 @@ c:getLatest
 0
 --
 v1:sync "./..." 
-e32:TCP connect to bad_perforce_server:1666 failed.\nnodename nor servname provided, or not known\n
+==:e32:TCP connect to bad_perforce_server:1666 failed.
 v1:login
 v1:login
 c32:disableCommand add
