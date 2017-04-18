@@ -2,8 +2,6 @@
 #include "P4Command.h"
 #include "P4Task.h"
 
-using namespace std;
-
 class P4DeleteChangesCommand : public P4Command
 {
 public:
@@ -14,7 +12,7 @@ public:
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		std::string errorMessage;
 		
-		const string cmd = "change -d";
+		const std::string cmd = "change -d";
 		
 		ChangelistRevisions changes;
 		Conn() >> changes;
@@ -27,11 +25,11 @@ public:
 			return true;
 		}
 		
-		string cl;
+		std::string cl;
 		for (ChangelistRevisions::const_iterator i = changes.begin(); i != changes.end(); ++i)
 		{
-			string rev = *i == kDefaultListRevision ? string("default") : *i;
-			string cmdr = cmd + " \"" + rev + "\"";
+			std::string rev = *i == kDefaultListRevision ? std::string("default") : *i;
+			std::string cmdr = cmd + " \"" + rev + "\"";
 			if (!task.CommandRun(cmdr, this))
 				break;
 		}

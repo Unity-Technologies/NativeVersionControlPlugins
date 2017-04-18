@@ -3,8 +3,6 @@
 #include "P4Task.h"
 #include <sstream>
 
-using namespace	 std;
-
 class P4ChangeDescriptionCommand : public P4Command
 {
 public:
@@ -17,7 +15,7 @@ public:
 		ChangelistRevision cl;
 		Conn() >> cl;
 		
-		const string cmd = string("change -o ") + (cl == kDefaultListRevision ? string("") : cl);
+		const std::string cmd = std::string("change -o ") + (cl == kDefaultListRevision ? std::string("") : cl);
 				
 		task.CommandRun(cmd, this);
 		Conn() << GetStatus();
@@ -32,7 +30,7 @@ public:
 	// Called once
 	void OutputInfo( char level, const char *data )
     {		
-		string result;
+		std::string result;
 		Conn().VerboseLine(data);
 		ReadDescription(data, result);
 		if (result == "<enter description here>\n\n")
@@ -40,14 +38,14 @@ public:
 		Conn().DataLine(result);
 	}
 	
-	int ReadDescription(const char *data, string& result)
+	int ReadDescription(const char *data, std::string& result)
 	{
-		stringstream ss(data);
+		std::stringstream ss(data);
 		char buf[512];
 		
-		const string kFind = "Description:";
-		const string kFiles = "Files:";
-		const string kJobs = "Jobs:";
+		const std::string kFind = "Description:";
+		const std::string kFiles = "Files:";
+		const std::string kJobs = "Jobs:";
 		int lines = 0;
 		
 		while ( ! ss.getline(buf, 512).fail() )

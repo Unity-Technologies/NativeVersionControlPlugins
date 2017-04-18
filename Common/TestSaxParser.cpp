@@ -2,9 +2,6 @@
 #include <string>
 #include "CrudeSax.h"
 
-using namespace std;
-using namespace crudesax;
-
 class TestParser : public SaxParser
 {
 public:

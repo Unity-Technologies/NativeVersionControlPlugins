@@ -2,8 +2,6 @@
 #include "P4Task.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 P4FileSetBaseCommand::P4FileSetBaseCommand(const char* name, const char* cmdstr) 
 	: P4Command(name), m_CmdStr(cmdstr) 
 { 
@@ -35,8 +33,8 @@ bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args)
 
 bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args, const VersionedAssetList& assetList)
 {
-	string cmd = SetupCommand(args);
-	string paths = ResolvePaths(assetList, GetResolvePathFlags());
+	std::string cmd = SetupCommand(args);
+	std::string paths = ResolvePaths(assetList, GetResolvePathFlags());
 	
 	Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 	
@@ -53,7 +51,7 @@ bool P4FileSetBaseCommand::Run(P4Task& task, const CommandArgs& args, const Vers
 	return true;
 }
 
-string P4FileSetBaseCommand::SetupCommand(const CommandArgs& args) 
+std::string P4FileSetBaseCommand::SetupCommand(const CommandArgs& args) 
 { 
 	return m_CmdStr; 
 }

@@ -2,8 +2,6 @@
 #include "P4Utility.h"
 #include "FileSystem.h"
 
-using namespace std;
-
 class P4FileModeCommand : public P4Command
 {
 public:
@@ -15,7 +13,7 @@ public:
 
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 	
-		string cmd = SetupCommand(args);
+		std::string cmd = SetupCommand(args);
 		if (cmd.empty())
 		{
 			Conn().BeginList();
@@ -26,7 +24,7 @@ public:
 
 		VersionedAssetList assetList;
 		Conn() >> assetList;
-		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
+		std::string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 	
 		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 	
@@ -54,7 +52,7 @@ public:
 		return true;
 	}
 
-	string SetupCommand(const CommandArgs& args)
+	std::string SetupCommand(const CommandArgs& args)
 	{
 		if (args.size() < 3)
 		{
@@ -62,8 +60,8 @@ public:
 			return ""; // no command
 		}
 
-		string method = args[1];
-		string mode = args[2];
+		std::string method = args[1];
+		std::string mode = args[2];
 
 		if (method == "set")
 		{
@@ -77,12 +75,12 @@ public:
 			}
 			else
 			{
-				Conn().WarnLine(string("Unknown filemode flag ") + mode);
+				Conn().WarnLine(std::string("Unknown filemode flag ") + mode);
 			}
 		}
 		else
 		{
-			Conn().WarnLine(string("Unknown filemode method ") + method);
+			Conn().WarnLine(std::string("Unknown filemode method ") + method);
 		}
 		return "";
 	}

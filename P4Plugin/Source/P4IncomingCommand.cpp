@@ -4,8 +4,6 @@
 #include <set>
 #include <sstream>
 
-using namespace std;
-
 /*
  * Returns the Changelists that are on perforce server but locally.
  * The changelists does not include the assets. To get that use the 
@@ -31,9 +29,9 @@ public:
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		// const std::string cmd = string("fstat -T \"depotFile headChange haveRev headRev headAction action\" //depot/...");
-		string rootPathWildcard = TrimEnd(TrimEnd(task.GetProjectPath(), '/'), '\\') + "/...";
+		std::string rootPathWildcard = TrimEnd(TrimEnd(task.GetProjectPath(), '/'), '\\') + "/...";
 		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
-		const std::string cmd = string("fstat \"") + rootPathWildcard + "\"";
+		const std::string cmd = std::string("fstat \"") + rootPathWildcard + "\"";
 		
 		Conn().BeginList();
 		
@@ -51,8 +49,8 @@ public:
 		// Fetch the descriptions for the incoming changelists.
 		// @TODO: could save some roundtrips by make only one changes call for each sequence of 
 		//        changelist ids.
-		stringstream ss;
-		for (set<int>::const_iterator i = m_Changelists.begin(); i != m_Changelists.end(); ++i) 
+		std::stringstream ss;
+		for (std::set<int>::const_iterator i = m_Changelists.begin(); i != m_Changelists.end(); ++i) 
 		{
 			ss.str("");
 			ss << "changes -l -s submitted \"@" << *i << ",@" << *i << "\"";
@@ -83,16 +81,16 @@ public:
 		int i;
 		StrRef var, val;
 		
-		string depotFile;
+		std::string depotFile;
 		int headChange = -1;
 		int headRev = -1;
 		int haveRev = -1;
-		string headAction;
-		const string deleteAction("delete");
+		std::string headAction;
+		const std::string deleteAction("delete");
 		bool headDeleted = false;
 		bool added = false;
 		
-		string verboseLine;
+		std::string verboseLine;
 
 		// Dump out the variables, using the GetVar( x ) interface.
 		// Don't display the function, which is only relevant to rpc.
@@ -101,23 +99,23 @@ public:
 			if( var == "func" ) 
 				continue;
 			
-			string key(var.Text());
-			string value(val.Text());
+			std::string key(var.Text());
+			std::string value(val.Text());
 			verboseLine += key + ":" + value + ", ";
 
 			//Conn().Log().Debug() << "    " << key << " # " << value << endl;
 			
 			if (key == "depotFile")
-				depotFile = string(val.Text());
+				depotFile = std::string(val.Text());
 			else if (key == "headAction")
 			{
-				string action(val.Text());
+				std::string action(val.Text());
 				if (action == "delete" || action == "move/delete")
 					headDeleted = true;
 			}
 			else if (key == "action")
 			{
-				string action(val.Text());
+				std::string action(val.Text());
 				if (action == "add" || action == "move/add")
 					added = true;
 			}
@@ -142,7 +140,7 @@ public:
 		
 		if (depotFile.empty() || headChange == -1 || headRev == -1)
 		{
-			Conn().WarnLine(string("invalid p4 stat result: ") + (depotFile.empty() ? string("no depotFile") : depotFile));
+			Conn().WarnLine(std::string("invalid p4 stat result: ") + (depotFile.empty() ? std::string("no depotFile") : depotFile));
 		} 
 		else if (haveRev != headRev && !syncedDelete)
 		{
@@ -153,22 +151,22 @@ public:
     // Called once per changelist 
 	void OutputInfo( char level, const char *data )
     {
-		string d(data);
+		std::string d(data);
 		Conn().VerboseLine(d);
 
 		const size_t minLength = 8; // "Change x".length()
 		
 		if (d.length() <= minLength)
 		{
-			Conn().WarnLine(string("p4 changelist too short: ") + d);
+			Conn().WarnLine(std::string("p4 changelist too short: ") + d);
 			return;
 		}
 		
 		// Parse the change list
-		string::size_type i = d.find(' ', 8);
-		if (i == string::npos)
+		std::string::size_type i = d.find(' ', 8);
+		if (i == std::string::npos)
 		{
-			Conn().WarnLine(string("p4 couldn't locate revision: ") + d);
+			Conn().WarnLine(std::string("p4 couldn't locate revision: ") + d);
 			return;
 		}
 		
@@ -180,7 +178,7 @@ public:
 	}
 	
 private:	
-	set<int> m_Changelists;
+	std::set<int> m_Changelists;
 	
 } cIncoming("incoming");
 

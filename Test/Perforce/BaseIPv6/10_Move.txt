@@ -1,0 +1,2 @@
+<include ./Test/Perforce/ConfigureBaseIPv6.test>
+<include ./Test/Perforce/SecureMove.test>

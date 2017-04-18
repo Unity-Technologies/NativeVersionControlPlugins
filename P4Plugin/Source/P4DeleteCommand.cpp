@@ -5,8 +5,6 @@
 #include "P4Task.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 class P4DeleteCommand : public P4Command
 {
 public:
@@ -65,7 +63,7 @@ public:
 		toDelete.insert(toDelete.end(), moreAssetsToDelete.begin(), moreAssetsToDelete.end());
 		toDelete.insert(toDelete.end(), movedAssetsToDelete.begin(), movedAssetsToDelete.end());
 
-		string paths = ResolvePaths(toDelete, kPathWild | kPathRecursive);
+		std::string paths = ResolvePaths(toDelete, kPathWild | kPathRecursive);
 
 		if (paths.empty())
 		{
@@ -75,7 +73,7 @@ public:
 			return true;
 		}
 		
-		string cmd = "delete ";
+		std::string cmd = "delete ";
 		cmd += " " + paths;
 		
 		task.CommandRun(cmd, this);
@@ -103,7 +101,7 @@ public:
 
 	void RevertAssets(P4Task& task, const VersionedAssetList& assetList)
 	{
-		string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
+		std::string paths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 	
 		Conn().Log().Debug() << "Paths to revert before delete are: " << paths << Endl;
 	

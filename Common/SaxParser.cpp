@@ -1,8 +1,6 @@
 #include "CrudeSax.h"
 #include <sstream>
 
-using namespace std;
-
 namespace crudesax
 {
 

@@ -1,7 +1,5 @@
 #include "P4FileSetBaseCommand.h"
 
-using namespace std;
-
 static class P4LockCommand : public P4FileSetBaseCommand
 {
 public:
@@ -9,9 +7,9 @@ public:
 	
 	virtual void OutputInfo( char level, const char *data )
 	{
-		string d(data);
+		std::string d(data);
 
-		if (d.find("already locked by") != string::npos)
+		if (d.find("already locked by") != std::string::npos)
 		{
 			Conn().WarnLine(data, MARemote);
 		}

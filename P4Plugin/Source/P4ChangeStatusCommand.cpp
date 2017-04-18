@@ -1,8 +1,6 @@
 #include "Changes.h"
 #include "P4StatusBaseCommand.h"
 
-using namespace std;
-
 class P4ChangeStatusCommand : public P4StatusBaseCommand
 {
 public:
@@ -22,8 +20,8 @@ public:
 		Conn() >> cl;
 		
 		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
-		string cmd = "fstat -W -e ";
-		cmd += (cl == kDefaultListRevision ? string("default") : cl) + " //...";
+		std::string cmd = "fstat -W -e ";
+		cmd += (cl == kDefaultListRevision ? std::string("default") : cl) + " //...";
 		
 		// We're sending along an asset list with an unknown size.
 		Conn().BeginList();
@@ -55,8 +53,8 @@ public:
 		StrBuf buf;
 		err->Fmt(&buf);
 		
-		const string noOpenFound = "//... - file(s) not opened on this client.";
-		string value(buf.Text());
+		const std::string noOpenFound = "//... - file(s) not opened on this client.";
+		std::string value(buf.Text());
 		value = TrimEnd(value, '\n');
 		
 		if (EndsWith(value, noOpenFound))

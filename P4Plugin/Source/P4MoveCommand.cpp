@@ -3,8 +3,6 @@
 #include "P4Task.h"
 #include "P4Utility.h"
 
-using namespace std;
-
 class P4MoveCommand : public P4Command
 {
 public:
@@ -38,7 +36,7 @@ public:
 		
 		// Split into two steps. 1st make everything editable and 2nd do the move.
 		// this makes changes more atomic.
-		string editPaths;
+		std::string editPaths;
 
 		while (b != assetList.end())
 		{
@@ -59,7 +57,7 @@ public:
 			b = e;
 		}
 
-		string noLocalFileMoveFlag = noLocalFileMove ? "-k " : "";
+		std::string noLocalFileMoveFlag = noLocalFileMove ? "-k " : "";
 		if (!editPaths.empty())
 		{
 			task.CommandRun("edit " + noLocalFileMoveFlag + editPaths, this);
@@ -78,7 +76,7 @@ public:
 
 			targetAssetList.push_back(dest);
 			
-			string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
+			std::string paths = ResolvePaths(b, e, kPathWild | kPathRecursive);
 			
 			if (!task.CommandRun("move " + noLocalFileMoveFlag + paths, this))
 			{
@@ -92,7 +90,7 @@ public:
 				// Move the file
 				if (!MoveAFile(src.GetPath(), dest.GetPath()))
 				{
-					string errorMessage = "Error moving file ";
+					std::string errorMessage = "Error moving file ";
 					errorMessage += src.GetPath();
 					errorMessage += " to ";
 					errorMessage += dest.GetPath();

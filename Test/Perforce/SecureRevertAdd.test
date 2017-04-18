@@ -6,7 +6,8 @@ c:revert
 v1:revert  "./Assets/testfile.txt" 
 v1:login
 v1:login
-v1:'login' not necessary, no password set for this user.
+v1:Prompted for password
+v1:User vcs_test_user logged in.
 v1:client -o "testclient"
 <ignore>
 v1:info
@@ -50,7 +51,7 @@ c32:enableCommand submit
 c32:enableCommand unlock
 i1://depot/Assets/testfile.txt#none - was add, abandoned (level 48)
 v1:where "//depot/Assets/testfile.txt_XUDELIMX_" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 o1:1
 o1:<absroot>/Assets/testfile.txt
 o1:1
@@ -63,7 +64,7 @@ c:status recurse
 --
 o1:-1
 v1:fstat  "./Assets/testfile.txt" 
-v1:'login' not necessary, no password set for this user.
+==:v1:User vcs_test_user ticket expires in
 o1:./Assets/testfile.txt
 o1:1
 v1:./Assets/testfile.txt - no such file(s).

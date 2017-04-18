@@ -154,6 +154,10 @@ public:
 			}
 			break;
 		}
+		case CK_ProjectPath:
+		case CK_LogLevel:
+		case CK_Unknown:
+			break;
 		}
 		conn.EndResponse();
 	}

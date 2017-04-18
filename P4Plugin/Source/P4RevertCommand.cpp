@@ -2,8 +2,6 @@
 #include "P4Utility.h"
 #include "FileSystem.h"
 
-using namespace std;
-
 class P4RevertCommand : public P4Command
 {
 public:
@@ -17,11 +15,11 @@ public:
 
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 	
-		string cmd = SetupCommand(args);
+		std::string cmd = SetupCommand(args);
 	
 		VersionedAssetList assetList;
 		Conn() >> assetList;
-		string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
+		std::string paths = ResolvePaths(assetList, kPathWild | kPathRecursive);
 	
 		Conn().Log().Debug() << "Paths resolved are: " << paths << Endl;
 	
@@ -85,10 +83,10 @@ public:
 
 		for (VersionedAssetList::const_iterator i = m_Result.begin(); i != m_Result.end(); ++i)
 		{
-			string path = i->GetPath();
+			std::string path = i->GetPath();
 			if (EndsWith(path, ".meta"))
 			{
-				string folderPath = path.substr(0, path.length() - 5) + "/";
+				std::string folderPath = path.substr(0, path.length() - 5) + "/";
 				VersionedAsset folderAsset(folderPath);
 				if (assetsToRevert.find(folderAsset) != assetsToRevert.end())
 				{
@@ -107,9 +105,9 @@ public:
 		m_Result.swap(result);
 	}
 
-	virtual string SetupCommand(const CommandArgs& args)
+	virtual std::string SetupCommand(const CommandArgs& args)
 	{
-		string mode = args.size() > 1 ? args[1] : string();
+		std::string mode = args.size() > 1 ? args[1] : std::string();
 		if (mode == "unchangedOnly")
 			return "revert -a ";
 		else if (mode == "keepLocalModifications")
@@ -131,7 +129,7 @@ public:
 		{
 			StrBuf buf;
 			err->Fmt(&buf);
-			string value(buf.Text());
+			std::string value(buf.Text());
 			
 
 			if (EndsWith(value, TrimEnd(" - file(s) not opened on this client.\n")))
@@ -155,17 +153,17 @@ public:
 
 		P4Command::OutputInfo(level, data);
 		
-		string d(data);
+		std::string d(data);
 
 		// strip revision specifier "#ddd"
-		string::size_type iPathEnd = d.rfind("#");
-		if (iPathEnd == string::npos)
+		std::string::size_type iPathEnd = d.rfind("#");
+		if (iPathEnd == std::string::npos)
 		{
-			Conn().WarnLine(string("Invalid revert asset - ") + d);
+			Conn().WarnLine(std::string("Invalid revert asset - ") + d);
 			return;
 		}
 		
-		string path = d.substr(0, iPathEnd);
+		std::string path = d.substr(0, iPathEnd);
 		VersionedAsset a(path);
 
 		if (EndsWith(d, ", not reverted"))
@@ -188,6 +186,6 @@ public:
 	}
 
 private:
-	string m_ProjectPath;
+	std::string m_ProjectPath;
 	VersionedAssetList m_Result;
 } cReverPt;

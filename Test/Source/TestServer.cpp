@@ -10,8 +10,6 @@
 #include <direct.h>
 #endif
 
-using namespace std;
-
 void printStatus(bool ok);
 int run(int argc, char* argv[]);
  
@@ -23,17 +21,17 @@ int main(int argc, char* argv[])
 	}
 	catch (ExternalProcessException e)
 	{
-		std::cerr << e.what() << endl;
+		std::cerr << e.what() << std::endl;
 		return 1;
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		std::cerr << e.what() << endl;
+		std::cerr << e.what() << std::endl;
 		return 1;
 	}
 	catch (...)
 	{
-		std::cerr << "Caught unhandled exception"  << endl;
+		std::cerr << "Caught unhandled exception"  << std::endl;
 		return 1;
 	}
 }
@@ -47,30 +45,30 @@ static void sleepInSeconds(const int sleepTimeInSeconds)
 #endif // #ifdef WIN32
 }
 
-static int runScript(ExternalProcess& p, const string& testDir, const string& testScript, const string& indent = "");
+static int runScript(ExternalProcess& p, const std::string& testDir, const std::string& testScript, const std::string& indent = "");
 
 bool verbose;
 bool newbaseline;
 bool noresults;
-string absroot;
+std::string absroot;
 
-static void ConvertSeparatorsToWindows( string& pathName )
+static void ConvertSeparatorsToWindows( std::string& pathName )
 {
-	for (string::iterator i = pathName.begin(); i != pathName.end(); ++i)
+	for (std::string::iterator i = pathName.begin(); i != pathName.end(); ++i)
 		if (*i == '/')
 			*i = '\\';
 }
 
-static void ConvertSeparatorsFromWindows( string& pathName )
+static void ConvertSeparatorsFromWindows( std::string& pathName )
 {
-	for (string::iterator i = pathName.begin(); i != pathName.end(); ++i)
+	for (std::string::iterator i = pathName.begin(); i != pathName.end(); ++i)
 		if (*i == '\\')
 			*i = '/';
 }
 
-static void UnescapeString(string& target)
+static void UnescapeString(std::string& target)
 {
-	string::size_type len = target.length();
+	std::string::size_type len = target.length();
 	std::string::size_type n1 = 0;
 	std::string::size_type n2 = 0;
 
@@ -92,35 +90,35 @@ static void UnescapeString(string& target)
 	}
 }
 
-static void EscapeNewline(string& str)
+static void EscapeNewline(std::string& str)
 {
-	string::size_type i = str.find('\n');
-	while (i != string::npos)
+	std::string::size_type i = str.find('\n');
+	while (i != std::string::npos)
 	{
 		str.replace(i, 1, "\\n");
 		i = str.find('\n');
 	}
 }
 
-static void replaceRootTagWithPath(string& str)
+static void replaceRootTagWithPath(std::string& str)
 {
-	string::size_type i = str.find("<absroot>");
+	std::string::size_type i = str.find("<absroot>");
 
-	while (i != string::npos)
+	while (i != std::string::npos)
 	{
 		str.replace(i, 9, absroot);
 		i = str.find("<absroot>");
 	}
 }
 
-static void replaceRootPathWithTag(string& instr)
+static void replaceRootPathWithTag(std::string& instr)
 {
-	string str = instr;
+	std::string str = instr;
 	ConvertSeparatorsFromWindows(str);
-	string::size_type i = str.find(absroot);
+	std::string::size_type i = str.find(absroot);
 	bool replacedSomething = false;
 
-	while (i != string::npos)
+	while (i != std::string::npos)
 	{
 		str.replace(i, absroot.length(), "<absroot>");
 		i = str.find(absroot);
@@ -131,10 +129,10 @@ static void replaceRootPathWithTag(string& instr)
 	// Need this hack because p4 on windows create result paths like
 	// c:/foo/bar\tmp/client/path
 	// ie. backslash and slash as path separator mixed in some cases
-	string wabsroot = absroot;
+	std::string wabsroot = absroot;
 	ConvertSeparatorsFromWindows(wabsroot);
 	i = str.find(wabsroot);
-	while (i != string::npos)
+	while (i != std::string::npos)
 	{
 		str.replace(i, wabsroot.length(), "<absroot>");
 		i = str.find(wabsroot);
@@ -150,12 +148,12 @@ int run(int argc, char* argv[])
 {
 	if (argc < 3)
 	{
-		cerr << "Usage: testserver <FULL_PATH_TO_PLUGIN> <FULL_PATH_TO_TEST_DIR> <TEST_SCRIPT_PATH_RELATIVE_TO_TEST_DIR> <OPTION>" << endl;
+		std::cerr << "Usage: testserver <FULL_PATH_TO_PLUGIN> <FULL_PATH_TO_TEST_DIR> <TEST_SCRIPT_PATH_RELATIVE_TO_TEST_DIR> <OPTION>" << std::endl;
 		return 1;
 	}
-	newbaseline = argc > 4 ? string(argv[4]) == "newbaseline" : false;
+	newbaseline = argc > 4 ? std::string(argv[4]) == "newbaseline" : false;
 	noresults = newbaseline;
-	verbose = argc > 4 ? string(argv[4]) == "verbose" && !newbaseline : false;
+	verbose = argc > 4 ? std::string(argv[4]) == "verbose" && !newbaseline : false;
 	char buffer[4096];
 	char *answer = getcwd(buffer, sizeof(buffer));
 	if (answer)
@@ -166,32 +164,32 @@ int run(int argc, char* argv[])
 	ConvertSeparatorsToWindows(absroot);
 #endif
 
-	cout << "AbsRoot: " << absroot <<  endl;
+	std::cout << "AbsRoot: " << absroot <<  std::endl;
 
 	if (verbose)
-		cout << "Plugin : " << argv[1] << endl;
+		std::cout << "Plugin : " << argv[1] << std::endl;
 
-	vector<string> arguments;
+	std::vector<std::string> arguments;
 	ExternalProcess p(argv[1], arguments);
 	p.Launch();
 	int res = runScript(p, argv[2], argv[3]);
 	return res;
 }
 
-static int runScript(ExternalProcess& p, const string& testDir, const string& testScript, const string& indent)
+static int runScript(ExternalProcess& p, const std::string& testDir, const std::string& testScript, const std::string& indent)
 {
-	const string scriptPath = testDir + "/" + testScript;
-	ifstream testscript(scriptPath.c_str());
+	const std::string scriptPath = testDir + "/" + testScript;
+	std::ifstream testscript(scriptPath.c_str());
 
 	if (!noresults)
-		cout << indent << "Testing " << scriptPath << " " << flush;
+		std::cout << indent << "Testing " << scriptPath << " " << std::flush;
 
 	if (verbose)
-		cout << endl;
+		std::cout << std::endl;
 
 	if (!testscript)
 	{
-		cerr << "Test script failed to open '" << scriptPath << endl;
+		std::cerr << "Test script failed to open '" << scriptPath << std::endl;
 		return 1;
 	}
 
@@ -204,23 +202,23 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 	isWindows = true;
 #endif
 
-	const string restartline = "<restartplugin>";
-	const string includeline = "<include ";
-	const string commanddelim = "--";
-	const string expectdelim = "--";
-	const string matchtoken = "==:";
-	const string exittoken = "<exit>";
-	const string ignoretoken = "<ignore>";
-	const string ignorewintoken = "<ignorewin>";
-	const string genfiletoken = "<genfile ";
-	const string delfiletoken = "<delfile ";
-	const string p4pluginlogtoken = "<p4pluginlog:";
+	const std::string restartline = "<restartplugin>";
+	const std::string includeline = "<include ";
+	const std::string commanddelim = "--";
+	const std::string expectdelim = "--";
+	const std::string matchtoken = "==:";
+	const std::string exittoken = "<exit>";
+	const std::string ignoretoken = "<ignore>";
+	const std::string ignorewintoken = "<ignorewin>";
+	const std::string genfiletoken = "<genfile ";
+	const std::string delfiletoken = "<delfile ";
+	const std::string p4pluginlogtoken = "<p4pluginlog:";
 
 	bool ok = true;
 	int lineNum = 0;
 
-	string p4pluginLogPath(absroot + "/Library/p4plugin.log");
-	ifstream p4pluginLog(p4pluginLogPath.c_str());
+	std::string p4pluginLogPath(absroot + "/Library/p4plugin.log");
+	std::ifstream p4pluginLog(p4pluginLogPath.c_str());
 
 	while (testscript.good())
 	{
@@ -229,12 +227,12 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 		while (testscript.getline(buf, BUFSIZE))
 		{
 			lineNum++;
-			string command(buf);
+			std::string command(buf);
 			
 			replaceRootTagWithPath(command);
 
 			if (verbose || newbaseline)
-				cout << command << endl;
+				std::cout << command << std::endl;
 
 			if (command.find(commanddelim) == 0)
 				break; // done command lines
@@ -245,8 +243,8 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 			if (command.find(restartline) == 0)
 			{
 				if (verbose)
-					cout << "Restarting plugin";
-				vector<string> arguments;
+					std::cout << "Restarting plugin";
+				std::vector<std::string> arguments;
 				p = ExternalProcess(p.GetApplicationPath(), arguments);
 				p.Launch();
 				goto restart;
@@ -254,41 +252,41 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 
 			if (command.find(includeline) == 0)
 			{
-				string incfile = command.substr(includeline.length(), command.length() - 1 - includeline.length());
+				std::string incfile = command.substr(includeline.length(), command.length() - 1 - includeline.length());
 				if (!newbaseline)
-					cout << endl;
+					std::cout << std::endl;
 				bool orig_newbaseline = newbaseline;
 				newbaseline = false;
-				string subIndent = indent + "  ";
+				std::string subIndent = indent + "  ";
 				int res = runScript(p, testDir,	 incfile, subIndent);
 				newbaseline = orig_newbaseline;
 				if (res)
 				{
 					if (verbose)
-						cout << "Error in include script " << incfile << endl;					
+						std::cout << "Error in include script " << incfile << std::endl;					
 					return res;
 				}
 				if (!newbaseline)
-					cout << subIndent;
+					std::cout << subIndent;
 				continue;
 			}
 
 			if (command.find(genfiletoken) == 0)
 			{
 				// Generate and possibly overwrite a file
-				string genfile = command.substr(genfiletoken.length(), command.length() - 1 - genfiletoken.length());
+				std::string genfile = command.substr(genfiletoken.length(), command.length() - 1 - genfiletoken.length());
 				{
-					fstream f(genfile.c_str(), ios_base::trunc | ios_base::out);
+					std::fstream f(genfile.c_str(), std::ios_base::trunc | std::ios_base::out);
 					f << "Random: " << rand() 
 					  << "\nTime: " << time(0) 
-					  << "\nRandom: " << rand() << endl;
+					  << "\nRandom: " << rand() << std::endl;
 					f.flush();
 				}
 				continue;
 			}
 			if (command.find(delfiletoken) == 0)
 			{
-				string delfile = command.substr(delfiletoken.length(), command.length() - 1 - delfiletoken.length());
+				std::string delfile = command.substr(delfiletoken.length(), command.length() - 1 - delfiletoken.length());
 				// Delete a local file
 				unlink(delfile.c_str());
 				continue;
@@ -305,10 +303,10 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 		while (testscript.getline(buf, BUFSIZE))
 		{
 			lineNum++;
-			string expect(buf);
+			std::string expect(buf);
 
 			if (verbose || newbaseline)
-				cout << expect << endl;
+				std::cout << expect << std::endl;
 
 			if (expect.find(expectdelim) == 0)
 				break; // done expect lines
@@ -318,13 +316,13 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 
 			if (expect.find(restartline) == 0)
 			{
-				vector<string> arguments;
+				std::vector<std::string> arguments;
 				p = ExternalProcess(p.GetApplicationPath(), arguments);
 				p.Launch();
 				continue;
 			}
 
-			string msg;
+			std::string msg;
 			if (expect.find(p4pluginlogtoken) == 0)
 			{
 				if (!p4pluginLog.good())
@@ -335,18 +333,18 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 				}
 				expect = expect.substr(p4pluginlogtoken.length());
 				if (verbose)
-					cerr << "P4Plugin Expect:'" << expect << "'" << endl;
+					std::cerr << "P4Plugin Expect:'" << expect << "'" << std::endl;
 				const int  matchLen = expect.length();
 				while (p4pluginLog.good())
 				{
 					std::getline(p4pluginLog, msg);
 					if (verbose)
-						cerr << "P4Plugin:'" << lineNum << " '" << msg << "'" << endl;
+						std::cerr << "P4Plugin:'" << lineNum << " '" << msg << "'" << std::endl;
 					msg = msg.substr(0, matchLen);
 					if (expect == msg)
 					{
 						if (verbose)
-							cerr << "P4Plugin: MATCH '" << expect << "'" << endl;
+							std::cerr << "P4Plugin: MATCH '" << expect << "'" << std::endl;
 						break;
 					}
 				}
@@ -384,21 +382,21 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 			{
 				ok = false;
 				printStatus(ok);
-				cerr << "Output fail: expected '" << expect << "' at " << scriptPath << ":" << lineNum << endl;
-				cerr << "             got      '" << msg << "'" << endl;
+				std::cerr << "Output fail: expected '" << expect << "' at " << scriptPath << ":" << lineNum << std::endl;
+				std::cerr << "             got      '" << msg << "'" << std::endl;
 
 				// Read as much as possible from plugin and stop
 				p.SetReadTimeout(0.3);
 				try 
 				{
-					cerr << "             reading as much as possible from plugin:" << endl;
-					cerr << msg << endl;
+					std::cerr << "             reading as much as possible from plugin:" << std::endl;
+					std::cerr << msg << std::endl;
 					do {
-						string l = p.ReadLine();
+						std::string l = p.ReadLine();
 						UnescapeString(msg);
 						replaceRootPathWithTag(l);
 						EscapeNewline(msg);
-						cerr << l << endl;
+						std::cerr << l << std::endl;
 					} while (true);
 
 				} catch (...)
@@ -410,7 +408,7 @@ static int runScript(ExternalProcess& p, const string& testDir, const string& te
 	}
 	if (lineNum == 0)
 	{
-		cerr << "Invalid test script it has no lines " << testscript << endl;
+		std::cerr << "Invalid test script it has no lines " << testscript << std::endl;
 		return 1;
 	}
 
@@ -425,7 +423,7 @@ void printStatus(bool ok)
 {
 	if (noresults)
 		return;
-	cout.flush();
+	std::cout.flush();
 
 	HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO conBufInfo;
@@ -434,12 +432,12 @@ void printStatus(bool ok)
 	SetConsoleTextAttribute(hcon, ok ? FOREGROUND_GREEN : FOREGROUND_RED);
 	
 	if (ok)
-		cout << "OK" << endl;
+		std::cout << "OK" << std::endl;
 	else
-		cout << "Failed" << endl;
+		std::cout << "Failed" << std::endl;
 	;
 	SetConsoleTextAttribute(hcon, conBufInfo.wAttributes);
-	cout.flush();
+	std::cout.flush();
 }
 
 #else
@@ -453,8 +451,8 @@ void printStatus(bool ok)
 		return;
 
 	if (ok)
-		cout << greenColor << "OK" << endColor << endl;
+		std::cout << greenColor << "OK" << endColor << std::endl;
 	else
-		cout << redColor << "Failed" << endColor << endl;
+		std::cout << redColor << "Failed" << endColor << std::endl;
 }
 #endif

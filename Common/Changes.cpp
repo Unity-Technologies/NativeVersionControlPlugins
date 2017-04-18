@@ -2,8 +2,6 @@
 #include "Connection.h"
 #include <algorithm>
 
-using namespace std;
-
 const char * kDefaultListRevision = "-1";
 const char * kNewListRevision = "-2";
 
@@ -58,7 +56,7 @@ void Changelist::SetCommitter(const std::string& committer)
 
 Connection& operator>>(Connection& p, ChangelistRevision& revision)
 {
-	string line;
+	std::string line;
 	p.ReadLine(line);
 	revision = line;
 	return p;
@@ -73,7 +71,7 @@ Connection& operator<<(Connection& p, const Changelist& changelist)
 
 Connection& operator>>(Connection& p, Changelist& cl)
 {
-	string line;
+	std::string line;
 	p.ReadLine(line);
 	cl.SetRevision(line);
 	p.ReadLine(line); 

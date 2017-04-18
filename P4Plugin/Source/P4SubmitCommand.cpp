@@ -5,27 +5,25 @@
 #include <sstream>
 #include <time.h>
 
-using namespace std;
-
 // Write a perforce SPEC which is essentially a list of attributes and text sections.  This is generic and
 // can handle any perforce SPEC.  It primary use is for writing change lists.
 class P4SpecWriter
 {
 public:
-	stringstream writer;
+	std::stringstream writer;
 	
-	void WriteSection(const string& name, const string& data)
+	void WriteSection(const std::string& name, const std::string& data)
 	{
-		writer << name << ":" << endl;
-		stringstream ss(data);
-		string line;
+		writer << name << ":" << std::endl;
+		std::stringstream ss(data);
+		std::string line;
 		while (getline(ss, line))
-			writer << "\t" << line << endl;
+			writer << "\t" << line << std::endl;
 		
-		writer << endl;
+		writer << std::endl;
 	}
 	
-	string GetText() const
+	std::string GetText() const
 	{
 		return writer.str();
     }
@@ -35,7 +33,7 @@ public:
 class P4SubmitCommand : public P4Command
 {
 private:
-	string m_Spec;
+	std::string m_Spec;
 public:
 	P4SubmitCommand(const char* name) : P4Command(name) {}
 	virtual bool Run(P4Task& task, const CommandArgs& args)
@@ -62,10 +60,10 @@ public:
 		AddMovedAssets(task, assetList);
 		
 		// Run a view mapping job to get the right depot relative paths for the spec file
-		string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
+		std::string localPaths = ResolvePaths(assetList, kPathWild | kPathSkipFolders);
 		Conn().Log().Debug() << "Paths resolved are: " << localPaths << Endl;
 		
-		const vector<Mapping>& mappings = GetMappings(task, assetList);
+		const std::vector<Mapping>& mappings = GetMappings(task, assetList);
 
 		if (mappings.empty() && !assetList.empty())
 		{
@@ -80,7 +78,7 @@ public:
 		
 		// We can never submit the default changelist so essentially we create a new one with its contents
 		// in the case a default change list is passed here.
-		string cn = changelist.GetRevision();
+		std::string cn = changelist.GetRevision();
 		if (cn == kNewListRevision || cn == kDefaultListRevision)
 			cn = "new";
 
@@ -89,8 +87,8 @@ public:
 		
 		if (hasFiles)
 		{
-			string paths;			
-			for (vector<Mapping>::const_iterator i = mappings.begin(); i != mappings.end(); ++i) 
+			std::string paths;			
+			for (std::vector<Mapping>::const_iterator i = mappings.begin(); i != mappings.end(); ++i) 
 			{
 				if (i != mappings.begin())
 					paths += "\n";
@@ -102,7 +100,7 @@ public:
 		m_Spec = writer.GetText();
 		
 		// Submit or update the change list
-		const string cmd = saveOnly ? "change -i" : "submit -i";
+		const std::string cmd = saveOnly ? "change -i" : "submit -i";
 
 		task.CommandRun(cmd, this);
 		
@@ -134,10 +132,10 @@ public:
 		// Since the movedFile tag is in 'depot' format we need to get
 		// mapping from client file format to depot format so that we
 		// can compare moved_from with moved_to paths.
-		const vector<Mapping>& initialMappings = GetMappings(task, assetList);
-		set<string> initialDepotFiles;
+		const std::vector<Mapping>& initialMappings = GetMappings(task, assetList);
+		std::set<std::string> initialDepotFiles;
 
-		for (vector<Mapping>::const_iterator i = initialMappings.begin(); i != initialMappings.end(); ++i)
+		for (std::vector<Mapping>::const_iterator i = initialMappings.begin(); i != initialMappings.end(); ++i)
 			initialDepotFiles.insert(i->depotPath);
 
 		// Include all moved-counterparts for files that was moved
@@ -153,7 +151,7 @@ public:
 			{
 				// synthesize an asset. It is ok the path is depot format because it will be mapped later on.
 				result.push_back(VersionedAsset(i->GetMovedPath()));
-				Conn().InfoLine(string("Included missing move counterpart: ") + i->GetMovedPath());
+				Conn().InfoLine(std::string("Included missing move counterpart: ") + i->GetMovedPath());
 			}
 		}
 		assetList.swap(result);
@@ -171,9 +169,9 @@ public:
 	{
 		P4Command::OutputInfo(level, data);	
 
-		string d(data);
-		string::size_type i = d.find(m_ProjectPath);
-		if (i != string::npos)
+		std::string d(data);
+		std::string::size_type i = d.find(m_ProjectPath);
+		if (i != std::string::npos)
 			d.replace(i, m_ProjectPath.length(), "");
 
 		Conn().Progress(-1, time(0) - m_StartTickTime, d);
@@ -187,9 +185,9 @@ public:
 		StrBuf buf;
 		err->Fmt(&buf);
 		
-		const string pendingMerges = "Merges still pending -- use 'resolve' to merge files.";
+		const std::string pendingMerges = "Merges still pending -- use 'resolve' to merge files.";
 		
-		string value(buf.Text());
+		std::string value(buf.Text());
 		value = TrimEnd(value, '\n');
 		
 		if (StartsWith(value, pendingMerges))
@@ -202,6 +200,6 @@ public:
 	}
 	
 	time_t m_StartTickTime;
-	string m_ProjectPath;
+	std::string m_ProjectPath;
 	
 } cSubmit("submit");

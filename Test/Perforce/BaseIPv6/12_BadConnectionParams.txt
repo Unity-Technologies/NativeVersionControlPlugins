@@ -1,0 +1,57 @@
+c:pluginConfig vcSharedLogLevel verbose
+--
+r1:end of response
+--
+c:pluginConfig projectPath <absroot>
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceUsername vcs_test_user
+--
+r1:end of response
+--
+c:pluginConfig vcPerforcePassword
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceWorkspace testclient
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceServer bad_perforce_server
+--
+r1:end of response
+--
+c:getLatest
+1
+./...
+0
+--
+v1:sync "./..." 
+c32:disableCommand add
+c32:disableCommand changeDescription
+c32:disableCommand changeMove
+c32:disableCommand changes
+c32:disableCommand changeStatus
+c32:disableCommand checkout
+c32:disableCommand deleteChanges
+c32:disableCommand delete
+c32:disableCommand download
+c32:disableCommand getLatest
+c32:disableCommand incomingChangeAssets
+c32:disableCommand incoming
+c32:disableCommand lock
+c32:disableCommand move
+c32:disableCommand resolve
+c32:disableCommand revertChanges
+c32:disableCommand revert
+c32:disableCommand status
+c32:disableCommand submit
+c32:disableCommand unlock
+c32:offline Could not connect to the perforce server. Please check your Server setting in the Editor Settings.
+o1:-1
+d1:end of list
+r1:end of response
+--
+<include ./Test/Perforce/ConfigureBaseIPv6.test>
+<include ./Test/Perforce/BadConnectionParams.test>

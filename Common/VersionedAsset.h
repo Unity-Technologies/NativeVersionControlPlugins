@@ -5,7 +5,7 @@
 enum State
 {
 	kNone = 0,
-	kLocal = 1 << 0, // Asset in on local disk. If none of the sync flags below are set it means vcs doesn't know about this local file.
+	kLocal = 1 << 0, // Asset is on local disk. If none of the kSynced/kOutOfSync flags are set then vcs doesn't know about this local file.
 	kSynced = 1 << 1, // Asset is known to vcs and in sync locally
 	kOutOfSync = 1 << 2, // Asset is known to vcs and outofsync locally
 	kMissing = 1 << 3, 

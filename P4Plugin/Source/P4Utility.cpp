@@ -3,10 +3,8 @@
 #include <algorithm>
 #include <functional>
 
-using namespace std;
-
-int ActionToState(const string& action, const string& headAction,
-				  const string& haveRev, const string& headRev)
+int ActionToState(const std::string& action, const std::string& headAction,
+				  const std::string& haveRev, const std::string& headRev)
 {
 	int state = kNone; // kLocal
 	
@@ -81,29 +79,29 @@ int ActionToState(const string& action, const string& headAction,
 }
 
 
-string WildcardsAdd(const string& pathIn)
+std::string WildcardsAdd(const std::string& pathIn)
 {
 	// Perforce wildcards use hex values.  
 	// The following characters below must be swapped for these
-	string path = Replace (pathIn, "%", "%25"); // Must be 1st :)
+	std::string path = Replace (pathIn, "%", "%25"); // Must be 1st :)
 	path = Replace (path, "#", "%23");
 	path = Replace (path, "@", "%40");
 	return Replace (path, "*", "%2A");
 }
 
 
-string WildcardsRemove (const string& pathIn)
+std::string WildcardsRemove (const std::string& pathIn)
 {
-	string path = Replace (pathIn, "%23", "#");
+	std::string path = Replace (pathIn, "%23", "#");
 	path = Replace (path, "%40", "@");
 	path = Replace (path, "%2A", "*");
 	return Replace (path, "%25", "%"); // Must do this last or we could convert an actual % to another wildcard
 }	
 
 
-string ResolvedPath(const VersionedAsset& asset, int flags)
+std::string ResolvedPath(const VersionedAsset& asset, int flags)
 {
-	string path = asset.GetPath();
+	std::string path = asset.GetPath();
 	
 	if (flags & kPathWild)
 		path = WildcardsAdd(path);
@@ -115,11 +113,11 @@ string ResolvedPath(const VersionedAsset& asset, int flags)
 }
 
 
-string ResolvePaths(VersionedAssetList::const_iterator b,
+std::string ResolvePaths(VersionedAssetList::const_iterator b,
 					VersionedAssetList::const_iterator e,
-					int flags, const string& delim, const string& postfix)
+					int flags, const std::string& delim, const std::string& postfix)
 {
-	string paths;
+	std::string paths;
 	
 	for (VersionedAssetList::const_iterator i = b; i != e; i++) 
 	{
@@ -135,10 +133,10 @@ string ResolvePaths(VersionedAssetList::const_iterator b,
 	return paths;
 }
 
-void ResolvePaths(vector<string>& result, 
+void ResolvePaths(std::vector<std::string>& result, 
 				  VersionedAssetList::const_iterator b,
 				  VersionedAssetList::const_iterator e,
-				  int flags, const string& delim)
+				  int flags, const std::string& delim)
 {
 	for (VersionedAssetList::const_iterator i = b; i != e; i++) 
 	{
@@ -148,25 +146,24 @@ void ResolvePaths(vector<string>& result,
 	}
 }
 
-string ResolvePaths(const VersionedAssetList& list, int flags, const string& delim, const string& postfix)
+std::string ResolvePaths(const VersionedAssetList& list, int flags, const std::string& delim, const std::string& postfix)
 {
 	return ResolvePaths(list.begin(), list.end(), flags, delim, postfix);
 }
 
-void ResolvePaths(vector<string>& result, const VersionedAssetList& list, int flags, const string& delim)
+void ResolvePaths(std::vector<std::string>& result, const VersionedAssetList& list, int flags, const std::string& delim)
 {
 	ResolvePaths(result, list.begin(), list.end(), flags, delim);
 }
 
-
-string WorkspacePathToDepotPath(const string& root, const string& wp)
+std::string WorkspacePathToDepotPath(const std::string& root, const std::string& wp)
 {
-	return string("/") + wp.substr(root.length());
+	return std::string("/") + wp.substr(root.length());
 }
 
 void PathToMovedPath(VersionedAssetList& l)
 {
-	for_each(l.begin(), l.end(), mem_fun_ref(&VersionedAsset::SwapMovedPaths));
+	std::for_each(l.begin(), l.end(), std::mem_fun_ref(&VersionedAsset::SwapMovedPaths));
 }
 
 void Partition(const StateFilter& filter,

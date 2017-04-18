@@ -7,8 +7,6 @@
 #include <cassert>
 #include <sstream>
 
-using namespace std;
-
 Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma)
 {
 	// Convertion of p4 errors to unity vcs errors
@@ -33,7 +31,7 @@ Connection& SendToConnection(Connection& p, const VCSStatus& st, MessageArea ma)
 			break;
 		default:
 			// MAPlugin will make Unity restart the plugin
-			p.ErrorLine(string("<Unknown errortype>: ") + i->message, MAPlugin);
+			p.ErrorLine(std::string("<Unknown errortype>: ") + i->message, MAPlugin);
 			break;
 		}
 	}
@@ -46,10 +44,10 @@ Connection& operator<<(Connection& p, const VCSStatus& st)
 }
 
 // Global map of all commands registered at initialization time
-typedef std::map<string, P4Command*> CommandMap;
+typedef std::map<std::string, P4Command*> CommandMap;
 static CommandMap* s_Commands = NULL;
 
-P4Command* LookupCommand(const string& name)
+P4Command* LookupCommand(const std::string& name)
 {
 	assert(s_Commands != NULL);
 	CommandMap::iterator i = s_Commands->find(name);
@@ -64,9 +62,8 @@ P4Command::P4Command(const char* name)
 	if (s_Commands == NULL)
 		s_Commands = new CommandMap();
 
-	s_Commands->insert(make_pair(name,this));
+	s_Commands->insert(std::make_pair(name,this));
 }
-
 
 const VCSStatus& P4Command::GetStatus() const
 { 
@@ -88,11 +85,10 @@ void P4Command::ClearStatus()
 	m_Status.clear(); 
 }
 
-
-string P4Command::GetStatusMessage() const
+std::string P4Command::GetStatusMessage() const
 {
-	string delim = "";
-	string msg;
+	std::string delim = "";
+	std::string msg;
 	for (VCSStatus::const_iterator i = m_Status.begin(); i != m_Status.end(); ++i)
 	{
 		msg += VCSSeverityToString(i->severity);
@@ -110,7 +106,6 @@ void P4Command::OutputStat( StrDict *varList )
 	Conn().Log().Info() << "Default ClientUser OutputState()\n";
 }
 
-
 // Default handler of P4
 void P4Command::InputData( StrBuf *buf, Error *err ) 
 { 
@@ -123,13 +118,11 @@ void P4Command::Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
 	Conn().Log().Info() << "Default ClientUser Prompt(" << msg.Text() << ")\n";
 }
 
-
 // Default handler of P4
 void P4Command::Finished() 
 { 
 //	Conn().Log().Info() << "Default ClientUser Finished()\n";
 }
-
 
 // Default handler of P4 error output. Called by the default P4Command::Message() handler.
 void P4Command::HandleError( Error *err )
@@ -147,7 +140,6 @@ void P4Command::HandleError( Error *err )
 	}
 
 	// This is a regular non-connection related error
-
 	VCSStatus s = errorToVCSStatus(*err);
 	m_Status.insert(s.begin(), s.end());
 
@@ -162,42 +154,30 @@ void P4Command::OutputError( const char *errBuf )
 	Conn().Log().Fatal() << "We cannot get to here" << Endl;
 }
 
-static bool ErrorStringMatch(Error *err, const char* msg)
-{
-	StrBuf buf;
-	err->Fmt(&buf);
-	string value(buf.Text());
-	return value.find(msg) != string::npos;
-}
-
 bool P4Command::HandleOnlineStatusOnError(Error *err)
 {
 	if (err->IsError())
 	{
 		StrBuf buf;
 		err->Fmt(&buf);
-		string value(buf.Text());
+		std::string value(buf.Text());
 
-		if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
-			P4Task::NotifyOffline("Couldn't connect to the perforce server");
-
-		else if (ErrorStringMatch(err, "TCP connect to"))
-			P4Task::NotifyOffline(string("Could not connect to Perforce server"));
-
-		else if (ErrorStringMatch(err, "Perforce password (P4PASSWD) invalid or unset."))
-			P4Task::NotifyOffline("Perforce password invalid or unset");
-
-		else if (ErrorStringMatch(err, " - must create client '"))
-			P4Task::NotifyOffline("Client workspace not present on perforce server. Check your Editor Settings.");	
-
-		else if (ErrorStringMatch(err, "Connect to server failed; check $P4PORT."))
-			P4Task::NotifyOffline("Could not connect to Perforce server");
-
-		else if (value.find("Client '") != string::npos && value.find("' unknown") != string::npos)
-			P4Task::NotifyOffline("Perforce workspace does not exist on server. Check your Editor Settings.");
-
-		else if (ErrorStringMatch(err, "Unicode server permits only unicode enabled clients"))
-			P4Task::NotifyOffline("Unicode perforce server permits only unicode enabled clients");
+		if (value.find("Connect to server failed; check $P4PORT.") != std::string::npos)
+			P4Task::NotifyOffline("Could not connect to the perforce server. Please check your Server setting in the Editor Settings.");
+		else if (value.find("TCP connect to") != std::string::npos)
+			P4Task::NotifyOffline("Could not connect to the perforce server. Please check your Server setting in the Editor Settings.");
+		else if (value.find("Perforce password (P4PASSWD) invalid or unset.") != std::string::npos)
+			P4Task::NotifyOffline("Perforce server login failed. Please check your Password setting in the Editor Settings.");
+		else if (value.find(" - must create client '") != std::string::npos)
+			P4Task::NotifyOffline("Perforce client workspace not present on the Perforce server. Please check your Workspace setting in the Editor Settings.");
+		else if (value.find("Client '") != std::string::npos && value.find("' unknown") != std::string::npos)
+			P4Task::NotifyOffline("Perforce client workspace not present on the Perforce server. Please check your Workspace setting in the Editor Settings.");
+		else if (value.find("Unicode server permits only unicode enabled clients") != std::string::npos)
+			P4Task::NotifyOffline("Perforce server connection failed. A unicode Perforce server only permits unicode enabled clients. Please check the unicode settings on your Perforce client workspace and Perforce server.");
+		else if (StartsWith(value, "User ") && value.find("doesn't exist.") != std::string::npos)
+			P4Task::NotifyOffline(std::string("User '") + P4Task::s_Singleton->GetP4User() + std::string("' not found on Perforce server. Please check the Username in the Editor settings."));
+		else if (value.find("Password invalid.") != std::string::npos)
+			P4Task::NotifyOffline(std::string("User '") + P4Task::s_Singleton->GetP4User() + std::string("' login failed with incorrect password. Please check the Password in the Editor settings."));
 
 		else
 		{
@@ -213,18 +193,15 @@ void P4Command::ErrorPause( char* errBuf, Error* e)
 	Conn().Log().Fatal() << "Error: Default ClientUser ErrorPause()\n";
 }
 
-
 void P4Command::OutputText( const char *data, int length)
 {
 	Conn().Log().Fatal() << "Error: Default ClientUser OutputText\n";
 }
 
-
 void P4Command::OutputBinary( const char *data, int length)
 {
 	Conn().Log().Fatal() << "Error: Default ClientUser OutputBinary\n";
 }
-
 
 // Default handle of perforce info callbacks. Called by the default P4Command::Message() handler.
 void P4Command::OutputInfo( char level, const char *data )
@@ -283,7 +260,7 @@ public:
 	virtual void OutputInfo( char level, const char *data )
 	{	
 		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
-		string msg(data);
+		std::string msg(data);
 		bool propergate = true;
 		if (level == 48 && msg.length() > 1)
 		{
@@ -306,11 +283,11 @@ public:
 			}
 			else
 			{
-				string::size_type i = msg.find(kDelim); // depotPath end
-				string::size_type j = msg.find(kDelim, i+1); // workspacePath end
+				std::string::size_type i = msg.find(kDelim); // depotPath end
+				std::string::size_type j = msg.find(kDelim, i+1); // workspacePath end
 				j += 10 + 1; // kDelim.length + (1 space) = start of clientPath
-				string::size_type k = msg.find(kDelim, j); // clientPath end
-				if (i != string::npos && i > 2 && k != string::npos)
+				std::string::size_type k = msg.find(kDelim, j); // clientPath end
+				if (i != std::string::npos && i > 2 && k != std::string::npos)
 				{
 					propergate = false;
 					P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
@@ -323,7 +300,7 @@ public:
 			P4Command::OutputInfo(level, data);
 	}
 	
-	vector<Mapping> mappings;
+	std::vector<Mapping> mappings;
 	
 } cWhere;
 
@@ -336,7 +313,7 @@ const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, cons
 	if (assets.empty())
 		return cWhere.mappings;
 
-	string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
+	std::string localPaths = ResolvePaths(assets, kPathWild | kPathSkipFolders, "", kDelim);
 	
 	task.CommandRun("where " + localPaths, &cWhere);
 	Conn() << cWhere.GetStatus();
@@ -351,11 +328,11 @@ const std::vector<P4Command::Mapping>& P4Command::GetMappings(P4Task& task, cons
 
 bool P4Command::MapToLocal(P4Task& task, VersionedAssetList& assets)
 {
-	const vector<Mapping>& mappings = GetMappings(task, assets);
+	const std::vector<Mapping>& mappings = GetMappings(task, assets);
 	if (mappings.size() != assets.size())
 		return false; // error
 
-	vector<Mapping>::const_iterator m = mappings.begin();
+	std::vector<Mapping>::const_iterator m = mappings.begin();
 	for (VersionedAssetList::iterator i = assets.begin(); i != assets.end(); ++i, ++m)
 	{
 		i->SetPath(m->clientPath);
