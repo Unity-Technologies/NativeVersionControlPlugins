@@ -10,6 +10,8 @@ v1:Prompted for password
 v1:User vcs_test_user logged in.
 v1:client -o "testclient"
 <ignore>
+v1:where "./testForProjectRootMapping"
+<ignore>
 v1:info
 <ignore>
 <ignore>
