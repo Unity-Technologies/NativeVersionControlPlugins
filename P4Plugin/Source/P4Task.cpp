@@ -24,6 +24,28 @@
 #undef SetPort
 #endif
 
+//This uses 'p4 where' to check the location of a file that almost certainly doesn't exist - it's purpose is to check whether the project root is mapped in the clien't workspace
+class P4CheckRootCommand : public P4Command
+{
+public:
+	P4CheckRootCommand(const char* name) : P4Command(name) { }
+	virtual bool Run(P4Task& task, const CommandArgs& args)
+	{
+		ClearStatus();
+
+		if (!task.CommandRun("where \"./testForProjectRootMapping\"", this))
+		{
+			std::string errorMessage = GetStatusMessage();
+			Conn().Log().Fatal() << errorMessage << Endl;
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+} cCheckRoot("checkroot");
+
 // Clean up messages to make it look nicer in Unity
 // Return true is a line was removed
 static bool ReplaceLineWithPrefix(std::string& m, const std::string& prefix, const std::string& replaceWith)
@@ -497,6 +519,18 @@ bool P4Task::Login()
 	if (!res)
 	{
 		NotifyOffline("Couldn't fetch client spec file from Perforce server");
+		m_IsLoginInProgress = false;
+		return false;
+	}
+
+	p4c = LookupCommand("checkroot");
+	args.clear();
+	args.push_back("checkroot");
+	res = p4c->Run(*this, args);
+	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+	if (!res)
+	{
+		NotifyOffline("Couldn't fstat the project root directory. Please ensure that the selected workspace maps the project directory.");
 		m_IsLoginInProgress = false;
 		return false;
 	}

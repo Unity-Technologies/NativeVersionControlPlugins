@@ -1,0 +1,47 @@
+c:pluginConfig projectPath <absroot>_bad
+--
+r1:end of response
+--
+c:getLatest
+1
+./...
+0
+--
+v1:sync "./..." 
+v1:login
+v1:login
+v1:Prompted for password
+v1:User vcs_test_user logged in.
+v1:client -o "testclient"
+<ignore>
+v1:where "./testForProjectRootMapping"
+e32:Path '<absroot>_bad/testForProjectRootMapping' is not under client's root '<absroot>'.\n
+c32:disableCommand add
+c32:disableCommand changeDescription
+c32:disableCommand changeMove
+c32:disableCommand changes
+c32:disableCommand changeStatus
+c32:disableCommand checkout
+c32:disableCommand deleteChanges
+c32:disableCommand delete
+c32:disableCommand download
+c32:disableCommand getLatest
+c32:disableCommand incomingChangeAssets
+c32:disableCommand incoming
+c32:disableCommand lock
+c32:disableCommand move
+c32:disableCommand resolve
+c32:disableCommand revertChanges
+c32:disableCommand revert
+c32:disableCommand status
+c32:disableCommand submit
+c32:disableCommand unlock
+c32:offline Couldn't fstat the project root directory. Please ensure that the selected workspace maps the project directory.
+o1:-1
+d1:end of list
+r1:end of response
+--
+c:pluginConfig projectPath <absroot>
+--
+r1:end of response
+--
