@@ -218,7 +218,6 @@ public:
 			Conn().DataLine("");
 			Conn().DataLine("0"); // 
 
-			// We have 11 custom overlay icons
 			Conn().DataLine("overlays");
 			Conn().DataLine("12");
 			Conn().DataLine(IntToString(kLocal)); // for this state
