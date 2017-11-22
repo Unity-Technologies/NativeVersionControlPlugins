@@ -218,9 +218,8 @@ public:
 			Conn().DataLine("");
 			Conn().DataLine("0"); // 
 
-			// We have 11 custom overlay icons
 			Conn().DataLine("overlays");
-			Conn().DataLine("11");
+			Conn().DataLine("12");
 			Conn().DataLine(IntToString(kLocal)); // for this state
 			Conn().DataLine("default");           // use this path. "default" and "blank" paths can be used when you have not custom overlays.
 			Conn().DataLine(IntToString(kOutOfSync));
@@ -241,7 +240,9 @@ public:
 			Conn().DataLine("default");
 			Conn().DataLine(IntToString(kLockedLocal));
 			Conn().DataLine("default");
-		    Conn().DataLine(IntToString(kLockedRemote));
+			Conn().DataLine(IntToString(kLockedRemote));
+			Conn().DataLine("default");
+			Conn().DataLine(IntToString(kUpdating));
 			Conn().DataLine("default");
 		}
 		else if (key == "end")
