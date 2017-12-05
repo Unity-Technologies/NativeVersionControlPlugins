@@ -24,7 +24,7 @@
 #undef SetPort
 #endif
 
-//This uses 'p4 where' to check the location of a file that almost certainly doesn't exist - it's purpose is to check whether the project root is mapped in the clien't workspace
+//This uses 'p4 where' to check the location of a file that almost certainly doesn't exist - it's purpose is to check whether the project root is mapped in the client's workspace
 class P4CheckRootCommand : public P4Command
 {
 public:

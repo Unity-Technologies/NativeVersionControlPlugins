@@ -261,7 +261,7 @@ public:
 	{	
 		// Level 48 is the correct level for view mapping lines. P4 API is really not good at providing these numbers
 		std::string msg(data);
-		bool propergate = true;
+		bool propagate = true;
 		if (level == 48 && msg.length() > 1)
 		{
 			// format of the string should be
@@ -275,11 +275,11 @@ public:
 			if (msg[0] == '-')
 			{
 				// Just informational line
-				propergate = false;
+				propagate = false;
 			}
 			else if (msg[0] != '/')
 			{
-				; // do propegate to log
+				; // do propagate to log
 			}
 			else
 			{
@@ -289,14 +289,14 @@ public:
 				std::string::size_type k = msg.find(kDelim, j); // clientPath end
 				if (i != std::string::npos && i > 2 && k != std::string::npos)
 				{
-					propergate = false;
+					propagate = false;
 					P4Command::Mapping m = { msg.substr(0, i), Replace(msg.substr(j, k-j), "\\", "/") };
 					mappings.push_back(m);
 				}
 			}
 		}	
 
-		if (propergate)
+		if (propagate)
 			P4Command::OutputInfo(level, data);
 	}
 	

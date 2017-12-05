@@ -143,6 +143,9 @@
     <ClCompile Include="Source\P4FileModeCommand.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="Source\P4TypeMapCommand.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
     <ClCompile Include="..\Common\Connection.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>

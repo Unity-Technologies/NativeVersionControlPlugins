@@ -185,6 +185,7 @@ public:
 			Conn().DataLine("enablesRevertUnchanged", MAConfig);
 			Conn().DataLine("enablesChangelists", MAConfig);
 			Conn().DataLine("enablesGetLatestOnChangeSetSubset", MAConfig);
+			Conn().DataLine("enablesTypeMap", MAConfig);
 
 			// We provide 4 configuration fields for the GUI to display
 			Conn().DataLine("5");
