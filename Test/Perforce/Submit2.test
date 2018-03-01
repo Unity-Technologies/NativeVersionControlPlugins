@@ -59,15 +59,15 @@ v1:where "<absroot>/Assets/testfile2.txt_XUDELIMX_"
 v1:submit -i
 ==:v1:User vcs_test_user ticket expires in
 i1:Change 2 created with 1 open file(s). (level 48)
-p1:-1 0 Change 2 created with 1 open file(s).
+<p:Change 2 created with 1 open file(s).
 i1:Submitting change 2. (level 48)
-p1:-1 0 Submitting change 2.
+<p:Submitting change 2.
 i1:Locking 1 files ... (level 48)
-p1:-1 0 Locking 1 files ...
+<p:Locking 1 files ...
 i1:delete //depot/Assets/testfile2.txt#2 (level 48)
-p1:-1 0 delete //depot/Assets/testfile2.txt#2
+<p:delete //depot/Assets/testfile2.txt#2
 i1:Change 2 submitted. (level 48)
-p1:-1 0 Change 2 submitted.
+<p:Change 2 submitted.
 o1:-1
 v1:fstat  "<absroot>/Assets/testfile2.txt" 
 ==:v1:User vcs_test_user ticket expires in
