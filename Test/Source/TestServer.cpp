@@ -213,6 +213,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 	const std::string genfiletoken = "<genfile ";
 	const std::string delfiletoken = "<delfile ";
 	const std::string p4pluginlogtoken = "<p4pluginlog:";
+	const std::string progressToken = "<p:";
 
 	bool ok = true;
 	int lineNum = 0;
@@ -376,6 +377,26 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 			{
 				expect = expect.substr(matchtoken.length());
 				msg = msg.substr(0, expect.length());
+			}
+
+			// Match "p*:* * "
+			if (expect.find(progressToken) == 0)
+			{
+				expect = expect.substr(progressToken.length());
+				size_t colonIndex = msg.find(":");
+				if (colonIndex != std::string::npos)
+				{
+					std::string buffer(msg.substr(colonIndex+1));
+					// skip to the second " "
+					size_t space1Index = buffer.find(" ");
+					if (space1Index != std::string::npos)
+					{
+						buffer = buffer.substr(space1Index+1);
+						size_t space2Index = buffer.find(" ");
+						if (space2Index != std::string::npos)
+							msg = buffer.substr(space2Index+1);
+					}
+				}
 			}
 
 			if (expect != msg)

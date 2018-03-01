@@ -97,15 +97,15 @@ v1:where "<absroot>/Assets/movefileNoLocal1.txt_XUDELIMX_"
 v1:submit -i
 ==:v1:User vcs_test_user ticket expires in
 i1:Change 4 created with 1 open file(s). (level 48)
-p1:-1 0 Change 4 created with 1 open file(s).
+<p:Change 4 created with 1 open file(s).
 i1:Submitting change 4. (level 48)
-p1:-1 0 Submitting change 4.
+<p:Submitting change 4.
 i1:Locking 1 files ... (level 48)
-p1:-1 0 Locking 1 files ...
+<p:Locking 1 files ...
 i1:add //depot/Assets/movefileNoLocal1.txt#1 (level 48)
-p1:-1 0 add //depot/Assets/movefileNoLocal1.txt#1
+<p:add //depot/Assets/movefileNoLocal1.txt#1
 i1:Change 4 submitted. (level 48)
-p1:-1 0 Change 4 submitted.
+<p:Change 4 submitted.
 o1:-1
 v1:fstat  "<absroot>/Assets/movefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
