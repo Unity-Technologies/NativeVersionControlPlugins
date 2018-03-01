@@ -25,6 +25,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	std::string headAction;
 	std::string headRev;
 	std::string haveRev;
+	std::string otherAction;
 	std::string depotFile;
 	bool exclLockType = false;
 	bool isStateSet = false;
@@ -38,7 +39,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		std::string key(var.Text());
 		std::string value(val.Text());
-		// Conn().Log().Debug() << key << " # " << value << Endl;
+		Conn().Log().Debug() << key << " # " << value << Endl;
 		
 		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
 		{
@@ -82,6 +83,10 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 			if (exclLockType)
 				current.AddState(kLockedRemote);
 		}
+		else if (StartsWith(key, "otherAction"))
+		{
+			otherAction = value;
+		}
 		else if (key == "unresolved")
 		{
 			current.AddState(kConflicted);
@@ -109,6 +114,11 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		current.AddState(kLocal);
 		if (IsReadOnly(current.GetPath()))
 			current.AddState(kReadOnly);
+	}
+	if (otherAction == "delete")
+	{
+		current.AddState(kDeletedRemote);
+		//current.RemoveState(kCheckedOutRemote);
 	}
 
 	if (!isStateSet)
