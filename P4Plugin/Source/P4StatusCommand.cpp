@@ -1,3 +1,4 @@
+#include "P4FilesNotInClientView.h"
 #include "P4StatusCommand.h"
 #include "P4Utility.h"
 
@@ -11,8 +12,9 @@ bool P4StatusCommand::Run(P4Task& task, const CommandArgs& args)
 	VersionedAssetList assetList;
 	Conn() >> assetList;
 	
+	P4FilesNotInClientView::Filter(assetList);
 	RunAndSend(task, assetList, recursive);
-	Conn() << GetStatus();
+	Conn() << P4FilesNotInClientView::Update(GetStatus());
 
 	Conn().EndResponse();
 
@@ -48,7 +50,7 @@ void P4StatusCommand::RunAndSend(P4Task& task, const VersionedAssetList& assetLi
 	Conn().Log().Debug() << "Paths to stat are: " << paths << Endl;
 	
 	Conn().BeginList();
-	
+
 	if (paths.empty())
 	{
 		Conn().EndList();
