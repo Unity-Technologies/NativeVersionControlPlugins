@@ -46,7 +46,7 @@ struct P4FilesNotInClientView
 		}
 	}
 
-	static VCSStatus& Update(VCSStatus& status)
+	static VCSStatus& Update(const VCSStatus& status)
 	{
 		static const std::string filesNotInClientView = " - file(s) not in client view.\n";
 
