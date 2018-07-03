@@ -27,14 +27,18 @@ struct P4FilesNotInClientView
 
 	static VCSStatus& Update(VCSStatus& status)
 	{
+		static const std::string filesNotInClientView = " - file(s) not in client view.\n";
+
 		std::set<std::string>& set = Set();
 		for (VCSStatus::iterator itr = status.begin(); itr != status.end();)
 		{
-			if (~itr->message.find(" - file(s) not in client view."))
+			if (itr->message.find(filesNotInClientView) != std::string::npos)
 			{
-				const std::string assetPath = Replace(itr->message, " - file(s) not in client view.\n", "");
+				const std::string assetPath = Replace(itr->message, filesNotInClientView, "");
 				set.insert(assetPath);
-				status.erase(itr++);
+				const VCSStatus::iterator itrToErase = itr;
+				++itr; // increment `itr` before it is invalidated by `erase()`
+				status.erase(itrToErase);
 			}
 			else
 			{
