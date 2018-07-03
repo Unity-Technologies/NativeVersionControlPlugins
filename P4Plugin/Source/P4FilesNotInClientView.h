@@ -1,5 +1,6 @@
 #pragma once
-#include <set>
+#include <ctime>
+#include <map>
 #include <string>
 #include <Status.h>
 #include <Utility.h>
@@ -8,20 +9,40 @@
 struct P4FilesNotInClientView
 {
 
+	typedef std::map<std::string, std::time_t> ExcludedAssetMap;
+
+	typedef ExcludedAssetMap::value_type ExcludedAssetEntry;
+
 	static void Filter(VersionedAssetList& assetList)
 	{
-		std::set<std::string>& set = Set();
+		static const double ExcludedAssetExpiryInSeconds = 1;
+
+		ExcludedAssetMap& excludedAssets = ExcludedAssets();
 		for (VersionedAssetList::iterator itr = assetList.begin(); itr != assetList.end();)
 		{
 			const std::string& assetPath = itr->GetPath();
-			if (set.count(assetPath))
+			const ExcludedAssetMap::iterator excludedItr = excludedAssets.find(assetPath);
+			if (excludedItr == excludedAssets.end())
 			{
-				itr = assetList.erase(itr);
-			}
-			else
-			{
+				// assetPath is not excluded
 				++itr;
+				continue;
 			}
+
+			// assetPath was excluded in the past, check timestamp for expiry
+			const ExcludedAssetEntry& excludedEntry = *excludedItr;
+			const std::time_t timestamp = excludedEntry.second;
+			const double elapsedSeconds = std::difftime(Now(), timestamp);
+			if (elapsedSeconds > ExcludedAssetExpiryInSeconds)
+			{
+				// assetPath exclusion has expired
+				excludedAssets.erase(excludedItr);
+				++itr;
+				continue;
+			}
+
+			// assetPath exclusion has not expired
+			itr = assetList.erase(itr);
 		}
 	}
 
@@ -29,30 +50,33 @@ struct P4FilesNotInClientView
 	{
 		static const std::string filesNotInClientView = " - file(s) not in client view.\n";
 
-		std::set<std::string>& set = Set();
-		for (VCSStatus::iterator itr = status.begin(); itr != status.end();)
+		ExcludedAssetMap& excludedAssets = ExcludedAssets();
+		for (VCSStatus::iterator itr = status.begin(); itr != status.end(); ++itr)
 		{
 			if (itr->message.find(filesNotInClientView) != std::string::npos)
 			{
+				// message contains " - file(s) not in client view.\n"
 				const std::string assetPath = Replace(itr->message, filesNotInClientView, "");
-				set.insert(assetPath);
-				const VCSStatus::iterator itrToErase = itr;
-				++itr; // increment `itr` before it is invalidated by `erase()`
-				status.erase(itrToErase);
-			}
-			else
-			{
-				++itr;
+
+				const ExcludedAssetEntry excludedEntry(assetPath, Now());
+				excludedAssets.insert(excludedEntry);
 			}
 		}
 		return status;
 	}
 
 private:
-	static std::set<std::string>& Set()
+	static ExcludedAssetMap& ExcludedAssets()
 	{
-		static std::set<std::string> set;
-		return set;
+		static ExcludedAssetMap excludedAssets;
+		return excludedAssets;
+	}
+
+	static const std::time_t Now()
+	{
+		std::time_t now;
+		std::time(&now);
+		return now;
 	}
 };
 
