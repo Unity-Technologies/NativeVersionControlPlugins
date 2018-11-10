@@ -106,3 +106,29 @@ SVNPLUGIN_INCLS = ./SvnPlugin/Source/AllSvnCommands.h \
 SVNPLUGIN_LINK = 
 SVNPLUGIN_INCLUDE = -I./Common -I./SvnPlugin/Source
 
+TESTPLUGIN_LINK = 
+TESTPLUGIN_INCLUDE = -I./Common -I./TestPlugin/Source
+
+TESTPLUGIN_SRCS = ./TestPlugin/Source/TestPlugin_Posix.cpp \
+		./TestPlugin/Source/TestTask.cpp 
+
+TESTPLUGIN_INCLS = ./TestPlugin/Source/TestTask.h \
+		./TestPlugin/Source/TestCommand.h \
+		./TestPlugin/Source/Commands/TestConfigRequest.h \
+		./TestPlugin/Source/Commands/TestChangeDescriptionRequest.h \
+		./TestPlugin/Source/Commands/TestDownloadRequest.h \
+		./TestPlugin/Source/Commands/TestOutgoingAssetsRequest.h \
+		./TestPlugin/Source/Commands/TestIncomingAssetsRequest.h \
+		./TestPlugin/Source/Commands/TestSubmitRequest.h \
+		./TestPlugin/Source/Commands/TestStatusRequest.h \
+		./TestPlugin/Source/Commands/TestAddRequest.h \
+		./TestPlugin/Source/Commands/TestCheckoutRequest.h \
+		./TestPlugin/Source/Commands/TestDeleteRequest.h \
+		./TestPlugin/Source/Commands/TestGetLatestRequest.h \
+		./TestPlugin/Source/Commands/TestLockRequest.h \
+		./TestPlugin/Source/Commands/TestUnlockRequest.h \
+		./TestPlugin/Source/Commands/TestResolveRequest.h \
+		./TestPlugin/Source/Commands/TestRevertRequest.h \
+		./TestPlugin/Source/Commands/TestMoveRequest.h \
+		./TestPlugin/Source/Commands/TestFileModeRequest.h \
+		./TestPlugin/Source/Commands/TestMoveChangelistRequest.h

@@ -13,6 +13,7 @@ enum ConfigKey
 	CK_Versions,
 	CK_ProjectPath,
 	CK_LogLevel,
+	CK_End,
 	CK_Unknown,
 };
 
@@ -45,6 +46,8 @@ public:
 			key = CK_ProjectPath;
 		else if (keyStr == "vcSharedLogLevel")
 			key = CK_LogLevel;
+		else if (keyStr == "end")
+			key = CK_End;
 		
 		values = std::vector<std::string>(args.begin()+2, args.end());
 	}
@@ -156,6 +159,7 @@ public:
 		}
 		case CK_ProjectPath:
 		case CK_LogLevel:
+		case CK_End:
 		case CK_Unknown:
 			break;
 		}

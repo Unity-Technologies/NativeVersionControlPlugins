@@ -23,11 +23,15 @@ SVNPLUGIN_MODULES = $(SVNPLUGIN_SRCS:.c=.o)
 SVNPLUGIN_MODULES := $(SVNPLUGIN_MODULES:.cpp=.o)
 SVNPLUGIN_TARGET = SubversionPlugin
 
+TESTPLUGIN_MODULES = $(TESTPLUGIN_SRCS:.c=.o)
+TESTPLUGIN_MODULES := $(TESTPLUGIN_MODULES:.cpp=.o)
+TESTPLUGIN_TARGET = TestingPlugin
+
 PLASTICSCMPLUGIN_TARGET = PlasticSCMPlugin/PlasticSCMPlugin
 
 default: all
 
-all: P4Plugin SvnPlugin PlasticSCMPlugin testserver
+all: P4Plugin SvnPlugin PlasticSCMPlugin TestPlugin testserver
 	@mkdir -p Build/$(PLATFORM)
 	cp $(PLASTICSCMPLUGIN_TARGET) Build/$(PLATFORM)
 
@@ -41,6 +45,10 @@ P4Plugin: $(P4PLUGIN_TARGET)
 SvnPlugin: $(SVNPLUGIN_TARGET)
 	@mkdir -p Build/$(PLATFORM)
 	cp $(SVNPLUGIN_TARGET) Build/$(PLATFORM)
+
+TestPlugin: $(TESTPLUGIN_TARGET)
+	@mkdir -p Build/$(PLATFORM)
+	cp $(TESTPLUGIN_TARGET) Build/$(PLATFORM)
 
 Common: $(COMMON_MODULES)
 
@@ -56,6 +64,9 @@ P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
 
+TestPlugin/Source/%.o : TestPlugin/Source/%.cpp $(COMMON_INCLS) $(TESTPLUGIN_INCLS)
+	$(CXX) $(CXXFLAGS) $(TESTPLUGIN_INCLUDE) -c $< -o $@
+
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
@@ -65,5 +76,8 @@ $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
 $(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
 	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
 
+$(TESTPLUGIN_TARGET): $(COMMON_MODULES) $(TESTPLUGIN_MODULES)
+	$(CXX) $(LDFLAGS) -o $@ $^ 
+
 clean:
-	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(TESTSERVER_MODULES)
+	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(TESTPLUGIN_MODULES) $(TESTSERVER_MODULES)

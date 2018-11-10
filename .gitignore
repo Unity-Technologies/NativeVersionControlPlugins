@@ -10,6 +10,7 @@ Library/
 Test/tmp/*
 PerforcePlugin
 SubversionPlugin
+TestingPlugin
 
 # Compiled Object files
 *.slo
