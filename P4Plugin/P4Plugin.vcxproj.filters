@@ -251,5 +251,8 @@
     <ClInclude Include="Source\P4FilesNotInClientView.h">
       <Filter>P4Plugin</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Commands\ChangeDescription.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

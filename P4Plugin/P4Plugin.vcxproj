@@ -67,6 +67,7 @@
     <ClInclude Include="..\Common\Commands\AllReqResp.h" />
     <ClInclude Include="..\Common\Commands\Base.h" />
     <ClInclude Include="..\Common\Commands\BaseFileSet.h" />
+    <ClInclude Include="..\Common\Commands\ChangeDescription.h" />
     <ClInclude Include="..\Common\Commands\Config.h" />
     <ClInclude Include="..\Common\Commands\Download.h" />
     <ClInclude Include="..\Common\Commands\Incoming.h" />
