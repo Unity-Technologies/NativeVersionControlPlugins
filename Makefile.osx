@@ -4,8 +4,8 @@ CC = gcc
 CXX = g++
 AR = ar
 
-CXXFLAGS = -O2 -arch x86_64 -g -mmacosx-version-min=10.8
-LDFLAGS = -arch x86_64 -lstdc++ -mmacosx-version-min=10.8 -g
+CXXFLAGS = -O2 -arch x86_64 -mmacosx-version-min=10.11
+LDFLAGS = -arch x86_64 -lstdc++ -mmacosx-version-min=10.11
 PLATFORM = OSXx64
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
