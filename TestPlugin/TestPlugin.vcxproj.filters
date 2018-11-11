@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="TestPlugin">
+      <UniqueIdentifier>{043b34dc-5ceb-4c07-a534-1813df014f0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestPlugin\Source">
+      <UniqueIdentifier>{72ee336e-2a0b-4890-9318-7b1efa74b06a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestPlugin\Source\Commands">
+      <UniqueIdentifier>{462d2386-ac16-4b8d-b02c-f587683d0655}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{ac70d938-c96a-4d28-b4ad-f8aeb41628f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Commands">
+      <UniqueIdentifier>{f3ac4467-d62f-4ee7-9960-edae70800dd6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Commands\TestAddRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestChangeDescriptionRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestCheckoutRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestConfigRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestDeleteRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestDownloadRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestFileModeRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestGetLatestRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestIncomingAssetsRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestIncomingRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestLockRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestMoveChangelistRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestMoveRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestOutgoiingRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestOutgoingAssetsRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestResolveRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestRevertRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestStatusRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestSubmitRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Commands\TestUnlockRequest.h">
+      <Filter>TestPlugin\Source\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TestCommand.h">
+      <Filter>TestPlugin\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TestTask.h">
+      <Filter>TestPlugin\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Changes.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Command.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\CommandLine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Connection.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Dispatch.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\FileSystem.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Log.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Pipe.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\POpen.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Status.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Utility.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\VersionedAsset.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Add.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\AllReqResp.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Base.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\BaseFileSet.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\ChangeDescription.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Config.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Download.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Incoming.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\IncomingAssets.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\MoveChangelist.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Outgoing.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\OutgoingAssets.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Commands\Submit.h">
+      <Filter>Common\Commands</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\TestTask.cpp">
+      <Filter>TestPlugin\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Changes.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Command.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\CommandLine.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Connection.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\FileSystem.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Log.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Pipe.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\POpen.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Status.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Utility.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\VersionedAsset.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TestPlugin_WIN.cpp">
+      <Filter>TestPlugin\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
