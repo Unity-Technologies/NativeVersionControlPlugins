@@ -326,6 +326,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 			std::string msg;
 			if (expect.find(p4pluginlogtoken) == 0)
 			{
+				p4pluginLog.sync();
 				if (!p4pluginLog.good())
 				{
 					const int sleepTimeInSeconds = 1;
