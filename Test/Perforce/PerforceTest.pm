@@ -194,6 +194,7 @@ LineEnd:local
 
 View:
     //depot/... //$ENV{'VCS_P4CLIENT'}/...
+	-//depot/Assets/excludedfile.txt  //$ENV{'VCS_P4CLIENT'}/Assets/excludedfile.txt
 EOF
 
 	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user client -i ");

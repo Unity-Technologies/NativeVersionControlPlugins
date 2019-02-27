@@ -1,0 +1,131 @@
+<genfile ./Assets/testfile.txt>
+c:add 
+1
+./Assets/testfile.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile.txt" 
+v1:login
+v1:login
+v1:Prompted for password
+v1:User vcs_test_user logged in.
+v1:client -o "testclient"
+<ignore>
+v1:where "./testForProjectRootMapping"
+<ignore>
+v1:info
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+<ignore>
+==:v1:Server version: P4D/
+v1:Server encryption: encrypted
+==:v1:Server cert expires:
+v1:Server license: none
+==:v1:Case Handling:
+v1:streams
+c32:online
+c32:enableCommand add
+c32:enableCommand changeDescription
+c32:enableCommand changeMove
+c32:enableCommand changes
+c32:enableCommand changeStatus
+c32:enableCommand checkout
+c32:enableCommand deleteChanges
+c32:enableCommand delete
+c32:enableCommand download
+c32:enableCommand getLatest
+c32:enableCommand incomingChangeAssets
+c32:enableCommand incoming
+c32:enableCommand lock
+c32:enableCommand move
+c32:enableCommand resolve
+c32:enableCommand revertChanges
+c32:enableCommand revert
+c32:enableCommand status
+c32:enableCommand submit
+c32:enableCommand unlock
+v1:./Assets/testfile.txt - no such file(s).
+v1:add -f  "./Assets/testfile.txt" 
+==:v1:User vcs_test_user ticket expires in
+i1://depot/Assets/testfile.txt#1 - opened for add (level 48)
+o1:-1
+v1:fstat  "./Assets/testfile.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/testfile.txt
+o1:<absroot>/Assets/testfile.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/testfile.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/testfile.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/testfile.txt
+o1:<absroot>/Assets/testfile.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:status recurse
+2
+./Assets/testfile.txt
+0
+./Assets/excludedfile.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/testfile.txt
+o1:<absroot>/Assets/testfile.txt
+o1:257
+<p4pluginlog:./Assets/excludedfile.txt - file(s) not in client view.
+d1:end of list
+r1:end of response
+--
+c:status recurse
+2
+./Assets/testfile.txt
+0
+./Assets/excludedfile.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/testfile.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/testfile.txt
+o1:<absroot>/Assets/testfile.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+<sleep:15
+c:status recurse
+2
+./Assets/testfile.txt
+0
+./Assets/excludedfile.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/testfile.txt
+o1:<absroot>/Assets/testfile.txt
+o1:257
+<p4pluginlog:./Assets/excludedfile.txt - file(s) not in client view.
+d1:end of list
+r1:end of response

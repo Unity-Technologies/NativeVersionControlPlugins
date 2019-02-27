@@ -214,6 +214,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 	const std::string delfiletoken = "<delfile ";
 	const std::string p4pluginlogtoken = "<p4pluginlog:";
 	const std::string progressToken = "<p:";
+	const std::string sleepToken = "<sleep:";
 
 	bool ok = true;
 	int lineNum = 0;
@@ -291,6 +292,11 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 				// Delete a local file
 				unlink(delfile.c_str());
 				continue;
+			}
+			if (command.find(sleepToken) == 0)
+			{
+				int sleeptime = std::stoi(command.substr(sleepToken.length()));
+				sleepInSeconds(sleeptime);
 			}
 
 			if (!command.empty())
