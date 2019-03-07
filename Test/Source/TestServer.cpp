@@ -214,12 +214,12 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 	const std::string delfiletoken = "<delfile ";
 	const std::string p4pluginlogtoken = "<p4pluginlog:";
 	const std::string progressToken = "<p:";
+	const std::string sleepToken = "<sleep:";
 
 	bool ok = true;
-	int lineNum = 0;
+	int lineNum = 0, lastReadLogLineNum = 0;
 
 	std::string p4pluginLogPath(absroot + "/Library/p4plugin.log");
-	std::ifstream p4pluginLog(p4pluginLogPath.c_str());
 
 	while (testscript.good())
 	{
@@ -292,6 +292,11 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 				unlink(delfile.c_str());
 				continue;
 			}
+			if (command.find(sleepToken) == 0)
+			{
+				int sleeptime = std::stoi(command.substr(sleepToken.length()));
+				sleepInSeconds(sleeptime);
+			}
 
 			if (!command.empty())
 			{
@@ -324,6 +329,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 			}
 
 			std::string msg;
+			std::ifstream p4pluginLog(p4pluginLogPath.c_str());
 			if (expect.find(p4pluginlogtoken) == 0)
 			{
 				if (!p4pluginLog.good())
@@ -332,6 +338,8 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 					sleepInSeconds(sleepTimeInSeconds);
 					p4pluginLog.open(p4pluginLogPath.c_str());
 				}
+				for(int i = 0 ; i < lastReadLogLineNum; i++)
+					std::getline(p4pluginLog, msg);
 				expect = expect.substr(p4pluginlogtoken.length());
 				if (verbose)
 					std::cerr << "P4Plugin Expect:'" << expect << "'" << std::endl;
@@ -339,6 +347,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 				while (p4pluginLog.good())
 				{
 					std::getline(p4pluginLog, msg);
+					lastReadLogLineNum++;
 					if (verbose)
 						std::cerr << "P4Plugin:'" << lineNum << " '" << msg << "'" << std::endl;
 					msg = msg.substr(0, matchLen);
