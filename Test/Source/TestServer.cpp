@@ -294,7 +294,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 			}
 			if (command.find(sleepToken) == 0)
 			{
-				int sleeptime = std::stoi(command.substr(sleepToken.length()));
+				int sleeptime = atoi(command.substr(sleepToken.length()).c_str());
 				sleepInSeconds(sleeptime);
 			}
 
