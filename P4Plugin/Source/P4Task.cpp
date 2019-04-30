@@ -528,12 +528,13 @@ bool P4Task::Login()
 	args.push_back("checkroot");
 	res = p4c->Run(*this, args);
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+	VCSStatus& status = p4c->GetStatus();
 	if (!res)
 	{
 		for (VCSStatus::const_iterator i = status.begin(); i != status.end(); ++i)
 		{
 			// some messages are fairly specific (e.g. wrong host info) and should be reported
-			// as final message
+			// as the only message
 			if (i->message.find("can only be used from host") != std::string::npos)
 			{
 				NotifyOffline(i->message);
