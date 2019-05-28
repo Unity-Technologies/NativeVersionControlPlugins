@@ -247,7 +247,6 @@ public:
 		}
 		else if (key == "end")
 		{
-			task.Logout();
 			if (task.Reconnect())
 				task.Login();
 		}
