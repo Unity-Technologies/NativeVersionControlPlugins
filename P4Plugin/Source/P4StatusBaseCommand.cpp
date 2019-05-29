@@ -15,6 +15,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 
 	const std::string invalidPath = "//...";
 	const std::string notFound = " - no such file(s).";
+	const std::string notInClientView = " - file(s) not in client view.";
 	
 	int i;
 	StrRef var, val;
@@ -40,7 +41,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		std::string value(val.Text());
 		// Conn().Log().Debug() << key << " # " << value << Endl;
 		
-		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
+		if ((EndsWith(value, notInClientView) || EndsWith(value, notFound)) && !StartsWith(key, invalidPath))
 		{
 			if (!AddUnknown(current, value))
 				return; // invalid file
@@ -139,13 +140,15 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	
 	const std::string invalidPath = "//...";
 	const std::string notFound = " - no such file(s).";
+	const std::string notInClientView = " - file(s) not in client view.";
+
 	std::string value(buf.Text());
 	value = TrimEnd(value, '\n');
 	VersionedAsset asset;	
 	
-	if (EndsWith(value, notFound))
+	if (EndsWith(value, notFound) || EndsWith(value, notInClientView))
 	{
-		if (StartsWith(value, invalidPath) || EndsWith(value.substr(0, value.length() - notFound.length()), "..."))
+		if (StartsWith(value, invalidPath) || EndsWith(value.substr(0, value.length() - notFound.length()), "...") || EndsWith(value.substr(0, value.length() - notInClientView.length()), "..."))
 		{
 			// tried to get status with no files matching wildcard //... which is ok
 			// or
@@ -155,7 +158,6 @@ void P4StatusBaseCommand::HandleError( Error *err )
 		}
 		else if (AddUnknown(asset, value))
 		{
-
 			if (PathExists(asset.GetPath()))
 			{
 				asset.AddState(kLocal);
@@ -178,8 +180,13 @@ void P4StatusBaseCommand::HandleError( Error *err )
 bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const std::string& value)
 {
 	const std::string notFound = " - no such file(s).";
+	const std::string notInClientView = " - file(s) not in client view.";
 
-	current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
+	if(EndsWith(value, notFound))
+		current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
+	else if (EndsWith(value, notInClientView))
+		current.SetPath(WildcardsRemove(value.substr(0, value.length() - notInClientView.length())));
+
 	if (EndsWith(current.GetPath(), "*")) 
 		return false; // skip invalid files
 	return true;
