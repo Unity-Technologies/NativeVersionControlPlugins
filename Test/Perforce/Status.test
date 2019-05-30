@@ -90,7 +90,9 @@ v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt"
 v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
 o1:257
-<p4pluginlog:./Assets/excludedfile.txt - file(s) not in client view.
+o1:./Assets/excludedfile.txt
+o1:0
+v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
 --
@@ -102,11 +104,14 @@ c:status recurse
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" 
+v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
 o1:257
+o1:./Assets/excludedfile.txt
+o1:0
+v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
 --
@@ -124,6 +129,8 @@ v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt"
 v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
 o1:257
-<p4pluginlog:./Assets/excludedfile.txt - file(s) not in client view.
+o1:./Assets/excludedfile.txt
+o1:0
+v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
