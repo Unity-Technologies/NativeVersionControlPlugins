@@ -20,7 +20,9 @@ public:
 		Conn() >> cl;
 		
 		// Compatibility with old perforce servers (<2008). -T is not supported, so just retrieve all the information for the requested files
-		std::string cmd = "fstat -W -e ";
+		std::string cmd = "fstat -F \"actionOwner=";
+		cmd += task.GetP4User();
+		cmd += "\" -W -e ";
 		cmd += (cl == kDefaultListRevision ? std::string("default") : cl) + " //...";
 		
 		// We're sending along an asset list with an unknown size.
