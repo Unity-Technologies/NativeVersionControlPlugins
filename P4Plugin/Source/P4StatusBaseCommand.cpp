@@ -28,7 +28,6 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	std::string haveRev;
 	std::string depotFile;
 	bool exclLockType = false;
-	bool isStateSet = false;
 	
 	// Dump out the variables, using the GetVar( x ) interface.
 	// Don't display the function, which is only relevant to rpc.
@@ -41,13 +40,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		std::string value(val.Text());
 		// Conn().Log().Debug() << key << " # " << value << Endl;
 		
-		if ((EndsWith(value, notInClientView) || EndsWith(value, notFound)) && !StartsWith(key, invalidPath))
-		{
-			if (!AddUnknown(current, value))
-				return; // invalid file
-			isStateSet = true;
-		}
-		else if (key == "headType")
+		if (key == "headType")
 		{
 			exclLockType = value.find("+l") != std::string::npos;
 		}
@@ -107,23 +100,17 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	
 	if (PathExists(current.GetPath()))
 	{
-		if (isStateSet)
-			current.AddState(kUnversioned);
-		else
-			current.AddState(kLocal);
+		current.AddState(kLocal);
 		if (IsReadOnly(current.GetPath()))
 			current.AddState(kReadOnly);
 	}
 
-	if (!isStateSet)
-	{
-		int actionState = ActionToState(action, headAction, haveRev, headRev);
-		/*
-		Conn().Log().Debug() << current.GetPath() << ": action '" << action << "', headAction '" << headAction 
-							 << "', haveRev '" << haveRev << "', headRev '" << headRev << "' " << actionState << " " << current.GetState() << Endl;
-		*/
-		current.AddState((State)actionState);
-	}
+	int actionState = ActionToState(action, headAction, haveRev, headRev);
+	/*
+	Conn().Log().Debug() << current.GetPath() << ": action '" << action << "', headAction '" << headAction 
+							<< "', haveRev '" << haveRev << "', headRev '" << headRev << "' " << actionState << " " << current.GetState() << Endl;
+	*/
+	current.AddState((State)actionState);
 
 	Conn().VerboseLine(current.GetPath());
 	
@@ -156,15 +143,12 @@ void P4StatusBaseCommand::HandleError( Error *err )
 			return;
 		}
 
-		State state = kLocal;
-		if (EndsWith(value, notInClientView))
-			state = kUnversioned;
-
 		if (AddUnknown(asset, value))
 		{
 			if (PathExists(asset.GetPath()))
 			{
-				asset.AddState(state);
+				asset.AddState(kLocal);
+				asset.AddState(kUnversioned);
 				if (IsReadOnly(asset.GetPath()))
 					asset.AddState(kReadOnly);
 			}
