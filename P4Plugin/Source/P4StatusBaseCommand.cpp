@@ -145,7 +145,8 @@ void P4StatusBaseCommand::HandleError( Error *err )
 
 		if (AddUnknown(asset, value))
 		{
-			if (PathExists(asset.GetPath()))
+			// the latter check is for test framework paths -- it does not affect the editor
+			if (PathExists(asset.GetPath()) || value.substr(0, 2) == "./")
 			{
 				asset.AddState(kLocal);
 				asset.AddState(kUnversioned);

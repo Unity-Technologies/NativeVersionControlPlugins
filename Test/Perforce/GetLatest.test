@@ -63,7 +63,7 @@ o1:-1
 v1:fstat  "./Assets/testfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
 o1:./Assets/testfile.txt
-o1:0
+o1:262145
 v1:./Assets/testfile.txt - no such file(s).
 d1:end of list
 r1:end of response
