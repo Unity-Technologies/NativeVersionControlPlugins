@@ -145,11 +145,10 @@ void P4StatusBaseCommand::HandleError( Error *err )
 
 		if (AddUnknown(asset, value))
 		{
-			// the latter check is for test framework paths -- it does not affect the editor
-			if (PathExists(asset.GetPath()) || value.substr(0, 2) == "./")
+			asset.AddState(kUnversioned);
+			if (PathExists(asset.GetPath()))
 			{
 				asset.AddState(kLocal);
-				asset.AddState(kUnversioned);
 				if (IsReadOnly(asset.GetPath()))
 					asset.AddState(kReadOnly);
 			}
@@ -168,7 +167,7 @@ void P4StatusBaseCommand::HandleError( Error *err )
 
 bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const std::string& value)
 {
-		if (EndsWith(value, notFound))
+	if (EndsWith(value, notFound))
 		current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
 	else if (EndsWith(value, notInClientView))
 		current.SetPath(WildcardsRemove(value.substr(0, value.length() - notInClientView.length())));

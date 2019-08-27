@@ -93,7 +93,7 @@ v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
 o1:257
 o1:./Assets/excludedfile.txt
-o1:262145
+o1:262144
 v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
@@ -112,7 +112,7 @@ v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
 o1:257
 o1:./Assets/excludedfile.txt
-o1:262145
+o1:262144
 v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
@@ -132,7 +132,7 @@ v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
 o1:257
 o1:./Assets/excludedfile.txt
-o1:262145
+o1:262144
 v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
