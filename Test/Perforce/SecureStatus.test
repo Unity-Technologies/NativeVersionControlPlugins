@@ -106,7 +106,7 @@ c:status recurse
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" 
+v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
 v1:<absroot>/Assets/testfile.txt
 o1:<absroot>/Assets/testfile.txt
