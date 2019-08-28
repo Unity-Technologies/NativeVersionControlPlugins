@@ -42,7 +42,6 @@ P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4DownloadCommand.cpp \
 		./P4Plugin/Source/P4ExitCommand.cpp \
 		./P4Plugin/Source/P4FileSetBaseCommand.cpp \
-		./P4Plugin/Source/P4FilesNotInClientView.cpp \
 		./P4Plugin/Source/P4GetLatestCommand.cpp \
 		./P4Plugin/Source/P4IncomingChangeAssetsCommand.cpp \
 		./P4Plugin/Source/P4IncomingCommand.cpp \

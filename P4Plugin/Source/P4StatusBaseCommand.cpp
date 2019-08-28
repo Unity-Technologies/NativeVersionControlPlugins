@@ -8,14 +8,15 @@ P4StatusBaseCommand::P4StatusBaseCommand(const char* name, bool streamResultToCo
 {
 }
 
+const std::string invalidPath = "//...";
+const std::string notFound = " - no such file(s).";
+const std::string notInClientView = " - file(s) not in client view.";
+
 void P4StatusBaseCommand::OutputStat( StrDict *varList )
 {
 	if (!P4Task::IsOnline())
 		return;
 
-	const std::string invalidPath = "//...";
-	const std::string notFound = " - no such file(s).";
-	
 	int i;
 	StrRef var, val;
 	
@@ -27,7 +28,6 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	std::string haveRev;
 	std::string depotFile;
 	bool exclLockType = false;
-	bool isStateSet = false;
 	
 	// Dump out the variables, using the GetVar( x ) interface.
 	// Don't display the function, which is only relevant to rpc.
@@ -40,13 +40,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		std::string value(val.Text());
 		// Conn().Log().Debug() << key << " # " << value << Endl;
 		
-		if (EndsWith(value, notFound) && !StartsWith(key, invalidPath))
-		{
-			if (!AddUnknown(current, value))
-				return; // invalid file
-			isStateSet = true;
-		}
-		else if (key == "headType")
+		if (key == "headType")
 		{
 			exclLockType = value.find("+l") != std::string::npos;
 		}
@@ -111,15 +105,12 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 			current.AddState(kReadOnly);
 	}
 
-	if (!isStateSet)
-	{
-		int actionState = ActionToState(action, headAction, haveRev, headRev);
-		/*
-		Conn().Log().Debug() << current.GetPath() << ": action '" << action << "', headAction '" << headAction 
-							 << "', haveRev '" << haveRev << "', headRev '" << headRev << "' " << actionState << " " << current.GetState() << Endl;
-		*/
-		current.AddState((State)actionState);
-	}
+	int actionState = ActionToState(action, headAction, haveRev, headRev);
+	/*
+	Conn().Log().Debug() << current.GetPath() << ": action '" << action << "', headAction '" << headAction 
+							<< "', haveRev '" << haveRev << "', headRev '" << headRev << "' " << actionState << " " << current.GetState() << Endl;
+	*/
+	current.AddState((State)actionState);
 
 	Conn().VerboseLine(current.GetPath());
 	
@@ -136,16 +127,14 @@ void P4StatusBaseCommand::HandleError( Error *err )
 	
 	StrBuf buf;
 	err->Fmt(&buf);
-	
-	const std::string invalidPath = "//...";
-	const std::string notFound = " - no such file(s).";
+
 	std::string value(buf.Text());
 	value = TrimEnd(value, '\n');
 	VersionedAsset asset;	
 	
-	if (EndsWith(value, notFound))
+	if (EndsWith(value, notFound) || EndsWith(value, notInClientView))
 	{
-		if (StartsWith(value, invalidPath) || EndsWith(value.substr(0, value.length() - notFound.length()), "..."))
+		if (StartsWith(value, invalidPath) || EndsWith(value.substr(0, value.length() - notFound.length()), "...") || EndsWith(value.substr(0, value.length() - notInClientView.length()), "..."))
 		{
 			// tried to get status with no files matching wildcard //... which is ok
 			// or
@@ -153,9 +142,10 @@ void P4StatusBaseCommand::HandleError( Error *err )
 			Conn().VerboseLine(value);
 			return;
 		}
-		else if (AddUnknown(asset, value))
-		{
 
+		if (AddUnknown(asset, value))
+		{
+			asset.AddState(kUnversioned);
 			if (PathExists(asset.GetPath()))
 			{
 				asset.AddState(kLocal);
@@ -177,9 +167,11 @@ void P4StatusBaseCommand::HandleError( Error *err )
 
 bool P4StatusBaseCommand::AddUnknown(VersionedAsset& current, const std::string& value)
 {
-	const std::string notFound = " - no such file(s).";
+	if (EndsWith(value, notFound))
+		current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
+	else if (EndsWith(value, notInClientView))
+		current.SetPath(WildcardsRemove(value.substr(0, value.length() - notInClientView.length())));
 
-	current.SetPath(WildcardsRemove(value.substr(0, value.length() - notFound.length())));
 	if (EndsWith(current.GetPath(), "*")) 
 		return false; // skip invalid files
 	return true;
