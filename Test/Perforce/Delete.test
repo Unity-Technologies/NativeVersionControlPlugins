@@ -1,9 +1,10 @@
-c:delete
+<genfile ./Assets/deletefile1.txt>
+c:add 
 1
-./Assets/testfile2.txt
+./Assets/deletefile1.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/deletefile1.txt" 
 v1:login
 v1:login
 v1:Prompted for password
@@ -49,29 +50,112 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:<absroot>/Assets/testfile2.txt
-v1:delete  "<absroot>/Assets/testfile2.txt" 
+v1:./Assets/deletefile1.txt - no such file(s).
+v1:add -f  "./Assets/deletefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/testfile2.txt#1 - opened for delete (level 48)
+i1://depot/Assets/deletefile1.txt#1 - opened for add (level 48)
 o1:-1
-v1:fstat  "<absroot>/Assets/testfile2.txt" 
+v1:fstat  "./Assets/deletefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/deletefile1.txt
+o1:<absroot>/Assets/deletefile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/deletefile1.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/deletefile1.txt
+o1:<absroot>/Assets/deletefile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:submit
+-1
+This is a submit for a file to delete
+1
+./Assets/deletefile1.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/deletefile1.txt
+v1:where "<absroot>/Assets/deletefile1.txt_XUDELIMX_" 
+==:v1:User vcs_test_user ticket expires in
+v1:where "<absroot>/Assets/deletefile1.txt_XUDELIMX_" 
+==:v1:User vcs_test_user ticket expires in
+v1:submit -i
+==:v1:User vcs_test_user ticket expires in
+==:i1:Change 
+<ignore>
+==:i1:Submitting change 
+<ignore>
+i1:Locking 1 files ... (level 48)
+<p:Locking 1 files ...
+i1:add //depot/Assets/deletefile1.txt#1 (level 48)
+<p:add //depot/Assets/deletefile1.txt#1
+==:i1:Change 
+<ignore>
+o1:-1
+v1:fstat  "<absroot>/Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/deletefile1.txt
+o1:<absroot>/Assets/deletefile1.txt
+o1:16387
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/deletefile1.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/deletefile1.txt
+o1:<absroot>/Assets/deletefile1.txt
+o1:16387
+d1:end of list
+r1:end of response
+--
+c:delete
+1
+./Assets/deletefile1.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/deletefile1.txt
+v1:delete  "<absroot>/Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+i1://depot/Assets/deletefile1.txt#1 - opened for delete (level 48)
+o1:-1
+v1:fstat  "<absroot>/Assets/deletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/deletefile1.txt
+o1:<absroot>/Assets/deletefile1.txt
 o1:66
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/testfile2.txt
+./Assets/deletefile1.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile2.txt" 
+v1:fstat  "./Assets/deletefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/deletefile1.txt
+o1:<absroot>/Assets/deletefile1.txt
 o1:66
 d1:end of list
 r1:end of response

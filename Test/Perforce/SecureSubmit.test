@@ -1,11 +1,10 @@
-c:submit
--1
-This is a submit
+<genfile ./Assets/securesubmitfile1.txt>
+c:add 
 1
-./Assets/testfile2.txt
+./Assets/securesubmitfile1.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securesubmitfile1.txt" 
 v1:login
 v1:login
 v1:Prompted for password
@@ -53,42 +52,78 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:<absroot>/Assets/testfile2.txt
-v1:where "<absroot>/Assets/testfile2.txt_XUDELIMX_" 
+v1:./Assets/securesubmitfile1.txt - no such file(s).
+v1:add -f  "./Assets/securesubmitfile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:where "<absroot>/Assets/testfile2.txt_XUDELIMX_" 
+i1://depot/Assets/securesubmitfile1.txt#1 - opened for add (level 48)
+o1:-1
+v1:fstat  "./Assets/securesubmitfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securesubmitfile1.txt
+o1:<absroot>/Assets/securesubmitfile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/securesubmitfile1.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/securesubmitfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securesubmitfile1.txt
+o1:<absroot>/Assets/securesubmitfile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:submit
+-1
+This is a submit
+1
+./Assets/securesubmitfile1.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securesubmitfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securesubmitfile1.txt
+v1:where "<absroot>/Assets/securesubmitfile1.txt_XUDELIMX_" 
+==:v1:User vcs_test_user ticket expires in
+v1:where "<absroot>/Assets/securesubmitfile1.txt_XUDELIMX_" 
 ==:v1:User vcs_test_user ticket expires in
 v1:submit -i
 ==:v1:User vcs_test_user ticket expires in
-i1:Change 1 created with 1 open file(s). (level 48)
-<p:Change 1 created with 1 open file(s).
-i1:Submitting change 1. (level 48)
-<p:Submitting change 1.
+==:i1:Change 
+<ignore>
+==:i1:Submitting change 
+<ignore>
 i1:Locking 1 files ... (level 48)
 <p:Locking 1 files ...
-i1:add //depot/Assets/testfile2.txt#1 (level 48)
-<p:add //depot/Assets/testfile2.txt#1
-i1:Change 1 submitted. (level 48)
-<p:Change 1 submitted.
+i1:add //depot/Assets/securesubmitfile1.txt#1 (level 48)
+<p:add //depot/Assets/securesubmitfile1.txt#1
+==:i1:Change 
+<ignore>
 o1:-1
-v1:fstat  "<absroot>/Assets/testfile2.txt" 
+v1:fstat  "<absroot>/Assets/securesubmitfile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/securesubmitfile1.txt
+o1:<absroot>/Assets/securesubmitfile1.txt
 o1:16387
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/testfile2.txt
+./Assets/securesubmitfile1.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile2.txt" 
+v1:fstat  "./Assets/securesubmitfile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/securesubmitfile1.txt
+o1:<absroot>/Assets/securesubmitfile1.txt
 o1:16387
 d1:end of list
 r1:end of response

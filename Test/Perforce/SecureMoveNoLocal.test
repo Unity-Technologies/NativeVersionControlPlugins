@@ -1,10 +1,10 @@
-<genfile ./Assets/movefileNoLocal1.txt>
+<genfile ./Assets/securemovefileNoLocal1.txt>
 c:add 
 1
-./Assets/movefileNoLocal1.txt
+./Assets/securemovefileNoLocal1.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/movefileNoLocal1.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securemovefileNoLocal1.txt" 
 v1:login
 v1:login
 v1:Prompted for password
@@ -52,29 +52,29 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:./Assets/movefileNoLocal1.txt - no such file(s).
-v1:add -f  "./Assets/movefileNoLocal1.txt" 
+v1:./Assets/securemovefileNoLocal1.txt - no such file(s).
+v1:add -f  "./Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/movefileNoLocal1.txt#1 - opened for add (level 48)
+i1://depot/Assets/securemovefileNoLocal1.txt#1 - opened for add (level 48)
 o1:-1
-v1:fstat  "./Assets/movefileNoLocal1.txt" 
+v1:fstat  "./Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefileNoLocal1.txt
-o1:<absroot>/Assets/movefileNoLocal1.txt
+v1:<absroot>/Assets/securemovefileNoLocal1.txt
+o1:<absroot>/Assets/securemovefileNoLocal1.txt
 o1:257
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/movefileNoLocal1.txt
+./Assets/securemovefileNoLocal1.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/movefileNoLocal1.txt" 
+v1:fstat  "./Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefileNoLocal1.txt
-o1:<absroot>/Assets/movefileNoLocal1.txt
+v1:<absroot>/Assets/securemovefileNoLocal1.txt
+o1:<absroot>/Assets/securemovefileNoLocal1.txt
 o1:257
 d1:end of list
 r1:end of response
@@ -84,77 +84,77 @@ c:submit
 -1
 This is a submit
 1
-./Assets/movefileNoLocal1.txt
+./Assets/securemovefileNoLocal1.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/movefileNoLocal1.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefileNoLocal1.txt
-v1:where "<absroot>/Assets/movefileNoLocal1.txt_XUDELIMX_" 
+v1:<absroot>/Assets/securemovefileNoLocal1.txt
+v1:where "<absroot>/Assets/securemovefileNoLocal1.txt_XUDELIMX_" 
 ==:v1:User vcs_test_user ticket expires in
-v1:where "<absroot>/Assets/movefileNoLocal1.txt_XUDELIMX_" 
+v1:where "<absroot>/Assets/securemovefileNoLocal1.txt_XUDELIMX_" 
 ==:v1:User vcs_test_user ticket expires in
 v1:submit -i
 ==:v1:User vcs_test_user ticket expires in
-i1:Change 4 created with 1 open file(s). (level 48)
-<p:Change 4 created with 1 open file(s).
-i1:Submitting change 4. (level 48)
-<p:Submitting change 4.
+==:i1:Change 
+<ignore>
+==:i1:Submitting change 
+<ignore>
 i1:Locking 1 files ... (level 48)
 <p:Locking 1 files ...
-i1:add //depot/Assets/movefileNoLocal1.txt#1 (level 48)
-<p:add //depot/Assets/movefileNoLocal1.txt#1
-i1:Change 4 submitted. (level 48)
-<p:Change 4 submitted.
+i1:add //depot/Assets/securemovefileNoLocal1.txt#1 (level 48)
+<p:add //depot/Assets/securemovefileNoLocal1.txt#1
+==:i1:Change 
+<ignore>
 o1:-1
-v1:fstat  "<absroot>/Assets/movefileNoLocal1.txt" 
+v1:fstat  "<absroot>/Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefileNoLocal1.txt
-o1:<absroot>/Assets/movefileNoLocal1.txt
+v1:<absroot>/Assets/securemovefileNoLocal1.txt
+o1:<absroot>/Assets/securemovefileNoLocal1.txt
 o1:16387
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/movefileNoLocal1.txt
+./Assets/securemovefileNoLocal1.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/movefileNoLocal1.txt" 
+v1:fstat  "./Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefileNoLocal1.txt
-o1:<absroot>/Assets/movefileNoLocal1.txt
+v1:<absroot>/Assets/securemovefileNoLocal1.txt
+o1:<absroot>/Assets/securemovefileNoLocal1.txt
 o1:16387
 d1:end of list
 r1:end of response
 --
-<delfile ./Assets/movefileNoLocal1.txt>
-<genfile ./Assets/movefileNoLocal2.txt>
+<delfile ./Assets/securemovefileNoLocal1.txt>
+<genfile ./Assets/securemovefileNoLocal2.txt>
 c:move noLocalFileMove
 2
-./Assets/movefileNoLocal1.txt
+./Assets/securemovefileNoLocal1.txt
 0
-./Assets/movefileNoLocal2.txt
+./Assets/securemovefileNoLocal2.txt
 0
 --
-v1:edit -k "./Assets/movefileNoLocal1.txt" 
+v1:edit -k "./Assets/securemovefileNoLocal1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/movefileNoLocal1.txt#1 - opened for edit (level 48)
-v1:move -k "./Assets/movefileNoLocal1.txt" "./Assets/movefileNoLocal2.txt" 
+i1://depot/Assets/securemovefileNoLocal1.txt#1 - opened for edit (level 48)
+v1:move -k "./Assets/securemovefileNoLocal1.txt" "./Assets/securemovefileNoLocal2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/movefileNoLocal2.txt#1 - moved from //depot/Assets/movefileNoLocal1.txt#1 (level 48)
+i1://depot/Assets/securemovefileNoLocal2.txt#1 - moved from //depot/Assets/securemovefileNoLocal1.txt#1 (level 48)
 --
 c:status recurse
 1
-./Assets/movefileNoLocal2.txt
+./Assets/securemovefileNoLocal2.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/movefileNoLocal2.txt" 
+v1:fstat  "./Assets/securemovefileNoLocal2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefileNoLocal2.txt
-o1:<absroot>/Assets/movefileNoLocal2.txt
+v1:<absroot>/Assets/securemovefileNoLocal2.txt
+o1:<absroot>/Assets/securemovefileNoLocal2.txt
 o1:65795
 d1:end of list
 r1:end of response
