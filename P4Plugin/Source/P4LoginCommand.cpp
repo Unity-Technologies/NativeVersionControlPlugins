@@ -20,7 +20,7 @@ public:
 		m_LoggedIn = false;
 		m_Password = task.GetP4Password();
 		m_CheckingForLoggedIn = args.size() > 1;
-		const std::string cmd = std::string("login") + (m_CheckingForLoggedIn ? std::string(" " ) + args[1] : std::string());
+		const std::string cmd = std::string("login2") + (m_CheckingForLoggedIn ? std::string(" " ) + args[1] : std::string());
 
 		if (m_CheckingForLoggedIn)
 		{
@@ -34,7 +34,6 @@ public:
 				std::string errorMessage = GetStatusMessage();			
 				Conn().Log().Fatal() << errorMessage << Endl;
 			}
-
 		}
 		
 		if (m_CheckingForLoggedIn)
