@@ -6,8 +6,8 @@ This is a submit for delete
 0
 --
 v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile2.txt" 
-v1:login
-v1:login
+v1:login2
+v1:login2
 v1:Prompted for password
 v1:User vcs_test_user logged in.
 v1:client -o "testclient"

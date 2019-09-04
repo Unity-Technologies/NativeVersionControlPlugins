@@ -4,8 +4,8 @@ c:revert
 0
 --
 v1:revert  "./Assets/testfile.txt" 
-v1:login
-v1:login
+v1:login2
+v1:login2
 v1:Prompted for password
 v1:User vcs_test_user logged in.
 v1:client -o "testclient"
