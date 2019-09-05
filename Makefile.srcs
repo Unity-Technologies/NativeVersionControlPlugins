@@ -75,7 +75,7 @@ P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 		 ./P4Plugin/Source/P4Utility.h
 
 P4PLUGIN_LINK = -lclient -lrpc -lsupp -lssl -lcrypto
-P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r17.2/include/p4 -I./P4Plugin/Source
+P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r18.2/include/p4 -I./P4Plugin/Source
 
 SVNPLUGIN_SRCS = ./SvnPlugin/Source/SvnPlugin_OSX.cpp \
 		./SvnPlugin/Source/SvnTask.cpp
