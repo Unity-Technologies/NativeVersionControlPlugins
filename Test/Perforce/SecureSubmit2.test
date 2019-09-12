@@ -81,7 +81,7 @@ r1:end of response
 --
 c:submit
 -1
-This is a submit for a file to delete
+This is a secure submit
 1
 ./Assets/securesubmitfile2.txt
 0
@@ -164,7 +164,7 @@ r1:end of response
 --
 c:submit
 -1
-This is a submit for delete
+This is a secure submit for delete
 1
 ./Assets/securesubmitfile2.txt
 0

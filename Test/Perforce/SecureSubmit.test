@@ -81,7 +81,7 @@ r1:end of response
 --
 c:submit
 -1
-This is a submit
+This is a secure submit
 1
 ./Assets/securesubmitfile1.txt
 0

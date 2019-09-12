@@ -82,7 +82,7 @@ r1:end of response
 
 c:submit
 -1
-This is a submit
+This is a secure submit for a file to move
 1
 ./Assets/securemovefileNoLocal1.txt
 0
