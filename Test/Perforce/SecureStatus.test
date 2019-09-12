@@ -1,10 +1,10 @@
-<genfile ./Assets/testfile.txt>
+<genfile ./Assets/securestatusfile.txt>
 c:add 
 1
-./Assets/testfile.txt
+./Assets/securestatusfile.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securestatusfile.txt" 
 v1:login
 v1:login
 v1:Prompted for password
@@ -52,45 +52,45 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:./Assets/testfile.txt - no such file(s).
-v1:add -f  "./Assets/testfile.txt" 
+v1:./Assets/securestatusfile.txt - no such file(s).
+v1:add -f  "./Assets/securestatusfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/testfile.txt#1 - opened for add (level 48)
+i1://depot/Assets/securestatusfile.txt#1 - opened for add (level 48)
 o1:-1
-v1:fstat  "./Assets/testfile.txt" 
+v1:fstat  "./Assets/securestatusfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile.txt
-o1:<absroot>/Assets/testfile.txt
+v1:<absroot>/Assets/securestatusfile.txt
+o1:<absroot>/Assets/securestatusfile.txt
 o1:257
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/testfile.txt
+./Assets/securestatusfile.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" 
+v1:fstat  "./Assets/securestatusfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile.txt
-o1:<absroot>/Assets/testfile.txt
+v1:<absroot>/Assets/securestatusfile.txt
+o1:<absroot>/Assets/securestatusfile.txt
 o1:257
 d1:end of list
 r1:end of response
 --
 c:status recurse
 2
-./Assets/testfile.txt
+./Assets/securestatusfile.txt
 0
 ./Assets/excludedfile.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
+v1:fstat  "./Assets/securestatusfile.txt" "./Assets/excludedfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile.txt
-o1:<absroot>/Assets/testfile.txt
+v1:<absroot>/Assets/securestatusfile.txt
+o1:<absroot>/Assets/securestatusfile.txt
 o1:257
 o1:./Assets/excludedfile.txt
 o1:262144
@@ -100,16 +100,16 @@ r1:end of response
 --
 c:status recurse
 2
-./Assets/testfile.txt
+./Assets/securestatusfile.txt
 0
 ./Assets/excludedfile.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
+v1:fstat  "./Assets/securestatusfile.txt" "./Assets/excludedfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile.txt
-o1:<absroot>/Assets/testfile.txt
+v1:<absroot>/Assets/securestatusfile.txt
+o1:<absroot>/Assets/securestatusfile.txt
 o1:257
 o1:./Assets/excludedfile.txt
 o1:262144
@@ -120,16 +120,16 @@ r1:end of response
 <sleep:15
 c:status recurse
 2
-./Assets/testfile.txt
+./Assets/securestatusfile.txt
 0
 ./Assets/excludedfile.txt
 262145
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" "./Assets/excludedfile.txt" 
+v1:fstat  "./Assets/securestatusfile.txt" "./Assets/excludedfile.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile.txt
-o1:<absroot>/Assets/testfile.txt
+v1:<absroot>/Assets/securestatusfile.txt
+o1:<absroot>/Assets/securestatusfile.txt
 o1:257
 o1:./Assets/excludedfile.txt
 o1:262144
