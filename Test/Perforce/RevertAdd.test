@@ -83,7 +83,7 @@ c:revert
 0
 --
 v1:revert  "./Assets/revertaddfile1.txt" 
-v1:User vcs_test_user ticket expires in 12 hours 0 minutes.
+==:v1:User vcs_test_user ticket expires in
 i1://depot/Assets/revertaddfile1.txt#none - was add, abandoned (level 48)
 v1:where "//depot/Assets/revertaddfile1.txt_XUDELIMX_" 
 ==:v1:User vcs_test_user ticket expires in
