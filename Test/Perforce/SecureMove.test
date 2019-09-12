@@ -133,26 +133,26 @@ c:move
 2
 ./Assets/securemovefile1.txt
 0
-./Assets/movefile2.txt
+./Assets/securemovefile2.txt
 0
 --
 v1:edit "./Assets/securemovefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
 i1://depot/Assets/securemovefile1.txt#1 - opened for edit (level 48)
-v1:move "./Assets/securemovefile1.txt" "./Assets/movefile2.txt" 
+v1:move "./Assets/securemovefile1.txt" "./Assets/securemovefile2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/movefile2.txt#1 - moved from //depot/Assets/securemovefile1.txt#1 (level 48)
+i1://depot/Assets/securemovefile2.txt#1 - moved from //depot/Assets/securemovefile1.txt#1 (level 48)
 --
 c:status recurse
 1
-./Assets/movefile2.txt
+./Assets/securemovefile2.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/movefile2.txt" 
+v1:fstat  "./Assets/securemovefile2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/movefile2.txt
-o1:<absroot>/Assets/movefile2.txt
+v1:<absroot>/Assets/securemovefile2.txt
+o1:<absroot>/Assets/securemovefile2.txt
 o1:65795
 d1:end of list
 r1:end of response
