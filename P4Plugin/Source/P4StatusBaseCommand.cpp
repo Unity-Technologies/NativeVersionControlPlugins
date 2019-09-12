@@ -76,6 +76,14 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 			if (exclLockType)
 				current.AddState(kLockedRemote);
 		}
+		else if (StartsWith(key, "otherAction") && value == "delete")
+		{
+			current.AddState(kDeletedRemote); 
+		}
+		else if (StartsWith(key, "otherAction") && value == "add")
+		{
+			current.AddState(kAddedRemote); 
+		}
 		else if (key == "unresolved")
 		{
 			current.AddState(kConflicted);
