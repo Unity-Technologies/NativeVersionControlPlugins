@@ -1,0 +1,21 @@
+name: Zip VCS plugins
+agent:
+    type: Unity::VM
+    image: core-kaunas/win10-vs2010:latest
+    flavor: b1.small
+
+interpreter: powershell    
+commands:
+        - Rename-Item Build builds
+        
+artifacts:
+    builds:
+      paths:
+        - "builds/linux64/*"
+        - "builds/OSXx64/*"
+        - "builds/Win32/*"
+        
+dependencies:
+    - .yamato/windows-build.yml
+    - .yamato/linux-build.yml
+    - .yamato/osx-build.yml
