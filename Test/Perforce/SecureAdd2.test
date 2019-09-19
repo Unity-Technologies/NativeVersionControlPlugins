@@ -1,10 +1,10 @@
-<genfile ./Assets/testfile2.txt>
+<genfile ./Assets/secureaddfile2.txt>
 c:add 
 1
-./Assets/testfile2.txt
+./Assets/secureaddfile2.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/secureaddfile2.txt" 
 v1:login
 v1:login
 v1:Prompted for password
@@ -52,29 +52,29 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:./Assets/testfile2.txt - no such file(s).
-v1:add -f  "./Assets/testfile2.txt" 
+v1:./Assets/secureaddfile2.txt - no such file(s).
+v1:add -f  "./Assets/secureaddfile2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/testfile2.txt#1 - opened for add (level 48)
+i1://depot/Assets/secureaddfile2.txt#1 - opened for add (level 48)
 o1:-1
-v1:fstat  "./Assets/testfile2.txt" 
+v1:fstat  "./Assets/secureaddfile2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/secureaddfile2.txt
+o1:<absroot>/Assets/secureaddfile2.txt
 o1:257
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/testfile2.txt
+./Assets/secureaddfile2.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile2.txt" 
+v1:fstat  "./Assets/secureaddfile2.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/secureaddfile2.txt
+o1:<absroot>/Assets/secureaddfile2.txt
 o1:257
 d1:end of list
 r1:end of response

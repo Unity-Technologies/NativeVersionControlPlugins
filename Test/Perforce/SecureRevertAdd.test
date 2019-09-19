@@ -1,9 +1,10 @@
-c:revert
+<genfile ./Assets/securerevertaddfile1.txt>
+c:add 
 1
-./Assets/testfile.txt
+./Assets/securerevertaddfile1.txt
 0
 --
-v1:revert  "./Assets/testfile.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securerevertaddfile1.txt" 
 v1:login
 v1:login
 v1:Prompted for password
@@ -51,25 +52,59 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-i1://depot/Assets/testfile.txt#none - was add, abandoned (level 48)
-v1:where "//depot/Assets/testfile.txt_XUDELIMX_" 
+v1:./Assets/securerevertaddfile1.txt - no such file(s).
+v1:add -f  "./Assets/securerevertaddfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+i1://depot/Assets/securerevertaddfile1.txt#1 - opened for add (level 48)
+o1:-1
+v1:fstat  "./Assets/securerevertaddfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securerevertaddfile1.txt
+o1:<absroot>/Assets/securerevertaddfile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/securerevertaddfile1.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/securerevertaddfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securerevertaddfile1.txt
+o1:<absroot>/Assets/securerevertaddfile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:revert
+1
+./Assets/securerevertaddfile1.txt
+0
+--
+v1:revert  "./Assets/securerevertaddfile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+i1://depot/Assets/securerevertaddfile1.txt#none - was add, abandoned (level 48)
+v1:where "//depot/Assets/securerevertaddfile1.txt_XUDELIMX_" 
 ==:v1:User vcs_test_user ticket expires in
 o1:1
-o1:<absroot>/Assets/testfile.txt
+o1:<absroot>/Assets/securerevertaddfile1.txt
 o1:1
 r1:end of response
 --
 c:status recurse
 1
-./Assets/testfile.txt
+./Assets/securerevertaddfile1.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile.txt" 
+v1:fstat  "./Assets/securerevertaddfile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-o1:./Assets/testfile.txt
-o1:1
-v1:./Assets/testfile.txt - no such file(s).
+o1:./Assets/securerevertaddfile1.txt
+o1:262145
+v1:./Assets/securerevertaddfile1.txt - no such file(s).
 d1:end of list
 r1:end of response
 --

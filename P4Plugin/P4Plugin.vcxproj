@@ -36,7 +36,6 @@
     <ClCompile Include="Source\P4ExitCommand.cpp" />
     <ClCompile Include="Source\P4FileModeCommand.cpp" />
     <ClCompile Include="Source\P4FileSetBaseCommand.cpp" />
-    <ClCompile Include="Source\P4FilesNotInClientView.cpp" />
     <ClCompile Include="Source\P4GetLatestCommand.cpp" />
     <ClCompile Include="Source\P4IncomingChangeAssetsCommand.cpp" />
     <ClCompile Include="Source\P4IncomingCommand.cpp" />
@@ -86,7 +85,6 @@
     <ClInclude Include="..\Common\VersionedAsset.h" />
     <ClInclude Include="Source\P4Command.h" />
     <ClInclude Include="Source\P4FileSetBaseCommand.h" />
-    <ClInclude Include="Source\P4FilesNotInClientView.h" />
     <ClInclude Include="Source\P4StatusBaseCommand.h" />
     <ClInclude Include="Source\P4StatusCommand.h" />
     <ClInclude Include="Source\P4Task.h" />

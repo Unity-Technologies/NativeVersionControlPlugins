@@ -23,7 +23,6 @@ sub PerforceIntegrationTests
 	rmtree("Test/tmp");
 	mkdir "Test/tmp";
 	mkdir "Test/tmp/testclient";
-	mkdir "Test/tmp/testclient/Assets";
 	mkdir "Test/tmp/testserver";
 	$ENV{'VCS_P4ROOT'} = "Test/tmp/testserver";
 	$ENV{'VCS_P4PORT'} = "$p4port";
@@ -75,10 +74,12 @@ sub RunTests()
 	}
 
 	$cwd = getcwd();
-	print "Changing working directory to: '", $clientroot,"'\n";
-	chdir $clientroot;
 	foreach $i (@files) {
-		rmtree("./Library");
+		chdir $cwd;
+		rmtree( $clientroot, {keep_root => 1} );
+		print "Changing working directory to: '", $clientroot,"'\n";
+		chdir $clientroot;
+		mkdir "./Assets";
 		mkdir "./Library";
 		$output = `$testserver $pluginexec $cwd $i $option`;
 		$res = $? >> 8;
@@ -149,7 +150,7 @@ sub TeardownServer
 	KillSubProcess($handle);
 	waitpid($handle,0);
 	sleep(5);
-	rmtree "Test/tmp/testclient";
+	rmtree("Test/tmp/testclient");
 	rmtree("Test/tmp/testserver");
 	rmtree("Test/tmp");
 }
