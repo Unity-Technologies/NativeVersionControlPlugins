@@ -8,13 +8,14 @@ commands:
         - brew install mercurial
         - hg clone --config extensions.largefiles= http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
         - perl build.pl | tee mac_build.txt
-        - hg update -C --cwd PerforceBinaries
         - perl build.pl -test | tee mac_test.txt
 
 artifacts:
-    binaries:
+    builds:
       paths:
-        - "Build/OSXx64/*"
+        - "Build/OSXx64/PerforcePlugin"
+        - "Build/OSXx64/PlasticSCMPlugin"
+        - "Build/OSXx64/SubversionPlugin"
     logs:
       paths:
         - "mac_build.txt"

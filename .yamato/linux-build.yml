@@ -5,15 +5,14 @@ agent:
     flavor: b1.large
 
 commands:
-        - hg clone http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
+        - hg clone --config extensions.largefiles= http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
         - perl build.pl | tee linux_build.txt
-        - hg update -C --cwd PerforceBinaries
         - perl build.pl -test | tee linux_test.txt
-
 artifacts:
-    binaries:
+    builds:
       paths:
-        - "Build/linux64/*"
+        - "Build/linux64/PerforcePlugin"
+        - "Build/linux64/SubversionPlugin"
     logs:
       paths:
         - "linux_build.txt"
