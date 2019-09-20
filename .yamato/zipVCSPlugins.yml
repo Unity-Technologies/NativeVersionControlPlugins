@@ -19,3 +19,14 @@ dependencies:
     - .yamato/windows-build.yml
     - .yamato/linux-build.yml
     - .yamato/osx-build.yml
+    
+triggers:
+  branches:
+    only:
+    - "/.*/"
+    except:
+    - "master"
+  pull_requests:
+    - targets:
+        only:
+          - "master"
