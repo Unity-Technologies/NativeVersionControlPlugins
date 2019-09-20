@@ -183,7 +183,7 @@ public:
 			Conn().DataLine("enablesGetLatestOnChangeSetSubset", MAConfig);
 
 			// We provide 4 configuration fields for the GUI to display
-			Conn().DataLine("5");
+			Conn().DataLine("4");
 			Conn().DataLine("vcPerforceUsername");               // key
 			Conn().DataLine("Username", MAConfig);               // label
 			Conn().DataLine("The perforce user name", MAConfig); // description
