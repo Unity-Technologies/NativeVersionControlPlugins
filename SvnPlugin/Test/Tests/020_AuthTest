@@ -1,7 +1,0 @@
-c:pluginConfig svnRepos svn://localhost/ROOT
-c:pluginConfig svnUsername testuser
-c:pluginConfig svnPassword testpassword
-c:status
-1
-Assets/committed_synced_file1A.txt
-42
