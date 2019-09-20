@@ -15,7 +15,6 @@ artifacts:
       paths:
         - "Build/OSXx64/PerforcePlugin"
         - "Build/OSXx64/PlasticSCMPlugin"
-        - "Build/OSXx64/SubversionPlugin"
     logs:
       paths:
         - "mac_build.txt"

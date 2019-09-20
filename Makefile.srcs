@@ -75,33 +75,3 @@ P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 
 P4PLUGIN_LINK = -lclient -lrpc -lsupp -lssl -lcrypto
 P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r16.1/include/p4 -I./P4Plugin/Source
-
-SVNPLUGIN_SRCS = ./SvnPlugin/Source/SvnPlugin_OSX.cpp \
-		./SvnPlugin/Source/SvnTask.cpp
-
-SVNPLUGIN_INCLS = ./SvnPlugin/Source/AllSvnCommands.h \
-		./SvnPlugin/Source/SvnAddCommand.h \
-		./SvnPlugin/Source/SvnChangeDescription.h \
-		./SvnPlugin/Source/SvnCheckoutCommand.h \
-		./SvnPlugin/Source/SvnCommand.h \
-		./SvnPlugin/Source/SvnConfigCommand.h \
-		./SvnPlugin/Source/SvnDeleteCommand.h \
-		./SvnPlugin/Source/SvnDownloadCommand.h \
-		./SvnPlugin/Source/SvnGetLatestCommand.h \
-		./SvnPlugin/Source/SvnIncomingAssetsCommand.h \
-		./SvnPlugin/Source/SvnIncomingCommand.h \
-		./SvnPlugin/Source/SvnLockCommand.h \
-		./SvnPlugin/Source/SvnMoveChangelistCommand.h \
-		./SvnPlugin/Source/SvnMoveCommand.h \
-		./SvnPlugin/Source/SvnOutgoingAssetsCommand.h \
-		./SvnPlugin/Source/SvnOutgoingCommand.h \
-		./SvnPlugin/Source/SvnResolveCommand.h \
-		./SvnPlugin/Source/SvnRevertCommand.h \
-		./SvnPlugin/Source/SvnStatusCommand.h \
-		./SvnPlugin/Source/SvnSubmitCommand.h \
-		./SvnPlugin/Source/SvnTask.h \
-		./SvnPlugin/Source/SvnUnlockCommand.h
-
-SVNPLUGIN_LINK = 
-SVNPLUGIN_INCLUDE = -I./Common -I./SvnPlugin/Source
-

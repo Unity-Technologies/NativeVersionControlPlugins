@@ -15,9 +15,7 @@ artifacts:
       paths:
         - "Build/Win32/PerforcePlugin.exe"
         - "Build/Win32/PlasticSCMPlugin.exe"
-        - "Build/Win32/SubversionPlugin.exe"
         - "Build/Win32/PerforcePlugin.pdb"
-        - "Build/Win32/SubversionPlugin.pdb"
     logs:
       paths:
         - "win_build.txt"

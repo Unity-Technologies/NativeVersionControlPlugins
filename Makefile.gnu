@@ -20,14 +20,9 @@ P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
 P4PLUGIN_TARGET = PerforcePlugin
 P4PLUGIN_LINK += $(LIBRARIES) -ldl
 
-SVNPLUGIN_MODULES = $(SVNPLUGIN_SRCS:.c=.o)
-SVNPLUGIN_MODULES := $(SVNPLUGIN_MODULES:.cpp=.o)
-SVNPLUGIN_TARGET = SubversionPlugin
-SVNPLUGIN_LINK += $(LIBRARIES)
-
 default: all
 
-all: P4Plugin SvnPlugin testserver
+all: P4Plugin testserver
 
 testserver: $(TESTSERVER_TARGET)
 	@mkdir -p Build/$(PLATFORM)
@@ -35,10 +30,6 @@ testserver: $(TESTSERVER_TARGET)
 P4Plugin: $(P4PLUGIN_TARGET)
 	mkdir -p Build/$(PLATFORM)
 	cp $(P4PLUGIN_TARGET) Build/$(PLATFORM)
-
-SvnPlugin: $(SVNPLUGIN_TARGET)
-	mkdir -p Build/$(PLATFORM)
-	cp $(SVNPLUGIN_TARGET) Build/$(PLATFORM)
 
 Common: $(COMMON_MODULES)
 
@@ -51,17 +42,11 @@ Test/Source/%.o : Test/Source/%.cpp $(TESTSERVER_INCLS)
 P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@
 
-SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
-	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
-
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
 	$(CXX) $(LDFLAGS) -o $@ $^  $(P4PLUGIN_LINK) -L./P4Plugin/Source/r16.1/lib/$(PLATFORM) 
 
-$(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(SVNPLUGIN_LINK)
-
 clean:
-	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(TESTSERVER_MODULES)
+	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(TESTSERVER_MODULES)
