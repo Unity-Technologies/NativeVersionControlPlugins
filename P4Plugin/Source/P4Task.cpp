@@ -186,18 +186,6 @@ const std::string& P4Task::GetP4Password() const
 	return m_PasswordConfig;
 }
 
-void P4Task::SetP4Host(const std::string& c)
-{
-	m_Client.SetHost(c.c_str()); 
-	m_HostConfig = c;
-	SetOnline(false);
-}
-
-std::string P4Task::GetP4Host()
-{
-	return m_Client.GetHost().Text(); 
-}
-
 const std::string& P4Task::GetP4Root() const
 { 
 	return m_Root; 
