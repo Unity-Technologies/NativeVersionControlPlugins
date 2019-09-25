@@ -6,16 +6,30 @@ agent:
 
 interpreter: powershell    
 commands:
-        - Rename-Item Build builds
+        - mkdir linux64
+        - mkdir OSXx64
+        - mkdir Win32
+        - Copy-Item Build/linux64/* linux64 -Recurse
+        - Copy-Item Build/OSXx64/* OSXx64 -Recurse
+        - Copy-Item Build/Win32/*  Win32 -Recurse
         
 artifacts:
     builds:
       paths:
-        - "builds/linux64/*"
-        - "builds/OSXx64/*"
-        - "builds/Win32/*"
+        - "linux64/**"
+        - "OSXx64/**"
+        - "Win32/**"
         
 dependencies:
     - .yamato/windows-build.yml
     - .yamato/linux-build.yml
     - .yamato/osx-build.yml
+    
+triggers:
+    branches:
+      only:
+      - "/.*/"
+    pull_requests:
+      - sources:
+            only:
+            - "/.*/"
