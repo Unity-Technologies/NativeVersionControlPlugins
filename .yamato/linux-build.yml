@@ -12,7 +12,6 @@ artifacts:
     builds:
       paths:
         - "Build/linux64/PerforcePlugin"
-        - "Build/linux64/SubversionPlugin"
     logs:
       paths:
         - "linux_build.txt"

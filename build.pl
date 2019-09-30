@@ -35,7 +35,6 @@ if ($clean)
 		}
     }
     unlink("PerforcePlugin");
-    unlink("SubversionPlugin");
     unlink("PlasticSCMPlugin");
 	exit 0;
 }
@@ -145,7 +144,6 @@ sub BuildWin32
 {
   rmtree("Build");
   system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
-  system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build SubversionPlugin.exe");
   system("msbuilder.cmd", "VersionControl.sln", "PlasticSCMPlugin", "Any CPU") && die ("Failed to build PlasticSCMPlugin.exe");
   system("msbuilder.cmd", "VersionControl.sln", "TestServer", "Win32") && die ("Failed to build TestServer.exe");
 }
