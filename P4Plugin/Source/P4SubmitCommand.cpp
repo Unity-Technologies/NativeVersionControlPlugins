@@ -47,7 +47,8 @@ public:
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		
 		bool saveOnly = args.size() > 1 && args[1] == "saveOnly";
-		
+        bool revertUnchanged = (args.size() > 1 && args[1] == "revertUnchanged") || (args.size() > 2 && args[2] == "revertUnchanged");
+        
 		Changelist changelist;
 		Conn() >> changelist;
 		
@@ -100,7 +101,7 @@ public:
 		m_Spec = writer.GetText();
 		
 		// Submit or update the change list
-		const std::string cmd = saveOnly ? "change -i" : "submit -i";
+        const std::string cmd = saveOnly ? "change -i" : revertUnchanged ? "submit -i -f revertunchanged" : "submit -i";
 
 		task.CommandRun(cmd, this);
 		

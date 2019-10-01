@@ -174,13 +174,14 @@ public:
 		else if (key == "pluginTraits")
 		{
 			// We have 4 flags set
-			Conn().DataLine("6");
+			Conn().DataLine("7");
 			Conn().DataLine("requiresNetwork", MAConfig); 			
 			Conn().DataLine("enablesCheckout", MAConfig);
 			Conn().DataLine("enablesLocking", MAConfig);
 			Conn().DataLine("enablesRevertUnchanged", MAConfig);
 			Conn().DataLine("enablesChangelists", MAConfig);
 			Conn().DataLine("enablesGetLatestOnChangeSetSubset", MAConfig);
+            Conn().DataLine("enablesRevertUnchangedOnSubmit", MAConfig);
 
 			// We provide 4 configuration fields for the GUI to display
 			Conn().DataLine("4");

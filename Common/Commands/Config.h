@@ -127,7 +127,8 @@ public:
 				(requiresNetwork ? 1 : 0) + 
 				(enablesCheckout ? 1 : 0) + 
 				(enablesLocking  ? 1 : 0) +
-				(enablesRevertUnchanged  ? 1 : 0);
+				(enablesRevertUnchanged  ? 1 : 0)+
+                (enablesRevertUnchangedOnSubmit ? 1 : 0);
 
 			conn.DataLine(count);
 
@@ -139,6 +140,8 @@ public:
 				conn.DataLine("enablesLocking", MAConfig); 
 			if (enablesRevertUnchanged)
 				conn.DataLine("enablesRevertUnchanged", MAConfig); 
+            if (enablesRevertUnchangedOnSubmit)
+                conn.DataLine("enablesRevertUnchangedOnSubmit", MAConfig);
 
 			// The per plugin defined traits
 			conn.DataLine(traits.size());
