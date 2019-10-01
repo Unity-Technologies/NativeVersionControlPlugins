@@ -26,8 +26,6 @@ public:
 	std::string GetP4Client();
 	void SetP4Password(const std::string& p);
 	const std::string& GetP4Password() const;
-	void SetP4Host(const std::string& c);
-	std::string GetP4Host();
 	void SetP4Root(const std::string& r);
 	const std::string& GetP4Root() const;
 	void SetProjectPath(const std::string& p);
@@ -84,7 +82,6 @@ private:
 	std::string m_PortConfig;
 	std::string m_UserConfig;
 	std::string m_ClientConfig;
-	std::string m_HostConfig;
 	std::string m_PasswordConfig;
 	std::string m_ProjectPathConfig;
 	std::string m_OfflineReason;
