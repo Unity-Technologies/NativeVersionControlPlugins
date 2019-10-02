@@ -140,8 +140,8 @@ public:
 				conn.DataLine("enablesLocking", MAConfig); 
 			if (enablesRevertUnchanged)
 				conn.DataLine("enablesRevertUnchanged", MAConfig); 
-            if (enablesRevertUnchangedOnSubmit)
-                conn.DataLine("enablesRevertUnchangedOnSubmit", MAConfig);
+			if (enablesRevertUnchangedOnSubmit)
+				conn.DataLine("enablesRevertUnchangedOnSubmit", MAConfig);
 
 			// The per plugin defined traits
 			conn.DataLine(traits.size());
