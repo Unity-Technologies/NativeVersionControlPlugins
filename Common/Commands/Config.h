@@ -128,7 +128,7 @@ public:
 				(enablesCheckout ? 1 : 0) + 
 				(enablesLocking  ? 1 : 0) +
 				(enablesRevertUnchanged  ? 1 : 0)+
-                (enablesRevertUnchangedOnSubmit ? 1 : 0);
+				(enablesRevertUnchangedOnSubmit ? 1 : 0);
 
 			conn.DataLine(count);
 
