@@ -1,10 +1,5 @@
-### Checklist for PR maker
-- Have you added a changelog? Each package have a changelog.
-- Have you added a test for your PR (if needed)? When adding new feature or discovering a bug that isn't cover by a test, please add a test
-
----
 ### Purpose of this PR
-Why is this PR needed, what hard problem is it solving/fixing?
+Why is this PR needed? What problem does it solve/fix?
 
 ---
 ### Testing status
