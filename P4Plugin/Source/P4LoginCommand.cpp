@@ -14,13 +14,18 @@ public:
 			Conn().Log().Info() << "Cannot login when not connected" << Endl;
 			return false;
 		}
-		
+
 		ClearStatus();
-		
+
 		m_LoggedIn = false;
 		m_Password = task.GetP4Password();
-		m_CheckingForLoggedIn = args.size() > 1;
-		const std::string cmd = std::string("login") + (m_CheckingForLoggedIn ? std::string(" " ) + args[1] : std::string());
+		m_CheckingForLoggedIn = args.size() > 1 && (args[1] == "-s");
+		m_TrustFingerprint = args.size() > 1 && (args[1] == "trust");
+
+		if (m_TrustFingerprint)
+			task.CommandRun("trust -y ", this);
+
+		const std::string cmd = std::string("login") + (m_CheckingForLoggedIn ? std::string(" ") + args[1] : std::string());
 
 		if (m_CheckingForLoggedIn)
 		{
@@ -31,12 +36,11 @@ public:
 		{
 			if (!task.CommandRun(cmd, this))
 			{
-				std::string errorMessage = GetStatusMessage();			
+				std::string errorMessage = GetStatusMessage();
 				Conn().Log().Fatal() << errorMessage << Endl;
 			}
-
 		}
-		
+
 		if (m_CheckingForLoggedIn)
 			Conn().Log().Debug() << "Is logged in: " << (m_LoggedIn ? "yes" : "no") << Endl;
 		else
@@ -45,9 +49,9 @@ public:
 		m_CheckingForLoggedIn = false;
 		return m_LoggedIn;
 	}
-	
-	void OutputInfo( char level, const char *data )
-    {
+
+	void OutputInfo(char level, const char* data)
+	{
 		std::string d(data);
 		Conn().VerboseLine(d);
 
@@ -77,16 +81,17 @@ public:
 	}
 
 	// Default handler of P4 error output. Called by the default P4Command::Message() handler.
-	void HandleError( Error *err )
+	void HandleError(Error* err)
 	{
-		if ( err == 0 )
+		if (err == 0)
 			return;
 
 		StrBuf buf;
 		err->Fmt(&buf);
 		std::string value(buf.Text());
 
-		if (value.find("Unicode server permits only unicode enabled clients") != std::string::npos)
+		if (value.find("Unicode server permits only unicode enabled clients") != std::string::npos ||
+			value.find("The authenticity of") != std::string::npos)
 		{
 			VCSStatus s = errorToVCSStatus(*err);
 			GetStatus().insert(s.begin(), s.end());
@@ -98,21 +103,23 @@ public:
 			return;
 
 		// Base implementation. Will callback to P4Command::OutputError 
-		P4Command::HandleError( err );
+		P4Command::HandleError(err);
 	}
 
 	// Entering password
-	void Prompt( const StrPtr &msg, StrBuf &buf, int noEcho ,Error *e )
+	void Prompt(const StrPtr& msg, StrBuf& buf, int noEcho, Error* e)
 	{
 		Conn().Log().Info() << "Prompted for password by server" << Endl;
 		Conn().Log().Debug() << "Prompt: " << msg.Text() << Endl;
 		buf.Set(m_Password.c_str());
 		Conn().VerboseLine("Prompted for password");
 	}
-	
+
 private:
 	bool m_LoggedIn;
 	std::string m_Password;
 	bool m_CheckingForLoggedIn;
-	
+	bool m_TrustFingerprint;
+	bool m_ServerFingerprint;
+
 } cLogin("login");

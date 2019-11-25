@@ -444,6 +444,13 @@ bool P4Task::IsLoggedIn()
 		EnableUTF8Mode();
 		loggedIn = p4c->Run(*this, args);
 	}
+	else if (HasServerFingerPrintError(p4c->GetStatus()))
+	{
+		m_Connection->InfoLine("Prompting user for server fingerprint trust");
+		args.resize(1);
+		args.push_back("trust");
+		loggedIn = p4c->Run(*this, args);
+	}
 
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
 	return loggedIn;
@@ -482,12 +489,18 @@ bool P4Task::Login()
 		args.push_back("login");
 		bool loggedIn = p4c->Run(*this, args); 
 
+		if (HasServerFingerPrintError(p4c->GetStatus()) && ExecuteTrustThisServerFingerprintDialogBox(p4c->GetStatus().begin()->message))
+		{
+			args.resize(1);
+			args.push_back("trust");
+			loggedIn = p4c->Run(*this, args);
+		}
 		if (HasUnicodeNeededError(p4c->GetStatus()))
 		{
 			EnableUTF8Mode();
 			loggedIn = p4c->Run(*this, args);
 		}
-
+		
 		SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);	
 		
 		if (!loggedIn)
@@ -652,7 +665,6 @@ bool P4Task::CommandRun(const std::string& command, P4Command* client)
 	}
 	
 	return CommandRunNoLogin(command, client);
-
 }
 
 bool P4Task::CommandRunNoLogin( const std::string &command, P4Command* client )
@@ -678,12 +690,43 @@ bool P4Task::HasUnicodeNeededError( VCSStatus status )
 	return StatusContains(status, "Unicode server permits only unicode enabled clients");
 }
 
+bool P4Task::HasServerFingerPrintError(VCSStatus status)
+{
+	return StatusContains(status, "The authenticity of");
+}
+
 void P4Task::EnableUTF8Mode()
 {
 	CharSetApi::CharSet cs = CharSetApi::UTF_8;
 	m_Client.SetTrans( cs, cs, cs, cs );
 	m_Client.SetCharset("utf8");
 }
+
+#if defined(_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+
+bool P4Task::ExecuteTrustThisServerFingerprintDialogBox(const std::string& statusMessage)
+{
+	//Extract fingerprint from status message
+
+	std::string displayString = statusMessage.substr(0, statusMessage.find("To allow connection use the")) + "\n\nTrust this fingerprint going forward?";
+
+	int msgBoxRet = MessageBoxW(
+		NULL,
+		(LPCWSTR)std::wstring(displayString.begin(), displayString.end()).c_str(),
+		(LPCWSTR)L"Perforce Fingerprint Required",
+		MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2
+	);
+
+	bool clickedOK = false;
+	if (msgBoxRet == IDOK)
+		clickedOK = true;
+
+	return clickedOK;
+}
+#endif
 
 void P4Task::DisableUTF8Mode()
 {
