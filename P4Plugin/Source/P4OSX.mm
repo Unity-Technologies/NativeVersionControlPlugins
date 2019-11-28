@@ -1,19 +1,20 @@
 #include "P4Task.h"
-#import <Foundation/Foundation.h>
-#import <cocoa/cocoa.h>
+#import <AppKit/AppKit.h>
 
-bool P4Task::ExecuteTrustThisServerFingerprintDialogBox(const std::string& statusMessage)
+bool P4Task::ExecuteTrustThisServerFingerprintDialogBox(const std::string& message)
 {
-    const char* c_string = statusMessage.c_str();
-    NSString *string = [NSString stringWithUTF8String:c_string]; 
-    NSLog(@"String:%@",string);
+    NSString *nsWindowTitle = @"Test Window Title";
+    NSString *nsMessage = [NSString stringWithUTF8String:message.c_str()];
 
-    NSAlert *alert = [[NSAlert alloc] init];
-    [alert setMessageText:string];
-    [alert setInformativeText:@"Informative text."];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert addButtonWithTitle:@"Ok"];
-    [alert runModal];
+    CFOptionFlags cfRes;
+    CFUserNotificationDisplayAlert(0, kCFUserNotificationNoteAlertLevel,
+            NULL, NULL, NULL,
+            (__bridge CFStringRef)nsWindowTitle,
+            (__bridge CFStringRef)nsMessage,
+            CFSTR("Cancel"),
+            CFSTR("Ok"),
+            NULL,
+            &cfRes);
 
-    return false;
+    return cfRes == kCFUserNotificationAlternateResponse;
 }
