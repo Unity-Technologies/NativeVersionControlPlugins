@@ -14,7 +14,6 @@
 #include <map>
 #include <vector>
 #include <stdlib.h>
-#include <gtk/gtk.h>
 
 #if defined(_WINDOWS)
 #include "windows.h"
@@ -733,6 +732,8 @@ bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::st
 }
 
 #elif defined(__linux) || defined(linux) || defined(__linux__) || defined(__gnu_linux__)
+#include <gtk/gtk.h>
+
 static bool s_IsGtkInitialized    = false;
 static bool s_FingerprintChoiceOK = false;
 
