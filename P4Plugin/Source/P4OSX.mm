@@ -1,9 +1,9 @@
 #include "P4Task.h"
 #import <AppKit/AppKit.h>
 
-bool P4Task::ExecuteTrustThisServerFingerprintDialogBox(const std::string& message)
+bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
 {
-    NSString *nsWindowTitle = @"Test Window Title";
+    NSString *nsWindowTitle = [NSString stringWithUTF8String:windowTitle.c_str()];
     NSString *nsMessage = [NSString stringWithUTF8String:message.c_str()];
 
     CFOptionFlags cfRes;
