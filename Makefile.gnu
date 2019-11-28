@@ -4,9 +4,9 @@ CC = gcc
 CXX = g++
 AR = ar
 
-CXXFLAGS += -O2 -g -fpermissive $(P4PLUGIN_INCLUDE)
+CXXFLAGS += -O2 -g -fpermissive -Wno-deprecated-declarations `pkg-config --cflags gtk+-3.0` $(P4PLUGIN_INCLUDE)
 LDFLAGS += -g
-LIBRARIES = -lstdc++ -lrt
+LIBRARIES = -lstdc++ -lrt `pkg-config --libs gtk+-3.0`
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
 COMMON_MODULES := $(COMMON_MODULES:.cpp=.o)
@@ -18,7 +18,7 @@ TESTSERVER_TARGET= Build/$(PLATFORM)/TestServer
 P4PLUGIN_MODULES = $(P4PLUGIN_SRCS:.c=.o)
 P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
 P4PLUGIN_TARGET = PerforcePlugin
-P4PLUGIN_LINK += $(LIBRARIES) -ldl
+P4PLUGIN_LINK += $(LIBRARIES) -ldl -fPIC -no-pie
 
 default: all
 

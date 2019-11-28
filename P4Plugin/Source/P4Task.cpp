@@ -14,6 +14,7 @@
 #include <map>
 #include <vector>
 #include <stdlib.h>
+#include <gtk/gtk.h>
 
 #if defined(_WINDOWS)
 #include "windows.h"
@@ -456,6 +457,12 @@ bool P4Task::IsLoggedIn()
 	return loggedIn;
 }
 
+static std::string FormatFingerprintMessage(const std::string& statusMessage)
+{
+	return statusMessage.substr(0, statusMessage.find("To allow connection use the")) +
+								   "\n\nTrust this fingerprint going forward?";
+}
+
 bool P4Task::Login()
 {	
 	if (!IsConnected())
@@ -489,7 +496,9 @@ bool P4Task::Login()
 		args.push_back("login");
 		bool loggedIn = p4c->Run(*this, args); 
 
-		if (HasServerFingerPrintError(p4c->GetStatus()) && ExecuteTrustThisServerFingerprintDialogBox(p4c->GetStatus().begin()->message))
+		if (HasServerFingerPrintError(p4c->GetStatus()) &&
+				ShowOKCancelDialogBox("Perforce Fingerprint Required",
+					FormatFingerprintMessage(p4c->GetStatus().begin()->message)))
 		{
 			args.resize(1);
 			args.push_back("trust");
@@ -702,21 +711,17 @@ void P4Task::EnableUTF8Mode()
 	m_Client.SetCharset("utf8");
 }
 
-#if defined(_WINDOWS)
+#if defined(_WIN32) || defined(_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 
-bool P4Task::ExecuteTrustThisServerFingerprintDialogBox(const std::string& statusMessage)
+bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
 {
-	//Extract fingerprint from status message
-
-	std::string displayString = statusMessage.substr(0, statusMessage.find("To allow connection use the")) + "\n\nTrust this fingerprint going forward?";
-
 	int msgBoxRet = MessageBoxW(
 		NULL,
-		(LPCWSTR)std::wstring(displayString.begin(), displayString.end()).c_str(),
-		(LPCWSTR)L"Perforce Fingerprint Required",
+		(LPCWSTR)std::wstring(message.begin(), message.end()).c_str(),
+		(LPCWSTR)std::wstring(windowTitle.begin(), windowTitle.end()).c_str(),
 		MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2
 	);
 
@@ -726,6 +731,48 @@ bool P4Task::ExecuteTrustThisServerFingerprintDialogBox(const std::string& statu
 
 	return clickedOK;
 }
+
+#elif defined(__linux) || defined(linux) || defined(__linux__) || defined(__gnu_linux__)
+static bool s_IsGtkInitialized    = false;
+static bool s_FingerprintChoiceOK = false;
+
+static void HandleDialogResponseAndExitLoop(GtkWidget* widget, gint response, gpointer user_data)
+{
+	s_FingerprintChoiceOK = response == GTK_RESPONSE_ACCEPT;
+	gtk_widget_destroy(widget);
+	gtk_main_quit();
+}
+
+bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
+{
+	s_FingerprintChoiceOK = false;
+
+	if(!s_IsGtkInitialized)
+		gtk_init(NULL, NULL);
+
+	GtkWidget *dialog = gtk_dialog_new_with_buttons(windowTitle.c_str(),
+							NULL,//GTK_WINDOW(window),
+							GTK_DIALOG_MODAL,
+							"_OK",
+							GTK_RESPONSE_ACCEPT,
+							"_Cancel",
+							GTK_RESPONSE_REJECT,
+							NULL);
+	GtkWidget* content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+	GtkWidget* label = gtk_label_new (message.c_str());
+	gtk_container_add (GTK_CONTAINER (content_area), label);
+
+	g_signal_connect_swapped (dialog,
+				   "response",
+				   G_CALLBACK (HandleDialogResponseAndExitLoop),
+				   dialog);
+
+	gtk_widget_show_all(dialog);
+	gtk_main(); //Executes a blocking message loop
+
+	return s_FingerprintChoiceOK;
+}
+
 #endif
 
 void P4Task::DisableUTF8Mode()

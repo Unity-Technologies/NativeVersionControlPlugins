@@ -63,7 +63,7 @@ private:
 	bool Dispatch(UnityCommand c, const std::vector<std::string>& args);
 
 	void EnableUTF8Mode();
-	bool ExecuteTrustThisServerFingerprintDialogBox(const std::string& statusMessage);
+	static bool ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message);
 
 	bool HasUnicodeNeededError(VCSStatus status);
 	bool HasServerFingerPrintError(VCSStatus status);
