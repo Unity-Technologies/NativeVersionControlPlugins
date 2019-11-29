@@ -458,8 +458,14 @@ bool P4Task::IsLoggedIn()
 
 static std::string FormatFingerprintMessage(const std::string& statusMessage)
 {
-	return statusMessage.substr(0, statusMessage.find("To allow connection use the")) +
-								   "\n\nTrust this fingerprint going forward?";
+	std::string noNewlines = statusMessage;
+	for(int i = 0; i < noNewlines.size(); i++)
+	{
+		if(noNewlines[i] == '\n')
+			noNewlines[i] = ' ';
+	}
+	return noNewlines.substr(0, noNewlines.find("To allow connection use the")) +
+				    "\n\nTrust this fingerprint going forward?";
 }
 
 bool P4Task::Login()
@@ -739,7 +745,7 @@ static bool s_FingerprintChoiceOK = false;
 
 static void HandleDialogResponseAndExitLoop(GtkWidget* widget, gint response, gpointer user_data)
 {
-	s_FingerprintChoiceOK = response == GTK_RESPONSE_ACCEPT;
+	s_FingerprintChoiceOK = response == GTK_RESPONSE_OK;
 	gtk_widget_destroy(widget);
 	gtk_main_quit();
 }
@@ -751,17 +757,12 @@ bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::st
 	if(!s_IsGtkInitialized)
 		gtk_init(NULL, NULL);
 
-	GtkWidget *dialog = gtk_dialog_new_with_buttons(windowTitle.c_str(),
-							NULL,//GTK_WINDOW(window),
-							GTK_DIALOG_MODAL,
-							"_OK",
-							GTK_RESPONSE_ACCEPT,
-							"_Cancel",
-							GTK_RESPONSE_REJECT,
-							NULL);
-	GtkWidget* content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	GtkWidget* label = gtk_label_new (message.c_str());
-	gtk_container_add (GTK_CONTAINER (content_area), label);
+	GtkWidget *dialog = gtk_message_dialog_new(NULL,
+	    GTK_DIALOG_MODAL,
+	    GTK_MESSAGE_WARNING,
+	    GTK_BUTTONS_OK_CANCEL,
+	    message.c_str());
+	gtk_window_set_title(GTK_WINDOW(dialog), windowTitle.c_str());
 
 	g_signal_connect_swapped (dialog,
 				   "response",
