@@ -20,9 +20,9 @@ public:
 		m_LoggedIn = false;
 		m_Password = task.GetP4Password();
 		m_CheckingForLoggedIn = args.size() > 1 && (args[1] == "-s");
-		m_TrustFingerprint = args.size() > 1 && (args[1] == "trust");
+		bool trustFingerprint = args.size() > 1 && (args[1] == "trust");
 
-		if (m_TrustFingerprint)
+		if (trustFingerprint)
 			task.CommandRun("trust -y ", this);
 
 		const std::string cmd = std::string("login") + (m_CheckingForLoggedIn ? std::string(" ") + args[1] : std::string());
@@ -119,7 +119,5 @@ private:
 	bool m_LoggedIn;
 	std::string m_Password;
 	bool m_CheckingForLoggedIn;
-	bool m_TrustFingerprint;
-	bool m_ServerFingerprint;
 
 } cLogin("login");

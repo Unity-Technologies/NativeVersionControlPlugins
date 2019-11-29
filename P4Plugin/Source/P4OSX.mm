@@ -12,7 +12,7 @@ bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::st
             (__bridge CFStringRef)nsWindowTitle,
             (__bridge CFStringRef)nsMessage,
             CFSTR("Cancel"),
-            CFSTR("Ok"),
+            CFSTR("OK"),
             NULL,
             &cfRes);
 

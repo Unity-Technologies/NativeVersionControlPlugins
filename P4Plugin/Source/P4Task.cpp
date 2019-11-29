@@ -723,18 +723,14 @@ void P4Task::EnableUTF8Mode()
 
 bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
 {
-	int msgBoxRet = MessageBoxW(
+	int msgBoxRet = MessageBoxA(
 		NULL,
-		(LPCWSTR)std::wstring(message.begin(), message.end()).c_str(),
-		(LPCWSTR)std::wstring(windowTitle.begin(), windowTitle.end()).c_str(),
+		(LPCSTR)message.c_str(),
+		(LPCSTR)windowTitle.c_str(),
 		MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2
 	);
 
-	bool clickedOK = false;
-	if (msgBoxRet == IDOK)
-		clickedOK = true;
-
-	return clickedOK;
+	return msgBoxRet == IDOK;
 }
 
 #elif defined(__linux) || defined(linux) || defined(__linux__) || defined(__gnu_linux__)
