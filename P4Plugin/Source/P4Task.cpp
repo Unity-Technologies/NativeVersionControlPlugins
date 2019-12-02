@@ -430,6 +430,18 @@ bool P4Task::IsOnline()
 	return s_Singleton->m_IsOnline;
 }
 
+static std::string FormatFingerprintMessage(const std::string& statusMessage)
+{
+	std::string noNewlines = statusMessage;
+	for (int i = 0; i < noNewlines.size(); i++)
+	{
+		if (noNewlines[i] == '\n')
+			noNewlines[i] = ' ';
+	}
+	return noNewlines.substr(0, noNewlines.find("To allow connection use the")) +
+		"\n\nTrust this fingerprint going forward?";
+}
+
 bool P4Task::IsLoggedIn()
 {
 	P4Command* p4c = LookupCommand("login");
@@ -438,34 +450,31 @@ bool P4Task::IsLoggedIn()
 	args.push_back("-s");
 	bool loggedIn = p4c->Run(*this, args); 
 
+	if (HasServerFingerPrintError(p4c->GetStatus()) &&
+		ShowOKCancelDialogBox("Perforce Fingerprint Required",
+			FormatFingerprintMessage(p4c->GetStatus().begin()->message)))
+	{
+		m_Connection->InfoLine("Prompting user for server fingerprint trust");
+		args.resize(1);
+		args.push_back("trust");
+		loggedIn = p4c->Run(*this, args);
+
+		if (loggedIn)
+		{
+			args.resize(1);
+			args.push_back("-s");
+			loggedIn = p4c->Run(*this, args);
+		}
+	}
 	if (HasUnicodeNeededError(p4c->GetStatus()))
 	{
 		m_Connection->InfoLine("Enabling unicode mode");
 		EnableUTF8Mode();
 		loggedIn = p4c->Run(*this, args);
 	}
-	else if (HasServerFingerPrintError(p4c->GetStatus()))
-	{
-		m_Connection->InfoLine("Prompting user for server fingerprint trust");
-		args.resize(1);
-		args.push_back("trust");
-		loggedIn = p4c->Run(*this, args);
-	}
 
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
 	return loggedIn;
-}
-
-static std::string FormatFingerprintMessage(const std::string& statusMessage)
-{
-	std::string noNewlines = statusMessage;
-	for(int i = 0; i < noNewlines.size(); i++)
-	{
-		if(noNewlines[i] == '\n')
-			noNewlines[i] = ' ';
-	}
-	return noNewlines.substr(0, noNewlines.find("To allow connection use the")) +
-				    "\n\nTrust this fingerprint going forward?";
 }
 
 bool P4Task::Login()
@@ -524,6 +533,10 @@ bool P4Task::Login()
 			return false; // error login
 		}
 	}
+
+	//N.B. if the server uses multi-factor authentication the first command after login will fail with an error message about login2.
+	//Currently first after login is the spec command, which is why message formatting for this error is there.
+	//Move the formatting code to the new command from P4SpecCommand if it's no longer the first to be called after login
 
 	// Need to get Root path as the first thing on connect
 	p4c = LookupCommand("spec");
@@ -706,7 +719,7 @@ bool P4Task::HasUnicodeNeededError( VCSStatus status )
 
 bool P4Task::HasServerFingerPrintError(VCSStatus status)
 {
-	return StatusContains(status, "The authenticity of");
+	return StatusContains(status, "The authenticity of") && StatusContains(status, "To allow connection use the");
 }
 
 void P4Task::EnableUTF8Mode()

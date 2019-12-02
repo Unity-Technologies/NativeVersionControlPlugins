@@ -16,6 +16,12 @@ public:
 		if (!task.CommandRun(cmd, this))
 		{
 			std::string errorMessage = GetStatusMessage();			
+			//This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
+			if (StatusContains(GetStatus(), "login2"))
+			{
+				ClearStatus();
+				GetStatus().insert(VCSStatusItem(VCSSEV_Error, "Your chosen Perforce server has multi-factor authentication enabled. To log in please use a visual client such as p4v or the \"p4 login\" or \"p4 login2\" CLI commands"));
+			}
 			Conn().Log().Fatal() << errorMessage << Endl;
 			return false;
 		}
