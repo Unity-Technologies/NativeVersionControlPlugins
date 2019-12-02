@@ -736,6 +736,7 @@ void P4Task::EnableUTF8Mode()
 
 bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
 {
+	SetProcessDPIAware();
 	int msgBoxRet = MessageBoxA(
 		NULL,
 		(LPCSTR)message.c_str(),
