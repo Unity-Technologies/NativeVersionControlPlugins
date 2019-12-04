@@ -242,7 +242,8 @@ public:
 		}
 		else 
 		{
-			Conn().WarnLine(ToString("Unknown config field set on version control plugin: ", key), MAConfig);
+			if(key != "vcPerforceHost")
+				Conn().WarnLine(ToString("Unknown config field set on version control plugin: ", key), MAConfig);
 		}
 		Conn().EndResponse();
 		return true;

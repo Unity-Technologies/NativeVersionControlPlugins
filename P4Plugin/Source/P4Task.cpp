@@ -430,6 +430,18 @@ bool P4Task::IsOnline()
 	return s_Singleton->m_IsOnline;
 }
 
+static std::string FormatFingerprintMessage(const std::string& statusMessage)
+{
+	std::string noNewlines = statusMessage;
+	for (int i = 0; i < noNewlines.size(); i++)
+	{
+		if (noNewlines[i] == '\n')
+			noNewlines[i] = ' ';
+	}
+	return noNewlines.substr(0, noNewlines.find("To allow connection use the")) +
+		"\n\nTrust this fingerprint going forward?";
+}
+
 bool P4Task::IsLoggedIn()
 {
 	P4Command* p4c = LookupCommand("login");
@@ -438,6 +450,22 @@ bool P4Task::IsLoggedIn()
 	args.push_back("-s");
 	bool loggedIn = p4c->Run(*this, args); 
 
+	if (HasServerFingerPrintError(p4c->GetStatus()) &&
+		ShowOKCancelDialogBox("Perforce Fingerprint Required",
+			FormatFingerprintMessage(p4c->GetStatus().begin()->message)))
+	{
+		m_Connection->InfoLine("Prompting user for server fingerprint trust");
+		args.resize(1);
+		args.push_back("trust");
+		loggedIn = p4c->Run(*this, args);
+
+		if (loggedIn)
+		{
+			args.resize(1);
+			args.push_back("-s");
+			loggedIn = p4c->Run(*this, args);
+		}
+	}
 	if (HasUnicodeNeededError(p4c->GetStatus()))
 	{
 		m_Connection->InfoLine("Enabling unicode mode");
@@ -482,12 +510,20 @@ bool P4Task::Login()
 		args.push_back("login");
 		bool loggedIn = p4c->Run(*this, args); 
 
+		if (HasServerFingerPrintError(p4c->GetStatus()) &&
+				ShowOKCancelDialogBox("Perforce Fingerprint Required",
+					FormatFingerprintMessage(p4c->GetStatus().begin()->message)))
+		{
+			args.resize(1);
+			args.push_back("trust");
+			loggedIn = p4c->Run(*this, args);
+		}
 		if (HasUnicodeNeededError(p4c->GetStatus()))
 		{
 			EnableUTF8Mode();
 			loggedIn = p4c->Run(*this, args);
 		}
-
+		
 		SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);	
 		
 		if (!loggedIn)
@@ -497,6 +533,10 @@ bool P4Task::Login()
 			return false; // error login
 		}
 	}
+
+	//N.B. if the server uses multi-factor authentication the first command after login will fail with an error message about login2.
+	//Currently first after login is the spec command, which is why message formatting for this error is there.
+	//Move the formatting code to the new command from P4SpecCommand if it's no longer the first to be called after login
 
 	// Need to get Root path as the first thing on connect
 	p4c = LookupCommand("spec");
@@ -652,7 +692,6 @@ bool P4Task::CommandRun(const std::string& command, P4Command* client)
 	}
 	
 	return CommandRunNoLogin(command, client);
-
 }
 
 bool P4Task::CommandRunNoLogin( const std::string &command, P4Command* client )
@@ -678,12 +717,75 @@ bool P4Task::HasUnicodeNeededError( VCSStatus status )
 	return StatusContains(status, "Unicode server permits only unicode enabled clients");
 }
 
+bool P4Task::HasServerFingerPrintError(VCSStatus status)
+{
+	return StatusContains(status, "The authenticity of") && StatusContains(status, "To allow connection use the");
+}
+
 void P4Task::EnableUTF8Mode()
 {
 	CharSetApi::CharSet cs = CharSetApi::UTF_8;
 	m_Client.SetTrans( cs, cs, cs, cs );
 	m_Client.SetCharset("utf8");
 }
+
+#if defined(_WIN32) || defined(_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+
+bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
+{
+	SetProcessDPIAware();
+	int msgBoxRet = MessageBoxA(
+		NULL,
+		(LPCSTR)message.c_str(),
+		(LPCSTR)windowTitle.c_str(),
+		MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2
+	);
+
+	return msgBoxRet == IDOK;
+}
+
+#elif defined(__linux) || defined(linux) || defined(__linux__) || defined(__gnu_linux__)
+#include <gtk/gtk.h>
+
+static bool s_IsGtkInitialized    = false;
+static bool s_FingerprintChoiceOK = false;
+
+static void HandleDialogResponseAndExitLoop(GtkWidget* widget, gint response, gpointer user_data)
+{
+	s_FingerprintChoiceOK = response == GTK_RESPONSE_OK;
+	gtk_widget_destroy(widget);
+	gtk_main_quit();
+}
+
+bool P4Task::ShowOKCancelDialogBox(const std::string& windowTitle, const std::string& message)
+{
+	s_FingerprintChoiceOK = false;
+
+	if(!s_IsGtkInitialized)
+		gtk_init(NULL, NULL);
+
+	GtkWidget *dialog = gtk_message_dialog_new(NULL,
+	    GTK_DIALOG_MODAL,
+	    GTK_MESSAGE_WARNING,
+	    GTK_BUTTONS_OK_CANCEL,
+	    message.c_str());
+	gtk_window_set_title(GTK_WINDOW(dialog), windowTitle.c_str());
+
+	g_signal_connect_swapped (dialog,
+				   "response",
+				   G_CALLBACK (HandleDialogResponseAndExitLoop),
+				   dialog);
+
+	gtk_widget_show_all(dialog);
+	gtk_main(); //Executes a blocking message loop
+
+	return s_FingerprintChoiceOK;
+}
+
+#endif
 
 void P4Task::DisableUTF8Mode()
 {

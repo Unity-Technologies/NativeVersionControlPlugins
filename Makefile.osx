@@ -19,6 +19,10 @@ P4PLUGIN_MODULES = $(P4PLUGIN_SRCS:.c=.o)
 P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
 P4PLUGIN_TARGET = PerforcePlugin
 
+OSX_SRCS = ./P4Plugin/Source/P4OSX.mm
+OSX_MODULES = $(OSX_SRCS:.mm=.o)
+P4PLUGIN_MODULES += $(OSX_MODULES)
+
 PLASTICSCMPLUGIN_TARGET = PlasticSCMPlugin/PlasticSCMPlugin
 
 default: all
@@ -44,6 +48,9 @@ Test/Source/%.o : Test/Source/%.cpp $(TESTSERVER_INCLS)
 
 P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@
+
+P4Plugin/Source/%.o : P4Plugin/Source/%.mm $(COMMON_INCLS) $(P4PLUGIN_INCLS)
+	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@ 
 
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^

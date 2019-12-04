@@ -438,6 +438,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 	}
 	if (lineNum == 0)
 	{
+		//Won't compile with gcc >= 6.1
 		std::cerr << "Invalid test script it has no lines " << testscript << std::endl;
 		return 1;
 	}
