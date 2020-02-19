@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include "Utility.h"
 
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 #include <sstream>
 #include <windows.h>
 #else
@@ -33,7 +33,7 @@ public:
 	template <typename T>
 	Pipe& Write(const T& v)
 	{
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 		std::stringstream ss;
 		ss << v;
 		std::string str = ss.str();
@@ -53,7 +53,7 @@ private:
 	bool m_LineBufferValid;
 	std::string m_LineBuffer;
 
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 	HANDLE m_NamedPipe;
 	std::string m_Buffer;
 #endif

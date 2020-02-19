@@ -3,7 +3,7 @@
 
 Pipe::Pipe() : m_LineBufferValid(false)
 {
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 	LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\UnityVCS"); 
 		
 	// All pipe instances are busy, so wait for 2 seconds. 
@@ -37,7 +37,7 @@ Pipe::Pipe() : m_LineBufferValid(false)
 	
 Pipe::~Pipe()
 {
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 	if (m_NamedPipe != INVALID_HANDLE_VALUE)
 	{
 		FlushFileBuffers(m_NamedPipe);
@@ -49,7 +49,7 @@ Pipe::~Pipe()
 
 void Pipe::Flush()
 {
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 	FlushFileBuffers(m_NamedPipe);
 #else
 	std::cout << std::flush;
@@ -58,7 +58,7 @@ void Pipe::Flush()
 
 Pipe& Pipe::Write(const std::string& str)
 {
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 	const CHAR* buf = str.c_str(); 
 	size_t toWrite = str.length();
 	DWORD written;
@@ -91,7 +91,7 @@ std::string& Pipe::ReadLine(std::string& target)
 		return target;
 	}
 
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 
 	BOOL success; 
 	DWORD bytesRead;
@@ -151,7 +151,7 @@ std::string& Pipe::PeekLine(std::string& dest)
 	
 bool Pipe::IsEOF() const
 {
-#if defined(_WINDOWS)
+#if defined(_WINDOWS) && !WIN_NO_PIPE
 	return false; // TODO: Implement
 #else
 	return std::cin.eof();
