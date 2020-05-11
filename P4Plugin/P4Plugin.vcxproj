@@ -144,7 +144,7 @@ _SCL_SECURE_NO_DEPRECATE
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)Source\r16.1\lib\win32debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Source\r16.1\lib\win32debug;$(ProjectDir)Source\r16.1\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libclient.lib;libeay32.lib;ssleay32.lib;librpc.lib;libsupp.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
