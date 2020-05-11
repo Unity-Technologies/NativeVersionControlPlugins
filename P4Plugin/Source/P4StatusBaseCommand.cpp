@@ -27,7 +27,6 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 	std::string headRev;
 	std::string haveRev;
 	std::string depotFile;
-	bool exclLockType = false;
 	
 	// Dump out the variables, using the GetVar( x ) interface.
 	// Don't display the function, which is only relevant to rpc.
@@ -42,7 +41,8 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		
 		if (key == "headType")
 		{
-			exclLockType = value.find("+l") != std::string::npos;
+			if (value.find("+l") != std::string::npos)
+				current.AddState(kExclusiveCheckout);
 		}
 		else if (key == "clientFile")
 		{
@@ -59,7 +59,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		else if (key == "action")
 		{
 			action = value;
-			if (value == "edit" && exclLockType)
+			if (value == "edit" && current.HasState(kExclusiveCheckout))
 				current.AddState(kLockedLocal);
 		}
 		else if (key == "ourLock")
@@ -73,7 +73,7 @@ void P4StatusBaseCommand::OutputStat( StrDict *varList )
 		else if (key == "otherOpen")
 		{
 			current.AddState(kCheckedOutRemote);
-			if (exclLockType)
+			if (current.HasState(kExclusiveCheckout))
 				current.AddState(kLockedRemote);
 		}
 		else if (StartsWith(key, "otherAction") && value == "delete")
