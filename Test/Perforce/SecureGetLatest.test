@@ -51,7 +51,6 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-w1:./... - no such file(s).\n
 o1:-1
 d1:end of list
 r1:end of response
