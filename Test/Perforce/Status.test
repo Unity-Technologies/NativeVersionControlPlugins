@@ -134,3 +134,17 @@ o1:262144
 v1:./Assets/excludedfile.txt - file(s) not in client view.
 d1:end of list
 r1:end of response
+--
+c:status recurse
+1
+./Assets/exclusivefile.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/exclusivefile.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/exclusivefile.txt
+o1:<absroot>/Assets/exclusivefile.txt
+o1:540675
+d1:end of list
+r1:end of response

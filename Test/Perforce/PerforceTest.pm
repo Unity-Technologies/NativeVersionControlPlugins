@@ -31,13 +31,15 @@ sub PerforceIntegrationTests
 	$ENV{'VCS_P4CLIENT'} = "testclient";
 	$ENV{'VCS_P4USER'} = "vcs_test_user";
 	$ENV{'P4CHARSET'} = 'utf8';
-	$ENV{'VCS_P4PASSWD'} = 'secret';
+	$ENV{'VCS_P4PASSWD'} = 'Secret';
+	$ENV{'P4EXECABS'} = getcwd() . "/" . $ENV{'P4EXEC'};
 	
 	if ($ENV{'TARGET'} eq "win32")
 	{
 		$ENV{'VCS_P4ROOT'} =~ s/\//\\/g;
 		$ENV{'VCS_P4CLIENTROOT'} =~ s/\//\\/g;
 		$ENV{'VCS_P4CLIENTROOTABS'} =~ s/\//\\/g;
+		$ENV{'P4EXECABS'} =~ s/\//\\/g;
 	}
 
 	$ENV{'VCS_P4ROOT'} = abs_path($ENV{'VCS_P4ROOT'});
@@ -81,6 +83,7 @@ sub RunTests()
 		chdir $clientroot;
 		mkdir "./Assets";
 		mkdir "./Library";
+		AddExclusiveFile();
 		$output = `$testserver $pluginexec $cwd $i $option`;
 		$res = $? >> 8;
 		print $output;
@@ -101,10 +104,33 @@ sub RunTests()
 			return 1;
 		}
 		$total++;
+		RemoveExclusiveFile();
 	}
 	print "Done: $success of $total tests passed.\n";
 	chdir $cwd;
 	return 0;
+}
+
+sub RunCommand
+{
+	my $command = $_[0];
+	system("$ENV{'P4EXECABS'} -p $ENV{'VCS_P4PORT'} -u $ENV{'VCS_P4USER'} -P $ENV{'VCS_P4PASSWD'} -c $ENV{'VCS_P4CLIENT'} -d $ENV{'VCS_P4CLIENTROOTABS'} $command");
+}
+
+sub AddExclusiveFile
+{
+	open(FH, '>', 'Assets/exclusivefile.txt') or die $!;
+	print(FH 'File with exclusive open file type modifier.');
+	close(FH) or die $1;
+
+	RunCommand('add -t text+l Assets/exclusivefile.txt');
+	RunCommand('submit -d "Add Assets/exclusivefile.txt." Assets/exclusivefile.txt');
+}
+
+sub RemoveExclusiveFile
+{
+	RunCommand('delete Assets/exclusivefile.txt');
+	RunCommand('submit -d "Delete Assets/exclusivefile.txt." Assets/exclusivefile.txt');
 }
 
 sub SetupServer

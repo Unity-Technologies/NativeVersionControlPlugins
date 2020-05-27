@@ -23,7 +23,8 @@ enum State
 	kMetaFile = 1 << 15,
 	kMovedLocal = 1 << 16, // only used plugin side for perforce.
 	kMovedRemote = 1 << 17, // only used plugin side for perforce.
-	kUnversioned = 1 << 18
+	kUnversioned = 1 << 18,
+	kExclusiveCheckout = 1 << 19, // Only one user at a time can open this file for editing.
 };
 
 class VersionedAsset
