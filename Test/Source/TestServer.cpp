@@ -155,7 +155,7 @@ int run(int argc, char* argv[])
 	noresults = newbaseline;
 	verbose = argc > 4 ? std::string(argv[4]) == "verbose" && !newbaseline : false;
 	char buffer[4096];
-	char *answer = getcwd(buffer, sizeof(buffer));
+	char *answer = _getcwd(buffer, sizeof(buffer));
 	if (answer)
 	{
 		absroot = buffer;
@@ -289,7 +289,7 @@ static int runScript(ExternalProcess& p, const std::string& testDir, const std::
 			{
 				std::string delfile = command.substr(delfiletoken.length(), command.length() - 1 - delfiletoken.length());
 				// Delete a local file
-				unlink(delfile.c_str());
+				_unlink(delfile.c_str());
 				continue;
 			}
 			if (command.find(sleepToken) == 0)
