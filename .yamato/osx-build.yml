@@ -1,11 +1,10 @@
 name: Mac - Build & Test VCS plugins
 agent:
     type: Unity::VM::osx
-    image: slough-ops/macos-10.14-xcode:latest
+    image: desktop/unity-macos-10.15-xcode-12.2:stable
     flavor: b1.large
 
 commands:
-        - brew install mercurial
         - hg clone --config extensions.largefiles= http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
         - perl build.pl | tee mac_build.txt
         - perl build.pl -test | tee mac_test.txt
