@@ -23,13 +23,10 @@ OSX_SRCS = ./P4Plugin/Source/P4OSX.mm
 OSX_MODULES = $(OSX_SRCS:.mm=.o)
 P4PLUGIN_MODULES += $(OSX_MODULES)
 
-PLASTICSCMPLUGIN_TARGET = PlasticSCMPlugin/PlasticSCMPlugin
-
 default: all
 
-all: P4Plugin PlasticSCMPlugin testserver
+all: P4Plugin testserver
 	@mkdir -p Build/$(PLATFORM)
-	cp $(PLASTICSCMPLUGIN_TARGET) Build/$(PLATFORM)
 
 testserver: $(TESTSERVER_TARGET)
 	@mkdir -p Build/$(PLATFORM)

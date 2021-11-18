@@ -14,7 +14,6 @@ artifacts:
     builds:
       paths:
         - "Build/Win32/PerforcePlugin.exe"
-        - "Build/Win32/PlasticSCMPlugin.exe"
         - "Build/Win32/PerforcePlugin.pdb"
     logs:
       paths:
