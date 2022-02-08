@@ -138,13 +138,13 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NODEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;
 _SCL_SECURE_NO_DEPRECATE
 ;_SECURE_SCL=0;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\Common;$(ProjectDir)Source\;$(ProjectDir)Source\r16.1\include\P4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Common;$(ProjectDir)Source\;$(ProjectDir)Source\r17.2\include\P4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)Source\r16.1\lib\win32debug;$(ProjectDir)Source\r16.1\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Source\r17.2\lib\win32debug;$(ProjectDir)Source\r17.2\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libclient.lib;libeay32.lib;ssleay32.lib;librpc.lib;libsupp.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -162,7 +162,7 @@ _SCL_SECURE_NO_DEPRECATE
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NODEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;
 _SCL_SECURE_NO_DEPRECATE
 ;_SECURE_SCL=0;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\Common;$(ProjectDir)Source\;$(ProjectDir)Source\r16.1\include\P4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Common;$(ProjectDir)Source\;$(ProjectDir)Source\r17.2\include\P4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -170,7 +170,7 @@ _SCL_SECURE_NO_DEPRECATE
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(ProjectDir)Source\r16.1\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Source\r17.2\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libclient.lib;libeay32.lib;ssleay32.lib;librpc.lib;libsupp.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>

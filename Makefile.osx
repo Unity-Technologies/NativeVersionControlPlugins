@@ -53,7 +53,7 @@ $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ -L./P4Plugin/Source/r16.1/lib/osx64 $(P4PLUGIN_LINK)
+	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ -L./P4Plugin/Source/r17.2/lib/osx64 $(P4PLUGIN_LINK)
 
 clean:
 	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(TESTSERVER_MODULES)
