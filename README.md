@@ -1,38 +1,67 @@
-#### About
+# NativeVersionControlPlugins
 
-This is the source code of the builtin version control plugins that are shipped with [Unity](http://www.unity3d.com).
+## About
 
-You can build support for you own favourite version control system into Unity by cloning this repository and make changes as needed.
+This is the source code of the built-in version control plugins that are shipped with [Unity](http://www.unity3d.com).
+
+You can build support for you own favourite version control system into Unity by cloning this repository and make
+changes as needed.
 
 Note that only Perforce support is shipped for Unity 4.2+, TFSPlugin for 4.6+.
 
-#### Overview
+## Overview
 
-A plugin is an executable located in a designated directory that Unity can start and kill at will. At startup Unity will scan the directory and start each executable in order to identify the plugin and its settings. When a version control system has been enabled in unity it will start the associated plugin executable and send it commands using stdin/stdout (MacOS) or Named Pipes (Windows).
+A plugin is an executable located in a designated directory that Unity can start and kill at will. At startup, Unity
+will scan the directory and start each executable in order to identify the plugin and its settings. When a version
+control system has been enabled in unity it will start the associated plugin executable and send commands to it
+by using stdin/stdout (MacOS) or Named Pipes (Windows).
 
-The Perforce plugin is using the perforce provided libraries and its callback style API. Furthermore is streams results from the perforce server directly to Unity.
+The Perforce plugin is using the libraries provided by Perforce and its callback style API. Furthermore, is streams
+results from the perforce server directly to Unity.
 
 You need Unity 4.2+ to use the integrated version control plugins.
 
-#### Structure
+## Structure
 
-* Common/ contains structures and functionallity common to all plugins
-* P4Plugin/ contains the Perforce plugin code and Perforce libraries (binaries shipped with Unity)
-* TFSPlugin/ contains the Team Foundation Server/VS Online plugin code
-* Test/ contains integration tests
+* `Common/` contains structures and functionallity common to all plugins
+* `P4Plugin/` contains the Perforce plugin code and Perforce libraries (binaries shipped with Unity)
+* `TFSPlugin/` contains the Team Foundation Server/VS Online plugin code
+* `Test/` contains integration tests
 
 To build:
+
+```bash
 perl ./build.pl  
+```
 
 To test:
+
+```bash
 perl ./build.pl -test
+```
 
-#### License and terms
+###  Perforce
 
-The plugin code itself is licensed under public domain. 
+The Perforce plugin source code is located under `/P4Plugin/Source`. It references the Perforce APIs, located under
+`/P4Plugin/Source/r17.2`. As its name states, we're targeting the 17.2 release of Perforce.
+
+Perforce API includes and libraries were downloaded from the
+[Perforce downloads page](http://filehost.perforce.com/perforce/r17.2/).
+
+####  Windows
+
+Windows binaries are located under `/P4Plugin/Source/r17.2/lib/win32` and `/P4Plugin/Source/r17.2/lib/win32debug`.
+
+Both directories contain libraries for Win32 - x86 only. They require Visual Studio v10.0 (2010).
+
+## License and terms
+
+The plugin code itself is licensed under public domain.
 
 Libraries used by the plugin have their own licenses and are allowed to be distributed with the plugin.
 
-The PerforcePlugin uses the P4 API, for more information on terms of usage and how to get the P4 API visit the following links
-http://www.perforce.com/downloads/terms-use
-http://www.perforce.com/product/components/apis
+The PerforcePlugin uses the P4 API. For more information on terms of usage and how to get the P4 API,
+visit the following links:
+
+* [Terms of use](http://www.perforce.com/downloads/terms-use)
+* [APIs](http://www.perforce.com/product/components/apis)
