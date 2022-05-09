@@ -5,7 +5,6 @@ struct P4Info
 {
 	bool clientIsKnown;
 	std::string clientName;
-	std::string clientHost;
 	std::string currentDir;
 	std::string peerAddress;
 	std::string clientAddress;

@@ -1,6 +1,0 @@
-c:pluginConfig pluginTraits
-c:pluginConfig pluginVersions 1 2 3 4 5
-c:pluginConfig svnRepos http://test.com/fish
-c:pluginConfig svnUsername theUser
-c:pluginConfig svnPassword thePassword
-c:pluginConfig svnOptions theOptions

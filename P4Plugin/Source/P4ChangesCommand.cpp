@@ -14,7 +14,7 @@ public:
 	{				
 		ClearStatus();
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
-		const std::string cmd = std::string("changes -s pending -u ") + Quote(task.GetP4User()) + " -c " + Quote(task.GetP4Client());
+		const std::string cmd = std::string("changes -l -s pending -u ") + Quote(task.GetP4User()) + " -c " + Quote(task.GetP4Client());
 
 		Conn().BeginList();
 		

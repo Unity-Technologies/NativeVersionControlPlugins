@@ -1,0 +1,21 @@
+name: Win - Build & Test VCS plugins
+agent:
+    type: Unity::VM
+    image: core-kaunas/win10-vs2010:latest
+    flavor: b1.large
+    
+interpreter: powershell    
+commands:
+        - perl build.pl | tee win_build.txt
+        - hg clone --config extensions.largefiles= http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
+        - perl build.pl -test | tee win_test.txt
+                
+artifacts:
+    builds:
+      paths:
+        - "Build/Win32/PerforcePlugin.exe"
+        - "Build/Win32/PerforcePlugin.pdb"
+    logs:
+      paths:
+        - "win_build.txt"
+        - "win_test.txt"

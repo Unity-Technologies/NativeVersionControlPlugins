@@ -8,60 +8,16 @@ use lib 'Test';
 use VCSTest;
 use File::Find;
 use File::Basename;
-use Archive::Zip qw/ :ERROR_CODES :CONSTANTS /;
 
-my ($testoption,$test, $target, $clean, $zip, @configs);
+my ($testoption,$test, $target, $clean, @configs);
 GetOptions("test"=>\$test, "testoption=s"=>\$testoption,
-		   "target=s"=>\$target, "configs=s"=>\@configs, "clean"=>\$clean, "zip"=>\$zip);
+		   "target=s"=>\$target, "configs=s"=>\@configs, "clean"=>\$clean);
 @configs = split(/,/,join(',',@configs));
 
 sub BuildLinux ($);
 sub TestLinux ($);
 
 $testoption = "nonverbose" unless ($testoption);
-
-if ($zip)
-{
-	my $zipArchive = Archive::Zip->new();
-	chdir("Build");
-	my $zipFilename = "builds.zip";
-	unlink($zipFilename);
-	my @files = (	"Win32/PerforcePlugin.exe", "Win32/PerforcePlugin.pdb", 
-					"Win32/SubversionPlugin.exe", "Win32/SubversionPlugin.pdb", 
-					"Win32/PlasticSCMPlugin.exe",
-					"OSXx64/PerforcePlugin", 
-					"OSXx64/SubversionPlugin", 
-					"OSXx64/PlasticSCMPlugin",
-					"linux64/PerforcePlugin", 
-					"linux64/SubversionPlugin");
-
-	foreach (@files)
-	{
-		if (( -r $_ ) && ( -f $_ ))
-		{
-			$zipArchive->addFile($_) or die 'Unable to add file:$_ to archive';
-		}
-		else
-		{
-   			print "ERROR: $_ is not a readable valid file id\n";
-			unlink($zipFilename);
-   			exit 1;
-		}
-	}
-	$zipArchive->writeToFileNamed($zipFilename);
-
-	my $zipArchive2 = Archive::Zip->new();
-	unless ( $zipArchive2->read( $zipFilename ) == AZ_OK ) 
-	{
-    	die 'read error';
-	}
-
-	my @zipFiles = $zipArchive2->memberNames();
-	print "Made zip file 'Build/$zipFilename':\n";
-	print "\t",$_, "\n" for @files;
-
-	exit 0;
-}
 
 if ($clean)
 {
@@ -79,8 +35,6 @@ if ($clean)
 		}
     }
     unlink("PerforcePlugin");
-    unlink("SubversionPlugin");
-    unlink("PlasticSCMPlugin");
 	exit 0;
 }
 
@@ -189,8 +143,6 @@ sub BuildWin32
 {
   rmtree("Build");
   system("msbuilder.cmd", "VersionControl.sln", "P4Plugin", "Win32") && die ("Failed to build PerforcePlugin.exe");
-  system("msbuilder.cmd", "VersionControl.sln", "SvnPlugin", "Win32") && die ("Failed to build SubversionPlugin.exe");
-  system("msbuilder.cmd", "VersionControl.sln", "PlasticSCMPlugin", "Any CPU") && die ("Failed to build PlasticSCMPlugin.exe");
   system("msbuilder.cmd", "VersionControl.sln", "TestServer", "Win32") && die ("Failed to build TestServer.exe");
 }
 

@@ -3,7 +3,6 @@
 #include <sstream>
 
 static const char* kClientName = "Client name: ";
-static const char* kClientHost = "Client host: "; 
 static const char* kClientUnknown = "Client unknown.";
 static const char* kCurrentDir = "Current directory: ";
 static const char* kPeerAddr = "Peer address: ";
@@ -58,7 +57,6 @@ public:
 		while ( getline(ss, line) ) 
 		{	
 			if (ExtractInfo(line, kClientName, m_Info.clientName)) continue;
-			if (ExtractInfo(line, kClientHost, m_Info.clientHost)) continue;
 			if (ExtractInfo(line, kCurrentDir, m_Info.currentDir)) continue;
 			if (ExtractInfo(line, kPeerAddr, m_Info.peerAddress)) continue;
 			if (ExtractInfo(line, kClientAddr, m_Info.clientAddress)) continue;

@@ -19,17 +19,14 @@ P4PLUGIN_MODULES = $(P4PLUGIN_SRCS:.c=.o)
 P4PLUGIN_MODULES := $(P4PLUGIN_MODULES:.cpp=.o)
 P4PLUGIN_TARGET = PerforcePlugin
 
-SVNPLUGIN_MODULES = $(SVNPLUGIN_SRCS:.c=.o)
-SVNPLUGIN_MODULES := $(SVNPLUGIN_MODULES:.cpp=.o)
-SVNPLUGIN_TARGET = SubversionPlugin
-
-PLASTICSCMPLUGIN_TARGET = PlasticSCMPlugin/PlasticSCMPlugin
+OSX_SRCS = ./P4Plugin/Source/P4OSX.mm
+OSX_MODULES = $(OSX_SRCS:.mm=.o)
+P4PLUGIN_MODULES += $(OSX_MODULES)
 
 default: all
 
-all: P4Plugin SvnPlugin PlasticSCMPlugin testserver
+all: P4Plugin testserver
 	@mkdir -p Build/$(PLATFORM)
-	cp $(PLASTICSCMPLUGIN_TARGET) Build/$(PLATFORM)
 
 testserver: $(TESTSERVER_TARGET)
 	@mkdir -p Build/$(PLATFORM)
@@ -37,10 +34,6 @@ testserver: $(TESTSERVER_TARGET)
 P4Plugin: $(P4PLUGIN_TARGET)
 	@mkdir -p Build/$(PLATFORM)
 	cp $(P4PLUGIN_TARGET) Build/$(PLATFORM)
-
-SvnPlugin: $(SVNPLUGIN_TARGET)
-	@mkdir -p Build/$(PLATFORM)
-	cp $(SVNPLUGIN_TARGET) Build/$(PLATFORM)
 
 Common: $(COMMON_MODULES)
 
@@ -53,8 +46,8 @@ Test/Source/%.o : Test/Source/%.cpp $(TESTSERVER_INCLS)
 P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
 	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@
 
-SvnPlugin/Source/%.o : SvnPlugin/Source/%.cpp $(COMMON_INCLS) $(SVNPLUGIN_INCLS)
-	$(CXX) $(CXXFLAGS) $(SVNPLUGIN_INCLUDE) -c $< -o $@
+P4Plugin/Source/%.o : P4Plugin/Source/%.mm $(COMMON_INCLS) $(P4PLUGIN_INCLS)
+	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@ 
 
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
@@ -62,8 +55,5 @@ $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
 	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ -L./P4Plugin/Source/r18.2/lib/osx64 $(P4PLUGIN_LINK)
 
-$(SVNPLUGIN_TARGET): $(COMMON_MODULES) $(SVNPLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa $^ $(SVNPLUGIN_LINK)
-
 clean:
-	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(SVNPLUGIN_MODULES) $(TESTSERVER_MODULES)
+	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(TESTSERVER_MODULES)

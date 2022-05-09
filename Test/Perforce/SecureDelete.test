@@ -1,9 +1,10 @@
-c:delete
+<genfile ./Assets/securedeletefile1.txt>
+c:add 
 1
-./Assets/testfile2.txt
+./Assets/securedeletefile1.txt
 0
 --
-v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/testfile2.txt" 
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securedeletefile1.txt" 
 v1:login2
 v1:login2
 v1:Prompted for password
@@ -51,29 +52,112 @@ c32:enableCommand revert
 c32:enableCommand status
 c32:enableCommand submit
 c32:enableCommand unlock
-v1:<absroot>/Assets/testfile2.txt
-v1:delete  "<absroot>/Assets/testfile2.txt" 
+v1:./Assets/securedeletefile1.txt - no such file(s).
+v1:add -f  "./Assets/securedeletefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-i1://depot/Assets/testfile2.txt#1 - opened for delete (level 48)
+i1://depot/Assets/securedeletefile1.txt#1 - opened for add (level 48)
 o1:-1
-v1:fstat  "<absroot>/Assets/testfile2.txt" 
+v1:fstat  "./Assets/securedeletefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/securedeletefile1.txt
+o1:<absroot>/Assets/securedeletefile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/securedeletefile1.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securedeletefile1.txt
+o1:<absroot>/Assets/securedeletefile1.txt
+o1:257
+d1:end of list
+r1:end of response
+--
+c:submit
+-1
+This is a secure submit for a file to delete
+1
+./Assets/securedeletefile1.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securedeletefile1.txt
+v1:where "<absroot>/Assets/securedeletefile1.txt_XUDELIMX_" 
+==:v1:User vcs_test_user ticket expires in
+v1:where "<absroot>/Assets/securedeletefile1.txt_XUDELIMX_" 
+==:v1:User vcs_test_user ticket expires in
+v1:submit -i
+==:v1:User vcs_test_user ticket expires in
+==:i1:Change 
+<ignore>
+==:i1:Submitting change 
+<ignore>
+i1:Locking 1 files ... (level 48)
+<p:Locking 1 files ...
+i1:add //depot/Assets/securedeletefile1.txt#1 (level 48)
+<p:add //depot/Assets/securedeletefile1.txt#1
+==:i1:Change 
+<ignore>
+o1:-1
+v1:fstat  "<absroot>/Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securedeletefile1.txt
+o1:<absroot>/Assets/securedeletefile1.txt
+o1:16387
+d1:end of list
+r1:end of response
+--
+c:status recurse
+1
+./Assets/securedeletefile1.txt
+0
+--
+o1:-1
+v1:fstat  "./Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securedeletefile1.txt
+o1:<absroot>/Assets/securedeletefile1.txt
+o1:16387
+d1:end of list
+r1:end of response
+--
+c:delete
+1
+./Assets/securedeletefile1.txt
+0
+--
+v1:fstat -T "movedFile,depotFile,clientFile,action,ourLock,unresolved,headAction,otherOpen,otherLock,headRev,haveRev"  "./Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securedeletefile1.txt
+v1:delete  "<absroot>/Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+i1://depot/Assets/securedeletefile1.txt#1 - opened for delete (level 48)
+o1:-1
+v1:fstat  "<absroot>/Assets/securedeletefile1.txt" 
+==:v1:User vcs_test_user ticket expires in
+v1:<absroot>/Assets/securedeletefile1.txt
+o1:<absroot>/Assets/securedeletefile1.txt
 o1:66
 d1:end of list
 r1:end of response
 --
 c:status recurse
 1
-./Assets/testfile2.txt
+./Assets/securedeletefile1.txt
 0
 --
 o1:-1
-v1:fstat  "./Assets/testfile2.txt" 
+v1:fstat  "./Assets/securedeletefile1.txt" 
 ==:v1:User vcs_test_user ticket expires in
-v1:<absroot>/Assets/testfile2.txt
-o1:<absroot>/Assets/testfile2.txt
+v1:<absroot>/Assets/securedeletefile1.txt
+o1:<absroot>/Assets/securedeletefile1.txt
 o1:66
 d1:end of list
 r1:end of response

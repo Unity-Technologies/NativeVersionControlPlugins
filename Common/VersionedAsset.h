@@ -8,7 +8,7 @@ enum State
 	kLocal = 1 << 0, // Asset is on local disk. If none of the kSynced/kOutOfSync flags are set then vcs doesn't know about this local file.
 	kSynced = 1 << 1, // Asset is known to vcs and in sync locally
 	kOutOfSync = 1 << 2, // Asset is known to vcs and outofsync locally
-	kMissing = 1 << 3, 
+	kMissing = 1 << 3,
 	kCheckedOutLocal = 1 << 4,
 	kCheckedOutRemote = 1 << 5,
 	kDeletedLocal = 1 << 6,
@@ -23,6 +23,8 @@ enum State
 	kMetaFile = 1 << 15,
 	kMovedLocal = 1 << 16, // only used plugin side for perforce.
 	kMovedRemote = 1 << 17, // only used plugin side for perforce.
+	kUnversioned = 1 << 18,
+	kExclusiveCheckout = 1 << 19, // Only one user at a time can open this file for editing.
 };
 
 class VersionedAsset

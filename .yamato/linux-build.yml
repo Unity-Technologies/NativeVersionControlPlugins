@@ -1,0 +1,18 @@
+name: Linux - Build & Test VCS plugins
+agent:
+    type: Unity::VM
+    image: cds-ops/ubuntu-16.04-katana-agent
+    flavor: b1.large
+
+commands:
+        - hg clone --config extensions.largefiles= http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
+        - perl build.pl | tee linux_build.txt
+        - perl build.pl -test | tee linux_test.txt
+artifacts:
+    builds:
+      paths:
+        - "Build/linux64/PerforcePlugin"
+    logs:
+      paths:
+        - "linux_build.txt"
+        - "linux_test.txt"
