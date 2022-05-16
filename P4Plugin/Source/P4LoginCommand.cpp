@@ -26,7 +26,7 @@ public:
 		if (trustFingerprint)
 			task.CommandRun("trust -y ", this);
 
-		const std::string cmd = std::string("login2") + (m_CheckingForLoggedIn ? std::string(" ") + args[1] : std::string());
+		const std::string cmd = std::string("login") + (m_CheckingForLoggedIn ? std::string(" ") + args[1] : std::string());
 
 		if (m_CheckingForLoggedIn)
 		{
