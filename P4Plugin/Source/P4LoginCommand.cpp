@@ -19,7 +19,6 @@ public:
 
 		m_LoggedIn = false;
 		m_Password = task.GetP4Password();
-		//m_CheckingForLoggedIn = args.size() > 1;
 		m_CheckingForLoggedIn = args.size() > 1 && (args[1] == "-s");
 		bool trustFingerprint = args.size() > 1 && (args[1] == "trust");
 
