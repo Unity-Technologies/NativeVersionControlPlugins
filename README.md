@@ -40,13 +40,20 @@ To test:
 perl ./build.pl -test
 ```
 
+You need to clone `PerforceBinaries` from mercurial to get the binaries you will run the tests on. You can execute this command from NativeVersionControlPlugins root:
+```bash
+hg clone --config extensions.largefiles= http://hg-mirror-slo.hq.unity3d.com/unity-extra/perforce PerforceBinaries
+```
+
+Steps for setting up Mercurial can be found here: [Setting Up Mercurial](https://confluence.unity3d.com/display/DEV/Setting+Up+Mercurial)
+
 ###  Perforce
 
 The Perforce plugin source code is located under `/P4Plugin/Source`. It references the Perforce APIs, located under
-`/P4Plugin/Source/r17.2`. As its name states, we're targeting the 17.2 release of Perforce.
+`/P4Plugin/Source/r19.1`. As its name states, we're targeting the 19.1 release of Perforce.
 
 Perforce API includes and libraries were downloaded from the
-[Perforce downloads page](http://filehost.perforce.com/perforce/r17.2/).
+[Perforce downloads page](http://filehost.perforce.com/perforce/r19.1/).
 
 ####  Windows
 
