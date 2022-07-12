@@ -67,7 +67,7 @@ static bool RemoveLineWithPrefix(std::string& m, const std::string& prefix)
 static void CleanupErrorMessage(std::string& m)
 {
 	RemoveLineWithPrefix(m, "Submit aborted -- fix problems then use 'p4 submit -c") ||
-	ReplaceLineWithPrefix(m, 
+	ReplaceLineWithPrefix(m,
 						  "Merges still pending -- use 'resolve' to merge files.",
 						  "Merges still pending. Please resolve and resubmit.")
 						  ;
@@ -78,7 +78,7 @@ VCSStatus errorToVCSStatus(Error& e)
 	VCSSeverity sev = VCSSEV_Error;
 
 	switch (e.GetSeverity()) {
-		case E_EMPTY: 
+		case E_EMPTY:
 			sev = VCSSEV_OK;
 			break; // no errors
 		case E_INFO: // information, not necessarily an error
@@ -97,14 +97,14 @@ VCSStatus errorToVCSStatus(Error& e)
 
 	if (e.CheckId(MsgClient::ClobberFile)) // TODO: Check if clobberfile is severity failed and remove if so
 		sev = VCSSEV_Error;
-		
+
 	StrBuf msg;
 	e.Fmt(&msg);
 	VCSStatus status;
 	std::string msgStr = msg.Text();
 
 	CleanupErrorMessage(msgStr);
-	
+
 	if (!msgStr.empty() || sev != VCSSEV_OK)
 		status.insert(VCSStatusItem(sev, msgStr));
 	return status;
@@ -128,15 +128,20 @@ P4Task::~P4Task()
 }
 
 void P4Task::SetP4Port(const std::string& p)
-{ 
-	m_Client.SetPort(p.c_str()); 
+{
+	m_Client.SetPort(p.c_str());
 	m_PortConfig = p;
 	SetOnline(false);
 }
 
+std::string P4Task::GetP4Port()
+{
+	return m_PortConfig;
+}
+
 void P4Task::SetP4User(const std::string& u)
-{ 
-	m_Client.SetUser(u.c_str()); 
+{
+	m_Client.SetUser(u.c_str());
 	m_UserConfig = u;
 	SetOnline(false);
 }
@@ -148,14 +153,14 @@ std::string P4Task::GetP4User()
 
 void P4Task::SetP4Client(const std::string& c)
 {
-	m_Client.SetClient(c.c_str()); 
+	m_Client.SetClient(c.c_str());
 	m_ClientConfig = c;
 	SetOnline(false);
 }
 
 std::string P4Task::GetP4Client()
 {
-	return m_Client.GetClient().Text(); 
+	return m_Client.GetClient().Text();
 }
 
 void P4Task::SetP4Password(const std::string& p)
@@ -187,13 +192,13 @@ const std::string& P4Task::GetP4Password() const
 }
 
 const std::string& P4Task::GetP4Root() const
-{ 
-	return m_Root; 
+{
+	return m_Root;
 }
 
-void P4Task::SetP4Root(const std::string& r) 
-{ 
-	m_Root = r; 
+void P4Task::SetP4Root(const std::string& r)
+{
+	m_Root = r;
 }
 
 void P4Task::SetProjectPath(const std::string& p)
@@ -237,25 +242,25 @@ int P4Task::Run()
 	m_Connection = new Connection("./Library/p4plugin.log");
 
 
-	try 
+	try
 	{
 		UnityCommand cmd;
 		std::vector<std::string> args;
-		
+
 		for ( ;; )
 		{
 			cmd = m_Connection->ReadCommand(args);
-			
+
 			// Make it convenient to get the pipe even though the commands
 			// are callback based.
 			P4Command::s_Conn = m_Connection;
-			
+
 			if (cmd == UCOM_Invalid)
 				return 1; // error
 			else if (cmd == UCOM_Shutdown)
 			{
 				m_Connection->EndResponse(); // good manner shutdown
-				return 0; // ok 
+				return 0; // ok
 			}
 			else if (!Dispatch(cmd, args))
 				return 0; // ok
@@ -277,14 +282,14 @@ bool P4Task::Dispatch(UnityCommand cmd, const std::vector<std::string>& args)
 		m_Connection->EndResponse();
 		return true;
 	}
-	
+
 	// Dispatch
 	P4Command* p4c = LookupCommand(UnityCommandToString(cmd));
 	if (!p4c)
 	{
 		throw CommandException(cmd, std::string("unknown command"));
 	}
-	
+
 	if (!p4c->Run(*this, args))
 		return false;
 
@@ -311,15 +316,15 @@ bool P4Task::Reconnect()
 		NotifyOffline("Perforce workspace not set. Ignoring connection request.");
 		return false;
 	}
-	
+
 	Error err;
 	m_Client.SetProg( "Unity" );
 	m_Client.SetVersion( "1.0" );
 
-	// Set the config because in case of reconnect the 
+	// Set the config because in case of reconnect the
 	// config has been reset
 	SetP4Root("");
-	m_Client.SetPort(m_PortConfig.c_str()); 
+	m_Client.SetPort(m_PortConfig.c_str());
 	m_Client.SetUser(m_UserConfig.c_str());
 	if (m_PasswordConfig.empty())
 		m_Client.SetIgnorePassword();
@@ -331,7 +336,7 @@ bool P4Task::Reconnect()
 
 	VCSStatus status = errorToVCSStatus(err);
 
-	// Retry in case of unicode needs to be enabled on client	
+	// Retry in case of unicode needs to be enabled on client
 	if (HasUnicodeNeededError(status))
 	{
 		err.Clear();
@@ -369,14 +374,14 @@ bool P4Task::Reconnect()
 
 void P4Task::NotifyOffline(const std::string& reason)
 {
-	const char* disableCmds[]  = { 
+	const char* disableCmds[]  = {
 		"add", "changeDescription", "changeMove",
 		"changes", "changeStatus", "checkout",
 		"deleteChanges", "delete", "download",
 		"getLatest", "incomingChangeAssets", "incoming",
 		"lock", "move", "resolve",
 		"revertChanges", "revert", "status",
-		"submit", "unlock", 
+		"submit", "unlock",
 		0
 	};
 
@@ -397,14 +402,14 @@ void P4Task::NotifyOffline(const std::string& reason)
 
 void P4Task::NotifyOnline()
 {
-	const char* enableCmds[]  = { 
+	const char* enableCmds[]  = {
 		"add", "changeDescription", "changeMove",
 		"changes", "changeStatus", "checkout",
 		"deleteChanges", "delete", "download",
 		"getLatest", "incomingChangeAssets", "incoming",
 		"lock", "move", "resolve",
 		"revertChanges", "revert", "status",
-		"submit", "unlock", 
+		"submit", "unlock",
 		0
 	};
 	if (IsOnline())
@@ -448,7 +453,7 @@ bool P4Task::IsLoggedIn()
 	std::vector<std::string> args;
 	args.push_back("login");
 	args.push_back("-s");
-	bool loggedIn = p4c->Run(*this, args); 
+	bool loggedIn = p4c->Run(*this, args);
 
 	if (HasServerFingerPrintError(p4c->GetStatus()) &&
 		ShowOKCancelDialogBox("Perforce Fingerprint Required",
@@ -478,7 +483,7 @@ bool P4Task::IsLoggedIn()
 }
 
 bool P4Task::Login()
-{	
+{
 	if (!IsConnected())
 	{
 		m_Connection->Log().Notice() << "Perforce server not connected. Ignoring login request." << Endl;
@@ -488,7 +493,7 @@ bool P4Task::Login()
 	m_IsLoginInProgress = true;
 	P4Command* p4c = NULL;
 	std::vector<std::string> args;
-	
+
 	SetOnline(true);
 
 	if (GetP4Password().empty())
@@ -506,9 +511,9 @@ bool P4Task::Login()
 	{
 		// Do the actual login
 		p4c = LookupCommand("login");
-		
+
 		args.push_back("login");
-		bool loggedIn = p4c->Run(*this, args); 
+		bool loggedIn = p4c->Run(*this, args);
 
 		if (HasServerFingerPrintError(p4c->GetStatus()) &&
 				ShowOKCancelDialogBox("Perforce Fingerprint Required",
@@ -523,9 +528,9 @@ bool P4Task::Login()
 			EnableUTF8Mode();
 			loggedIn = p4c->Run(*this, args);
 		}
-		
-		SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);	
-		
+
+		SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
+
 		if (!loggedIn)
 		{
 			NotifyOffline("Login failed");
@@ -603,7 +608,7 @@ bool P4Task::Login()
 	}
 
 	// Upon login check if the client is know to the server and if not
-	// tell unity 
+	// tell unity
 	if (GetP4Info().clientIsKnown)
 	{
 		; // TODO: do the stuff
@@ -622,19 +627,19 @@ void P4Task::Logout()
 
 	P4Command* p4c = LookupCommand("logout");
 	CommandArgs args;
-	p4c->Run(*this, args); 
+	p4c->Run(*this, args);
 }
 
-// Finalise the perforce client 
+// Finalise the perforce client
 bool P4Task::Disconnect()
 {
 	Error err;
 
 	if (IsOnline())
 		NotifyOffline("Disconnect");
-	
+
 	DisableUTF8Mode();
- 
+
 	//   if ( !m_P4Connect ) // Nothing to do?
 	//{
 	//	return true;
@@ -667,7 +672,7 @@ bool P4Task::CommandRun(const std::string& command, P4Command* client)
 {
 	if (m_Connection->Log().GetLogLevel() != LOG_DEBUG)
 		m_Connection->Log().Info() << command << Endl;
-	
+
 	m_Connection->VerboseLine(command);
 
 	m_OfflineReason.clear();
@@ -690,7 +695,7 @@ bool P4Task::CommandRun(const std::string& command, P4Command* client)
 		else if (!Reconnect() || !Login())
 			return false; // Cannot do any commands when not connected and logged in.
 	}
-	
+
 	return CommandRunNoLogin(command, client);
 }
 

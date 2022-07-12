@@ -20,6 +20,7 @@ public:
 
 	// Setup
 	void SetP4Port(const std::string& p);
+	std::string GetP4Port();
 	void SetP4User(const std::string& u);
 	std::string GetP4User();
 	void SetP4Client(const std::string& c);
@@ -34,13 +35,13 @@ public:
 	const P4Info& GetP4Info() const;
 	void SetP4Streams(const P4Streams& s);
 	const P4Streams& GetP4Streams() const;
-	
+
 	int Run();
 	bool IsConnected();
 	bool Reconnect();
 	bool Login();
 
-	// Run a single command and write response to stdout. Will (re)connect and (re)login if needed. 
+	// Run a single command and write response to stdout. Will (re)connect and (re)login if needed.
 	// Returns true on success
 	bool CommandRun( const std::string& command, P4Command* client );
 
@@ -48,10 +49,10 @@ public:
 	bool CommandRunNoLogin( const std::string& command, P4Command* client );
 
 	bool Disconnect();
-	
+
 	static void NotifyOffline(const std::string& reason);
 	static void NotifyOnline();
-	
+
 	// Set but do not notify unity about it
 	static void SetOnline(bool isOnline);
 	static bool IsOnline();
@@ -87,7 +88,7 @@ private:
 	std::string m_PasswordConfig;
 	std::string m_ProjectPathConfig;
 	std::string m_OfflineReason;
-	
+
 	// Command execution
 	std::string m_CommandOutput;
 
