@@ -2,6 +2,7 @@
 #include "P4Task.h"
 #include "POpen.h"
 #include <sstream>
+#include <stdio.h>
 
 class P4SpecCommand : public P4Command
 {
@@ -12,41 +13,67 @@ public:
 		ClearStatus();
 		m_Root.clear();
 
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
+		std::string fallback_error = std::string();
+		if (args.size() > 1)
+			fallback_error = args[1];
+
 		const std::string cmd = std::string("client -o ") + Quote(task.GetP4Client());
 
 		if (!task.CommandRun(cmd, this))
 		{
-			std::string errorMessage = GetStatusMessage();
-			//This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
+			//MFA: This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
 			if (StatusContains(GetStatus(), "login2"))
 			{
 				ClearStatus();
 				const std::string exePath = std::string(
 #ifdef _MACOS
-						"/Applications/HelixMFA/HelixMFA.app/Contents/MacOS/HelixMFA"
+						"/Applications/HelixMFA.app/Contents/MacOS/HelixMFA"
 #else
 						"HelixMFA"
 #endif
 				);
-
+				Conn().VerboseLine(exePath);
 				try {
-					POpen proc = POpen(exePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User()));
-					proc.ReadIntoFile(std::string("./helixmfa.txt")); // Wait until stdout is closed
-					proc.~POpen();
-				} catch (PluginException e) {
-					GetStatus().insert(VCSStatusItem(VCSSEV_Error, "Your chosen Perforce server has multi-factor authentication enabled. To log in please install HelixMFA or use the \"p4 login\" or \"p4 login2\" CLI commands"));
+					POpen proc = POpen(exePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User());
+					std::string line = std::string();
+					bool helixmfa_found = false;
+					while (proc.ReadLine(line)) {
+						Conn().VerboseLine(std::string("HelixMFA: ") + std::string(line));
+						//If first line reported by HelixMFA does not contain Authenticating, then we didnt find it
+						if (!helixmfa_found && line.find("Authenticating") == std::string::npos) {
+							const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
+							GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
+							Conn().Log().Notice() << GetStatusMessage() << Endl;
+						} else {
+							helixmfa_found = true;
+						}
+					}; // Wait until stdout is closed
+					if (!helixmfa_found) return false;
+					//We are not closing the handle because PerforcePlugin is terminated after reconnection and closes them all. Thus it would fail
+					//proc.~POpen();
+				}
+				catch (std::exception& e)
+				{
+					Conn().Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
+				}
+				//Try again the spec command so that we can get a value for m_Root
+				if (!task.CommandRun(cmd, this))
+				{
+					if (StatusContains(GetStatus(), "login2"))
+					{
+						GetStatus().insert(VCSStatusItem(VCSSEV_Error, fallback_error));
+						Conn().Log().Fatal() << GetStatusMessage() << Endl;
+						return false;
+					}
 				}
 			}
-			Conn().Log().Fatal() << errorMessage << Endl;
-			return false;
 		}
-		else
-		{
-			if (!m_Root.empty())
-				task.SetP4Root(m_Root);
-			Conn().Log().Info() << "Root set to " << m_Root << Endl;
-			return true;
-		}
+		if (!m_Root.empty())
+			task.SetP4Root(m_Root);
+		Conn().VerboseLine(std::string("Root set to ") + m_Root);
+		Conn().Log().Info() << "Root set to " << m_Root << Endl;
+		return true;
 	}
 
     // Called with entire spec file as data
