@@ -26,16 +26,18 @@ public:
 			if (StatusContains(GetStatus(), "login2"))
 			{
 				ClearStatus();
-				const std::string exePath = std::string(
-#ifdef _MACOS
+				std::string exePath = std::string(
+#if defined(_MACOS)
 						"/Applications/HelixMFA.app/Contents/MacOS/HelixMFA"
-#else
-						"HelixMFA"
+#endif
+#if defined(_WINDOWS)
+						"\"C:\\Program Files\\Perforce\\HelixMFA.exe\""
 #endif
 				);
 				Conn().VerboseLine(exePath);
 				try {
 					POpen proc = POpen(exePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User());
+#if !defined(_WINDOWS)
 					std::string line = std::string();
 					bool helixmfa_found = false;
 					while (proc.ReadLine(line)) {
@@ -45,7 +47,8 @@ public:
 							const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
 							GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
 							Conn().Log().Notice() << GetStatusMessage() << Endl;
-						} else {
+						}
+						else {
 							helixmfa_found = true;
 						}
 					}; // Wait until stdout is closed
@@ -53,9 +56,20 @@ public:
 					//We are not closing the handle because PerforcePlugin is terminated after reconnection and closes them all. Thus it would fail
 					//proc.~POpen();
 				}
+#else
+				}
+				catch (PluginException& pe)
+				{
+					const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
+					GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
+					Conn().Log().Notice() << GetStatusMessage() << Endl;
+					return false;
+				}
+#endif
 				catch (std::exception& e)
 				{
 					Conn().Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
+					return false;
 				}
 				//Try again the spec command so that we can get a value for m_Root
 				if (!task.CommandRun(cmd, this))
