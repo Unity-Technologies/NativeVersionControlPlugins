@@ -33,6 +33,9 @@ public:
 #if defined(_WINDOWS)
 						"\"C:\\Program Files\\Perforce\\HelixMFA.exe\""
 #endif
+#if defined(_LINUX)
+						"helixmfa" //Just to check if by change someone created a symlink in /usr/local/bin
+#endif
 				);
 				Conn().VerboseLine(exePath);
 				try {
@@ -44,7 +47,8 @@ public:
 						Conn().VerboseLine(std::string("HelixMFA: ") + std::string(line));
 						//If first line reported by HelixMFA does not contain Authenticating, then we didnt find it
 						if (!helixmfa_found && line.find("Authenticating") == std::string::npos) {
-							const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
+							const std::string notfound_error = "HelixMFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator\n"
+							"If this error keeps showing after installation, you can try running HelixMFA manually with the following parameters: Port=" + task.GetP4Port() + ". User=" + task.GetP4User();
 							GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
 							Conn().Log().Notice() << GetStatusMessage() << Endl;
 						}
