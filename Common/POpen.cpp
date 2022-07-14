@@ -53,7 +53,7 @@ POpen::POpen(const std::string& cmd) : m_Command(cmd)
 	siStartInfo.hStdOutput = m_ChildStd_OUT_Wr;
 	siStartInfo.hStdInput = m_ChildStd_IN_Rd;
 	siStartInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-	siStartInfo.wShowWindow = SW_HIDE;
+	siStartInfo.wShowWindow = SW_SHOW;
 
 	const size_t kCommandSize = 32768; 
 	static wchar_t widePath[kCommandSize]; 
@@ -85,7 +85,7 @@ POpen::POpen(const std::string& cmd) : m_Command(cmd)
 	// before we can be confident that the process is running ok.
 	DWORD msWait = 10000; // Wait at most 10 seconds 
 	DWORD exitCode;
-	DWORD waitRes = WaitForInputIdle(m_ProcInfo.hProcess, msWait);
+	DWORD waitRes = WaitForInputIdle(m_ProcInfo.hProcess, INFINITE);
 	switch (waitRes)
 	{
 	case WAIT_TIMEOUT:
@@ -100,6 +100,10 @@ POpen::POpen(const std::string& cmd) : m_Command(cmd)
 				//WaitForSingleObject(m_ProcInfo.hProcess, msWait);
 				//GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode);
 			}
+			else if (exitCode == 0)
+			{
+				break;
+			}
 			else
 			{
 				throw PluginException(std::string("Process failed '") + cmd + "' exit code " + IntToString(exitCode));
@@ -108,6 +112,8 @@ POpen::POpen(const std::string& cmd) : m_Command(cmd)
 	default:
 		break;
 	}
+
+	WaitForSingleObject(m_ProcInfo.hProcess, INFINITE);
 
 	if (!GetExitCodeProcess(m_ProcInfo.hProcess, &exitCode))
 		throw PluginException(std::string("Could not get exit code for process '") + cmd + "': " + LastErrorToMsg());
