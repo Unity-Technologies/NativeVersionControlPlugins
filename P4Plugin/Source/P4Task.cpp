@@ -484,6 +484,10 @@ bool P4Task::IsLoggedIn()
 
 bool P4Task::Login()
 {
+#if defined(_DEBUG)
+	ShowOKCancelDialogBox("You can attach a debugger now", std::string("Process id: ") + ErrorCodeToMsg(GetCurrentProcessId()));
+#endif
+
 	if (!IsConnected())
 	{
 		m_Connection->Log().Notice() << "Perforce server not connected. Ignoring login request." << Endl;
