@@ -89,7 +89,6 @@ public:
 		}
 		if (!m_Root.empty())
 			task.SetP4Root(m_Root);
-		Conn().VerboseLine(std::string("Root set to ") + m_Root);
 		Conn().Log().Info() << "Root set to " << m_Root << Endl;
 		return true;
 	}
