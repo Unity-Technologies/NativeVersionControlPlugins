@@ -9,8 +9,8 @@ use VCSTest;
 use File::Find;
 use File::Basename;
 
-my ($testoption,$test, $target, $clean, @configs);
-GetOptions("test"=>\$test, "testoption=s"=>\$testoption,
+my ($testoption,$test, $target, $clean, @configs, $filter);
+GetOptions("test"=>\$test, "testoption=s"=>\$testoption, "filter=s"=>\$filter,
 		   "target=s"=>\$target, "configs=s"=>\@configs, "clean"=>\$clean);
 @configs = split(/,/,join(',',@configs));
 
@@ -107,17 +107,17 @@ else
 
 sub TestPerforce()
 {
-	IntegrationTest("Plugin", "localhost:1667", $testoption);
-	IntegrationTest("Plugin", "ssl:localhost:1667", $testoption);
-	IntegrationTest("Perforce/Common", "localhost:1667", $testoption);
-	IntegrationTest("Perforce/Common", "ssl:localhost:1667", $testoption);
-	IntegrationTest("Perforce/BaseIPv4", "tcp4:localhost:1667", $testoption);
-	IntegrationTest("Perforce/SecureBaseIPv4", "ssl4:localhost:1667", $testoption);
-	IntegrationTest("Perforce/SquareBracketIPv4", "tcp4:[localhost]:1667", $testoption);
+	IntegrationTest("Plugin", "localhost:1667", $testoption, $filter);
+	IntegrationTest("Plugin", "ssl:localhost:1667", $testoption, $filter);
+	IntegrationTest("Perforce/Common", "localhost:1667", $testoption, $filter);
+	IntegrationTest("Perforce/Common", "ssl:localhost:1667", $testoption, $filter);
+	IntegrationTest("Perforce/BaseIPv4", "tcp4:localhost:1667", $testoption, $filter);
+	IntegrationTest("Perforce/SecureBaseIPv4", "ssl4:localhost:1667", $testoption, $filter);
+	IntegrationTest("Perforce/SquareBracketIPv4", "tcp4:[localhost]:1667", $testoption, $filter);
 	#Only works if DNS routes via IPv6
 	#IntegrationTest("Perforce/BaseIPv6", "tcp6:[localhost]:1667", $testoption);
-	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[::1]:1667", $testoption);
-	IntegrationTest("Perforce/SecureSquareBracketIPv6", "ssl6:[::1]:1667", $testoption);
+	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[::1]:1667", $testoption, $filter);
+	IntegrationTest("Perforce/SecureSquareBracketIPv6", "ssl6:[::1]:1667", $testoption, $filter);
 }
 
 sub BuildMac
