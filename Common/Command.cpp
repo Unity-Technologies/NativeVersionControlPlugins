@@ -25,6 +25,7 @@ static const CmdInfo infos[] = {
 	{ UCOM_Incoming, "incoming" }, //
 	{ UCOM_Lock, "lock" }, //
 	{ UCOM_Login, "login" }, //
+	{ UCOM_Login2, "login2" }, //
 	{ UCOM_Move, "move" }, //
 	{ UCOM_QueryConfigParameters, "queryConfigParameters" }, //
 	{ UCOM_Resolve, "resolve" }, //

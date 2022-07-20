@@ -41,6 +41,7 @@
     <ClCompile Include="Source\P4IncomingCommand.cpp" />
     <ClCompile Include="Source\P4LockCommand.cpp" />
     <ClCompile Include="Source\P4LoginCommand.cpp" />
+    <ClCompile Include="Source\P4Login2Command.cpp" />
     <ClCompile Include="Source\P4LogoutCommand.cpp" />
     <ClCompile Include="Source\P4MoveCommand.cpp" />
     <ClCompile Include="Source\P4Plugin_WIN.cpp" />

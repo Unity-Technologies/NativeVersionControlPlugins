@@ -86,6 +86,9 @@
     <ClCompile Include="Source\P4LoginCommand.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="Source\P4Login2Command.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
     <ClCompile Include="Source\P4MoveCommand.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
