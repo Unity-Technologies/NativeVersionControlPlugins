@@ -1,0 +1,25 @@
+c:pluginConfig vcSharedLogLevel verbose
+--
+r1:end of response
+--
+c:pluginConfig projectPath <absroot>
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceUsername mfa_test_user
+--
+r1:end of response
+--
+c:pluginConfig vcPerforcePassword aaaa1111
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceWorkspace testclient
+--
+r1:end of response
+--
+c:pluginConfig vcPerforceServer localhost:1667
+--
+r1:end of response
+--
+<include ./Test/Perforce/MultiFactorAuthentication.test>
