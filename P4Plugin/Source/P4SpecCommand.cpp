@@ -25,7 +25,9 @@ public:
 			//MFA: This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
 			if (StatusContains(GetStatus(), "login2"))
 			{
+				Conn().VerboseLine(GetStatusMessage());
 				ClearStatus();
+				/*
 				std::string exePath = std::string(
 #if defined(_MACOS)
 						"/Applications/HelixMFA.app/Contents/MacOS/HelixMFA"
@@ -74,9 +76,15 @@ public:
 				{
 					Conn().Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
 					return false;
-				}
+				}*/
+
+				std::vector<std::string> args;
+				P4Command* p4c = LookupCommand("login2");
+				args.push_back("login2");
+				bool res = p4c->Run(task, args);
+
 				//Try again the spec command so that we can get a value for m_Root
-				if (!task.CommandRun(cmd, this))
+				if (res && !task.CommandRun(cmd, this))
 				{
 					if (StatusContains(GetStatus(), "login2"))
 					{
