@@ -22,4 +22,4 @@ c:pluginConfig vcPerforceServer localhost:1667
 --
 r1:end of response
 --
-<include ./Test/Perforce/MultiFactorAuthentication.test>
+<include ./Test/Perforce/Login2.test>

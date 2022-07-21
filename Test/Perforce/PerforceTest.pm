@@ -16,6 +16,7 @@ sub PerforceIntegrationTests
 	$p4port = $_[1];
 	$option = $_[2];
 	$filter = $_[3];
+	$mfa = index($dir, "MultiFactorAuthentication") > -1;
 
 	unless ($option) { $option = "verbose" };
 	unless ($filter) { $filter = "" };
@@ -55,20 +56,25 @@ sub PerforceIntegrationTests
 
 	$pid = SetupServer();
 	SetupClient();
-
-	print "Press ENTER to continue...";
-	<STDIN>;
-
 	SetupUsers();
-	SetupMFATriggers();
-	SetupMFAUser();
-	RestartServer($pid);
-	ConfigureSecurity();
 
-	print "Press ENTER to continue...";
-	<STDIN>;
+	# print "Press ENTER to continue...";
+	# <STDIN>;
+	if ($mfa)
+	{
+		print "Setting up Multi Factor Authentication configuration...\n";
+		SetupMFATriggers();
+		SetupMFAUser();
+		RestartServer($pid);
+		ConfigureSecurity();
+	}
+	# print "Press ENTER to continue...";
+	# <STDIN>;
 
 	$exitCode = RunTests($dir, $option, $filter);
+
+	print "Press ENTER to continue...";
+	<STDIN>;
 
 	TeardownClient();
 	TeardownServer($pid);
@@ -142,6 +148,8 @@ sub RunTests()
 sub RunCommand
 {
 	my $command = $_[0];
+	print "Running command $command\n";
+	# LoginUser($ENV{'VCS_P4USER'}, $ENV{'VCS_P4PASSWD'});
 	system("$ENV{'P4EXECABS'} -p $ENV{'VCS_P4PORT'} -u $ENV{'VCS_P4USER'} -P $ENV{'VCS_P4PASSWD'} -c $ENV{'VCS_P4CLIENT'} -d $ENV{'VCS_P4CLIENTROOTABS'} $command");
 }
 
@@ -150,7 +158,7 @@ sub AddExclusiveFile
 	open(FH, '>', 'Assets/exclusivefile.txt') or die $!;
 	print(FH 'File with exclusive open file type modifier.');
 	close(FH) or die $1;
-
+	
 	RunCommand('add -t text+l Assets/exclusivefile.txt');
 	RunCommand('submit -d "Add Assets/exclusivefile.txt." Assets/exclusivefile.txt');
 }
@@ -206,6 +214,7 @@ sub ConfigureSecurity
 	ResetPassword("vcs_test_user", "Secret", "aaaa1111");
 	ResetPassword("mfa_test_user", "Mfau1111", "aaaa1111");
 	$ENV{'VCS_P4PASSWD'} = 'aaaa1111';
+	LoginUser("vcs_test_user", "aaaa1111");
 	# RunCommand('configure set auth.autologinprompt=0');
 	# system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user -P aaaa1111 configure set auth.autologinprompt=0");
 	# RunCommand('configure set security=0');
@@ -214,14 +223,22 @@ sub ConfigureSecurity
 sub ResetPassword()
 {
 	($user_, $old_, $new_) = @_;
-
-	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ passwd ");
+	print "Reseting password for user: $user_ | $old_ | $new_\n";
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ passwd > /dev/null 2>&1");
 	print FD "$old_\n";
 	print FD "$new_\n";
 	print FD "$new_\n";
 	close(FD);
-
 	1;
+}
+
+sub LoginUser()
+{
+	($user_, $pass_) = @_;
+	print "Login for user: $user_ | $pass_\n";
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ login > /dev/null 2>&1");
+	print FD "$pass_\n";
+	close(FD);
 }
 
 sub RestartServer
@@ -245,19 +262,19 @@ sub SetupUsers
 {
 	print "Setting up user password_vcs_test_user by retrieving clients:\n";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user clients");
-	print "Setting up user mfa_test_user by retrieving clients:\n";
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user clients");
 	print "Users:\n";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user users");
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O ? -P Password1");
 	$ENV{'VCS_P4USER'} = "vcs_test_user";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O ? -P Secret");
-	$ENV{'VCS_P4MFAUSER'} = "mfa_test_user";
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user passwd -O ? -P Mfau1111");
 }
 
 sub SetupMFAUser
 {
+	print "Setting up user mfa_test_user by retrieving clients:\n";
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user clients");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user passwd -O ? -P Mfau1111");
+
 	$USER_SPEC =<<EOF;
 
 User:   mfa_test_user
@@ -342,7 +359,7 @@ EOF
 sub TeardownClient
 {
 	print "Tearing down workspace $ENV{'VCS_P4CLIENT'}\n";
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user -P Secret client -f -d $ENV{'VCS_P4CLIENT'}");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $ENV{'VCS_P4USER'} -P $ENV{'VCS_P4PASSWD'} client -f -d $ENV{'VCS_P4CLIENT'}");
 	1;
 }
 

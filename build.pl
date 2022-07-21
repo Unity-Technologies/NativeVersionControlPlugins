@@ -118,6 +118,7 @@ sub TestPerforce()
 	#IntegrationTest("Perforce/BaseIPv6", "tcp6:[localhost]:1667", $testoption);
 	IntegrationTest("Perforce/SquareBracketIPv6", "tcp6:[::1]:1667", $testoption, $filter);
 	IntegrationTest("Perforce/SecureSquareBracketIPv6", "ssl6:[::1]:1667", $testoption, $filter);
+	IntegrationTest("Perforce/MultiFactorAuthentication", "localhost:1667", $testoption, $filter);
 }
 
 sub BuildMac
