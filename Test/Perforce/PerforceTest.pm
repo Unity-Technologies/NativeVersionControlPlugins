@@ -17,6 +17,7 @@ sub PerforceIntegrationTests
 	$option = $_[2];
 	$filter = $_[3];
 	$mfa = index($dir, "MultiFactorAuthentication") > -1;
+	$devnull = "> /dev/null 2>&1";
 
 	unless ($option) { $option = "verbose" };
 	unless ($filter) { $filter = "" };
@@ -50,6 +51,7 @@ sub PerforceIntegrationTests
 		$ENV{'VCS_P4CLIENTROOT'} =~ s/\//\\/g;
 		$ENV{'VCS_P4CLIENTROOTABS'} =~ s/\//\\/g;
 		$ENV{'P4EXECABS'} =~ s/\//\\/g;
+		$devnull = "2>&1>\$null";
 	}
 
 	$ENV{'VCS_P4ROOT'} = abs_path($ENV{'VCS_P4ROOT'});
@@ -224,7 +226,7 @@ sub ResetPassword()
 {
 	($user_, $old_, $new_) = @_;
 	print "Reseting password for user: $user_ | $old_ | $new_\n";
-	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ passwd > /dev/null 2>&1");
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ passwd $devnull");
 	print FD "$old_\n";
 	print FD "$new_\n";
 	print FD "$new_\n";
@@ -236,7 +238,7 @@ sub LoginUser()
 {
 	($user_, $pass_) = @_;
 	print "Login for user: $user_ | $pass_\n";
-	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ login > /dev/null 2>&1");
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ login $devnull");
 	print FD "$pass_\n";
 	close(FD);
 }
@@ -244,6 +246,7 @@ sub LoginUser()
 sub RestartServer
 {
 	RunCommand('admin restart');
+	sleep(2);
 }
 
 sub TeardownServer
@@ -264,16 +267,16 @@ sub SetupUsers
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user clients");
 	print "Users:\n";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user users");
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O ? -P Password1");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O \\? -P Password1");
 	$ENV{'VCS_P4USER'} = "vcs_test_user";
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O ? -P Secret");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O \\? -P Secret");
 }
 
 sub SetupMFAUser
 {
 	print "Setting up user mfa_test_user by retrieving clients:\n";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user clients");
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user passwd -O ? -P Mfau1111");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user passwd -O \\? -P Mfau1111");
 
 	$USER_SPEC =<<EOF;
 
@@ -301,6 +304,10 @@ EOF
 sub SetupMFATriggers
 {
 	my $mfa_script = getcwd() . "/MFA/mfa-trigger.sh";
+	if ($ENV{'TARGET'} eq "win32")
+	{
+		$mfa_script =~ s/\//\\/g;
+	}
 
 	$TRIGGERS =<<EOF;
 
