@@ -170,6 +170,7 @@ int run(int argc, char* argv[])
 		std::cout << "Plugin : " << argv[1] << std::endl;
 
 	std::vector<std::string> arguments;
+	arguments.push_back("-test");
 	ExternalProcess p(argv[1], arguments);
 	p.Launch();
 	int res = runScript(p, argv[2], argv[3]);

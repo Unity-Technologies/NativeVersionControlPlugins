@@ -118,6 +118,7 @@ P4Task::P4Task()
 {
 	m_P4Connect = false;
 	m_IsLoginInProgress = false;
+	m_IsTestMode = false;
 	s_Singleton = this;
 	SetOnline(false);
 }
@@ -237,11 +238,12 @@ const P4Streams& P4Task::GetP4Streams() const
 	return m_Streams;
 }
 
-int P4Task::Run()
+int P4Task::Run(const bool testmode)
 {
 	m_Connection = new Connection("./Library/p4plugin.log");
-
-
+	m_IsTestMode = testmode;
+	if (m_IsTestMode)
+		m_Connection->Log().Notice() << "Running on testing mode." << Endl;
 	try
 	{
 		UnityCommand cmd;
@@ -553,6 +555,8 @@ bool P4Task::Login()
 	args.push_back("spec");
 	const std::string fallback_error = "Your chosen Perforce server has multi-factor authentication enabled. To log in please install HelixMFA or use the \"p4 login\" or \"p4 login2\" CLI commands";
 	args.push_back(fallback_error);
+	if (m_IsTestMode)
+		args.push_back("-test");
 	bool res = p4c->Run(*this, args); // fetched root info
 	SendToConnection(*m_Connection, p4c->GetStatus(), MAProtocol);
 	if (!res)

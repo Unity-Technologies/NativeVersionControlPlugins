@@ -3,6 +3,7 @@
 #include "Utility.h"
 #include <sstream>
 
+/// ONLY FOR TESTING PURPOSES
 class P4Login2Command : public P4Command
 {
 public:

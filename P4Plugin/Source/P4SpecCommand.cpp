@@ -15,8 +15,8 @@ public:
 
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		std::string fallback_error = std::string();
-		if (args.size() > 1)
-			fallback_error = args[1];
+		fallback_error = args.size() > 1 ? std::string(args[1]) : "";
+		m_IsTestMode = args.size() > 2 && (args[2] == "-test");
 
 		const std::string cmd = std::string("client -o ") + Quote(task.GetP4Client());
 
@@ -27,64 +27,70 @@ public:
 			{
 				Conn().VerboseLine(GetStatusMessage());
 				ClearStatus();
-				/*
-				std::string exePath = std::string(
-#if defined(_MACOS)
-						"/Applications/HelixMFA.app/Contents/MacOS/HelixMFA"
-#endif
-#if defined(_WINDOWS)
-						"\"C:\\Program Files\\Perforce\\HelixMFA.exe\""
-#endif
-#if defined(_LINUX)
-						"helixmfa" //Just to check if by change someone created a symlink in /usr/local/bin
-#endif
-				);
-				Conn().VerboseLine(exePath);
-				try {
-					POpen proc = POpen(exePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User());
-#if !defined(_WINDOWS)
-					std::string line = std::string();
-					bool helixmfa_found = false;
-					while (proc.ReadLine(line)) {
-						Conn().VerboseLine(std::string("HelixMFA: ") + std::string(line));
-						//If first line reported by HelixMFA does not contain Authenticating, then we didnt find it
-						if (!helixmfa_found && line.find("Authenticating") == std::string::npos) {
-							const std::string notfound_error = "HelixMFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator\n"
-							"If this error keeps showing after installation, you can try running HelixMFA manually with the following parameters: Port=" + task.GetP4Port() + ". User=" + task.GetP4User();
-							GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
-							Conn().Log().Notice() << GetStatusMessage() << Endl;
-						}
-						else {
-							helixmfa_found = true;
-						}
-					}; // Wait until stdout is closed
-					if (!helixmfa_found) return false;
-					//We are not closing the handle because PerforcePlugin is terminated after reconnection and closes them all. Thus it would fail
-					//proc.~POpen();
-				}
-#else
-				}
-				catch (PluginException& pe)
-				{
-					const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
-					GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
-					Conn().Log().Notice() << GetStatusMessage() << Endl;
-					return false;
-				}
-#endif
-				catch (std::exception& e)
-				{
-					Conn().Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
-					return false;
-				}*/
 
-				std::vector<std::string> args;
-				P4Command* p4c = LookupCommand("login2");
-				args.push_back("login2");
-				bool res = p4c->Run(task, args);
+				if(!m_IsTestMode)
+				{
+					std::string exePath = std::string(
+	#if defined(_MACOS)
+							"/Applications/HelixMFA.app/Contents/MacOS/HelixMFA"
+	#endif
+	#if defined(_WINDOWS)
+							"\"C:\\Program Files\\Perforce\\HelixMFA.exe\""
+	#endif
+	#if defined(_LINUX)
+							"helixmfa" //Just to check if by change someone created a symlink in /usr/local/bin
+	#endif
+					);
+					Conn().VerboseLine(exePath);
+					try {
+						POpen proc = POpen(exePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User());
+	#if !defined(_WINDOWS)
+						std::string line = std::string();
+						bool helixmfa_found = false;
+						while (proc.ReadLine(line)) {
+							Conn().VerboseLine(std::string("HelixMFA: ") + std::string(line));
+							//If first line reported by HelixMFA does not contain Authenticating, then we didnt find it
+							if (!helixmfa_found && line.find("Authenticating") == std::string::npos) {
+								const std::string notfound_error = "HelixMFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator\n"
+								"If this error keeps showing after installation, you can try running HelixMFA manually with the following parameters: Port=" + task.GetP4Port() + ". User=" + task.GetP4User();
+								GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
+								Conn().Log().Notice() << GetStatusMessage() << Endl;
+							}
+							else {
+								helixmfa_found = true;
+							}
+						}; // Wait until stdout is closed
+						if (!helixmfa_found) return false;
+						//We are not closing the handle because PerforcePlugin is terminated after reconnection and closes them all. Thus it would fail
+						//proc.~POpen();
+					}
+	#else
+					}
+					catch (PluginException& pe)
+					{
+						const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
+						GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
+						Conn().Log().Notice() << GetStatusMessage() << Endl;
+						return false;
+					}
+	#endif
+					catch (std::exception& e)
+					{
+						Conn().Log().Fatal() << "Unhandled exception: " << e.what() << Endl;
+						return false;
+					}
+				}
+				else
+				{
+					std::vector<std::string> args;
+					P4Command* p4c = LookupCommand("login2");
+					args.push_back("login2");
+					bool res = p4c->Run(task, args);
+					if (!res) return false;
+				}
 
 				//Try again the spec command so that we can get a value for m_Root
-				if (res && !task.CommandRun(cmd, this))
+				if (!task.CommandRun(cmd, this))
 				{
 					if (StatusContains(GetStatus(), "login2"))
 					{
@@ -129,5 +135,6 @@ public:
 	}
 private:
 	std::string m_Root;
+	bool m_IsTestMode;
 
 } cSpec("spec");
