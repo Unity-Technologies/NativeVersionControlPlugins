@@ -73,8 +73,8 @@ sub PerforceIntegrationTests
 
 	$exitCode = RunTests($dir, $option, $filter);
 
-	print "Press ENTER to continue...";
-	<STDIN>;
+	# print "Press ENTER to continue...";
+	# <STDIN>;
 
 	TeardownClient();
 	TeardownServer($pid);
