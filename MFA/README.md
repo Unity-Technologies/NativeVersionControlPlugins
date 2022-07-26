@@ -28,6 +28,8 @@ Download this script with a testing version of the three required triggers:
 <https://github.com/perforce/helix-authentication-extension/blob/master/containers/p4d/mfa-trigger.sh>
 
 Note: There is a custom version of this script in our local repo (NativeVersionControlPlugins/MFA) that actually works (specially for MacOs users)
+- mfa-trigger.sh > bash script fot MacOs and Linux
+- mfa-trigger.ps1 > powershell script for Windows
 
 Then run:
 ```

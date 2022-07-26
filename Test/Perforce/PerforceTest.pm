@@ -306,6 +306,7 @@ sub SetupMFATriggers
 	my $mfa_script = getcwd() . "/MFA/mfa-trigger.sh";
 	if ($ENV{'TARGET'} eq "win32")
 	{
+		$mfa_script = "PowerShell " . getcwd() . "/MFA/mfa-trigger.ps1";
 		$mfa_script =~ s/\//\\/g;
 	}
 
