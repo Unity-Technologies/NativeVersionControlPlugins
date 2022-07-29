@@ -438,7 +438,7 @@ bool P4Task::IsOnline()
 static std::string FormatFingerprintMessage(const std::string& statusMessage)
 {
 	std::string noNewlines = statusMessage;
-	for (int i = 0; i < noNewlines.size(); i++)
+	for (size_t i = 0; i < noNewlines.size(); i++)
 	{
 		if (noNewlines[i] == '\n')
 			noNewlines[i] = ' ';
