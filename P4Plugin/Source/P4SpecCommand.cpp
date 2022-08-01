@@ -64,8 +64,16 @@ public:
 				}
 				catch (PluginException& pe)
 				{
-					const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
-					GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
+					if (StartsWith(pe.what(), "Process aborted "))
+					{
+						const std::string aborted_error = "The Helix MFA Authenticator did not complete. Run it again or use the \"p4 login\" or \"p4 login2\" CLI commands";
+						GetStatus().insert(VCSStatusItem(VCSSEV_Error, aborted_error));
+					}
+					else
+					{
+						const std::string notfound_error = "The Helix MFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator";
+						GetStatus().insert(VCSStatusItem(VCSSEV_Error, notfound_error));
+					}
 					Conn().Log().Notice() << GetStatusMessage() << Endl;
 					return false;
 				}
