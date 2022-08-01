@@ -15,7 +15,7 @@ public:
 
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
 		const std::string fallback_error = (args.size() > 1) ? args[1] : std::string();
-		
+
 		const std::string cmd = std::string("client -o ") + Quote(task.GetP4Client());
 		if (!task.CommandRun(cmd, this))
 		{
@@ -23,20 +23,16 @@ public:
 			if (StatusContains(GetStatus(), "login2"))
 			{
 				ClearStatus();
-				std::string exePath = std::string(
-#if defined(_MACOS)
-						"/Applications/HelixMFA.app/Contents/MacOS/HelixMFA"
-#endif
 #if defined(_WINDOWS)
-						"\"C:\\Program Files\\Perforce\\HelixMFA.exe\""
+				static const char* kMFAExePath = "\"C:\\Program Files\\Perforce\\HelixMFA.exe\"";
+#elif defined(_MACOS)
+				static const char* kMFAExePath = "/Applications/HelixMFA.app/Contents/MacOS/HelixMFA";
+#elif defined(_LINUX)
+				static const char* kMFAExePath = "helixmfa";
 #endif
-#if defined(_LINUX)
-						"helixmfa" //Just to check if by change someone created a symlink in /usr/local/bin
-#endif
-				);
-				Conn().VerboseLine(exePath);
+				Conn().VerboseLine(kMFAExePath);
 				try {
-					POpen proc = POpen(exePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User());
+					POpen proc = POpen(kMFAExePath + std::string(" ") + task.GetP4Port() + std::string(" ") + task.GetP4User());
 #if !defined(_WINDOWS)
 					std::string line = std::string();
 					bool helixmfa_found = false;
