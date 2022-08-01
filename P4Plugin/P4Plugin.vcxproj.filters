@@ -155,6 +155,9 @@
     <ClCompile Include="Source\P4StreamsCommand.cpp">
       <Filter>P4Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="Source\P4MFA.cpp">
+      <Filter>P4Plugin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Changes.h">
@@ -245,5 +248,8 @@
     <ClInclude Include="..\Common\Pipe.h" />
     <ClInclude Include="Source\P4Info.h" />
     <ClInclude Include="Source\P4Stream.h" />
+    <ClInclude Include="Source\P4MFA.h">
+      <Filter>P4Plugin</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
