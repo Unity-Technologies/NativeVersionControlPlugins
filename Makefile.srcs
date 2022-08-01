@@ -62,7 +62,8 @@ P4PLUGIN_SRCS = ./P4Plugin/Source/P4Plugin_Posix.cpp \
 		./P4Plugin/Source/P4UnlockCommand.cpp \
 		./P4Plugin/Source/P4InfoCommand.cpp \
 		./P4Plugin/Source/P4StreamsCommand.cpp \
-		./P4Plugin/Source/P4Utility.cpp
+		./P4Plugin/Source/P4Utility.cpp \
+		./P4Plugin/Source/P4MFA.cpp
 
 P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 		 ./P4Plugin/Source/P4FileSetBaseCommand.h \
@@ -71,7 +72,8 @@ P4PLUGIN_INCLS = ./P4Plugin/Source/P4Command.h \
 		 ./P4Plugin/Source/P4Task.h \
 		 ./P4Plugin/Source/P4Info.h \
 		 ./P4Plugin/Source/P4Stream.h \
-		 ./P4Plugin/Source/P4Utility.h
+		 ./P4Plugin/Source/P4Utility.h \
+		 ./P4Plugin/Source/P4MFA.h
 
 P4PLUGIN_LINK = -lclient -lrpc -lsupp -lssl -lcrypto -lp4script -lp4script_curl -lp4script_sqlite -lp4script_c
 P4PLUGIN_INCLUDE = -I./Common -I./P4Plugin/Source/r19.1/include/p4 -I./P4Plugin/Source
