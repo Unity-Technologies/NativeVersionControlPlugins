@@ -14,12 +14,9 @@ public:
 		m_Root.clear();
 
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
-		std::string fallback_error = std::string();
-		if (args.size() > 1)
-			fallback_error = args[1];
-
+		const std::string fallback_error = (args.size() > 1) ? args[1] : std::string();
+		
 		const std::string cmd = std::string("client -o ") + Quote(task.GetP4Client());
-
 		if (!task.CommandRun(cmd, this))
 		{
 			//MFA: This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
