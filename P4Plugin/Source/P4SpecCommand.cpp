@@ -50,8 +50,6 @@ public:
 						}
 					}; // Wait until stdout is closed
 					if (!helixmfa_found) return false;
-					//We are not closing the handle because PerforcePlugin is terminated after reconnection and closes them all. Thus it would fail
-					//proc.~POpen();
 				}
 #else
 				}
