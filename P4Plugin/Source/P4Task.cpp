@@ -440,7 +440,7 @@ bool P4Task::IsOnline()
 static std::string FormatFingerprintMessage(const std::string& statusMessage)
 {
 	std::string noNewlines = statusMessage;
-	for (int i = 0; i < noNewlines.size(); i++)
+	for (size_t i = 0; i < noNewlines.size(); i++)
 	{
 		if (noNewlines[i] == '\n')
 			noNewlines[i] = ' ';
@@ -487,7 +487,7 @@ bool P4Task::IsLoggedIn()
 bool P4Task::Login()
 {
 #if defined(_DEBUG)
-	ShowOKCancelDialogBox("You can attach a debugger now", std::string("Process id: ") + ErrorCodeToMsg(GetCurrentProcessId()));
+	ShowOKCancelDialogBox("You can attach a debugger now", std::string("Process id: ") + ToString(GetCurrentProcessId()));
 #endif
 
 	if (!IsConnected())
@@ -553,7 +553,7 @@ bool P4Task::Login()
 	p4c = LookupCommand("spec");
 	args.clear();
 	args.push_back("spec");
-	const std::string fallback_error = "Your chosen Perforce server has multi-factor authentication enabled. To log in please install HelixMFA or use the \"p4 login\" or \"p4 login2\" CLI commands";
+	const std::string fallback_error = "Your chosen Perforce server has multi-factor authentication enabled. To log in please use either HelixMFA or \"p4 login\" and \"p4 login2\" CLI commands";
 	args.push_back(fallback_error);
 	if (m_IsTestMode)
 		args.push_back("-test");

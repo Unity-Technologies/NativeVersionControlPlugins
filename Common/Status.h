@@ -23,7 +23,7 @@ struct VCSStatusItem
 // Sort higher severity as before when iterating a set
 struct VCSStatusItemCmp 
 {
-	bool operator()(const VCSStatusItem& a, const VCSStatusItem& b)
+	bool operator()(const VCSStatusItem& a, const VCSStatusItem& b) const
 	{
 		if (a.severity > b.severity)
 			return true;
