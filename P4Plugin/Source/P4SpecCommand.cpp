@@ -37,7 +37,7 @@ public:
 					std::string line = std::string();
 					bool helixmfa_found = false;
 					while (proc.ReadLine(line)) {
-						Conn().VerboseLine(std::string("HelixMFA: ") + std::string(line));
+						Conn().VerboseLine("HelixMFA: " + line);
 						//If first line reported by HelixMFA does not contain Authenticating, then we didnt find it
 						if (!helixmfa_found && line.find("Authenticating") == std::string::npos) {
 							const std::string notfound_error = "HelixMFA Authenticator could not be found. Download and install it to continue. https://www.perforce.com/downloads/helix-mfa-authenticator\n"
