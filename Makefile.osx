@@ -44,10 +44,10 @@ Test/Source/%.o : Test/Source/%.cpp $(TESTSERVER_INCLS)
 	$(CXX) $(CXXFLAGS) $(TESTSERVER_INCLUDE) -c $< -o $@
 
 P4Plugin/Source/%.o : P4Plugin/Source/%.cpp $(COMMON_INCLS) $(P4PLUGIN_INCLS)
-	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -D_MACOS -c $< -o $@
 
 P4Plugin/Source/%.o : P4Plugin/Source/%.mm $(COMMON_INCLS) $(P4PLUGIN_INCLS)
-	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@ 
+	$(CXX) $(CXXFLAGS) $(P4PLUGIN_INCLUDE) -c $< -o $@
 
 $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^

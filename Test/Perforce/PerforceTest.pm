@@ -15,8 +15,17 @@ sub PerforceIntegrationTests
 	$dir = $_[0];
 	$p4port = $_[1];
 	$option = $_[2];
+	$filter = $_[3];
 
 	unless ($option) { $option = "verbose" };
+	unless ($filter) { $filter = "" };
+
+	if ($filter ne ""
+		&& index($filter, $dir) == -1)
+	{
+		print "Not Running Perforce Integration Tests in dir:'",$dir,"' p4port:'",$p4port,"' (Not included in filter).\n";
+		return 0;	
+	}
 
 	print "Running Perforce Integration Tests in dir:'",$dir,"' p4port:'",$p4port,"'\n";
 
@@ -48,7 +57,7 @@ sub PerforceIntegrationTests
 	SetupClient();
 	SetupUsers();
 
-	$exitCode = RunTests($dir, $option);
+	$exitCode = RunTests($dir, $option, $filter);
 
 	TeardownClient();
 	TeardownServer($pid);
@@ -59,6 +68,7 @@ sub RunTests()
 {
 	$dir = $_[0];
 	$option = $_[1];
+	$filter = $_[2];
 
 	@files = <Test/$dir/*.txt>;
 
@@ -77,6 +87,13 @@ sub RunTests()
 
 	$cwd = getcwd();
 	foreach $i (@files) {
+		if ($filter ne "" 
+			&& index($i, $filter) == -1)
+		{
+			print "Not running Perforce Integration Tests in file:'",$i,"' p4port:'",$p4port,"'\n";
+			next;
+		}
+		print "Running Perforce Integration Tests in file:'",$i,"' p4port:'",$p4port,"'\n";
 		chdir $cwd;
 		rmtree( $clientroot, {keep_root => 1} );
 		print "Changing working directory to: '", $clientroot,"'\n";

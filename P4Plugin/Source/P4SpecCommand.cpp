@@ -1,6 +1,9 @@
 #include "P4Command.h"
 #include "P4Task.h"
+#include "POpen.h"
+#include "P4MFA.h"
 #include <sstream>
+#include <stdio.h>
 
 class P4SpecCommand : public P4Command
 {
@@ -10,49 +13,62 @@ public:
 	{
 		ClearStatus();
 		m_Root.clear();
-		
+
+		Conn().Log().Info() << args[0] << "::Run()" << Endl;
+		const std::string fallback_error = (args.size() > 1) ? args[1] : std::string();
+
 		const std::string cmd = std::string("client -o ") + Quote(task.GetP4Client());
-		
 		if (!task.CommandRun(cmd, this))
 		{
-			std::string errorMessage = GetStatusMessage();			
-			//This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
+			//MFA: This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
 			if (StatusContains(GetStatus(), "login2"))
 			{
 				ClearStatus();
-				GetStatus().insert(VCSStatusItem(VCSSEV_Error, "Your chosen Perforce server has multi-factor authentication enabled. To log in please use a visual client such as p4v or the \"p4 login\" or \"p4 login2\" CLI commands"));
+				std::string error;
+				if (!P4MFA::s_Singleton->WaitForHelixMFA(Conn(), task.GetP4Port(), task.GetP4User(), error))
+				{
+					GetStatus().insert(VCSStatusItem(VCSSEV_Error, error));
+					Conn().Log().Notice() << GetStatusMessage() << Endl;
+					return false;
+				}
+				
+				//Try again the spec command so that we can get a value for m_Root
+				if (!task.CommandRun(cmd, this))
+				{
+					if (StatusContains(GetStatus(), "login2"))
+					{
+						GetStatus().insert(VCSStatusItem(VCSSEV_Error, fallback_error));
+						Conn().Log().Fatal() << GetStatusMessage() << Endl;
+						return false;
+					}
+				}
 			}
-			Conn().Log().Fatal() << errorMessage << Endl;
-			return false;
 		}
-		else
-		{
-			if (!m_Root.empty())
-				task.SetP4Root(m_Root);
-			Conn().Log().Info() << "Root set to " << m_Root << Endl;
-			return true;
-		}
+		if (!m_Root.empty())
+			task.SetP4Root(m_Root);
+		Conn().Log().Info() << "Root set to " << m_Root << Endl;
+		return true;
 	}
-	
+
     // Called with entire spec file as data
 	void OutputInfo( char level, const char *data )
     {
 		std::stringstream ss(data);
 		Conn().VerboseLine(data);
-		size_t minlen = 5; // "Root:" 
-		
+		size_t minlen = 5; // "Root:"
+
 		std::string line;
-		while ( getline(ss, line) ) 
-		{	
-			
+		while ( getline(ss, line) )
+		{
+
 			if (line.length() <= minlen || line.substr(0,minlen) != "Root:")
 				continue;
-			
+
 			// Got the Root specification line
 			std::string::size_type i = line.find_first_not_of(" \t:", minlen-1);
 			if (i == std::string::npos)
 			{
-				
+
 				GetStatus().insert(VCSStatusItem(VCSSEV_Error, std::string("invalid root specification - ") + line));
 				return;
 			}
@@ -62,5 +78,5 @@ public:
 	}
 private:
 	std::string m_Root;
-	
+
 } cSpec("spec");
