@@ -23,6 +23,7 @@ enum UnityCommand
 	UCOM_Incoming,
 	UCOM_Lock,
 	UCOM_Login,
+	UCOM_Login2,
 	UCOM_Move,
 	UCOM_QueryConfigParameters,
 	UCOM_Resolve,

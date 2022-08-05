@@ -15,6 +15,7 @@ public:
 		m_Root.clear();
 
 		Conn().Log().Info() << args[0] << "::Run()" << Endl;
+		m_IsTestMode = args.size() > 2 && (args[2] == "-test");
 		const std::string fallback_error = (args.size() > 1) ? args[1] : std::string();
 
 		const std::string cmd = std::string("client -o ") + Quote(task.GetP4Client());
@@ -23,15 +24,28 @@ public:
 			//MFA: This error is handled here instead of in P4LoginCommand as it only shows up when running the first non-login command (currently always spec)
 			if (StatusContains(GetStatus(), "login2"))
 			{
+				Conn().VerboseLine(GetStatusMessage());
 				ClearStatus();
-				std::string error;
-				if (!P4MFA::s_Singleton->WaitForHelixMFA(Conn(), task.GetP4Port(), task.GetP4User(), error))
+
+				if(!m_IsTestMode)
 				{
-					GetStatus().insert(VCSStatusItem(VCSSEV_Error, error));
-					Conn().Log().Notice() << GetStatusMessage() << Endl;
-					return false;
+					std::string error;
+					if (!P4MFA::s_Singleton->WaitForHelixMFA(Conn(), task.GetP4Port(), task.GetP4User(), error))
+					{
+						GetStatus().insert(VCSStatusItem(VCSSEV_Error, error));
+						Conn().Log().Notice() << GetStatusMessage() << Endl;
+						return false;
+					}
 				}
-				
+				else
+				{
+					std::vector<std::string> args;
+					P4Command* p4c = LookupCommand("login2");
+					args.push_back("login2");
+					bool res = p4c->Run(task, args);
+					if (!res) return false;
+				}
+
 				//Try again the spec command so that we can get a value for m_Root
 				if (!task.CommandRun(cmd, this))
 				{
@@ -78,5 +92,6 @@ public:
 	}
 private:
 	std::string m_Root;
+	bool m_IsTestMode;
 
 } cSpec("spec");

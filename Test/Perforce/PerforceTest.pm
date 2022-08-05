@@ -16,6 +16,8 @@ sub PerforceIntegrationTests
 	$p4port = $_[1];
 	$option = $_[2];
 	$filter = $_[3];
+	$mfa = index($dir, "MultiFactorAuthentication") > -1;
+	$devnull = "> /dev/null 2>&1";
 
 	unless ($option) { $option = "verbose" };
 	unless ($filter) { $filter = "" };
@@ -49,6 +51,7 @@ sub PerforceIntegrationTests
 		$ENV{'VCS_P4CLIENTROOT'} =~ s/\//\\/g;
 		$ENV{'VCS_P4CLIENTROOTABS'} =~ s/\//\\/g;
 		$ENV{'P4EXECABS'} =~ s/\//\\/g;
+		$devnull = "2>&1>\$null";
 	}
 
 	$ENV{'VCS_P4ROOT'} = abs_path($ENV{'VCS_P4ROOT'});
@@ -57,7 +60,23 @@ sub PerforceIntegrationTests
 	SetupClient();
 	SetupUsers();
 
+	# print "Press ENTER to continue...";
+	# <STDIN>;
+	if ($mfa)
+	{
+		print "Setting up Multi Factor Authentication configuration...\n";
+		SetupMFATriggers();
+		SetupMFAUser();
+		RestartServer($pid);
+		ConfigureSecurity();
+	}
+	# print "Press ENTER to continue...";
+	# <STDIN>;
+
 	$exitCode = RunTests($dir, $option, $filter);
+
+	# print "Press ENTER to continue...";
+	# <STDIN>;
 
 	TeardownClient();
 	TeardownServer($pid);
@@ -131,6 +150,8 @@ sub RunTests()
 sub RunCommand
 {
 	my $command = $_[0];
+	print "Running command $command\n";
+	# LoginUser($ENV{'VCS_P4USER'}, $ENV{'VCS_P4PASSWD'});
 	system("$ENV{'P4EXECABS'} -p $ENV{'VCS_P4PORT'} -u $ENV{'VCS_P4USER'} -P $ENV{'VCS_P4PASSWD'} -c $ENV{'VCS_P4CLIENT'} -d $ENV{'VCS_P4CLIENTROOTABS'} $command");
 }
 
@@ -139,7 +160,7 @@ sub AddExclusiveFile
 	open(FH, '>', 'Assets/exclusivefile.txt') or die $!;
 	print(FH 'File with exclusive open file type modifier.');
 	close(FH) or die $1;
-
+	
 	RunCommand('add -t text+l Assets/exclusivefile.txt');
 	RunCommand('submit -d "Add Assets/exclusivefile.txt." Assets/exclusivefile.txt');
 }
@@ -186,6 +207,48 @@ sub SetupServer
 	return $pid;
 }
 
+sub ConfigureSecurity
+{
+	# system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O Password1 -P aaaa1111");
+	# system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O Secret -P aaaa1111");
+	# system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user passwd -O Mfau1111 -P aaaa1111");
+	ResetPassword("password_vcs_test_user", "Password1", "aaaa1111");
+	ResetPassword("vcs_test_user", "Secret", "aaaa1111");
+	ResetPassword("mfa_test_user", "Mfau1111", "aaaa1111");
+	$ENV{'VCS_P4PASSWD'} = 'aaaa1111';
+	LoginUser("vcs_test_user", "aaaa1111");
+	# RunCommand('configure set auth.autologinprompt=0');
+	# system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user -P aaaa1111 configure set auth.autologinprompt=0");
+	# RunCommand('configure set security=0');
+}
+
+sub ResetPassword()
+{
+	($user_, $old_, $new_) = @_;
+	print "Reseting password for user: $user_ | $old_ | $new_\n";
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ passwd $devnull");
+	print FD "$old_\n";
+	print FD "$new_\n";
+	print FD "$new_\n";
+	close(FD);
+	1;
+}
+
+sub LoginUser()
+{
+	($user_, $pass_) = @_;
+	print "Login for user: $user_ | $pass_\n";
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $user_ login $devnull");
+	print FD "$pass_\n";
+	close(FD);
+}
+
+sub RestartServer
+{
+	RunCommand('admin restart');
+	sleep(2);
+}
+
 sub TeardownServer
 {
 	($handle) = @_;
@@ -200,14 +263,66 @@ sub TeardownServer
 
 sub SetupUsers
 {
-	print "Setting up user password_vcs_test_user\n";
-	print "Clients:\n";
+	print "Setting up user password_vcs_test_user by retrieving clients:\n";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user clients");
 	print "Users:\n";
 	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user users");
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O ? -P Password1");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u password_vcs_test_user passwd -O \\? -P Password1");
 	$ENV{'VCS_P4USER'} = "vcs_test_user";
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O ? -P Secret");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user passwd -O \\? -P Secret");
+}
+
+sub SetupMFAUser
+{
+	print "Setting up user mfa_test_user by retrieving clients:\n";
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user clients");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user passwd -O \\? -P Mfau1111");
+
+	$USER_SPEC =<<EOF;
+
+User:   mfa_test_user
+
+Email:  mfa@test_user
+
+Update: 2022/07/20 11:40:48
+
+Access: 2022/07/20 11:40:48
+
+FullName:       Multi Factor Authentication
+
+Password:       ******
+
+AuthMethod:		perforce+2fa
+EOF
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user -P Mfau1111 user -f -i ");
+	print FD "$USER_SPEC\n";
+	close(FD);
+
+	1;
+}
+
+sub SetupMFATriggers
+{
+	my $mfa_script = getcwd() . "/MFA/mfa-trigger.sh";
+	if ($ENV{'TARGET'} eq "win32")
+	{
+		$mfa_script = "PowerShell " . getcwd() . "/MFA/mfa-trigger.ps1";
+		$mfa_script =~ s/\//\\/g;
+	}
+
+	$TRIGGERS =<<EOF;
+
+Triggers:
+    test-pre-2fa auth-pre-2fa auth "$mfa_script -t pre-2fa -e %quote%%email%%quote% -u %user% -h %host%"
+    test-init-2fa auth-init-2fa auth "$mfa_script -t init-2fa -e %quote%%email%%quote% -u %user% -h %host% -m %method%"
+    test-check-2fa auth-check-2fa auth "$mfa_script -t check-2fa -e %quote%%email%%quote% -u %user% -h %host% -s %scheme% -k %token%"
+EOF
+
+	open(FD, "| $ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u mfa_test_user -P Mfau1111 triggers -i ");
+	print FD "$TRIGGERS\n";
+	close(FD);
+
+	1;
 }
 
 sub SetupClient
@@ -252,7 +367,7 @@ EOF
 sub TeardownClient
 {
 	print "Tearing down workspace $ENV{'VCS_P4CLIENT'}\n";
-	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u vcs_test_user -P Secret client -f -d $ENV{'VCS_P4CLIENT'}");
+	system("$ENV{'P4EXEC'} -p $ENV{'VCS_P4PORT'} -u $ENV{'VCS_P4USER'} -P $ENV{'VCS_P4PASSWD'} client -f -d $ENV{'VCS_P4CLIENT'}");
 	1;
 }
 

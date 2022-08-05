@@ -36,7 +36,7 @@ public:
 	void SetP4Streams(const P4Streams& s);
 	const P4Streams& GetP4Streams() const;
 
-	int Run();
+	int Run(const bool testmode);
 	bool IsConnected();
 	bool Reconnect();
 	bool Login();
@@ -73,6 +73,7 @@ private:
 
 	bool m_IsOnline;
 	bool m_IsLoginInProgress;
+	bool m_IsTestMode;
 
 	// Perforce connection
 	bool            m_P4Connect;
