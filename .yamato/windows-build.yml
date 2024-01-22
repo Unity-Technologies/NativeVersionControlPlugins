@@ -1,7 +1,7 @@
 name: Win - Build & Test VCS plugins
 agent:
     type: Unity::VM
-    image: furioos/win10-vs2019:latest
+    image: desktop/win10-vs2019-cmake:latest
     flavor: b1.large
     
 interpreter: powershell    
