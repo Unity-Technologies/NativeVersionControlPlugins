@@ -1,7 +1,7 @@
 name: Win - Build & Test VCS plugins
 agent:
     type: Unity::VM
-    image: desktop/win10-vs2019-cmake:latest
+    image: vcs-ecosystem/win10-vs2019-perforce-plugin:latest
     flavor: b1.large
     
 interpreter: powershell    
