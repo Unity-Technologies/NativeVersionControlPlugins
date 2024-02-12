@@ -99,18 +99,21 @@
     <ProjectGuid>{06DFA5BA-ACFC-4170-9143-5B2D1E654180}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>P4Plugin2</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -148,7 +151,7 @@ _SCL_SECURE_NO_DEPRECATE
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Source\r19.1\lib\win32debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libclient.lib;libeay32.lib;libp4script.lib;libp4script_c.lib;libp4script_curl.lib;libp4script_sqlite.lib;librpc.lib;libsupp.lib;ssleay32.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;libclient.lib;libeay32.lib;libp4script.lib;libp4script_c.lib;libp4script_curl.lib;libp4script_sqlite.lib;librpc.lib;libsupp.lib;ssleay32.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y</Command>
@@ -174,7 +177,7 @@ _SCL_SECURE_NO_DEPRECATE
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(ProjectDir)Source\r19.1\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libclient.lib;libeay32.lib;libp4script.lib;libp4script_c.lib;libp4script_curl.lib;libp4script_sqlite.lib;librpc.lib;libsupp.lib;ssleay32.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;libclient.lib;libeay32.lib;libp4script.lib;libp4script_c.lib;libp4script_curl.lib;libp4script_sqlite.lib;librpc.lib;libsupp.lib;ssleay32.lib;ws2_32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>echo f | xcopy "$(SolutionDir)$(Configuration)\$(TargetFileName)" "$(SolutionDir)Build\Win32\$(TargetFileName)" /Y
