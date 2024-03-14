@@ -55,29 +55,48 @@ public:
 		std::string d(data);
 		Conn().VerboseLine(d);
 
-		m_LoggedIn = d == "'login' not necessary, no password set for this user.";
-		if (m_LoggedIn)
-			return;
+		m_LoggedIn = ParseAuthenticationResponse(d);
 
-		if (m_CheckingForLoggedIn)
+		if (!m_CheckingForLoggedIn && !m_LoggedIn)
 		{
-			m_LoggedIn = StartsWith(d, "User ") && d.find(" ticket expires in ") != std::string::npos;
-			if (m_LoggedIn)
-				return;
-
-			// Compatibility with old perforce servers. Sometime authenticate using P4PASSWORD could incur on additional login messages, like:
-			// User <username> was authenticated by password not ticket.
-			// This message is acceptable.
-			// ref: https://kb.perforce.com/UserTasks/ConfiguringP4/AvoidingTheP..rdInWindows
-			m_LoggedIn = StartsWith(d, "User ") && EndsWith(d, " was authenticated by password not ticket.");
-		}
-		else
-		{
-			m_LoggedIn = StartsWith(d, "User ") && EndsWith(d, " logged in.");
-			if (m_LoggedIn)
-				return;
 			GetStatus().insert(VCSStatusItem(VCSSEV_Error, d));
 		}
+	}
+
+	bool ParseAuthenticationResponse(std::string responseText)
+	{
+		if (responseText == "'login' not necessary, no password set for this user.")
+		{
+			return true;
+		}
+
+		if (StartsWith(responseText, "User ") && EndsWith(responseText, " logged in."))
+		{
+			return true;
+		}
+
+		if (StartsWith(responseText, "User ") && responseText.find(" ticket expires in ") != std::string::npos)
+		{
+			return true;
+		}
+
+		// Compatibility with old perforce servers. Sometime authenticate using P4PASSWORD could incur on additional login messages, like:
+		// User <username> was authenticated by password not ticket.
+		// This message is acceptable.
+		// ref: https://kb.perforce.com/UserTasks/ConfiguringP4/AvoidingTheP..rdInWindows
+		if (StartsWith(responseText, "User ") && EndsWith(responseText, " was authenticated by password not ticket."))
+		{
+			return true;
+		}
+
+		// When the Perforce license is about to expire, the server returns a warning message as part of the login response
+		// E.g. Your license is due to expire on 2024/02/26; please contact sales@perforce.com to obtain an updated license file to avoid downtime. User xyz logged in.
+		if (StartsWith(responseText, "Your license is due to expire on ") && EndsWith(responseText, " logged in."))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	// Default handler of P4 error output. Called by the default P4Command::Message() handler.
