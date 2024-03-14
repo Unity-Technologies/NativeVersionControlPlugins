@@ -63,7 +63,7 @@ public:
 		}
 	}
 
-	bool ParseAuthenticationResponse(std::string responseText)
+	bool ParseAuthenticationResponse(const std::string& responseText)
 	{
 		if (responseText == "'login' not necessary, no password set for this user.")
 		{
