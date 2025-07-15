@@ -9,7 +9,10 @@ For instance, on Windows it is shipped as `Editor\Data\Tools\VersionControl\Perf
 You can build support for you own favorite version control system into Unity by cloning this repository and make
 changes as needed.
 
-Note that only Perforce support is shipped for Unity 4.2+, TFSPlugin for 4.6+.
+## Community Supported Perforce plugin
+
+See also the [Community Supported Perforce (Helix Core) plugin for Unity](https://github.com/perforce/unity-p4-plugin)
+It is based on the source code published by Unity, but allows the linked version of the P4 API to be changed as needed.
 
 ## Overview
 
