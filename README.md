@@ -1,20 +1,20 @@
-# PerforcePlugin (NativeVersionControlPlugins)
+# PerforcePlugin
 
 ## About
 
-This is the official built-in version control *Perforce* plugin that is shipped with [Unity](http://www.unity3d.com).
+This is the official **Perforce** plugin that is shipped with [Unity](http://www.unity3d.com), as a built-in Version Control provider.
 
-For instance, on Windows it is shipped as `Editor\Data\Tools\VersionControl\PerforcePlugin.exe`.
+On Windows it is shipped as `Editor\Data\Tools\VersionControl\PerforcePlugin.exe`.
+
+## Community supported fork
+
+See also the [Community Supported Perforce (Helix Core) plugin for Unity](https://github.com/perforce/unity-p4-plugin)
+It is a fork of these code, but allows the linked version of the P4 API to be changed as needed, and provide more recent builds.
+
+## Overview
 
 You can build support for you own favorite version control system into Unity by cloning this repository and make
 changes as needed.
-
-## Community Supported Perforce plugin
-
-See also the [Community Supported Perforce (Helix Core) plugin for Unity](https://github.com/perforce/unity-p4-plugin)
-It is based on the source code published by Unity, but allows the linked version of the P4 API to be changed as needed.
-
-## Overview
 
 A plugin is an executable located in a designated directory that Unity can start and kill at will. At startup, Unity
 will scan the directory and start each executable in order to identify the plugin and its settings. When a version
