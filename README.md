@@ -1,10 +1,12 @@
-# NativeVersionControlPlugins
+# PerforcePlugin (NativeVersionControlPlugins)
 
 ## About
 
-This is the source code of the built-in version control plugins that are shipped with [Unity](http://www.unity3d.com).
+This is the official built-in version control *Perforce* plugin that is shipped with [Unity](http://www.unity3d.com).
 
-You can build support for you own favourite version control system into Unity by cloning this repository and make
+For instance, on Windows it is shipped as `Editor\Data\Tools\VersionControl\PerforcePlugin.exe`.
+
+You can build support for you own favorite version control system into Unity by cloning this repository and make
 changes as needed.
 
 Note that only Perforce support is shipped for Unity 4.2+, TFSPlugin for 4.6+.
@@ -23,9 +25,9 @@ You need Unity 4.2+ to use the integrated version control plugins.
 
 ## Structure
 
-* `Common/` contains structures and functionallity common to all plugins
+* `Common/` contains structures and functionality common to all plugins
 * `P4Plugin/` contains the Perforce plugin code and Perforce libraries (binaries shipped with Unity)
-* `TFSPlugin/` contains the Team Foundation Server/VS Online plugin code
+* `TFSPlugin/` contains the Team Foundation Server/VS Online plugin code (not officially supported by Unity, and not shipped with Unity)
 * `Test/` contains integration tests
 
 To build:
