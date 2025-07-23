@@ -9,7 +9,6 @@ Library/
 *.orig
 Test/tmp/*
 PerforcePlugin
-SubversionPlugin
 
 # Compiled Object files
 *.slo
@@ -30,12 +29,6 @@ SubversionPlugin
 # Fortran module files
 *.mod
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
 # Executables
 *.exe
 *.out
@@ -53,7 +46,7 @@ SubversionPlugin
 *.sdf
 *.suo
 
-# Visual Studio 2015 local files
+# Visual Studio local files
 .vs/
 
 # Test Ouput
@@ -67,5 +60,5 @@ server.pid
 # VI files
 *.swp
 
-# CLion files
-.idea
+# JetBrains IDEs files
+.idea/
