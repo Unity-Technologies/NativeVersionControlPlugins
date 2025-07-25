@@ -11,5 +11,5 @@ Notes: see also download_perforce_binaries.ps1
 - https://filehost.perforce.com/perforce/r21.2/bin.macosx105x86_64/p4api-openssl1.0.2.tgz
 
 # Win32
-- https://filehost.perforce.com/perforce/r21.2/bin.ntx86/p4api_vs2010_static_openssl1.0.2.zip
-- https://filehost.perforce.com/perforce/r21.2/bin.ntx86/p4api_vs2010_static_vsdebug_openssl1.0.2.zip
+- https://filehost.perforce.com/perforce/r21.2/bin.ntx86/p4api_vs2019_static_openssl1.0.2.zip
+- https://filehost.perforce.com/perforce/r21.2/bin.ntx86/p4api_vs2019_static_vsdebug_openssl1.0.2.zip
