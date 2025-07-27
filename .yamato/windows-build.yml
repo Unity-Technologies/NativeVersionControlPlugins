@@ -1,7 +1,7 @@
 name: Win - Build & Test VCS plugins
 agent:
   type: Unity::VM
-  image: core-kaunas/win10-vs2010:latest
+  image: desktop/win10-vs2019-cmake:latest
   flavor: b1.large
 
 commands:
