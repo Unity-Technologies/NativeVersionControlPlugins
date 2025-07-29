@@ -1,7 +1,7 @@
 name: Win - Build & Test VCS plugins
 agent:
   type: Unity::VM
-  image: desktop/win10-vs2019-cmake:latest
+  image: build-system/unity-win10-22H2-vs2022-unity:v2.4386385
   flavor: b1.large
 
 commands:
