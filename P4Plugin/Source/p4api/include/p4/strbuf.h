@@ -51,6 +51,7 @@
  *	StrPtr::[] - get a single character
  *	StrPtr::XCompare() - case exact string compare
  *	StrPtr::CCompare() - case folding string compare
+ *	StrPtr::CCompareN() - case folding string compare, length-limited
  *	StrPtr::SCompare() - case aware string compare -- see strbuf.cc
  *	StrPtr::SEqual() - case aware character compare -- see strbuf.cc
  *	StrPtr::Contains() - finds a substring
@@ -134,6 +135,7 @@ class StrPtr {
 		{ return Atoi64( buffer ); }
 
 	static bool Atoi64( const char *p, P4INT64 *result );
+	static bool Atoi64Lite( const char *p, P4INT64 *result );
 
 	bool	Atoi64( P4INT64 *result ) const
 		{ return Atoi64( buffer, result ); }
@@ -160,6 +162,9 @@ class StrPtr {
 	int	CCompare( const StrPtr &s ) const
 		{ return CCompare( buffer, s.buffer ); }
 
+	int	CCompareN( const StrPtr &s, p4size_t len ) const
+		{ return CCompareN( buffer, s.buffer, len ); }
+
 	int	SCompare( const StrPtr &s ) const
 		{ return SCompare( buffer, s.buffer ); }
 
@@ -167,6 +172,7 @@ class StrPtr {
 		{ return NCompare( buffer, s.buffer ); }
 
 	static int CCompare( const char *a, const char *b );
+	static int CCompareN( const char *a, const char *b, p4size_t len );
 	static int SCompare( const char *a, const char *b );
 	static int NCompare( const char *a, const char *b );
 
@@ -261,6 +267,7 @@ class StrPtr {
 	static P4INT64 Atoi64( const char *buffer );
 	static char *Itoa64( P4INT64 v, char *endbuf );
 	static char *Itox( unsigned int v, char *endbuf );
+	static char *Itox64( P4UINT64 v, char *endbuf );        
 
     friend class StrBuf;
     friend class StrRef;
@@ -522,7 +529,15 @@ class StrBuf : public StrPtr {
 	StrBuf& operator <<( const StrNum &s )
 		{ UAppend( (const StrPtr *)&s ); return *this; }
 
+	StrBuf& operator <<( P4INT64 v );
+
 	StrBuf& operator <<( int v );
+
+	StrBuf& operator <<( long int v ); /* time_t */
+
+	StrBuf& operator <<( unsigned int v ); /* p4size_t */
+
+	StrBuf& operator <<( long unsigned int v );
 
     private:
 	p4size_t	size;
@@ -557,15 +572,33 @@ class StrNum : public StrPtr {
     public:
 		StrNum() {} 
 
+		StrNum( P4INT64 v ) 
+		{ Set( v ); }
+
+		StrNum( long int v ) 
+		{ Set( ( P4INT64 ) v ); }
+
 		StrNum( int v ) 
 		{ Set( v ); }
 
-		StrNum( int ok, int v )
+		StrNum( int ok, P4INT64 v )
 		{ if( ok ) Set( v ); else buffer = buf, length = 0; }
+
+	void	Set( P4INT64 v )
+		{
+		    buffer = Itoa64( v, buf + sizeof( buf ) );
+		    length = (p4size_t)(buf + sizeof( buf ) - buffer - 1);
+		}
 
 	void	Set( int v )
 		{
 		    buffer = Itoa( v, buf + sizeof( buf ) );
+		    length = (p4size_t)(buf + sizeof( buf ) - buffer - 1);
+		}
+
+	void	SetHex( P4INT64 v )
+		{
+		    buffer = Itox64( v, buf + sizeof( buf ) );
 		    length = (p4size_t)(buf + sizeof( buf ) - buffer - 1);
 		}
 
@@ -575,28 +608,13 @@ class StrNum : public StrPtr {
 		    length = (p4size_t)(buf + sizeof( buf ) - buffer - 1);
 		}
 
-	void	Set( int v, int digits )
+	void	Set( P4INT64 v, int digits )
 		{
 		    Set( v );
 
 		    while( (int)length < digits )
 			*--buffer = '0', ++length;
 		}
-
-# ifdef HAVE_INT64
-
-		StrNum( long v ) { Set( (P4INT64)v ); }
-
-		StrNum( P4INT64 v )
-		{ Set( v ); }
-
-	void	Set( P4INT64 v )
-		{
-		    buffer = Itoa64( v, buf + sizeof( buf ) );
-		    length = (p4size_t)(buf + sizeof( buf ) - buffer - 1);
-		}
-
-# endif
 
     private:
 		char buf[24];
@@ -626,7 +644,31 @@ class StrHuman : public StrPtr
 } ;
 
 inline StrBuf &
+StrBuf::operator <<( P4INT64 v )
+{
+	return operator <<( StrNum( v ) );
+}
+
+inline StrBuf &
 StrBuf::operator <<( int v )
 {
 	return operator <<( StrNum( v ) );
+}
+
+inline StrBuf &
+StrBuf::operator <<( long int v )
+{
+	return operator <<( StrNum( ( P4INT64 ) v ) );
+}
+
+inline StrBuf &
+StrBuf::operator <<( unsigned int v )
+{
+	return operator <<( StrNum( ( P4INT64 ) v ) );
+}
+
+inline StrBuf &
+StrBuf::operator <<( long unsigned int v )
+{
+	return operator <<( StrNum( ( P4INT64 ) v ) );
 }

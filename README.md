@@ -51,7 +51,7 @@ The Perforce plugin source code is located under `P4Plugin/Source`. It reference
 located under `P4Plugin/Source/p4api`.
 
 We are targeting the 21.2 release of Perforce API includes and libraries, that were downloaded from
-the [Perforce downloads page](http://filehost.perforce.com/perforce/r21.2/).
+the [Perforce downloads page](http://filehost.perforce.com/perforce/r24.1/).
 
 The `PerforceBinaries` where downloaded the same locations to run the integrations tests on.
 

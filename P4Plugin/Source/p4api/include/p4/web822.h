@@ -44,6 +44,9 @@ class Web822 : public StrDict {
 
 	int		VGetVarX( int x, StrRef &var, StrRef &val )
 			{ return recvHeaders.VGetVarX( x, var, val ); }
+
+	int		VGetCount()
+			{ return recvHeaders.GetCount(); }
 			
 	// Send a response
 	

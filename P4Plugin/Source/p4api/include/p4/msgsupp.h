@@ -18,6 +18,7 @@ class MsgSupp {
 	static ErrorId InvalidCharset;
 
 	static ErrorId TooMany;
+	static ErrorId MissingCmd;
 	static ErrorId Invalid;
 	static ErrorId NeedsArg;
 	static ErrorId Needs2Arg;
@@ -51,6 +52,7 @@ class MsgSupp {
 	static ErrorId Inflate;
 	static ErrorId InflateInit;
 	static ErrorId MagicHeader;
+	static ErrorId DigestInitFailed;
 
 	static ErrorId RegexError;
 	
@@ -127,6 +129,7 @@ class MsgSupp {
 	static ErrorId OptionUnloadLimit;
 	static ErrorId OptionOmitLazy;
 	static ErrorId OptionLeaveKeywords;
+	static ErrorId OptionLeaveKeywords2;
 	static ErrorId OptionOutputFile;
 	static ErrorId OptionExists;
 	static ErrorId OptionContent;
@@ -356,6 +359,10 @@ class MsgSupp {
 	static ErrorId OptionFailoverid;
 	static ErrorId OptionFailoverQuiesce;
 	static ErrorId OptionFailoverVerification;
+	static ErrorId OptionFailbackYes;
+	static ErrorId OptionFailbackQuiesce;
+	static ErrorId OptionPreFailback;
+	static ErrorId OptionPostFailback;
 	static ErrorId OptionInstall;
 	static ErrorId OptionCreateSampleExt;
 	static ErrorId OptionUndo;
@@ -398,11 +405,17 @@ class MsgSupp {
 	static ErrorId JsmnBadSyn;
 	static ErrorId JsmnTooFew;
 	static ErrorId JsmnKeyNotFound;
+
 	static ErrorId ManifestKeyNotFound;
 	static ErrorId ManifestValueEmpty;
 	static ErrorId ManifestValueTypeInvalid;
 	static ErrorId ManifestParseError;
 	static ErrorId InvalidIntegerRange;
+
+	static ErrorId CurlPerformFailed;
+	static ErrorId AwsRejected;
+	static ErrorId XmlParseFailed;
+
 	static ErrorId FatalLockError;
 	static ErrorId MissingKeyCert;
 	static ErrorId InternalSSLerror;
@@ -418,6 +431,41 @@ class MsgSupp {
 	static ErrorId RenameDirNotEmpty;
 	static ErrorId OptionCleanPurge;
 	static ErrorId OptionViewMatch;
+	static ErrorId OptionObliterate;
+	static ErrorId OptionOffset;
+	static ErrorId OptionSize;
+	static ErrorId OptionCompressed;
+	static ErrorId OptionStreamViews;
+	static ErrorId OptionUseStreamChange;
+	static ErrorId OptionHasStream;
+	static ErrorId OptionNoStream;
+	static ErrorId OptionPreserveChangeNumbers;
+	static ErrorId OptionLimit;
+	static ErrorId OptionType;
+	static ErrorId OptionResult;
+	static ErrorId OptionJNum;
+	static ErrorId OptionJField;
+	static ErrorId OptionIntervalMillis;
+	static ErrorId OptionThreshold;
+	static ErrorId OptionDatedEarlier;
+	static ErrorId OptionDeleteMarker;
+	static ErrorId OptionDeletePurge;
+	static ErrorId OptionMoveTopology;
+	static ErrorId OptionServerAddress;
+	static ErrorId OptionServerID;
+	static ErrorId OptionTargetAddress;
+	static ErrorId OptionNewServerAddress;
+	static ErrorId OptionNewServerID;
+	static ErrorId OptionNewTargetAddress;
+	static ErrorId OptionCreationDate;
+	static ErrorId OptionLastSeenDate;
+	static ErrorId OptionTraitStorage;
+	static ErrorId OptionIteration;
+	static ErrorId OptionListAddresses;
+	static ErrorId OptionTrait;
+	static ErrorId OptionTraitFile;
+
+	static ErrorId AmbiguousArgs;
 
 	// Retired ErrorIds. We need to keep these so that clients 
 	// built with newer apis can commnunicate with older servers 

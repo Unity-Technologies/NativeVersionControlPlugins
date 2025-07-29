@@ -41,22 +41,7 @@
 # include <memory>
 
 class PathSys;
-
-// Specialization to the std::default_delete template class so we can store
-// a std::unique_pointer to the PathSys* returned from PathSys::Create without
-// having to know which inherited class it's actually using and without having
-// to use a custom deleter everywhere.
-
-namespace std
-{
-	template<> class default_delete< PathSys* >
-	{
-	    public:
-	        void operator()( PathSys **ptr );
-	};
-}
-
-using PathSysUPtr = std::unique_ptr< PathSys* >;
+using PathSysUPtr = std::unique_ptr< PathSys >;
 
 # endif
 

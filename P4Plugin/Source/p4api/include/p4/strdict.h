@@ -36,10 +36,19 @@ class StrVarName : public StrRef {
 		char varName[64];
 } ;
 
+class StrDictIterator {
+    public:
+	virtual ~StrDictIterator(){};
+	virtual int	Get( StrRef &var, StrRef &val ) = 0;
+	virtual void	Next() = 0;
+	virtual void	Reset() = 0;
+} ;
+
 class StrDict {
 
     public:
 
+		StrDict() : iterator( 0 ) {}
 	virtual	~StrDict();
 
 	// Handy wrappers
@@ -76,6 +85,8 @@ class StrDict {
 	
 	int	GetVarCCompare( const char *var, StrBuf &val );
 	int	GetVarCCompare( const StrPtr &var, StrBuf &val );
+	int	GetCount()
+		{ return VGetCount(); };
 
 	void	ReplaceVar( const char *var, const char *value );
 	void	ReplaceVar( const StrPtr &var, const StrPtr &value );
@@ -89,7 +100,9 @@ class StrDict {
 	
 	int 	Save( FILE * out );
 	int 	Load( FILE * out );
-	
+
+	virtual StrDictIterator *GetIterator();
+
     protected:
 
 	// Get/Set vars, provided by subclass
@@ -101,5 +114,24 @@ class StrDict {
 	virtual void	VSetError( const StrPtr &var, Error *e );
 	virtual void	VClear();
 	virtual void	VReset();
+	virtual int	VGetCount() = 0;
 
+	StrDictIterator *iterator;
 } ;
+
+class StrDictBasicIterator : public StrDictIterator {
+    public:
+	StrDictBasicIterator( StrDict *dict ) { i = 0; this->dict = dict; }
+
+	virtual int Get(StrRef &var, StrRef &val) {
+	    return dict->GetVar( i, var, val ); }
+
+	virtual void Next() { i++; }
+
+	virtual void Reset() { i = 0; }
+
+    private:
+	int	i;
+	StrDict	*dict;
+} ;
+

@@ -6,10 +6,13 @@
 
 # define DEBUG_MATCH	( p4debug.GetLevel( DT_MAP ) >= 3 )
 # define DEBUG_LIST	( p4debug.GetLevel( DT_MAP ) >= 4 )
+# define DEBUG_BUILD	( p4debug.GetLevel( DT_MAP ) >= 5 )
 
 
 class IgnoreTable;
 class IgnoreItem;
+class IgnorePtrArray;
+class IgnoreArray;
 class StrArray;
 class FileSys;
 
@@ -38,18 +41,21 @@ class Ignore {
 	void		BuildIgnoreFiles( const StrPtr &ignoreName );
 	int		Build( const StrPtr &path, const StrPtr &ignoreName,
 			        const char *configName );
-	void		InsertDefaults( StrArray *list, const char *cfgName );
+	void		InsertDefaults( IgnorePtrArray *newList );
 	void		Insert( StrArray *subList, const char *ignore, 
 			        const char *cwd, int lineno );
 
 	int		ParseFile( FileSys *f, const char *cwd,
-			           StrArray *list );
+			           IgnoreArray *list );
 	
 	IgnoreTable	*ignoreTable;
-	StrArray	*ignoreList;
+	IgnorePtrArray	*ignoreList;
+	IgnoreArray	*defaultList;
 	StrBuf		dirDepth;
 	StrBuf		foundDepth;
+	StrBuf		configName;
 
 	StrArray	*ignoreFiles;
 	StrBuf		ignoreStr;
+	int		relatives;
 };

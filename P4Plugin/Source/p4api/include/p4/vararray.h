@@ -24,7 +24,9 @@
  *	VarArray::Put(v) - set a new slot to v
  *	VarArray::WillGrow(i) - returns size of new vararray if it
  *	                        would have to grow in the next i rows.
- *
+ *	VarArray::Capacity() - returns the maximum number of elements
+ *	                       that can be stored before growing.
+ *	
  *	VVarArray::Diff() - subtract/compare/add to VarArrays
  *		OpDiff - substract two VarArrays and drop duplicates
  *		OpIntersect - compare VarArrays to find matches
@@ -56,6 +58,7 @@ class VarArray {
 	void *		Put( void *v ) { return *New() = v; }
 	void		SetCount( int i ) { numElems = i; }
 	int		WillGrow( int interval );
+	int		Capacity() const { return maxElems; }
 	void *          Replace( int i, void *newValue );
 
 	void 		Exchange( int i, int j )
@@ -98,6 +101,8 @@ class VVarArray : public VarArray {
 	void		Uniq();
 
     private:
+	friend class DbArray;
+
 	void		Sort( int l, int u );
 	int		Med3( int i, int j, int k ) const;
 

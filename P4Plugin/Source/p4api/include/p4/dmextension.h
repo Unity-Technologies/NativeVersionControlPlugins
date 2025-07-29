@@ -84,7 +84,8 @@ class Extension : public p4script
 
 	    void LoadFile( const char* file, Error *e );
 	    virtual void doBindings( Error* e );
-	    ExtensionCallerData* GetECD();
+	    ExtensionCallerData* GetECD() 
+	    {  return ecd ? &**ecd : nullptr; }
 
 	    p4_std_any::p4_any RunCallBack( const char* name, Error* e );
 

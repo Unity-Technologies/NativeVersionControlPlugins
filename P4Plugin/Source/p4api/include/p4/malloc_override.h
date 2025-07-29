@@ -22,11 +22,15 @@ built with a memory manager.
 #    define MI_STATIC_LIB
 #    ifndef NDEBUG
 #      define NDEBUG
+#      define DEFINED_NDEBUG
 #    endif
 #    define MI_STAT 1
-#    define MI_NO_ENVIRO 1
+#    define MI_NO_GETENV
 #    include <mimalloc.h>
-
+#    if defined(NDEBUG) && defined(DEFINED_NDEBUG)
+#        undef NDEBUG
+#        undef DEFINED_NDEBUG
+#    endif
 #    define HAS_MIMALLOC
 #    define P4_MALLOC  mi_malloc
 #    define P4_CALLOC  mi_calloc

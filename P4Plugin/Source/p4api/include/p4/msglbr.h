@@ -45,13 +45,12 @@ class MsgLbr {
 	static ErrorId RevLess;
 	static ErrorId TooBig;
 	static ErrorId RcsTooBig;
-	static ErrorId FmtLbrStat;
-	static ErrorId FmtLbrStat2;
 	static ErrorId FmtLbrStat3;
 	static ErrorId FmtLbrStat4;
 	static ErrorId FmtLbrStat5;
 	static ErrorId LbrOpenFail;
 	static ErrorId AlreadyOpen;
+	static ErrorId NotOpen;
 	static ErrorId BadKeyword;
 	static ErrorId KeywordUnterminated;
 	static ErrorId ObjectReadError;
@@ -59,8 +58,21 @@ class MsgLbr {
 	static ErrorId LbrTypeInsane;
 	static ErrorId LbrTrackInsane;
 
+	static ErrorId S3UploadFailed;
+	static ErrorId S3DownloadFailed;
+	static ErrorId S3CopyFailed;
+	static ErrorId S3StatFailed;
+	static ErrorId S3DeleteFailed;
+	static ErrorId S3UnsupportedOpen;
+	static ErrorId S3LbrLockLoop;
+
+	static ErrorId ChunkingCreateNewLbr;
+
+
 	// Retired ErrorIds. We need to keep these so that clients 
 	// built with newer apis can commnunicate with older servers 
 	// still sending these.
 
+	static ErrorId FmtLbrStat;
+	static ErrorId FmtLbrStat2;
 } ;

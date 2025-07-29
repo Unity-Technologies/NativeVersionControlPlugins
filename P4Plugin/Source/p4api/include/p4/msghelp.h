@@ -35,6 +35,7 @@ class MsgHelp {
 	static ErrorId HelpAnnotate;
 	static ErrorId HelpAdmin;
 	static ErrorId HelpAdministration;
+	static ErrorId HelpAdminResourceMonitor;
 	static ErrorId HelpArchive;
 	static ErrorId HelpAttribute;
 	static ErrorId HelpBackup;
@@ -52,7 +53,6 @@ class MsgHelp {
 	static ErrorId HelpConfigure;
 	static ErrorId HelpConfigurables;
 	static ErrorId HelpCopy;
-	static ErrorId HelpCopyshelf;
 	static ErrorId HelpCounter;
 	static ErrorId HelpCounters;
 	static ErrorId HelpCstat;
@@ -78,6 +78,8 @@ class MsgHelp {
 	static ErrorId HelpExtension;
 	static ErrorId HelpClientExtensionIntro;
 	static ErrorId HelpServerExtensionIntro;
+	static ErrorId HelpFailback;
+	static ErrorId HelpFailbackintro;
 	static ErrorId HelpFailover;
 	static ErrorId HelpFiles;
 	static ErrorId HelpFilelog;
@@ -156,6 +158,7 @@ class MsgHelp {
 	static ErrorId HelpRemote;
 	static ErrorId HelpRemotes;
 	static ErrorId HelpRename;
+	static ErrorId HelpRenameClient;
 	static ErrorId HelpRenameUser;
 	static ErrorId HelpReconcile;
 	static ErrorId HelpReopen;
@@ -178,6 +181,7 @@ class MsgHelp {
 	static ErrorId HelpSearch;
 	static ErrorId HelpServer;
 	static ErrorId HelpServerid;
+	static ErrorId HelpServerResources;
 	static ErrorId HelpServers;
 	static ErrorId HelpSet;
 	static ErrorId HelpShelve;

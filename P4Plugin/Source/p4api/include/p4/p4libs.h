@@ -59,13 +59,11 @@ class P4Libraries
 
 	    static void Initialize( const int libraries, Error* e );
 	    static void Shutdown( const int libraries, Error* e );
-	    static void DisableZlibOptimization();
-	    static void DisableFileSysCreateOnIntr();
-	    static void EnableFileSysCreateOnIntr();
 
-	    // Note that these are internal routines for Perforce products
-	    // and are not necessary to call for general P4API use.
 	    static void InitializeThread( const int libraries, Error* e );
 	    static void ShutdownThread( const int libraries, Error* e );
 
+	    static void DisableZlibOptimization();
+	    static void DisableFileSysCreateOnIntr();
+	    static void EnableFileSysCreateOnIntr();
 };
