@@ -51,7 +51,7 @@ $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ $^  $(P4PLUGIN_LINK) -L./P4Plugin/Source/p4api/lib/$(PLATFORM) -L./P4Plugin/Source/openssl/lib/$(PLATFORM)
+	$(CXX) $(LDFLAGS) -o $@ $^  $(P4PLUGIN_LINK) -L./P4Plugin/Source/p4api/lib/$(PLATFORM)
 
 clean:
 	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(TESTSERVER_MODULES)
