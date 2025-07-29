@@ -57,8 +57,8 @@ The `PerforceBinaries` where downloaded the same locations to run the integratio
 
 ```bash
 mkdir -p 'PerforceBinaries\Win_x64'
-curl -ssL -o 'PerforceBinaries\Win_x64\p4.exe' 'https://filehost.perforce.com/perforce/r21.2/bin.ntx64/p4.exe'
-curl -ssL -o 'PerforceBinaries\Win_x64\p4d.exe' 'https://filehost.perforce.com/perforce/r21.2/bin.ntx64/p4d.exe'
+curl -ssL -o 'PerforceBinaries\Win_x64\p4.exe' 'https://filehost.perforce.com/perforce/r24.1/bin.ntx64/p4.exe'
+curl -ssL -o 'PerforceBinaries\Win_x64\p4d.exe' 'https://filehost.perforce.com/perforce/r24.1/bin.ntx64/p4d.exe'
 ```
 
 #### Windows
