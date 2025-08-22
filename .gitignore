@@ -37,3 +37,9 @@ server.pid
 
 # JetBrains IDEs files
 .idea/
+
+# macOS file information
+**.DS_Store
+
+# Object files
+***.o

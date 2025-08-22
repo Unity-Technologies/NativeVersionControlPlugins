@@ -100,6 +100,9 @@ class Process {
 	virtual void	Child() = 0;
 	virtual void	Cancel() = 0;
 
+# ifndef OS_NT
+	virtual void	Cleanup ( pid_t pid ) {}
+# endif
 } ;
 
 class Threader {
@@ -120,6 +123,9 @@ class Threader {
 	virtual void	Quiesce();
 	virtual void	Reap();
 
+# ifndef OS_NT
+	virtual void	Cleanup( pid_t pid );
+# endif
 	virtual int	GetThreadCount(); // varies on each system
 
 	int		cancelled;
@@ -155,6 +161,10 @@ class Threading {
 	static int	GetThreadCount()
 	                { return current ? current->GetThreadCount() : -1; }
 	static void	LaunchCurrentThread( Thread *t ) { if( current ) current->Launch( t ); }
+
+# ifndef OS_NT
+	static void	Cleanup( pid_t pid ) { if( current ) current->Cleanup( pid ); }
+# endif
 
     private:
 

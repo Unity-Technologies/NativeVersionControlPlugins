@@ -40,7 +40,12 @@ class MsgRpc {
 	static ErrorId NameResolve;
 
 	static ErrorId SslAccept;
+	static ErrorId SslAcceptFailed;
+	static ErrorId SslAcceptTimeout;
 	static ErrorId SslConnect;
+	static ErrorId SslConnectFailed;
+	static ErrorId SslConnectTimeout;
+	static ErrorId SslCloseEOF;
 	static ErrorId SslListen;
 	static ErrorId SslRecv;
 	static ErrorId SslSend;

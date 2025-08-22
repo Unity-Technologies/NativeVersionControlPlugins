@@ -222,8 +222,10 @@ class RunCommandIo : public RunCommand {
 	int 	Read( const StrPtr &out, Error *e );
 	StrPtr *ReadError( Error *e );
 
+	int 	ReadLine( StrBuf &out, StrBuf &buf, Error *e );
+
     private:
-	int	Read( char *buf, int length, Error *e );
+	int	Read( char *buf, int length, Error *e, int closeIn = 1 );
 
 	int	fds[2];
 	StrBuf	errBuf;

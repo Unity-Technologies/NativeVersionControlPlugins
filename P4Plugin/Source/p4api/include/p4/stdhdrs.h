@@ -1,6 +1,5 @@
 /*
- * Copyright 1995, 1996 Perforce Software.  All rights reserved.
- *
+ * Copyright 1995, 1996 Perforce Software.  All rights reserved. *
  * This file is part of Perforce - the FAST SCM System.
  */
 
@@ -32,6 +31,7 @@
 # include <stdio.h>
 # include <string.h>
 # include <stdlib.h>
+# include <limits.h> // needed by datetime.h
 
 # if !defined( OS_QNX ) && !defined( OS_VMS )
 # include <memory.h>
@@ -77,6 +77,7 @@
  * NEED_TYPES - off_t, etc (always set)
  * NEED_UTIME - utime()
  * NEED_WIN32FIO - Native Windows file I/O
+ * NEED_XATTRS - getxattr() setxattr()
  */
 
 # if defined( NEED_ACCESS ) || \
@@ -353,6 +354,10 @@ extern "C" int __stdcall gethostname( char * name, int namelen );
 
 # include <sys/stat.h>
 
+# ifdef OS_LINUX
+# include <sys/sysmacros.h>
+# endif
+
 # ifndef S_ISLNK /* NCR */
 # define S_ISLNK(m) (((m)&S_IFMT)==S_IFLNK)
 # endif
@@ -517,6 +522,10 @@ extern "C" int socketpair(int, int, int, int*);
 # include <time.h>
 # endif
 
+# if defined(NEED_TIMER) && !defined(OS_NT)
+# include <sys/time.h>
+# endif
+
 # if defined(NEED_TIME_HP)
 #    if defined( OS_LINUX )
 #       define HAVE_CLOCK_GETTIME
@@ -568,14 +577,21 @@ using namespace std;
 # endif
 # endif
 
-# define HAVE_UTIMES
 # ifdef NEED_UTIMES
+# define HAVE_UTIMES
 # if ( defined( OS_NT ) || defined( OS_OS2 ) ) && !defined(__BORLANDC__)
 # include <sys/utime.h>
 # else
 # include <sys/types.h>
 # include <utime.h>
 # endif
+# endif
+# endif
+
+# ifdef NEED_XATTRS
+# if defined( OS_LINUX ) || defined( OS_DARWIN ) || defined( OS_MACOSX )
+# define HAVE_XATTRS
+# include <sys/xattr.h>
 # endif
 # endif
 
@@ -722,22 +738,29 @@ enum LineType { LineTypeRaw, LineTypeCr, LineTypeCrLf, LineTypeLfcrlf };
 
 /*
  * P4INT64 - a 64 bit int
+ * Duplicated in error.h in case external includes including error.h first
  */
 
-# if !defined( OS_MVS ) && \
-     !defined( OS_OS2 ) && \
-     !defined( OS_QNX )
-# define HAVE_INT64
-# ifdef OS_NT
-# define P4INT64 __int64
-# else
-# define P4INT64 long long
-# endif
+# ifndef P4INT64
+#   if !defined( OS_MVS ) && \
+       !defined( OS_OS2 ) && \
+       !defined( OS_QNX )
+#     define HAVE_INT64
+#     ifdef OS_NT
+#       define P4INT64 __int64
+#     else
+#       define P4INT64 long long
+#     endif
+#   else
+#     define P4INT64 int
+#   endif
 # endif
 
-# ifndef P4INT64
-# define P4INT64 int
-# endif
+/*
+ * P4UINT64 - an unsigned 64 bit int.
+ */
+
+# define P4UINT64 unsigned P4INT64
 
 /*
  * offL_t - size of files or offsets into files
@@ -793,6 +816,11 @@ typedef unsigned int p4size_t;
 
 # if defined(_MSC_VER) && _MSC_VER < 1900
 #  define HAS_BROKEN_CPP11
+# endif
+
+# if defined(_MSC_VER) && _MSC_VER < 1915
+// C2970
+#  define HAS_BROKEN_CPP11_TEMPLATE_INTERNAL_LINKAGE
 # endif
 
 # ifdef HAS_CPP11
@@ -858,7 +886,11 @@ typedef struct P4_FD
 {
 	HANDLE fh;
 	int flags;
-	int isStd;
+	int mode;
+	int lock;
+	int dounicode;
+	int lfn;
+	int fdFlags;
 	unsigned char *ptr;
 	DWORD rcv;
 	int iobuf_siz;
@@ -873,6 +905,23 @@ typedef struct P4_FD* FD_TYPE;
 # define FD_ERR NULL
 typedef void* FD_PTR;
 
+# define FD_INIT NULL
+# define FD_ERR NULL
+typedef void* FD_PTR;
+
+# define FD_IsSTD	0x001
+# define FD_LOCKED	0x002
+# define FD_REOPEN	0x004
+# define FD_CLOSED	0x008
+
+enum LFNModeFlags {
+	LFN_ENABLED 	= 0x01,
+	LFN_UNCPATH	= 0x02,
+	LFN_UTF8	= 0x04,
+	LFN_ATOMIC_RENAME = 0x08,
+	LFN_CSENSITIVE	= 0x10,
+} ;
+
 # else // OS_NT
 
 # define FD_INIT -1
@@ -882,9 +931,49 @@ typedef int FD_PTR;
 
 # endif // !OS_NT
 
+
 # if !defined( HAS_CPP11 ) && !defined( LLONG_MIN )
 #  define LLONG_MIN (-9223372036854775807LL - 1)
 #  define LLONG_MAX   9223372036854775807LL
+# endif
+
+# if defined( HAS_CPP11 )
+#  if defined( NEED_THREAD ) && ( defined( OS_NT ) || !defined( USE_SMARTHEAP ) )
+#   define HAVE_THREAD
+#   include <thread>
+#   include <mutex>
+#  endif
+# endif
+
+
+// endian defines.
+# undef P4_LITTLE_ENDIAN
+# undef P4_BIG_ENDIAN
+
+# if defined( OS_LINUX ) || defined(OS_MACOSX) || defined(OS_DARWIN)
+#  if defined( __BYTE_ORDER) && defined(__LITTLE_ENDIAN)
+#   if __BYTE_ORDER == __LITTLE_ENDIAN
+#     define P4_LITTLE_ENDIAN 1
+#   endif
+#   if __BYTE_ORDER == __BIG_ENDIAN
+#     define P4_BIG_ENDIAN 1
+#   endif
+#  else
+// If there are no defines to tell us, then guess.
+#     define P4_LITTLE_ENDIAN 1
+#  endif
+# endif
+
+# if defined( OS_NT )
+
+#   define P4_LITTLE_ENDIAN 1
+
+# endif
+
+# if !defined( P4_LITTLE_ENDIAN ) && !defined( P4_BIG_ENDIAN )
+// Endian defines not working on builds (php) that
+// do not define OS type. Disable this guard until fixed.
+//#   error "Unable to determine the endianess of the platform"
 # endif
 
 # endif // P4STDHDRS_H

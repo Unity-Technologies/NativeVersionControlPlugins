@@ -16,6 +16,7 @@
 #define	CPU_FILES	2
 #define CPU_KBYTES	3
 #define CPU_MBYTES	4
+#define CPU_DELTAS	5
 
 class ClientProgress
 {
@@ -49,5 +50,6 @@ class ClientProgressText : public ClientProgress
 	int	backup;
 	StrBuf	desc;
 	bool	done;
+	int	units;
 
 };

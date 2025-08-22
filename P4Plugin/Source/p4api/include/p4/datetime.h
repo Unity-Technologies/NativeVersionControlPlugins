@@ -24,11 +24,11 @@ class DateTime {
 		DateTime( const char *date, Error *e ) { Set( date, e ); }
 
  	void	Set( const char *date, Error *e );
- 	void	Set( const int date ) { wholeDay = 0; tval = (time_t)date; }
+ 	void	Set( const P4INT64 date ) { wholeDay = 0; tval = (time_t)date; }
 	void	SetNow() { Set( (int)Now() ); }
 
-	int 	Compare( const DateTime &t2 ) const { 
-                return (int)(tval - t2.tval); };
+	P4INT64	Compare( const DateTime &t2 ) const { 
+	        return (tval - t2.tval); };
 
 	void	Fmt( char *buf ) const;
 	void	FmtDay( char *buf ) const;
@@ -38,31 +38,34 @@ class DateTime {
 	void 	FmtElapsed( char *buf, const DateTime &t2 );
 	void	FmtUnifiedDiff( char *buf ) const;
 	void	FmtISO8601( char *buf ) const;
+	void	FmtISO8601Min( char *buf ) const;
+	
+	void	SetRFC5322( const char *date, Error *e );
+	void	FmtRFC5322( char *buf ) const;
 
 	void	SetGit( const StrPtr &gitDate, Error *e );
 	void	FmtGit( StrBuf &buf ) const;
 
-	int	Value() const { return (int)tval; }
-	int	Tomorrow() const { return (int)tval + 24*60*60; }
+	P4INT64	Value() const { return tval; }
+	P4INT64	Tomorrow() const { return tval + 24*60*60; }
 	int	IsWholeDay() const { return wholeDay; }
 
-	static int Never() { return 0; }
-	static int Forever() { return 2147483647; }
+	static P4INT64 Never() { return 0; }
 
 	// for stat() and utime() conversion
 
-	static time_t Localize( time_t centralTime );
-	static time_t Centralize( time_t localTime );	
-	int    TzOffset( int *isdst = 0 ) const;
+	static P4INT64 Localize( time_t centralTime );
+	static P4INT64 Centralize( time_t localTime );	
+	P4INT64    TzOffset( int *isdst = 0 ) const;
 
     protected:
-	time_t	Now();
+	P4INT64	Now();
 
     private:
-	time_t	tval;
+	P4INT64	tval;
 	int	wholeDay;
 
-	int	ParseOffset( const char *s, const char *odate, Error *e );
+	P4INT64	ParseOffset( const char *s, const char *odate, Error *e );
 };
 
 class DateTimeNow : public DateTime {
@@ -84,7 +87,7 @@ class DateTimeHighPrecision
     public:
 
 	// Orthodox Canonical Form (OCF) methods (we don't need a dtor)
-	        DateTimeHighPrecision(time_t secs = 0, int nsecs = 0)
+	        DateTimeHighPrecision(P4INT64 secs = 0, int nsecs = 0)
 		    : seconds( secs ), nanos( nsecs ) { }
 
 	        DateTimeHighPrecision(const DateTimeHighPrecision &rhs)
@@ -125,9 +128,10 @@ class DateTimeHighPrecision
 
 	void	Now();
 	void	Fmt( char *buf ) const;
+	void	FmtISO8601( char *buf ) const;
 
-	time_t	Seconds() const;
-	int	Nanos() const;
+	P4INT64	Seconds() const;
+	P4INT64	Nanos() const;
 
 	bool	IsZero() const { return seconds == 0 && nanos == 0; }
 
@@ -138,11 +142,12 @@ class DateTimeHighPrecision
 	// return < 0, = 0, or > 0 if *this < rhs, *this == rhs, or *this > rhs, respectively
 	int 	Compare( const DateTimeHighPrecision &rhs ) const;
 
+	P4INT64	ToNanos() const;
+	P4INT64	ToMs() const;
+
     private:
 
-	P4INT64	ToNanos() const;
-
-	time_t	seconds; // Since 1/1/1970, natch
+	P4INT64	seconds; // Since 1/1/1970, natch
 	int	nanos;
 } ;
 

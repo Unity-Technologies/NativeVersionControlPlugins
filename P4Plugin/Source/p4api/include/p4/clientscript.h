@@ -6,12 +6,18 @@
 
 # ifdef HAS_EXTENSIONS
 
+// This enum represents the result of a client-side Extension function.
+
 enum class ClientScriptAction
 {
-	UNKNOWN,
-	FAIL,
-	PASS,
-	REPLACE
+	UNKNOWN,      // Script misbehaving / crashed / etc.
+	FAIL,         // Script says 'no'.
+	PASS,         // Script says 'ok'.
+	REPLACE,      // Script does something instead of what would happen.
+	PRE_DEBUG,    // Non-functional divider between normal user-facing
+	              // scripts and internal debug code.
+	ABORT,        // Tell the caller to abort or otherwise exit immediately.
+	EARLY_RETURN  // Tell the caller to return control to its parent func.
 };
 
 class ClientScript

@@ -146,6 +146,7 @@ class StrOps {
 	static void	PackInt( StrBuf &o, int v );
 	static void	PackIntA( StrBuf &o, int v );
 	static void	PackInt64( StrBuf &o, P4INT64 v );
+	static void	PackIntV( StrBuf &o, P4INT64 v );
 	static void	PackChar( StrBuf &o, const char *c, int len );
 	static void	PackOctet( StrBuf &o, const StrPtr &s );
 	static void	PackString( StrBuf &o, const StrPtr &s );
@@ -154,6 +155,7 @@ class StrOps {
 	static int	UnpackInt( StrRef &o );
 	static int	UnpackIntA( StrRef &o );
 	static P4INT64	UnpackInt64( StrRef &o );
+	static P4INT64	UnpackIntV( StrRef &o );
 	static void	UnpackChar( StrRef &o, char *c, int length );
 	static void	UnpackOctet( StrRef &o, const StrPtr &s );
 	static void	UnpackString( StrRef &o, StrBuf &s );

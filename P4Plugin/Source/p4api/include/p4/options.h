@@ -141,6 +141,7 @@ class Options
 	                LabelName      , // list -l
 	                RunOnMaster    , // list -M
 	                LeaveKeywords  , // print -k
+	                LeaveKeywords2 , // sync -K, revert -K, integ -K...
 	                OutputFile     , // print -o
 	                Content        , // filelog -h
 	                OmitPromoted   , // filelog -p
@@ -232,6 +233,8 @@ class Options
 	                Name           , // attribute -n, property -n
 	                Value          , // attribute -v, property -v
 	                Propagating    , // attribute -p
+	                Storage        , // attribute -T
+	                TraitFile      , // attribute -I
 	                OpenAdd        , // reconcile -a
 	                OpenEdit       , // reconcile -e
 	                OpenDelete     , // reconcile -d
@@ -299,6 +302,8 @@ class Options
 	                ForceFailover  , // failover -F
 	                IgnoreMaster   , // failover -i
 	                RequireMaster  , // failover -m
+	                FailbackYes    , // failback -y
+	                FailbackQuiesce, // failback -w
 	                FailoverYes    , // failover -y
 	                Failoverid     , // failover -s
 	                FailoverQuiesce, // failover -w
@@ -313,14 +318,30 @@ class Options
 	                MissingCount   , // heartbeat -c
 	                LocalLicense   , // license -u -l
 	                AutoReload     , // labels -R
+	                IntervalMillis , // --interval-ms | -I
+	                Threshold      , // topology -t
+	                DatedEarlier   , // topology -e
+	                DeleteMarker   , // topology -d
+	                DeletePurge    , // topology -D
+	                MoveTopology   , // topology -m
+	                ServerAddress  , // topology -s
+	                ServerID       , // topology -i
+	                TargetAddress  , // topology -p
+	                NewServerAddress, // topology -S
+	                NewServerID    , // topology -I
+	                NewTargetAddress, // topology -P
+	                CreationDate   , // topology -c
+	                LastSeenDate   , // topology -l
+	                ListAddresses  , // license -L
+	                Trait          , // print -T
 
 	        // options which have only long-form option names go here:
 
 	                LongFormOnlyOptions = 2000,
 
 	                NoRejournal    , // pull --no-rejournal
-	                From           , // renameuser --from
-	                To             , // renameuser --to
+	                From           , // renameuser or renameclient --from
+	                To             , // renameuser or renameclient --to
 	                Parallel       , // sync --parallel
 	                ParallelSubmit , // submit --parallel
 	                InputFile      , // reload --input-file
@@ -380,6 +401,7 @@ class Options
 			Script         , // --script
 			ScriptMaxMem   , // --script-MaxMem
 			ScriptMaxTime  , // --script-MaxTime
+			ScriptEnableDbg, // --script-enable-debug
 			Path           , // --path (extension)
 			NoSync         , // --no-sync
 			NoScript       , // --no-script
@@ -404,6 +426,25 @@ class Options
 			ShowRealtime    , // --show-realtime
 			CleanPurge      , // --purged-only
 			ViewMatch       , // --viewmatch
+			Obliterate      , // stream --obliterate
+			Offset          , // print --offset
+			Size            , // print --size
+			Compressed      , // verify --compressed=0/1
+			PreFailback     , // p4d --pre-failback
+			PostFailback    , // p4d --post-failback
+			StreamViews     , // --streamviews
+			UseStreamChange	, // --use-stream-change
+			HasStream       , // --stream
+			NoStream        , // --nostream
+			PreserveChangeNumbers, // --preserve-change-numbers
+			Limit           , // --limit #
+			Type            , // --type checkpoint|dump....
+			Result          , // --result pass|fail
+			JNum            , // --num #
+			JField          , // --jfield f1,f2,f3
+			ControlTweaks   , // --control-tweaks
+			CachePurge      , // --cache-purge (p4p)
+			Iteration       , // --iteration
 #ifdef _DEBUG
 			DebugBreak,    // --debugbreak
 #endif
@@ -445,6 +486,8 @@ class Options
 	static int		FindCode( const int code, Error *e );
 	static int		GetShortForm( const int ilist, Error *e );
 	static const char *	GetLongForm( const int ilist, Error *e );
+	void		Discard( int opt, char flag2 = 0, int subopt = 0 );
+	void		Dump( StrPtr * );
 
     private:
 	int 		optc;

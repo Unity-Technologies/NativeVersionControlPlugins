@@ -53,6 +53,7 @@ class Sha256Digester
 
     public:
 			Sha256Digester();
+			Sha256Digester( Error *e );
 			~Sha256Digester();
 	void		Update( const StrPtr &buf );
 	void		Final( StrBuf &output );
@@ -60,6 +61,7 @@ class Sha256Digester
 	void		Final( Sha256 &sha );
 
     private:
+	void		Init( Error *e );
 	void		*ctx;
 
 };

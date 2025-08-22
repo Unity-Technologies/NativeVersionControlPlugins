@@ -39,6 +39,7 @@ class StrPtrDict : public StrDict {
 	void		VRemoveVar( const StrPtr &var );
 	int		VGetVarX( int x, StrRef &var, StrRef &val );
 	void		VClear() { tabLength = 0; }
+	int		VGetCount() { return tabLength; }
 
     private:
 	
@@ -56,11 +57,6 @@ class StrBufDict : public StrDict {
 			StrBufDict & operator =( StrDict & dict );
 			~StrBufDict();
 
-	int		GetCount()
-			{
-			    return tabLength;
-			}
-
 	// virtuals of StrDict
 
 	StrPtr *	VGetVar( const StrPtr &var );
@@ -68,6 +64,7 @@ class StrBufDict : public StrDict {
 	void		VRemoveVar( const StrPtr &var );
 	int		VGetVarX( int x, StrRef &var, StrRef &val );
 	void		VClear() { tabLength = 0; }
+	int		VGetCount() { return tabLength; }
 
 	StrPtr *	GetVarN( const StrPtr &var );
 	StrBuf *	KeepOne( const StrPtr &var );
@@ -96,6 +93,7 @@ class BufferDict : public StrDict {
 	void		VSetVar( const StrPtr &var, const StrPtr &val );
 	void		VClear() { buf.Clear(); count = 0; }
 	void		VRemoveVar( const StrPtr &var );
+	int 		VGetCount() { return count; }
 
     protected:
 	StrPtr *	GetBuffer() { return &buf; }

@@ -106,6 +106,10 @@ class ClientTransfer;
 class ClientSSO;
 class ClientApi;
 
+# ifdef HAS_CPP11
+#   include <mutex>
+# endif
+
 class ClientUser {
 
     public:
@@ -163,6 +167,9 @@ class ClientUser {
 
 	virtual void	Finished() {}
 
+	void		SetVarList( StrDict *l );
+	void		SetEnviro( Enviro *env );
+
 	StrDict		*varList;	// (cheesy) access to RPC buffer
 	Enviro		*enviro;	// (cheesy) access to Client's env
 
@@ -209,6 +216,8 @@ class ClientUser {
 	int		binaryStdout;	// stdout is in binary mode
 	int		quiet;		// OutputInfo does nothing.
 	int		autoLogin;	// Can this implementation autoprompt
+
+	void*		setterGuard;	// Setter mutex when built with C++11+
 
     protected:
 	int		outputCharset;	// P4CHARSET for output

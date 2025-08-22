@@ -1,12 +1,18 @@
 include Makefile.srcs
 
-CC = gcc
-CXX = g++
+CC = clang
+CXX = clang
 AR = ar
 
-CXXFLAGS = -O2 -arch x86_64 -mmacosx-version-min=10.11
-LDFLAGS = -arch x86_64 -lstdc++ -mmacosx-version-min=10.11
-PLATFORM = OSXx64
+ifeq ($(BUILD_TARGET),P4PluginX64)
+	PLATFORM = OSXx64
+	CXXFLAGS = -O2 -arch x86_64 -mmacosx-version-min=10.11
+	LDFLAGS = -L./P4Plugin/Source/p4api/lib/osx64 -L./P4Plugin/Source/openssl/lib/osx64 -arch x86_64 -lstdc++ -mmacosx-version-min=10.11
+else
+	PLATFORM = OSXarm64
+	CXXFLAGS = -O2 -arch arm64 -mmacosx-version-min=12.0 
+	LDFLAGS = -L./P4Plugin/Source/p4api/lib/osxarm64 -L./P4Plugin/Source/openssl/lib/osxarm64 -arch arm64 -lstdc++ -mmacosx-version-min=12.0
+endif
 
 COMMON_MODULES = $(COMMON_SRCS:.c=.o)
 COMMON_MODULES := $(COMMON_MODULES:.cpp=.o)
@@ -53,7 +59,10 @@ $(TESTSERVER_TARGET): $(COMMON_MODULES) $(TESTSERVER_MODULES)
 	$(CXX) -g $(LDFLAGS) -o $@ $^
 
 $(P4PLUGIN_TARGET): $(COMMON_MODULES) $(P4PLUGIN_MODULES)
-	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa -framework Security $^ -L./P4Plugin/Source/p4api/lib/osx64 -L./P4Plugin/Source/openssl/lib/osx64 $(P4PLUGIN_LINK)
+	$(CXX) $(LDFLAGS) -o $@ -framework Cocoa -framework Security $^ $(P4PLUGIN_LINK)
+
+clean-objs:
+	rm -f $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(TESTSERVER_MODULES)
 
 clean:
 	rm -f Build/*.* $(COMMON_MODULES) $(P4PLUGIN_MODULES) $(TESTSERVER_MODULES)

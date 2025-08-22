@@ -115,6 +115,7 @@ class MD5 {
 
     public:
 			MD5();
+			MD5( Error *e );
 
 	void		Update( const StrPtr &buf );
 	void		Final( StrBuf &output );
@@ -122,6 +123,7 @@ class MD5 {
 
     private:
 
+	void		Init( Error *e );
 	void 		Transform();
 
 	count64		bits;		// total
@@ -145,16 +147,20 @@ class MD5 {
 
     public:
 			MD5();
+			MD5( Error *e );
 			~MD5();
 			MD5& operator=( const MD5& rhs );
 
 	void		Update( const StrPtr &buf );
+	void		Update( const unsigned char* buf, const size_t len );
 	void		Final( StrBuf &output );
 	void 		Final( unsigned char digest[ 16 ] );
 	P4INT64		Count();
 
     private:
 
+	void		Init( Error *e );
+	
 	void*		ctx;
 	P4INT64		bits;
 };

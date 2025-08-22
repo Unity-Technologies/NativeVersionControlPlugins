@@ -53,6 +53,7 @@ class Sha1Digester
 
     public:
 			Sha1Digester();
+			Sha1Digester( Error *e );
 			~Sha1Digester();
 	void		Update( const StrPtr &buf );
 	void		Final( StrBuf &output );
@@ -60,6 +61,7 @@ class Sha1Digester
 	void		Final( Sha1 &sha );
 
     private:
+	void		Init( Error *e );
 	void		*ctx;
 
 };

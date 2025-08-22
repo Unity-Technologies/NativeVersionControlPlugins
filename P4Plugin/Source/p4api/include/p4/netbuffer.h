@@ -111,6 +111,7 @@ class NetBuffer : public NetTransport {
 
 
 	void		Flush( Error *e ) { Flush( e, e ); }
+	void		Shutdown( Error *e ) { Shutdown( e, e ); }
 
 	void		Close() 
 			{ transport->Close(); }
@@ -137,6 +138,7 @@ class NetBuffer : public NetTransport {
 	int		Receive( char *buf, int len, Error *re, Error *se );
 	void		Send( const char *buf, int len, Error *re, Error *se );
 	void		Flush( Error *re, Error *se );
+	void		Shutdown( Error *re, Error *se );
 	int		Fill( Error *re, Error *se );
 
 	void		SetBufferSizes( int recvSize, int sendSize );

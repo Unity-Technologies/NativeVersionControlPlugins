@@ -56,6 +56,23 @@
 # ifndef __ERROR_H__
 # define __ERROR_H__
 
+// Need P4INT64 if not already defined
+// Usually expected to be defined by stdhdrs.h (duplicated from there)
+# ifndef P4INT64
+#   if !defined( OS_MVS ) && \
+       !defined( OS_OS2 ) && \
+       !defined( OS_QNX )
+#     define HAVE_INT64
+#     ifdef OS_NT
+#       define P4INT64 __int64
+#     else
+#       define P4INT64 long long
+#     endif
+#   else
+#     define P4INT64 int
+#   endif
+# endif
+
 class StrBuf;
 class StrDict;
 class StrPtr;
@@ -127,7 +144,8 @@ class Error {
 	virtual		~Error();
 
 	void 		operator =( const Error &source );
-	Error &		Merge( const Error &source );
+	Error &		Merge( const Error &source, int igndups = 0 );
+
 
 	virtual void	Clear() { severity = E_EMPTY; }
 	const ErrorId  *MapError( const struct ErrorIdMap map[] );
@@ -159,7 +177,10 @@ class Error {
 	Error &		operator <<( const StrPtr &arg );
 	Error &		operator <<( const StrPtr *arg );
 	Error &		operator <<( const char *arg );
+	Error &		operator <<( P4INT64 arg );
 	Error &		operator <<( int arg );
+	Error &		operator <<( unsigned int arg );
+	Error &		operator <<( long int arg );
 
 	// Save system errors
 

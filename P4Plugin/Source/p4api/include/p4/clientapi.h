@@ -255,6 +255,7 @@ class ClientApi : public StrDict {
 	const StrArray	*GetConfigs();
 	const StrPtr	&GetBuild();
 	const StrPtr	&GetVersion();
+	Error *		GetTransError();
 
 	Enviro *	GetEnviro();
 	Ignore *	GetIgnore();
@@ -270,7 +271,7 @@ class ClientApi : public StrDict {
 	bool		ExtensionsEnabled();
 	void		SetExtension( ClientScript* cs, Error* e,
 				      const bool callerOwns = false );
-
+	void		EnableDebugHooks();
     public:
 	// The old interface, where ui was held from the start
 
@@ -288,6 +289,7 @@ class ClientApi : public StrDict {
 
 	StrPtr 		*VGetVar( const StrPtr &var );
 	void		VSetVar( const StrPtr &var, const StrPtr &val );
+	int		VGetCount();
 
     private:
 	Client		*client;	// wrapped up RPC

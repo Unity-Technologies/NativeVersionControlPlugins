@@ -63,6 +63,7 @@ class MsgClient {
 
 	static ErrorId UnknownCharset;
 	static ErrorId FileKept;
+	static ErrorId DataOutOfBounds;
 
 	static ErrorId ChdirFail;
 	static ErrorId LockCheckFail;
@@ -121,6 +122,19 @@ class MsgClient {
 
 	static ErrorId DirectoryNotEmpty;
 	static ErrorId CantRevertDirectoryNotEmpty;
+
+	static ErrorId BadFiletype;
+	static ErrorId BadLineEndingFlag;
+	static ErrorId BadUncompressFlag;
+	
+	static ErrorId AltSyncBadJSON;
+	static ErrorId AltSyncNoResult;
+	static ErrorId AltSyncBadResult;
+	static ErrorId AltSyncErr;
+	static ErrorId AltSyncUnhandledPass;
+	static ErrorId AltSyncNotSupported;
+	static ErrorId AltSyncFailStart;
+
 
 	// Retired ErrorIds. We need to keep these so that clients 
 	// built with newer apis can commnunicate with older servers 

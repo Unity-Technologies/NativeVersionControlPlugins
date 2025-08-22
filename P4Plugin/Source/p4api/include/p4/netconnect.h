@@ -146,6 +146,9 @@ class NetTransport : public KeepAlive {
 	virtual void	SetBreak( KeepAlive *breakCallback ) = 0;
 	virtual int	GetSendBuffering() = 0;
 	virtual int	GetRecvBuffering() = 0;
+	virtual void	Shutdown( Error *re, Error *se)
+			{
+			}
 	virtual void	GetEncryptionType(StrBuf &value)
 			{
 			    value.Clear();

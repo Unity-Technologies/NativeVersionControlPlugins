@@ -64,7 +64,9 @@ if ($target eq "mac")
 	}
 	else
 	{
-		TestMac();
+		# Need to test both architectures if possible
+		TestMacX64();
+		TestMacArm64();
 	}
 }
 elsif ($target eq "win32")
@@ -126,18 +128,44 @@ sub TestPerforce()
 sub BuildMac
 {
 	rmtree("Build");
-	system("make" , "-f", "Makefile.osx", "all") && die ("Failed to build PerforcePlugin for macOS");
+	system("make", "-f", "Makefile.osx", "clean-objs") && die ("Failed to clean build artifacts");
+
+	$ENV{'BUILD_TARGET'} = "P4PluginX64";
+	system("make", "-f", "Makefile.osx", "all") && die ("Failed to macOS x64 build version control plugins");
+
+	# In between architectures clean up object files so they are not reused.
+	system("make", "-f", "Makefile.osx", "clean-objs") && die ("Failed to clean build artifacts");
+
+	$ENV{'BUILD_TARGET'} = "P4PluginArm64";
+ 	system("make", "-f", "Makefile.osx", "all") && die ("Failed to macOS arm64 build version control plugins");
+
+	system("mkdir -p Build/OSX");
+	system("lipo", "-create", "Build/OSXarm64/PerforcePlugin", "Build/OSXx64/PerforcePlugin", "-output", "Build/OSX/PerforcePlugin") && die ("Failed to create a universal macOS build version control plugin");
+	system("lipo", "-create", "Build/OSXarm64/TestServer", "Build/OSXx64/TestServer", "-output", "Build/OSX/TestServer") && die ("Failed to create a universal macOS test server");
 }
 
-sub TestMac
+sub TestMacX64
 {
-	$ENV{'P4DEXEC'} = "PerforceBinaries/OSX/p4d";
-	$ENV{'P4EXEC'} = "PerforceBinaries/OSX/p4";
-	$ENV{'P4PLUGIN'} = "Build/OSXx64/PerforcePlugin";
-	$ENV{'TESTSERVER'} = "Build/OSXx64/TestServer";
+	$ENV{'P4DEXEC'} = "PerforceBinaries/OSX/x86_64/p4d";
+	$ENV{'P4EXEC'} = "PerforceBinaries/OSX/x86_64/p4";
+	$ENV{'P4PLUGIN'} = "Build/OSX/PerforcePlugin";
+	$ENV{'TESTSERVER'} = "Build/OSX/TestServer";
 
 	# Teamcity artifacts looses their file attributes on transfer
-	chmod 0755, glob("Build/OSXx64/*");
+	chmod 0755, glob("Build/OSX/*");
+
+	TestPerforce();
+}
+
+sub TestMacArm64
+{
+	$ENV{'P4DEXEC'} = "PerforceBinaries/OSX/arm64/p4d";
+	$ENV{'P4EXEC'} = "PerforceBinaries/OSX/arm64/p4";
+	$ENV{'P4PLUGIN'} = "Build/OSX/PerforcePlugin";
+	$ENV{'TESTSERVER'} = "Build/OSX/TestServer";
+
+	# Teamcity artifacts looses their file attributes on transfer
+	chmod 0755, glob("Build/OSX/*");
 
 	TestPerforce();
 }

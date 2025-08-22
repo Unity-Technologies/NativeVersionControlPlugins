@@ -57,4 +57,5 @@ enum ErrorSubsystem {
 	ES_SCRIPT	= 17,	// scripting
 	ES_SERVER2	= 18,	// server overflow
 	ES_DM2          = 19,   // dm overflow
+	ES_CONFIG	= 20,	// help for configurables
 } ;

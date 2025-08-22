@@ -50,15 +50,15 @@ perl ./build.pl -test
 The Perforce plugin source code is located under `P4Plugin/Source`. It references the Perforce APIs,
 located under `P4Plugin/Source/p4api`.
 
-We are targeting the 21.2 release of Perforce API includes and libraries, that were downloaded from
-the [Perforce downloads page](http://filehost.perforce.com/perforce/r21.2/).
+We are targeting the 24.1 release of Perforce API includes and libraries, that were downloaded from
+the [Perforce downloads page](http://filehost.perforce.com/perforce/r24.1/).
 
 The `PerforceBinaries` where downloaded the same locations to run the integrations tests on.
 
 ```bash
 mkdir -p 'PerforceBinaries\Win_x64'
-curl -ssL -o 'PerforceBinaries\Win_x64\p4.exe' 'https://filehost.perforce.com/perforce/r21.2/bin.ntx64/p4.exe'
-curl -ssL -o 'PerforceBinaries\Win_x64\p4d.exe' 'https://filehost.perforce.com/perforce/r21.2/bin.ntx64/p4d.exe'
+curl -ssL -o 'PerforceBinaries\Win_x64\p4.exe' 'https://filehost.perforce.com/perforce/r24.1/bin.ntx64/p4.exe'
+curl -ssL -o 'PerforceBinaries\Win_x64\p4d.exe' 'https://filehost.perforce.com/perforce/r24.1/bin.ntx64/p4d.exe'
 ```
 
 #### Windows

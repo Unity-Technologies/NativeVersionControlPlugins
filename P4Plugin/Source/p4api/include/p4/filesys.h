@@ -67,11 +67,14 @@
  *	FileSys::Chmod() - change permissions
  *	FileSys::Compare() - compare file against target
  *	FileSys::Copy - copy one file to another
+ *	FileSys::CopyRange - copy a range of a file (possibly optimized)
  *	FileSys::Digest() - return a fingerprint of the file contents
  *	FileSys::Chmod2() - copy a file to get ownership and set perms
  *	FileSys::Fsync() - sync file state to disk
  *
  *	FileSys::CheckType() - look at the file and see if it is binary, etc
+ *	FileSys::SetAtomicRename() - set atomic rename on this instance
+ *	FielSys::CheckForAtomicRename() - Qualify Windows OS atomic support
  */
 
 # ifdef OS_NT
@@ -178,14 +181,6 @@ enum FilePerm {
 	FPM_RWXO	// set file read-write-execute (owner)
 } ;
 
-enum LFNModeFlags {
-	LFN_ENABLED 	= 0x01,
-	LFN_UNCPATH	= 0x02,
-	LFN_UTF8	= 0x04,
-	LFN_MOVEBUSY	= 0x08,
-	LFN_CSENSITIVE	= 0x10,
-} ;
-
 enum FileDigestType
 {
 	FS_DIGEST_UNKNOWN	= 0,
@@ -199,6 +194,7 @@ class StrArray;
 class CharSetCvt;
 class MD5;
 class StrBuf;
+class StrBufDict;
 
 class DateTimeHighPrecision;	// for the high-precision modtime calls
 
@@ -215,6 +211,7 @@ class DiskSpaceInfo {
 	P4INT64		freeBytes;
 	int		pctUsed;
 	StrBuf		*fsType;
+	StrBuf		*mountpoint;
 } ;
 
 # ifdef HAS_CPP11
@@ -223,30 +220,31 @@ class DiskSpaceInfo {
 
 class FileSys;
 
-// Specialization to the std::default_delete template class so we can store
-// a std::unique_pointer to the FileSys* returned from FileSys::Create without
-// having to know which inherited class it's actually using and without having
-// to use a custom deleter everywhere.
-
-namespace std
-{
-	template<> class default_delete< FileSys* >
-	{
-	    public:
-	        void operator()( FileSys **ptr );
-	};
-}
-
-using FileSysUPtr = std::unique_ptr< FileSys* >;
+using FileSysUPtr = std::unique_ptr< FileSys >;
 
 # endif
+
+class FileSysBuffer
+{
+    public:
+	virtual		~FileSysBuffer() {}
+	virtual void	Release() = 0;
+
+	virtual void	Open( StrPtr *path, FileOpenMode mode, Error *e ) = 0;
+	virtual void	Write( const char *buf, int len, Error *e ) = 0;
+	virtual int	Read( char *buf, int len, Error *e ) = 0;
+	virtual void	Close( Error *e ) = 0;
+
+	virtual void	Seek( offL_t /* offset */, Error* /* e */ ) {}
+	virtual void	SizeHint( offL_t /* size */ ) {}
+} ;
 
 class FileSys {
 
     public:
 	// Creators
-
-	static FileSys *Create( FileSysType type );
+	
+	static FileSys *Create( FileSysType type, FileSysBuffer *buf = 0 );
 
 	static FileSys *CreateTemp( FileSysType type ) {
 				FileSys *f = Create( type );
@@ -279,6 +277,9 @@ class FileSys {
 
 	static bool	IsRelative( const StrPtr &p );
 
+	static bool	MakePathWriteable( const StrPtr &oldFile,
+	                                   StrBuf &newFile, Error *e );
+
 # ifdef OS_NT
 	static bool	IsUNC( const StrPtr &p );
 # endif
@@ -302,8 +303,8 @@ class FileSys {
 
 	void		Perms( FilePerm p ) { perms = p; }
 	void		ModTime( StrPtr *u ) { modTime = u->Atoi(); }
-	void		ModTime( time_t t ) { modTime = (int)t; }
-	time_t		GetModTime() { return modTime; }
+	void		ModTime( P4INT64 t) { modTime = t; }
+	P4INT64		GetModTime() { return modTime; }
 
 	// Set filesize hint for NT fragmentation avoidance
 
@@ -317,10 +318,12 @@ class FileSys {
 	// RmDir() should not erase your cwd (mainly for DVCS)
 
 	void		PreserveCWD() { preserveCWD = 1; }
+	void		PreserveRoot( StrPtr root ) { preserveRoot = root; }
 
 	// Initialize digest
 
 	virtual void	SetDigest( MD5 *m );
+	virtual MD5	*GetDigest();
 
 	// Get type info
 
@@ -351,6 +354,8 @@ class FileSys {
 	virtual void	SetLFN( const StrPtr &name );
 	virtual int	GetLFN( ) {return LFN;}
 # endif
+	// Enable atomic rename support
+	virtual void	SetAtomicRename();
 	virtual void	Set( const StrPtr &name );
 	virtual void	Set( const StrPtr &name, Error *e );
 	virtual StrPtr	*Path() { return &path; }
@@ -365,16 +370,22 @@ class FileSys {
 
 	virtual int	Stat() = 0;
 	virtual int     LinkCount();
-	virtual int	StatModTime() = 0;
+	virtual P4INT64	StatModTime() = 0;
+	virtual P4INT64	StatAccessTime() = 0;
 	virtual void	StatModTimeHP(DateTimeHighPrecision *modTime);
 	virtual void	Truncate( Error *e ) = 0;
 	virtual void	Truncate( offL_t offset, Error *e ) = 0;
 	virtual void	Unlink( Error *e = 0 ) = 0;
+	virtual void	UnlinkNoRetry( Error* e = 0 ) { Unlink( e ); }
 	virtual void	Rename( FileSys *target, Error *e ) = 0;
 	virtual void	Chmod( FilePerm perms, Error *e ) = 0;
 	virtual void	ChmodTime( Error *e ) = 0;
 	virtual void	ChmodTimeHP( const DateTimeHighPrecision & /* modTime */, Error * /* e */ ) {};
 	virtual void	SetAttribute( FileSysAttr, Error * ) { };
+	virtual void	SetExtendedAttribute( StrPtr * /* name */, StrPtr * /* val */, Error * ) {};
+	virtual void	SetExtendedAttributes( StrDict * /* vals */, Error * ) {};
+	virtual void	GetExtendedAttribute( StrPtr * /* name */, StrBuf * /* val */, Error * ) {};
+	virtual void	GetExtendedAttributes( StrBufDict * /* attrs */, Error * ) {};
 
 	virtual void	Fsync( Error * ) { }
 
@@ -427,6 +438,9 @@ class FileSys {
 	virtual void	RmDir( const StrPtr &p, Error *e );
 	void		RmDir( Error *e = 0 ) { RmDir( path, e ); }
 
+	// Determine if this Windows OS supports atomic rename
+	static void	CheckForAtomicRename( Error *e );
+
 	FileSysType	CheckType( int scan = -1 );
 
 # if defined ( OS_MACOSX ) && OS_VER < 1010
@@ -444,6 +458,12 @@ class FileSys {
 	void		WriteFile( const StrPtr *buf, Error *e );
 	int		Compare( FileSys *other, Error *e );
 	void 		Copy( FileSys *targetFile, FilePerm perms, Error *e );
+	// Copy a range of content from one FileSys to another.
+	// This is intended to be used with uncompressed binary files
+	// (FST_BINARY) so it can use fast low-level OS operations on disk files.
+	void 		CopyRange( offL_t offIn, size_t len,
+			           FileSys *targetFile, offL_t offOut,
+			           Error *e );
 	virtual void	Digest( StrBuf *digest, Error *e );
 	void		Chmod2( FilePerm perms, Error *e );
 	void		Chmod2( const char *p, Error *e )
@@ -455,6 +475,8 @@ class FileSys {
 	                    FileDigestType digType,
 	                    StrBuf *digest,
 	                    Error *e );
+
+	void		SetDelegate( FileSysBuffer *buf ) { delegate = buf; }
 
 	// Character Set operations
 
@@ -471,12 +493,13 @@ class FileSys {
 
 	FileOpenMode	mode;		// read or write
 	FilePerm	perms;		// leave read-only or read-write
-	int		modTime;	// stamp file mod date on close
+	P4INT64		modTime;	// stamp file mod date on close
 	offL_t		sizeHint;       // how big will the file get ?
 	StrBuf		path;
 	FileSysType 	type;
 	MD5		*checksum;      // if verifying file transfer
 	int		cacheHint;      // don't pollute cache
+	FileSysBuffer*	delegate;	// don't read/write from/to disk
 
 # ifdef OS_NT
 	int		LFN;
@@ -486,6 +509,7 @@ class FileSys {
 
 	int		isTemp;
 	int		preserveCWD;
+	StrBuf		preserveRoot;
 
 	int		charSet;
 	int		content_charSet;
