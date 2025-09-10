@@ -1,8 +1,8 @@
 name: Linux - Build & Test VCS plugins
 agent:
   type: Unity::VM
-  image: cds-ops/ubuntu-16.04-katana-agent
-  flavor: b1.large
+  image: build-system/unity-extra-ubuntu-18.04:v0.1-551070
+  flavor: b1.xlarge
 
 commands:
   # Build PerforcePlugin and TestServer

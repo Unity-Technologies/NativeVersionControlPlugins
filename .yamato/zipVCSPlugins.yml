@@ -1,8 +1,8 @@
 name: Zip VCS plugins
 agent:
   type: Unity::VM
-  image: core-kaunas/win10-vs2010:latest
-  flavor: b1.small
+  image: build-system/unity-extra-windows-10:v0.3-553488
+  flavor: b1.xlarge
 
 interpreter: powershell
 commands:

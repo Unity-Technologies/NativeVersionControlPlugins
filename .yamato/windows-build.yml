@@ -1,8 +1,8 @@
 name: Win - Build & Test VCS plugins
 agent:
   type: Unity::VM
-  image: build-system/unity-win10-22H2-vs2022-unity:v2.4386385
-  flavor: b1.large
+  image: build-system/unity-extra-windows-10:v0.3-553488
+  flavor: b1.xlarge
 
 commands:
   # Build PerforcePlugin and TestServer

@@ -1,8 +1,9 @@
 name: Mac - Build & Test VCS plugins
 agent:
   type: Unity::VM::osx
-  image: desktop/unity-macos-10.15-xcode-12.2:stable
+  image: build-system/unity-macos-13:v2.4453738
   flavor: b1.large
+  model: M1
 
 commands:
   # Build PerforcePlugin and TestServer
