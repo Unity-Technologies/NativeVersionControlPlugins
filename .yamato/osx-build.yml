@@ -1,8 +1,8 @@
 name: Mac - Build & Test VCS plugins
 agent:
   type: Unity::VM::osx
-  image: build-system/unity-macos-13:v2.4453738
-  flavor: b1.large
+  image: build-system/unity-macos-13-arm64-unity:v2.4499056
+  flavor: b1.xlarge
   model: M1
 
 commands:
