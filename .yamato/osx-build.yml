@@ -10,7 +10,8 @@ commands:
   - perl build.pl
 
   # Perforce CLI and server
-  - chmod +x PerforceBinaries/OSX/p4 PerforceBinaries/OSX/p4d
+  - chmod +x PerforceBinaries/OSX/arm64/p4 PerforceBinaries/OSX/arm64/p4d
+  - chmod +x PerforceBinaries/OSX/x86_64/p4 PerforceBinaries/OSX/x86_64/p4d
 
   # Run Perforce integration tests with the TestServer
   - perl build.pl -test
@@ -18,4 +19,4 @@ commands:
 artifacts:
   builds:
     paths:
-      - "Build/OSXx64/PerforcePlugin"
+      - "Build/OSX/PerforcePlugin"
