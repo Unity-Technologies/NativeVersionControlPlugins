@@ -16,6 +16,7 @@ GetOptions("test"=>\$test, "testoption=s"=>\$testoption, "filter=s"=>\$filter,
 
 sub BuildLinux ($);
 sub TestLinux ($);
+sub GetMacArchitecture;
 
 $testoption = "nonverbose" unless ($testoption);
 
@@ -65,8 +66,26 @@ if ($target eq "mac")
 	else
 	{
 		# Need to test both architectures if possible
-		TestMacX64();
-		TestMacArm64();
+		my $arch = GetMacArchitecture();
+		print "Running tests for macOS architecture: $arch\n";
+		
+		if ($arch eq "arm64")
+		{
+			print "Testing both architectures on ARM64 machine...\n";
+			print "Running x64 tests...\n";
+			TestMacX64();
+			print "Running ARM64 tests...\n";
+			TestMacArm64();
+		}
+		elsif ($arch eq "x86_64")
+		{
+			print "Testing only x64 architecture on Intel machine...\n";
+			TestMacX64();
+		}
+		else
+		{
+			die ("Unknown macOS architecture: $arch");
+		}
 	}
 }
 elsif ($target eq "win32")
@@ -130,18 +149,48 @@ sub BuildMac
 	rmtree("Build");
 	system("make", "-f", "Makefile.osx", "clean-objs") && die ("Failed to clean build artifacts");
 
-	$ENV{'BUILD_TARGET'} = "P4PluginX64";
-	system("make", "-f", "Makefile.osx", "all") && die ("Failed to build macOS x64 version control plugin");
+	my $arch = GetMacArchitecture();
+	print "Detected macOS architecture: $arch\n";
+	
+	if ($arch eq "arm64")
+	{
+		print "Building for both x64 and arm64 architectures on ARM64 machine...\n";
+		
+		# Build x64 first
+		print "Building x64 version...\n";
+		$ENV{'BUILD_TARGET'} = "P4PluginX64";
+		system("make", "-f", "Makefile.osx", "all") && die ("Failed to build macOS x64 version control plugin");
 
-	# In between architectures clean up object files so they are not reused.
-	system("make", "-f", "Makefile.osx", "clean-objs") && die ("Failed to clean build artifacts");
+		# In between architectures clean up object files so they are not reused.
+		print "Cleaning object files between architecture builds...\n";
+		system("make", "-f", "Makefile.osx", "clean-objs") && die ("Failed to clean build artifacts");
 
-	$ENV{'BUILD_TARGET'} = "P4PluginArm64";
- 	system("make", "-f", "Makefile.osx", "all") && die ("Failed to build macOS arm64 version control plugin");
+		# Build arm64
+		print "Building arm64 version...\n";
+		$ENV{'BUILD_TARGET'} = "P4PluginArm64";
+		system("make", "-f", "Makefile.osx", "all") && die ("Failed to build macOS arm64 version control plugin");
 
-	system("mkdir -p Build/OSX");
-	system("lipo", "-create", "Build/OSXarm64/PerforcePlugin", "Build/OSXx64/PerforcePlugin", "-output", "Build/OSX/PerforcePlugin") && die ("Failed to create a universal macOS build version control plugin");
-	system("lipo", "-create", "Build/OSXarm64/TestServer", "Build/OSXx64/TestServer", "-output", "Build/OSX/TestServer") && die ("Failed to create a universal macOS test server");
+		# Create universal binaries
+		print "Creating universal binaries with lipo...\n";
+		system("mkdir -p Build/OSX");
+		system("lipo", "-create", "Build/OSXarm64/PerforcePlugin", "Build/OSXx64/PerforcePlugin", "-output", "Build/OSX/PerforcePlugin") && die ("Failed to create a universal macOS build version control plugin");
+		system("lipo", "-create", "Build/OSXarm64/TestServer", "Build/OSXx64/TestServer", "-output", "Build/OSX/TestServer") && die ("Failed to create a universal macOS test server");
+	}
+	elsif ($arch eq "x86_64")
+	{
+		print "Building only x64 architecture on Intel machine...\n";
+		$ENV{'BUILD_TARGET'} = "P4PluginX64";
+		system("make", "-f", "Makefile.osx", "all") && die ("Failed to build macOS x64 version control plugin");
+		
+		print "Copying x64 binaries to Build/OSX/...\n";
+		system("mkdir -p Build/OSX");
+		system("cp", "Build/OSXx64/PerforcePlugin", "Build/OSX/PerforcePlugin") && die ("Failed to copy x64 PerforcePlugin");
+		system("cp", "Build/OSXx64/TestServer", "Build/OSX/TestServer") && die ("Failed to copy x64 TestServer");
+	}
+	else
+	{
+		die ("Unknown macOS architecture: $arch");
+	}
 }
 
 sub TestMacX64
@@ -154,7 +203,9 @@ sub TestMacX64
 	# Teamcity artifacts looses their file attributes on transfer
 	chmod 0755, glob("Build/OSX/*");
 
+	print "Running Perforce tests with x64 binaries...\n";
 	TestPerforce();
+	print "x64 tests completed.\n";
 }
 
 sub TestMacArm64
@@ -167,7 +218,9 @@ sub TestMacArm64
 	# Teamcity artifacts looses their file attributes on transfer
 	chmod 0755, glob("Build/OSX/*");
 
+	print "Running Perforce tests with ARM64 binaries...\n";
 	TestPerforce();
+	print "ARM64 tests completed.\n";
 }
 
 sub BuildWin32
@@ -204,4 +257,11 @@ sub TestLinux ($)
 	chmod 0755, glob("Build/linux64/*");
 
 	TestPerforce();
+}
+
+sub GetMacArchitecture
+{
+	my $arch = `uname -m`;
+	chomp($arch);
+	return $arch;
 }
