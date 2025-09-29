@@ -1,0 +1,19 @@
+# Note: temporary job to test the legacy x64 build on an old macOS image
+name: Mac - Legacy Build & Test VCS plugins
+agent:
+  type: Unity::VM::osx
+  image: desktop/unity-macos-10.15-xcode-12.2:stable
+  flavor: b1.large
+
+commands:
+  # Build PerforcePlugin and TestServer
+  - perl build.pl
+
+  # Perforce CLI and server
+  - chmod +x PerforceBinaries/OSX/arm64/p4 PerforceBinaries/OSX/arm64/p4d
+  - chmod +x PerforceBinaries/OSX/x86_64/p4 PerforceBinaries/OSX/x86_64/p4d
+
+  # Run Perforce integration tests with the TestServer
+  - perl build.pl -test
+
+# Note: no artifacts (and no dependencies from the zipVCSplugins job)
